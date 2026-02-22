@@ -21,11 +21,7 @@ import { generateText, Output } from "ai";
 import { z } from "zod";
 import { protectedProcedure, router } from "../index";
 
-// ─── AI Client ────────────────────────────────────────────────────────────────
-
 const openai = createOpenAI({ apiKey: env.OPENAI_API_KEY });
-
-// ─── AI Generation Schemas ────────────────────────────────────────────────────
 
 const readAloudSchema = z.object({
 	items: z.array(
@@ -50,7 +46,6 @@ const tongueTwisterSchema = z.object({
 });
 
 // ─── AI Content Generation ────────────────────────────────────────────────────
-
 async function generateReadAloudItems(
 	level: string,
 	interests?: string[],
@@ -138,37 +133,50 @@ Generate exactly ${count} items. Mix classic-style tongue twisters with original
 	return output.items;
 }
 
-// ─── Router ───────────────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function mapLevelToDifficulty(
+	level: string | null | undefined,
+): "beginner" | "intermediate" | "advanced" {
+	switch (level) {
+		case "beginner":
+		case "elementary":
+			return "beginner";
+		case "upper-intermediate":
+		case "advanced":
+			return "advanced";
+		default:
+			return "intermediate";
+	}
+}
 
 export const pronunciationRouter = router({
-	// Start a new pronunciation practice session
 	startSession: protectedProcedure
 		.input(
 			z.object({
 				mode: z.enum(["read-aloud", "tongue-twisters"]),
-				difficulty: z.enum(["beginner", "intermediate", "advanced"]),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
 			const userId = ctx.session.user.id;
 
-			// Fetch user profile for interests
 			const [profile] = await db
 				.select()
 				.from(userProfile)
 				.where(eq(userProfile.userId, userId))
 				.limit(1);
 
-			// Generate content based on mode
+			const difficulty = mapLevelToDifficulty(profile?.level);
+
 			let items: ReadAloudItem[] | TongueTwisterItem[];
 
 			if (input.mode === "read-aloud") {
 				items = await generateReadAloudItems(
-					input.difficulty,
+					difficulty,
 					profile?.interests ?? undefined,
 				);
 			} else {
-				items = await generateTongueTwisterItems(input.difficulty);
+				items = await generateTongueTwisterItems(difficulty);
 			}
 
 			const sessionId = crypto.randomUUID();
@@ -177,7 +185,7 @@ export const pronunciationRouter = router({
 				id: sessionId,
 				userId,
 				mode: input.mode,
-				difficulty: input.difficulty,
+				difficulty,
 				items,
 				status: "active",
 			});

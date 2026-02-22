@@ -17,8 +17,6 @@ export const contentRouter = router({
 
 		return path ?? null;
 	}),
-
-	// Get full learning path with units and lessons
 	getLearningPath: protectedProcedure.query(async ({ ctx }) => {
 		const [path] = await db
 			.select()
@@ -78,8 +76,6 @@ export const contentRouter = router({
 			})),
 		};
 	}),
-
-	// Get a single lesson with full content
 	getLesson: protectedProcedure
 		.input(z.object({ lessonId: z.string() }))
 		.query(async ({ input }) => {
@@ -90,8 +86,6 @@ export const contentRouter = router({
 				.limit(1);
 			return l ?? null;
 		}),
-
-	// Update lesson status and progress
 	updateLessonStatus: protectedProcedure
 		.input(
 			z.object({

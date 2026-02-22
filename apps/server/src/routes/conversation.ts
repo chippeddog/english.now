@@ -1,4 +1,5 @@
 import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { recordActivity } from "@english.now/api/services/record-activity";
 import { auth } from "@english.now/auth";
 import {
 	conversationFeedback,
@@ -145,6 +146,8 @@ The person you're talking to is learning English at a ${level} level.
 		content: greeting,
 		createdAt: new Date(),
 	});
+
+	recordActivity(session.user.id, "conversation").catch(console.error);
 
 	// Generate TTS for the initial greeting
 	const greetingAudio = await generateTTSBase64(greeting, voiceModel);
@@ -419,7 +422,6 @@ conversation.post("/transcribe", requireAuth, async (c) => {
 	}
 });
 
-// Translate a message to user's native language
 conversation.post("/translate", requireAuth, async (c) => {
 	const session = c.get("session");
 	if (!session) {
@@ -555,37 +557,6 @@ Return ONLY the English translation, nothing else. No quotes, no explanations.`,
 	}
 
 	return c.json({ english: output.trim() });
-});
-
-// Get conversation history
-conversation.get("/session/:sessionId", requireAuth, async (c) => {
-	const session = c.get("session");
-	if (!session) {
-		return c.json({ error: "Unauthorized" }, 401);
-	}
-	const sessionId = c.req.param("sessionId");
-
-	const conversationSessionResult = await db
-		.select()
-		.from(conversationSession)
-		.where(eq(conversationSession.id, sessionId))
-		.limit(1);
-
-	const sessionData = conversationSessionResult[0];
-	if (!sessionData || sessionData.userId !== session.user.id) {
-		return c.json({ error: "Session not found" }, 404);
-	}
-
-	const messages = await db
-		.select()
-		.from(conversationMessage)
-		.where(eq(conversationMessage.sessionId, sessionId))
-		.orderBy(conversationMessage.createdAt);
-
-	return c.json({
-		session: sessionData,
-		messages,
-	});
 });
 
 // Finish a conversation session and enqueue feedback generation

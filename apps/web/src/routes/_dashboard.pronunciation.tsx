@@ -5,7 +5,6 @@ import {
 	ArrowRight,
 	Calendar,
 	Check,
-	ChevronLeft,
 	Clock,
 	Loader2,
 	Mic,
@@ -45,8 +44,6 @@ type PracticeMode =
 	| "tongue-twisters"
 	| "minimal-pairs"
 	| "shadowing";
-
-type Difficulty = "beginner" | "intermediate" | "advanced";
 
 type SessionSummary = {
 	averageScore: number;
@@ -125,7 +122,10 @@ const MINIMAL_PAIRS = [
 	{ word1: "wet", word2: "vet", phoneme: "/w/ vs /v/", category: "consonants" },
 ];
 
-const SHADOWING_TEXTS: Record<Difficulty, string[]> = {
+const SHADOWING_TEXTS: Record<
+	"beginner" | "intermediate" | "advanced",
+	string[]
+> = {
 	beginner: [
 		"Nice to meet you.",
 		"Where are you from?",
@@ -387,34 +387,6 @@ function levenshteinDistance(a: string, b: string): number {
 // SHARED UI COMPONENTS
 // ============================================
 
-function DifficultySelector({
-	selected,
-	onSelect,
-}: {
-	selected: Difficulty;
-	onSelect: (level: Difficulty) => void;
-}) {
-	return (
-		<div className="flex gap-2">
-			{(["beginner", "intermediate", "advanced"] as const).map((level) => (
-				<button
-					key={level}
-					type="button"
-					onClick={() => onSelect(level)}
-					className={cn(
-						"rounded-full px-4 py-2 font-medium text-sm capitalize transition-all",
-						selected === level
-							? "bg-primary text-primary-foreground"
-							: "bg-muted hover:bg-muted/80",
-					)}
-				>
-					{level}
-				</button>
-			))}
-		</div>
-	);
-}
-
 function ScoreDisplay({ score }: { score: number }) {
 	const getColor = () => {
 		if (score >= 80) return "text-green-500";
@@ -509,181 +481,6 @@ function ModeSelector({
 					)}
 				</button>
 			))}
-		</div>
-	);
-}
-
-// ============================================
-// SESSION STARTER (redirects to session URL)
-// ============================================
-
-function SessionStarter({
-	mode,
-	onBack,
-}: {
-	mode: "read-aloud" | "tongue-twisters";
-	onBack: () => void;
-}) {
-	const trpc = useTRPC();
-	const navigate = useNavigate();
-	const [difficulty, setDifficulty] = useState<Difficulty>("beginner");
-
-	const startSession = useMutation(
-		trpc.pronunciation.startSession.mutationOptions({
-			onSuccess: (data) => {
-				navigate({
-					to: "/pronunciation/$sessionId",
-					params: { sessionId: data.sessionId },
-				});
-			},
-		}),
-	);
-
-	const modeName = mode === "read-aloud" ? "Read Aloud" : "Tongue Twisters";
-
-	return (
-		<div className="space-y-8">
-			<div>
-				<button
-					type="button"
-					onClick={onBack}
-					className="mb-4 flex items-center gap-1 text-muted-foreground text-sm transition-colors hover:text-foreground"
-				>
-					<ChevronLeft className="size-4" />
-					Back to modes
-				</button>
-				<h2 className="font-bold font-lyon text-3xl tracking-tight">
-					{modeName}
-				</h2>
-				<p className="mt-1 text-muted-foreground">
-					Choose your difficulty level to start practicing
-				</p>
-			</div>
-
-			<div className="rounded-2xl border bg-card p-6">
-				<h3 className="mb-4 font-semibold">Difficulty</h3>
-				<div className="grid grid-cols-3 gap-3">
-					{(["beginner", "intermediate", "advanced"] as const).map((level) => (
-						<button
-							key={level}
-							type="button"
-							onClick={() => setDifficulty(level)}
-							className={cn(
-								"rounded-xl border-2 p-4 text-center capitalize transition-all",
-								difficulty === level
-									? "border-primary bg-primary/5"
-									: "border-transparent bg-muted/40 hover:border-primary/30",
-							)}
-						>
-							<span className="font-medium">{level}</span>
-						</button>
-					))}
-				</div>
-			</div>
-
-			<div className="flex justify-center">
-				<Button
-					size="lg"
-					onClick={() => startSession.mutate({ mode, difficulty })}
-					disabled={startSession.isPending}
-					className="gap-2 px-8"
-				>
-					{startSession.isPending ? (
-						<>
-							<Loader2 className="size-5 animate-spin" />
-							Generating content...
-						</>
-					) : (
-						<>
-							<Play className="size-5" />
-							Start Practice
-						</>
-					)}
-				</Button>
-			</div>
-		</div>
-	);
-}
-
-// ============================================
-// HISTORY DISPLAY
-// ============================================
-
-function SessionHistory() {
-	const trpc = useTRPC();
-	const navigate = useNavigate();
-	const { data: history, isLoading } = useQuery(
-		trpc.pronunciation.getHistory.queryOptions({ limit: 5 }),
-	);
-
-	if (isLoading || !history || history.length === 0) return null;
-
-	return (
-		<div className="mt-8">
-			<h2 className="mb-4 font-semibold text-lg">Recent Sessions</h2>
-			<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-				{history.map((session) => {
-					const summary = session.summary as SessionSummary | null;
-					const modeInfo = MODES.find((m) => m.id === session.mode);
-					const date = new Date(session.createdAt);
-					const isActive = session.status === "active";
-
-					return (
-						<button
-							key={session.id}
-							type="button"
-							onClick={() => {
-								if (isActive) {
-									navigate({
-										to: "/pronunciation/$sessionId",
-										params: { sessionId: session.id },
-									});
-								}
-							}}
-							className={cn(
-								"rounded-xl border bg-card p-4 text-left transition-colors hover:bg-muted/50",
-								isActive && "cursor-pointer border-primary/30",
-							)}
-						>
-							<div className="flex items-center justify-between">
-								<span className="text-2xl">{modeInfo?.icon ?? "🎤"}</span>
-								{summary && (
-									<span
-										className={cn(
-											"font-bold text-lg",
-											summary.averageScore >= 80
-												? "text-green-500"
-												: summary.averageScore >= 60
-													? "text-yellow-500"
-													: "text-red-500",
-										)}
-									>
-										{summary.averageScore}%
-									</span>
-								)}
-								{!summary && (
-									<span className="rounded-full bg-yellow-100 px-2 py-0.5 text-xs text-yellow-700">
-										In progress
-									</span>
-								)}
-							</div>
-							<p className="mt-2 font-medium text-sm">
-								{modeInfo?.name ?? session.mode}
-							</p>
-							<div className="mt-1 flex items-center gap-3 text-muted-foreground text-xs">
-								<span className="flex items-center gap-1 capitalize">
-									<Clock className="size-3" />
-									{session.difficulty}
-								</span>
-								<span className="flex items-center gap-1">
-									<Calendar className="size-3" />
-									{date.toLocaleDateString()}
-								</span>
-							</div>
-						</button>
-					);
-				})}
-			</div>
 		</div>
 	);
 }
@@ -984,8 +781,25 @@ function MinimalPairsMode() {
 	);
 }
 
+function mapLevelToDifficulty(
+	level: string | null | undefined,
+): "beginner" | "intermediate" | "advanced" {
+	switch (level) {
+		case "beginner":
+		case "elementary":
+			return "beginner";
+		case "upper-intermediate":
+		case "advanced":
+			return "advanced";
+		default:
+			return "intermediate";
+	}
+}
+
 function ShadowingMode() {
-	const [difficulty, setDifficulty] = useState<Difficulty>("beginner");
+	const trpc = useTRPC();
+	const { data: profile } = useQuery(trpc.profile.get.queryOptions());
+	const difficulty = mapLevelToDifficulty(profile?.level);
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const [phase, setPhase] = useState<"listen" | "record" | "compare">("listen");
 	const [result, setResult] = useState<{
@@ -1046,17 +860,7 @@ function ShadowingMode() {
 
 	return (
 		<div className="space-y-6">
-			<div className="flex items-center justify-between">
-				<DifficultySelector
-					selected={difficulty}
-					onSelect={(level) => {
-						setDifficulty(level);
-						setCurrentIndex(0);
-						setResult(null);
-						resetTranscript();
-						setPhase("listen");
-					}}
-				/>
+			<div className="flex items-center justify-end">
 				<span className="text-muted-foreground text-sm">
 					{currentIndex + 1} / {texts.length}
 				</span>
@@ -1185,24 +989,47 @@ function ShadowingMode() {
 
 type PageView =
 	| { type: "select" }
-	| { type: "difficulty"; mode: "read-aloud" | "tongue-twisters" }
+	| { type: "starting"; mode: "read-aloud" | "tongue-twisters" }
 	| { type: "practice"; mode: "minimal-pairs" | "shadowing" };
 
 function PronunciationPage() {
 	const { mode: searchMode } = Route.useSearch();
+	const trpc = useTRPC();
+	const navigate = useNavigate();
+
+	const startSession = useMutation(
+		trpc.pronunciation.startSession.mutationOptions({
+			onSuccess: (data) => {
+				navigate({
+					to: "/pronunciation/$sessionId",
+					params: { sessionId: data.sessionId },
+				});
+			},
+		}),
+	);
+
 	const [view, setView] = useState<PageView>(() => {
-		if (searchMode === "read-aloud" || searchMode === "tongue-twisters") {
-			return { type: "difficulty", mode: searchMode };
-		}
 		if (searchMode === "minimal-pairs" || searchMode === "shadowing") {
 			return { type: "practice", mode: searchMode };
 		}
 		return { type: "select" };
 	});
 
+	useEffect(() => {
+		if (
+			(searchMode === "read-aloud" || searchMode === "tongue-twisters") &&
+			!startSession.isPending &&
+			!startSession.isSuccess
+		) {
+			setView({ type: "starting", mode: searchMode });
+			startSession.mutate({ mode: searchMode });
+		}
+	}, [searchMode]);
+
 	const handleModeSelect = (mode: PracticeMode) => {
 		if (mode === "read-aloud" || mode === "tongue-twisters") {
-			setView({ type: "difficulty", mode });
+			setView({ type: "starting", mode });
+			startSession.mutate({ mode });
 		} else {
 			setView({ type: "practice", mode });
 		}
@@ -1243,15 +1070,15 @@ function PronunciationPage() {
 
 				{/* Content */}
 				{view.type === "select" && (
-					<>
-						<ModeSelector selectedMode={null} onSelect={handleModeSelect} />
-						<SessionHistory />
-					</>
+					<ModeSelector selectedMode={null} onSelect={handleModeSelect} />
 				)}
 
-				{view.type === "difficulty" && (
-					<div className="fade-in slide-in-from-bottom-4 animate-in duration-300">
-						<SessionStarter mode={view.mode} onBack={handleBackToModes} />
+				{view.type === "starting" && (
+					<div className="flex min-h-[40vh] flex-col items-center justify-center gap-4">
+						<Loader2 className="size-8 animate-spin text-primary" />
+						<p className="text-lg text-muted-foreground">
+							Generating content...
+						</p>
 					</div>
 				)}
 

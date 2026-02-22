@@ -4,12 +4,13 @@ import {
 	BookOpen,
 	Briefcase,
 	Check,
+	ChevronDown,
 	Clapperboard,
 	Cpu,
 	Dumbbell,
 	Gamepad2,
 	GraduationCap,
-	Loader2,
+	Loader,
 	MessageCircle,
 	Music,
 	Palette,
@@ -17,10 +18,18 @@ import {
 	Target,
 	Users,
 	UtensilsCrossed,
+	X,
 	Zap,
 } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
 import {
 	Select,
 	SelectContent,
@@ -84,6 +93,104 @@ const INTERESTS: { id: string; name: string; icon: LucideIcon }[] = [
 	{ id: "books", name: "Books & Literature", icon: BookOpen },
 ];
 
+function MultiSelect({
+	label,
+	placeholder,
+	options,
+	selected,
+	onChange,
+}: {
+	label: string;
+	placeholder: string;
+	options: { id: string; name: string; icon: LucideIcon }[];
+	selected: string[];
+	onChange: (next: string[]) => void;
+}) {
+	const [open, setOpen] = useState(false);
+
+	const toggle = (id: string) => {
+		onChange(
+			selected.includes(id)
+				? selected.filter((s) => s !== id)
+				: [...selected, id],
+		);
+	};
+
+	const remove = (id: string, e: React.MouseEvent) => {
+		e.stopPropagation();
+		onChange(selected.filter((s) => s !== id));
+	};
+
+	return (
+		<div className="space-y-2">
+			<Label className="font-medium text-muted-foreground text-sm">
+				{label}
+			</Label>
+			<Popover open={open} onOpenChange={setOpen}>
+				<PopoverTrigger asChild>
+					<button
+						type="button"
+						className="flex min-h-9 w-full items-center justify-between gap-2 rounded-md border border-input bg-transparent px-2 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+					>
+						<div className="flex flex-1 flex-wrap items-center gap-1.5">
+							{selected.length === 0 && (
+								<span className="text-muted-foreground">{placeholder}</span>
+							)}
+							{selected.map((id) => {
+								const opt = options.find((o) => o.id === id);
+								if (!opt) return null;
+								return (
+									<Badge key={id} variant="secondary" className="gap-1 pr-1">
+										<opt.icon className="size-3" />
+										{opt.name}
+										<button
+											type="button"
+											className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
+											onClick={(e) => remove(id, e)}
+										>
+											<X className="size-3" />
+										</button>
+									</Badge>
+								);
+							})}
+						</div>
+						<ChevronDown className="size-4 shrink-0 opacity-50" />
+					</button>
+				</PopoverTrigger>
+				<PopoverContent
+					className="w-(--radix-popover-trigger-width) p-1"
+					align="start"
+				>
+					{options.map((option) => {
+						const isSelected = selected.includes(option.id);
+						return (
+							<button
+								key={option.id}
+								type="button"
+								onClick={() => toggle(option.id)}
+								className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent"
+							>
+								<div
+									className={cn(
+										"flex size-4 items-center justify-center rounded-sm border",
+										isSelected
+											? "border-lime-500 bg-lime-500 text-white"
+											: "border-muted-foreground/30",
+									)}
+								>
+									{isSelected && <Check className="size-3" />}
+								</div>
+								<option.icon className="size-4 text-muted-foreground" />
+								<span>{option.name}</span>
+							</button>
+						);
+					})}
+				</PopoverContent>
+			</Popover>
+		</div>
+	);
+}
+
 export const Personalization = () => {
 	const trpc = useTRPC();
 	const queryClient = useQueryClient();
@@ -113,20 +220,20 @@ export const Personalization = () => {
 	if (isLoading) {
 		return (
 			<div className="flex items-center justify-center py-12">
-				<Loader2 className="size-6 animate-spin text-muted-foreground" />
+				<Loader className="size-5 animate-spin text-muted-foreground" />
 			</div>
 		);
 	}
 
 	return (
 		<div className="space-y-8">
-			{/* Native Language */}
-			<div className="flex flex-row gap-8">
-				<div className="flex-1 space-y-2">
-					<Label className="font-medium text-sm">Native Language</Label>
-					<p className="text-muted-foreground text-xs">
-						We'll use this for translations and explanations
-					</p>
+			<div className="grid grid-cols-3 gap-5">
+				<div className="col-span-1 space-y-2">
+					<div className="space-y-1">
+						<Label className="font-medium text-muted-foreground text-sm">
+							Native Language
+						</Label>
+					</div>
 					<Select
 						value={profile?.nativeLanguage ?? ""}
 						onValueChange={(value) => update("nativeLanguage", value)}
@@ -147,12 +254,12 @@ export const Personalization = () => {
 					</Select>
 				</div>
 
-				{/* Daily Learning Goal */}
-				<div className="flex-1 space-y-2">
-					<Label className="font-medium text-sm">Daily Learning Goal</Label>
-					<p className="text-muted-foreground text-xs">
-						Set a realistic goal to build consistency
-					</p>
+				<div className="col-span-1 space-y-2">
+					<div className="space-y-1">
+						<Label className="font-medium text-muted-foreground text-sm">
+							Daily Learning Goal
+						</Label>
+					</div>
 					<Select
 						value={String(profile?.dailyGoal ?? 15)}
 						onValueChange={(value) => update("dailyGoal", Number(value))}
@@ -163,161 +270,63 @@ export const Personalization = () => {
 						<SelectContent>
 							{DAILY_GOALS.map((goal) => (
 								<SelectItem key={goal.minutes} value={String(goal.minutes)}>
-									{goal.minutes} min — {goal.label}
+									{goal.minutes} min - {goal.label}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				</div>
+
+				<div className="col-span-1 space-y-3">
+					<div className="space-y-1">
+						<Label className="font-medium text-muted-foreground text-sm">
+							Learning Goal
+						</Label>
+					</div>
+
+					<Select
+						value={profile?.goal ?? ""}
+						onValueChange={(value) => update("goal", value)}
+					>
+						<SelectTrigger className="w-full max-w-md">
+							<SelectValue placeholder="Select goal" />
+						</SelectTrigger>
+						<SelectContent>
+							{GOALS.map((goal) => (
+								<SelectItem key={goal.id} value={goal.id}>
+									<span className="flex items-center gap-2">
+										<goal.icon className="size-4" />
+										{goal.name}
+									</span>
 								</SelectItem>
 							))}
 						</SelectContent>
 					</Select>
 				</div>
 			</div>
-			{/* Learning Goal */}
-			<div className="space-y-3">
-				<Label className="font-medium text-sm">Learning Goal</Label>
-				<p className="text-muted-foreground text-xs">
-					What's your main reason for learning English?
-				</p>
-				<div className="grid grid-cols-3 gap-2">
-					{GOALS.map((goal) => {
-						const isSelected = profile?.goal === goal.id;
-						return (
-							<button
-								key={goal.id}
-								type="button"
-								onClick={() => update("goal", goal.id)}
-								className={cn(
-									"flex flex-col items-center gap-2 rounded-xl border-2 p-3 text-center transition-all",
-									isSelected
-										? "border-lime-500 bg-lime-50"
-										: "border-transparent bg-muted/50 hover:bg-muted",
-								)}
-							>
-								<goal.icon
-									className={cn(
-										"size-5",
-										isSelected ? "text-lime-700" : "text-muted-foreground",
-									)}
-								/>
-								<span
-									className={cn(
-										"font-medium text-xs",
-										isSelected ? "text-lime-900" : "text-muted-foreground",
-									)}
-								>
-									{goal.name}
-								</span>
-							</button>
-						);
-					})}
-				</div>
-			</div>
 
-			{/* Focus Areas */}
-			<div className="space-y-3">
-				<Label className="font-medium text-sm">Focus Areas</Label>
-				<p className="text-muted-foreground text-xs">
-					Select the skills you want to improve
-				</p>
-				<div className="grid grid-cols-2 gap-2">
-					{FOCUS_AREAS.map((area) => {
-						const isSelected = profile?.focusAreas?.includes(area.id) ?? false;
-						return (
-							<button
-								key={area.id}
-								type="button"
-								onClick={() => {
-									const current = profile?.focusAreas ?? [];
-									const next = isSelected
-										? current.filter((f) => f !== area.id)
-										: [...current, area.id];
-									if (next.length === 0) {
-										toast.error("You need at least one focus area");
-										return;
-									}
-									update("focusAreas", next);
-								}}
-								className={cn(
-									"relative flex items-center gap-3 rounded-xl border-2 px-4 py-3 text-left transition-all",
-									isSelected
-										? "border-lime-500 bg-lime-50"
-										: "border-transparent bg-muted/50 hover:bg-muted",
-								)}
-							>
-								{isSelected && (
-									<div className="absolute top-2 right-2 flex size-4 items-center justify-center rounded-full bg-lime-500">
-										<Check className="size-2.5 text-white" />
-									</div>
-								)}
-								<area.icon
-									className={cn(
-										"size-5 shrink-0",
-										isSelected ? "text-lime-700" : "text-muted-foreground",
-									)}
-								/>
-								<span
-									className={cn(
-										"font-medium text-sm",
-										isSelected ? "text-lime-900" : "text-muted-foreground",
-									)}
-								>
-									{area.name}
-								</span>
-							</button>
-						);
-					})}
-				</div>
-			</div>
+			<div className="grid grid-cols-2 gap-5">
+				<MultiSelect
+					label="Interests"
+					placeholder="Select interests..."
+					options={INTERESTS}
+					selected={profile?.interests ?? []}
+					onChange={(next) => update("interests", next)}
+				/>
 
-			{/* Interests */}
-			<div className="space-y-3">
-				<Label className="font-medium text-sm">Interests</Label>
-				<p className="text-muted-foreground text-xs">
-					We'll tailor conversations and content to your interests
-				</p>
-				<div className="grid grid-cols-2 gap-2">
-					{INTERESTS.map((interest) => {
-						const isSelected =
-							profile?.interests?.includes(interest.id) ?? false;
-						return (
-							<button
-								key={interest.id}
-								type="button"
-								onClick={() => {
-									const current = profile?.interests ?? [];
-									const next = isSelected
-										? current.filter((i) => i !== interest.id)
-										: [...current, interest.id];
-									update("interests", next);
-								}}
-								className={cn(
-									"relative flex items-center gap-3 rounded-xl border-2 px-4 py-3 text-left transition-all",
-									isSelected
-										? "border-lime-500 bg-lime-50"
-										: "border-transparent bg-muted/50 hover:bg-muted",
-								)}
-							>
-								{isSelected && (
-									<div className="absolute top-2 right-2 flex size-4 items-center justify-center rounded-full bg-lime-500">
-										<Check className="size-2.5 text-white" />
-									</div>
-								)}
-								<interest.icon
-									className={cn(
-										"size-5 shrink-0",
-										isSelected ? "text-lime-700" : "text-muted-foreground",
-									)}
-								/>
-								<span
-									className={cn(
-										"font-medium text-sm",
-										isSelected ? "text-lime-900" : "text-muted-foreground",
-									)}
-								>
-									{interest.name}
-								</span>
-							</button>
-						);
-					})}
-				</div>
+				<MultiSelect
+					label="Focus Areas"
+					placeholder="Select focus areas..."
+					options={FOCUS_AREAS}
+					selected={profile?.focusAreas ?? []}
+					onChange={(next) => {
+						if (next.length === 0) {
+							toast.error("You need at least one focus area");
+							return;
+						}
+						update("focusAreas", next);
+					}}
+				/>
 			</div>
 		</div>
 	);

@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/utils/trpc";
+import { VOICE_OPTIONS } from "@/utils/voice";
 import {
 	Dialog,
 	DialogContent,
@@ -13,46 +14,6 @@ import {
 } from "../ui/dialog";
 import { Label } from "../ui/label";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
-
-// Deepgram Aura-2 English voices for TTS
-const VOICE_OPTIONS = [
-	{
-		id: "aura-2-asteria-en",
-		name: "Olivia",
-		accent: "American",
-		voiceUrl: "/voices/deepgram-aura-2-asteria-en.wav",
-	},
-	{
-		id: "aura-2-odysseus-en",
-		name: "Ethan",
-		accent: "American",
-		voiceUrl: "/voices/deepgram-aura-2-odysseus-en.wav",
-	},
-	{
-		id: "aura-2-pandora-en",
-		name: "Emily",
-		accent: "British",
-		voiceUrl: "/voices/deepgram-aura-2-pandora-en.wav",
-	},
-	{
-		id: "aura-2-draco-en",
-		name: "James",
-		accent: "British",
-		voiceUrl: "/voices/deepgram-aura-2-draco-en.wav",
-	},
-	{
-		id: "aura-2-theia-en",
-		name: "Theia",
-		accent: "Australian",
-		voiceUrl: "/voices/deepgram-aura-2-theia-en.wav",
-	},
-	{
-		id: "aura-2-hyperion-en",
-		name: "Hyperion",
-		accent: "Australian",
-		voiceUrl: "/voices/deepgram-aura-2-hyperion-en.wav",
-	},
-] as const;
 
 export default function VoicesDialog({
 	open,
@@ -88,7 +49,6 @@ export default function VoicesDialog({
 		const voice = VOICE_OPTIONS.find((voice) => voice.id === voiceId);
 		if (!voice) return;
 
-		// Stop previous audio if playing
 		if (audioRef.current) {
 			audioRef.current.pause();
 			audioRef.current.currentTime = 0;

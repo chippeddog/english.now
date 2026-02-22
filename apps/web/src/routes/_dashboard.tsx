@@ -10,7 +10,7 @@ import { getProfile } from "@/functions/get-profile";
 import { getUser } from "@/functions/get-user";
 
 export const Route = createFileRoute("/_dashboard")({
-	beforeLoad: async () => {
+	beforeLoad: async ({ context }) => {
 		const session = await getUser();
 		if (!session) {
 			throw redirect({ to: "/login" });
@@ -21,7 +21,12 @@ export const Route = createFileRoute("/_dashboard")({
 			throw redirect({ to: "/onboarding" });
 		}
 
-		return { session, profile };
+		context.queryClient.setQueryData(
+			context.trpc.profile.get.queryOptions().queryKey,
+			profile,
+		);
+
+		return { session };
 	},
 	component: DashboardLayout,
 	pendingComponent: DashboardPending,

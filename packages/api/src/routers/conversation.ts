@@ -12,6 +12,7 @@ import { generateText, Output } from "ai";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure, router } from "../index";
+import { recordActivity } from "../services/record-activity";
 
 const openai = createOpenAI({ apiKey: env.OPENAI_API_KEY });
 
@@ -398,6 +399,8 @@ The person you're talking to is learning English at a ${level} level.
 			};
 
 			await db.insert(conversationSession).values(newSession);
+
+			recordActivity(ctx.session.user.id, "conversation").catch(console.error);
 
 			const messageId = crypto.randomUUID();
 			await db.insert(conversationMessage).values({

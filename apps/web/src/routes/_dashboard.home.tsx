@@ -1,15 +1,24 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import Lessons from "@/components/dashboard/lessons";
 import DailyPracticeTime from "@/components/dashboard/practice-time";
 import Streak from "@/components/dashboard/streak";
 import TodaysActivities from "@/components/dashboard/todays-activites";
+import { useTRPC } from "@/utils/trpc";
 
 export const Route = createFileRoute("/_dashboard/home")({
 	component: RouteComponent,
 });
 
 function RouteComponent() {
-	const { session, profile } = Route.useRouteContext();
+	const trpc = useTRPC();
+	const { session } = Route.useRouteContext();
+	const { data: profile } = useQuery(trpc.profile.get.queryOptions());
+	const timezone =
+		profile?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+	const { data: activityDates, isLoading: isActivityDatesLoading } = useQuery(
+		trpc.profile.getWeeklyActivity.queryOptions({ timezone }),
+	);
 	const firstName = session?.user.name?.split(" ")[0] || "Learner";
 
 	return (
@@ -30,10 +39,11 @@ function RouteComponent() {
 				</div>
 				<div className="space-y-5">
 					<Streak
-						currentStreak={profile?.currentStreak}
-						longestStreak={profile?.longestStreak}
-						lastActivityAt={profile?.lastActivityAt}
-						timezone={profile?.timezone}
+						currentStreak={profile?.currentStreak ?? 0}
+						longestStreak={profile?.longestStreak ?? 0}
+						timezone={profile?.timezone ?? null}
+						activityDates={activityDates ?? []}
+						isLoading={isActivityDatesLoading}
 					/>
 					<Lessons />
 					<DailyPracticeTime />

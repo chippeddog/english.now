@@ -1,21 +1,10 @@
 import { env } from "@english.now/env/client";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import {
-	KeyboardIcon,
-	Languages,
-	Lightbulb,
-	Loader,
-	Loader2,
-	Mic,
-	MicOff,
-	PauseIcon,
-	PlayIcon,
-	Send,
-	Settings,
-	X,
-} from "lucide-react";
+import { Languages, Loader, Loader2, PauseIcon, PlayIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ControlToolbar } from "@/components/conversation/control-toolbar";
+import SessionLoader from "@/components/session/loader";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -27,18 +16,8 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
-import { Textarea } from "@/components/ui/textarea";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { useTRPC } from "@/utils/trpc";
 
 export const Route = createFileRoute("/_conversation/conversation/$sessionId")({
 	component: ConversationPage,
@@ -54,49 +33,22 @@ type Message = {
 
 type RecordingState = "idle" | "recording" | "transcribing";
 
-type SessionData = {
-	session: {
-		id: string;
-		userId: string;
-		scenario: string;
-		level: string;
-		context: {
-			systemPrompt: string;
-			scenarioDescription: string;
-			goals: string[];
-		};
-		status: string;
-		createdAt: string;
-		updatedAt: string;
-	};
-	messages: Array<{
-		id: string;
-		sessionId: string;
-		role: "user" | "assistant";
-		content: string;
-		metadata?: Record<string, unknown>;
-		corrections?: unknown;
-		createdAt: string;
-	}>;
-};
-
 function ConversationPage() {
+	const trpc = useTRPC();
 	const { sessionId } = Route.useParams();
 	const navigate = useNavigate();
 	const [messages, setMessages] = useState<Message[]>([]);
-	const [inputText, setInputText] = useState("");
 	const [recordingState, setRecordingState] = useState<RecordingState>("idle");
-	const [isLoading, setIsLoading] = useState(false);
 	const [showHint, setShowHint] = useState(false);
 	const [hintSuggestions, setHintSuggestions] = useState<string[]>([]);
 	const [isLoadingHint, setIsLoadingHint] = useState(false);
-	const [popoverOpen, setPopoverOpen] = useState(false);
-	const [popoverText, setPopoverText] = useState("");
-	const [popoverMode, setPopoverMode] = useState<"english" | "native">(
-		"english",
-	);
-	const [nativeTranslation, setNativeTranslation] = useState("");
-	const [isTranslatingNative, setIsTranslatingNative] = useState(false);
+	// const [popoverOpen, setPopoverOpen] = useState(false);
+	// const [popoverText, setPopoverText] = useState("");
+	// const [popoverMode, setPopoverMode] = useState<"english" | "native">(
+	// 	"english",
+	// );
+	// const [nativeTranslation, setNativeTranslation] = useState("");
+	// const [isTranslatingNative, setIsTranslatingNative] = useState(false);
 	const [translations, setTranslations] = useState<Record<string, string>>({});
 	const [translatingId, setTranslatingId] = useState<string | null>(null);
 	const [showFinishDialog, setShowFinishDialog] = useState(false);
@@ -108,31 +60,21 @@ function ConversationPage() {
 	const audioRef = useRef<HTMLAudioElement | null>(null);
 	const [isPlaying, setIsPlaying] = useState<string | null>(null);
 	const [generatingTTS, setGeneratingTTS] = useState<Set<string>>(new Set());
+	const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
 	const hasPlayedInitialAudio = useRef(false);
+	const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
+	const [selectedDevice, setSelectedDevice] = useState<string>("");
+	const [settingsOpen, setSettingsOpen] = useState(false);
 
-	// Fetch existing session data
-	const {
-		data: sessionData,
-		isLoading: isLoadingSession,
-		error: sessionError,
-	} = useQuery({
-		queryKey: ["conversation", sessionId],
-		queryFn: async (): Promise<SessionData> => {
-			const response = await fetch(
-				`${env.VITE_SERVER_URL}/api/conversation/session/${sessionId}`,
-				{
-					credentials: "include",
-				},
-			);
-			if (!response.ok) {
-				if (response.status === 404) {
-					throw new Error("Session not found");
-				}
-				throw new Error("Failed to load conversation");
-			}
-			return response.json();
+	const { data: profile } = useQuery(trpc.profile.get.queryOptions());
+	const voice = profile?.voiceModel ?? "aura-2-asteria-en";
+
+	const { data, isLoading, error } = useQuery({
+		...trpc.conversation.getSession.queryOptions({ sessionId }),
+		retry: (failureCount, err) => {
+			if (err.message.includes("NOT_FOUND")) return false;
+			return failureCount < 2;
 		},
-		retry: false,
 	});
 
 	// Play audio from base64
@@ -171,37 +113,40 @@ function ConversationPage() {
 	}, []);
 
 	// Generate TTS audio for a message
-	const generateTTS = useCallback(async (text: string, messageId: string) => {
-		setGeneratingTTS((prev) => new Set(prev).add(messageId));
-		try {
-			const response = await fetch(
-				`${env.VITE_SERVER_URL}/api/conversation/speak`,
-				{
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					credentials: "include",
-					body: JSON.stringify({ text }),
-				},
-			);
-			if (!response.ok) return null;
-			const { audio } = await response.json();
+	const generateTTS = useCallback(
+		async (text: string, messageId: string) => {
+			setGeneratingTTS((prev) => new Set(prev).add(messageId));
+			try {
+				const response = await fetch(
+					`${env.VITE_SERVER_URL}/api/conversation/speak`,
+					{
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						credentials: "include",
+						body: JSON.stringify({ text, voice }),
+					},
+				);
+				if (!response.ok) return null;
+				const { audio } = await response.json();
 
-			setMessages((prev) =>
-				prev.map((m) => (m.id === messageId ? { ...m, audio } : m)),
-			);
+				setMessages((prev) =>
+					prev.map((m) => (m.id === messageId ? { ...m, audio } : m)),
+				);
 
-			return audio as string;
-		} catch (err) {
-			console.error("TTS generation error:", err);
-			return null;
-		} finally {
-			setGeneratingTTS((prev) => {
-				const next = new Set(prev);
-				next.delete(messageId);
-				return next;
-			});
-		}
-	}, []);
+				return audio as string;
+			} catch (err) {
+				console.error("TTS generation error:", err);
+				return null;
+			} finally {
+				setGeneratingTTS((prev) => {
+					const next = new Set(prev);
+					next.delete(messageId);
+					return next;
+				});
+			}
+		},
+		[voice],
+	);
 
 	// Fetch AI-generated hint suggestions
 	const fetchHintSuggestions = useCallback(async () => {
@@ -229,32 +174,32 @@ function ConversationPage() {
 	}, [sessionId]);
 
 	// Translate native language text to English
-	const translateNativeToEnglish = useCallback(async (text: string) => {
-		if (!text.trim()) {
-			setNativeTranslation("");
-			return;
-		}
-		setIsTranslatingNative(true);
-		try {
-			const response = await fetch(
-				`${env.VITE_SERVER_URL}/api/conversation/native-to-english`,
-				{
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					credentials: "include",
-					body: JSON.stringify({ text }),
-				},
-			);
-			if (!response.ok) throw new Error("Translation failed");
-			const { english } = await response.json();
-			setNativeTranslation(english ?? "");
-		} catch (err) {
-			console.error("Native translation error:", err);
-			setNativeTranslation("");
-		} finally {
-			setIsTranslatingNative(false);
-		}
-	}, []);
+	// const translateNativeToEnglish = useCallback(async (text: string) => {
+	// 	if (!text.trim()) {
+	// 		setNativeTranslation("");
+	// 		return;
+	// 	}
+	// 	setIsTranslatingNative(true);
+	// 	try {
+	// 		const response = await fetch(
+	// 			`${env.VITE_SERVER_URL}/api/conversation/native-to-english`,
+	// 			{
+	// 				method: "POST",
+	// 				headers: { "Content-Type": "application/json" },
+	// 				credentials: "include",
+	// 				body: JSON.stringify({ text }),
+	// 			},
+	// 		);
+	// 		if (!response.ok) throw new Error("Translation failed");
+	// 		const { english } = await response.json();
+	// 		setNativeTranslation(english ?? "");
+	// 	} catch (err) {
+	// 		console.error("Native translation error:", err);
+	// 		setNativeTranslation("");
+	// 	} finally {
+	// 		setIsTranslatingNative(false);
+	// 	}
+	// }, []);
 
 	// Translate an assistant message to user's native language
 	const translateMessage = useCallback(
@@ -294,15 +239,15 @@ function ConversationPage() {
 
 	// Load messages from session data and autoplay last assistant message
 	useEffect(() => {
-		if (sessionData?.messages && !hasPlayedInitialAudio.current) {
-			const loadedMessages = sessionData.messages.map((m) => ({
+		if (data?.messages && !hasPlayedInitialAudio.current) {
+			const loadedMessages = data.messages.map((m) => ({
 				id: m.id,
 				role: m.role,
 				content: m.content,
 			}));
-			setMessages(loadedMessages);
+			setMessages(loadedMessages as Message[]);
 
-			const lastAiMessage = sessionData.messages
+			const lastAiMessage = data.messages
 				.filter((m) => m.role === "assistant")
 				.pop();
 
@@ -315,25 +260,25 @@ function ConversationPage() {
 				});
 			}
 		}
-	}, [sessionData, generateTTS, playAudio]);
+	}, [data, generateTTS, playAudio]);
 
 	// Redirect to feedback if session is already completed
 	useEffect(() => {
-		if (sessionData?.session.status === "completed") {
+		if (data?.session.status === "completed") {
 			navigate({
 				to: "/feedback/$sessionId",
 				params: { sessionId },
 				replace: true,
 			});
 		}
-	}, [sessionData, sessionId, navigate]);
+	}, [data, sessionId, navigate]);
 
 	// Redirect to practice if session not found
 	useEffect(() => {
-		if (sessionError) {
+		if (error) {
 			navigate({ to: "/practice" });
 		}
-	}, [sessionError, navigate]);
+	}, [error, navigate]);
 
 	// Scroll to bottom when messages change
 	useEffect(() => {
@@ -354,6 +299,28 @@ function ConversationPage() {
 			}
 		};
 	}, []);
+
+	useEffect(() => {
+		const getDevices = async () => {
+			try {
+				await navigator.mediaDevices.getUserMedia({ audio: true });
+				const devices = await navigator.mediaDevices.enumerateDevices();
+				const audioInputs = devices.filter(
+					(device) => device.kind === "audioinput",
+				);
+				setAudioDevices(audioInputs);
+				if (audioInputs.length > 0 && !selectedDevice) {
+					setSelectedDevice(audioInputs[0].deviceId);
+				}
+			} catch (err) {
+				console.error("Error getting audio devices:", err);
+			}
+		};
+
+		if (settingsOpen) {
+			getDevices();
+		}
+	}, [settingsOpen, selectedDevice]);
 
 	// Warn before leaving mid-session
 	useEffect(() => {
@@ -417,8 +384,6 @@ function ConversationPage() {
 				...prev,
 				{ id: userMessageId, role: "user", content },
 			]);
-			setInputText("");
-			setIsLoading(true);
 			setShowHint(false);
 			setHintSuggestions([]);
 
@@ -511,8 +476,6 @@ function ConversationPage() {
 							: msg,
 					),
 				);
-			} finally {
-				setIsLoading(false);
 			}
 		},
 		[sessionId, playAudio],
@@ -523,6 +486,7 @@ function ConversationPage() {
 		try {
 			const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 			streamRef.current = stream;
+			setAudioStream(stream);
 
 			const mediaRecorder = new MediaRecorder(stream, {
 				mimeType: "audio/webm;codecs=opus",
@@ -539,6 +503,7 @@ function ConversationPage() {
 			mediaRecorder.onstop = async () => {
 				const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
 
+				setAudioStream(null);
 				if (streamRef.current) {
 					for (const track of streamRef.current.getTracks()) {
 						track.stop();
@@ -563,6 +528,24 @@ function ConversationPage() {
 		if (mediaRecorderRef.current && recordingState === "recording") {
 			mediaRecorderRef.current.stop();
 		}
+	};
+
+	// Cancel recording — discard audio without transcribing
+	const cancelRecording = () => {
+		if (mediaRecorderRef.current && recordingState === "recording") {
+			mediaRecorderRef.current.ondataavailable = null;
+			mediaRecorderRef.current.onstop = null;
+			mediaRecorderRef.current.stop();
+		}
+		audioChunksRef.current = [];
+		setAudioStream(null);
+		if (streamRef.current) {
+			for (const track of streamRef.current.getTracks()) {
+				track.stop();
+			}
+			streamRef.current = null;
+		}
+		setRecordingState("idle");
 	};
 
 	// Transcribe audio and send as message
@@ -598,26 +581,9 @@ function ConversationPage() {
 		}
 	};
 
-	// Handle form submit
-	const handleSubmit = (e: React.FormEvent) => {
-		e.preventDefault();
-		if (inputText.trim() && !isLoading) {
-			sendMessage(inputText.trim());
-		}
-	};
-
 	// Loading screen while fetching session
-	if (isLoadingSession) {
-		return (
-			<div className="container mx-auto flex min-h-dvh max-w-3xl flex-col items-center justify-center px-4 py-8">
-				<div className="flex flex-col items-center gap-4">
-					<Loader className="size-7 animate-spin text-lime-600" />
-					<p className="font-medium text-foreground-muted">
-						Loading conversation...
-					</p>
-				</div>
-			</div>
-		);
+	if (isLoading) {
+		return <SessionLoader />;
 	}
 
 	// Conversation screen
@@ -780,261 +746,27 @@ function ConversationPage() {
 				</div>
 			)}
 
-			{/* Input area */}
-			<div
-				className="sticky inset-x-0 bottom-0 mx-auto flex justify-center overflow-hidden rounded-t-3xl border bg-white p-3 transition-all duration-75 ease-in dark:from-surface dark:to-transparent"
-				style={{
-					boxShadow:
-						"rgba(162, 166, 171, 0.2) 0px 0px 0px 0px inset, rgba(162, 166, 171, 0.2) 0px 0px 8px 2px inset",
-				}}
-			>
-				<form onSubmit={handleSubmit} className="flex gap-2">
-					<div className="flex">
-						{/* Hint button */}
-						<Tooltip>
-							<TooltipTrigger asChild>
-								<Button
-									type="button"
-									variant="ghost"
-									size="lg"
-									className={cn(
-										"shrink-0 rounded-xl",
-										showHint && "bg-neutral-100",
-									)}
-									onClick={() => {
-										const next = !showHint;
-										setShowHint(next);
-										if (next && hintSuggestions.length === 0) {
-											fetchHintSuggestions();
-										}
-									}}
-									disabled={isLoading}
-									title="Get a hint"
-								>
-									<Lightbulb className={cn("size-5")} />
-								</Button>
-							</TooltipTrigger>
-							<TooltipContent>Get a hint</TooltipContent>
-						</Tooltip>
+			{/* Control toolbar */}
+			<ControlToolbar
+				showHint={showHint}
+				setShowHint={setShowHint}
+				hintSuggestions={hintSuggestions}
+				fetchHintSuggestions={fetchHintSuggestions}
+				isLoading={isLoading}
+				recordingState={recordingState}
+				startRecording={startRecording}
+				stopRecording={stopRecording}
+				cancelRecording={cancelRecording}
+				setShowFinishDialog={setShowFinishDialog}
+				isFinishing={isFinishing}
+				audioStream={audioStream}
+				settingsOpen={settingsOpen}
+				setSettingsOpen={setSettingsOpen}
+				audioDevices={audioDevices}
+				selectedDevice={selectedDevice}
+				setSelectedDevice={setSelectedDevice}
+			/>
 
-						{/* Voice record button */}
-						<Tooltip>
-							<TooltipTrigger asChild>
-								<Button
-									type="button"
-									size="lg"
-									variant={
-										recordingState === "recording" ? "destructive" : "outline"
-									}
-									className={cn(
-										"flex shrink-0 cursor-pointer items-center justify-center rounded-xl border border-[#C6F64D] bg-radial from-[#EFFF9B] to-[#D8FF76]",
-										recordingState === "recording" &&
-											"animate-pulse border-[#FFBABA] bg-radial from-[#FFE4E4] to-[#FFBABA]",
-									)}
-									onClick={
-										recordingState === "recording"
-											? stopRecording
-											: startRecording
-									}
-									disabled={isLoading || recordingState === "transcribing"}
-								>
-									{recordingState === "transcribing" ? (
-										<Loader2 className="size-5 animate-spin" />
-									) : recordingState === "recording" ? (
-										<MicOff className="size-5" />
-									) : (
-										<Mic className="size-5" />
-									)}
-								</Button>
-							</TooltipTrigger>
-							<TooltipContent>
-								{recordingState === "recording"
-									? "Stop recording"
-									: "Record voice"}
-							</TooltipContent>
-						</Tooltip>
-
-						{/* 
-						<Popover
-							open={popoverOpen}
-							onOpenChange={(open) => {
-								setPopoverOpen(open);
-								if (!open) {
-									setPopoverText("");
-									setNativeTranslation("");
-									setPopoverMode("english");
-								}
-							}}
-						>
-							<PopoverTrigger asChild>
-								<Button
-									type="button"
-									variant="ghost"
-									size="lg"
-									className={cn(
-										"shrink-0 cursor-pointer rounded-xl",
-										popoverOpen && "bg-neutral-100",
-									)}
-								>
-									<KeyboardIcon className="size-5" />
-								</Button>
-							</PopoverTrigger>
-							<PopoverContent
-								side="top"
-								align="center"
-								sideOffset={28}
-								className="w-80 rounded-xl p-3 shadow-none"
-							>
-								<div className="flex flex-col gap-3">
-								
-									<div className="flex rounded-lg bg-neutral-100 p-0.5">
-										<button
-											type="button"
-											className={cn(
-												"flex-1 rounded-md px-3 py-1.5 font-medium text-xs transition-colors",
-												popoverMode === "english"
-													? "bg-white shadow-sm"
-													: "text-muted-foreground hover:text-foreground",
-											)}
-											onClick={() => {
-												setPopoverMode("english");
-												setPopoverText("");
-												setNativeTranslation("");
-											}}
-										>
-											English
-										</button>
-										<button
-											type="button"
-											className={cn(
-												"flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 font-medium text-xs transition-colors",
-												popoverMode === "native"
-													? "bg-white shadow-sm"
-													: "text-muted-foreground hover:text-foreground",
-											)}
-											onClick={() => {
-												setPopoverMode("native");
-												setPopoverText("");
-												setNativeTranslation("");
-											}}
-										>
-											<Languages className="size-3" />
-											My language
-										</button>
-									</div>
-									<div className="relative">
-										<Textarea
-											value={popoverText}
-											onChange={(e) => {
-												setPopoverText(e.target.value);
-												if (popoverMode === "native") {
-													setNativeTranslation("");
-												}
-											}}
-											placeholder={
-												popoverMode === "english"
-													? "Type your message in English..."
-													: "Type in your native language..."
-											}
-											className="min-h-24 resize-none rounded-lg"
-											disabled={isLoading}
-										/>
-										<Button
-											type="button"
-											size="icon"
-											className="absolute right-2 bottom-2 flex size-8 shrink-0 cursor-pointer items-center justify-center gap-1.5 self-end overflow-hidden whitespace-nowrap rounded-lg bg-linear-to-t from-[#202020] to-[#2F2F2F] font-base text-white shadow-[inset_0_1px_4px_0_rgba(255,255,255,0.4)] outline-none backdrop-blur transition-all hover:opacity-90 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-40 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:from-[rgb(192,192,192)] dark:to-[rgb(255,255,255)] dark:shadow-[inset_0_1px_4px_0_rgba(128,128,128,0.2)] dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none"
-											disabled={
-												popoverMode === "english"
-													? !popoverText.trim() || isLoading
-													: !nativeTranslation || isLoading
-											}
-											onClick={() => {
-												const textToSend =
-													popoverMode === "english"
-														? popoverText.trim()
-														: nativeTranslation;
-												if (textToSend) {
-													sendMessage(textToSend);
-													setPopoverText("");
-													setNativeTranslation("");
-													setPopoverOpen(false);
-												}
-											}}
-										>
-											{isLoading ? (
-												<Loader2 className="size-4 animate-spin" />
-											) : (
-												<Send className="size-4" />
-											)}
-										</Button>
-									</div>
-							
-									{popoverMode === "native" && (
-										<>
-											<Button
-												type="button"
-												variant="outline"
-												size="sm"
-												className="self-start rounded-lg text-xs"
-												disabled={
-													!popoverText.trim() ||
-													isTranslatingNative ||
-													isLoading
-												}
-												onClick={() =>
-													translateNativeToEnglish(popoverText.trim())
-												}
-											>
-												{isTranslatingNative ? (
-													<Loader2 className="size-3 animate-spin" />
-												) : (
-													<Languages className="size-3" />
-												)}
-												Translate to English
-											</Button>
-											{nativeTranslation && (
-												<div className="rounded-lg border border-lime-200 bg-lime-50 p-3">
-													<p className="mb-1 font-medium text-[10px] text-lime-700 uppercase tracking-wider">
-														In English:
-													</p>
-													<p className="text-sm leading-relaxed">
-														{nativeTranslation}
-													</p>
-												</div>
-											)}
-										</>
-									)}
-								</div>
-							</PopoverContent>
-						</Popover> */}
-						<Button
-							type="button"
-							variant="ghost"
-							className="rounded-xl"
-							size="lg"
-						>
-							<Settings className="size-5" />
-						</Button>
-					</div>
-					<Tooltip>
-						<TooltipTrigger asChild>
-							<Button
-								type="button"
-								variant="ghost"
-								size="lg"
-								onClick={() => {
-									setShowFinishDialog(true);
-								}}
-								className="shrink-0 cursor-pointer rounded-xl text-red-600 hover:bg-red-50 hover:text-red-700"
-								disabled={isLoading || isFinishing}
-							>
-								<X className="size-5" />
-							</Button>
-						</TooltipTrigger>
-						<TooltipContent>Finish session</TooltipContent>
-					</Tooltip>
-				</form>
-			</div>
 			<AlertDialog open={showFinishDialog} onOpenChange={setShowFinishDialog}>
 				<AlertDialogContent className="w-sm">
 					<AlertDialogHeader>

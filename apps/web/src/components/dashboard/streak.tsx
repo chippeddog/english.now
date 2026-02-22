@@ -1,12 +1,15 @@
 import { FlameIcon, InfoIcon } from "lucide-react";
+import { useMemo } from "react";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "../ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 interface StreakProps {
 	currentStreak: number;
 	longestStreak: number;
-	lastActivityAt: Date | null;
 	timezone: string | null;
+	activityDates?: string[];
+	isLoading: boolean;
 }
 
 const WEEK_DAYS = [
@@ -37,19 +40,39 @@ function getTodayIndex(timezone: string): number {
 	return DAY_NAME_TO_INDEX[dayName] ?? 0;
 }
 
+function getWeekDates(timezone: string): string[] {
+	const now = new Date();
+	const todayIndex = getTodayIndex(timezone);
+	const dates: string[] = [];
+
+	for (let i = 0; i < 7; i++) {
+		const d = new Date(now);
+		d.setDate(d.getDate() - todayIndex + i);
+		dates.push(d.toLocaleDateString("en-CA", { timeZone: timezone }));
+	}
+	return dates;
+}
+
 export default function Streak({
 	currentStreak,
 	longestStreak,
-	lastActivityAt: _lastActivityAt,
 	timezone,
+	activityDates = [],
+	isLoading,
 }: StreakProps) {
 	const resolvedTimezone =
 		timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
 	const todayIndex = getTodayIndex(resolvedTimezone);
 
-	// Mock data - in real app this would come from props/API
 	const streak = currentStreak ?? 0;
-	const completedDays: string[] = []; // keys of completed days
+
+	const completedDays = useMemo(() => {
+		const weekDates = getWeekDates(resolvedTimezone);
+		const activeSet = new Set(activityDates);
+		return WEEK_DAYS.filter((_, i) => activeSet.has(weekDates[i])).map(
+			(d) => d.key,
+		);
+	}, [activityDates, resolvedTimezone]);
 	return (
 		<div
 			className="overflow-hidden rounded-3xl bg-white p-2.5"
@@ -75,14 +98,13 @@ export default function Streak({
 							</TooltipContent>
 						</Tooltip>
 					</h3>
-					<p className="text-muted-foreground text-sm">
+					{/* <p className="text-muted-foreground text-sm">
 						Time to start your first lesson!
-					</p>
+					</p> */}
 				</div>
 			</div>
 
 			<div className="rounded-[1.2rem] border border-border/50 p-3">
-				{/* Week Progress */}
 				<div className="flex items-center justify-between">
 					{WEEK_DAYS.map((day, index) => {
 						const isToday = index === todayIndex;
@@ -93,20 +115,28 @@ export default function Streak({
 								<span className="font-medium text-neutral-500 text-xs">
 									{day.label}
 								</span>
-								<div
-									className={cn(
-										"flex size-8.5 items-center justify-center rounded-full transition-all",
-										isCompleted
-											? "bg-[#EA580C]"
-											: isToday
-												? "border-2 border-orange-400 bg-transparent"
-												: "bg-neutral-100",
-									)}
-								>
-									{isCompleted && (
-										<FlameIcon className="size-4 text-white" fill="white" />
-									)}
-								</div>
+
+								{isLoading ? (
+									<Skeleton className="size-8.5 animate-pulse rounded-full" />
+								) : (
+									<div
+										className={cn(
+											"flex size-8.5 items-center justify-center rounded-full transition-all",
+											isCompleted
+												? "border border-amber-400 bg-radial from-text-amber-200 to-amber-400"
+												: isToday
+													? "border border-amber-400 bg-transparent"
+													: "bg-neutral-100",
+										)}
+									>
+										{isCompleted && (
+											<FlameIcon
+												className="size-4 text-amber-600"
+												fill="currentColor"
+											/>
+										)}
+									</div>
+								)}
 							</div>
 						);
 					})}

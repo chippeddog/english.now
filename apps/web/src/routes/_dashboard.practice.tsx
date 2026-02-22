@@ -148,7 +148,7 @@ function RouteComponent() {
 					<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
 						<Conversation />
 						<Pronunciation />
-						<div className="group flex items-center justify-center rounded-2xl border border-dashed bg-white p-3.5 opacity-50 transition-all duration-300 hover:opacity-100 dark:bg-slate-900/50">
+						<div className="group flex cursor-pointer items-center justify-center rounded-2xl border border-dashed bg-white p-3.5 opacity-50 transition-all duration-300 hover:opacity-100 dark:bg-slate-900/50">
 							<div className="flex items-center gap-2">
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
@@ -176,7 +176,7 @@ function RouteComponent() {
 								<div className="flex flex-col">
 									<a
 										href="mailto:support@english.now"
-										className="flex cursor-pointer items-center font-medium text-neutral-900 text-sm transition-all duration-300 group-hover:text-lime-700 group-hover:underline"
+										className="flex items-center font-medium text-neutral-900 text-sm transition-all duration-300 group-hover:text-lime-700"
 									>
 										Can't find what you need?
 									</a>

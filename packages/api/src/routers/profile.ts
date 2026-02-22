@@ -1,4 +1,13 @@
-import { db, desc, eq, subscription, userProfile } from "@english.now/db";
+import {
+	and,
+	db,
+	desc,
+	eq,
+	sql,
+	subscription,
+	userActivity,
+	userProfile,
+} from "@english.now/db";
 import { z } from "zod";
 import { protectedProcedure, router } from "../index";
 
@@ -24,6 +33,25 @@ export const profileRouter = router({
 			.limit(1);
 		return profile ?? null;
 	}),
+	getWeeklyActivity: protectedProcedure
+		.input(z.object({ timezone: z.string() }))
+		.query(async ({ ctx, input }) => {
+			const rows = await db
+				.selectDistinct({
+					date: sql<string>`to_char((${userActivity.activityAt} AT TIME ZONE ${input.timezone})::date, 'YYYY-MM-DD')`.as(
+						"date",
+					),
+				})
+				.from(userActivity)
+				.where(
+					and(
+						eq(userActivity.userId, ctx.session.user.id),
+						sql`${userActivity.activityAt} >= DATE_TRUNC('week', NOW() AT TIME ZONE ${input.timezone})::timestamptz`,
+					),
+				);
+
+			return rows.map((r) => r.date);
+		}),
 	getSubscription: protectedProcedure.query(async ({ ctx }) => {
 		const [sub] = await db
 			.select()
