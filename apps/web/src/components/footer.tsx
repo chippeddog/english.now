@@ -35,11 +35,11 @@ export default function Footer() {
 		{
 			label: tHome("footer.social"),
 			items: [
+				{ label: "X", to: "https://x.com/tihunov" },
 				{
 					label: "GitHub",
 					to: "https://github.com/Dmytro-Tihunov/english.now",
 				},
-				{ label: "X", to: "https://x.com/tihunov" },
 			],
 		},
 		{
@@ -122,9 +122,9 @@ export default function Footer() {
 					</div>
 				</div>
 
-				<div className="mt-8 mb-3 flex flex-row items-center justify-between py-3.5 text-muted-foreground">
-					<div className="flex items-center gap-1.5 text-center text-xs">
-						<div>
+				<div className="mt-8 flex flex-row items-center justify-between py-3.5 pb-5">
+					<div className="flex items-center text-center">
+						<div className="font-medium text-muted-foreground text-xs">
 							© {new Date().getFullYear()} English Now.{" "}
 							{tHome("footer.copyright")}{" "}
 						</div>

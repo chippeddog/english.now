@@ -1,8 +1,8 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import type {
+	CefrLevel,
+	ParagraphItem,
 	PronunciationSessionSummary,
-	ReadAloudItem,
-	TongueTwisterItem,
 	WeakPhoneme,
 	WordResult,
 } from "@english.now/db";
@@ -19,142 +19,128 @@ import {
 import { env } from "@english.now/env/server";
 import { generateText, Output } from "ai";
 import { z } from "zod";
-import { protectedProcedure, router } from "../index";
+import { protectedProcedure, rateLimitedProcedure, router } from "../index";
+import { recordActivity } from "../services/record-activity";
 
 const openai = createOpenAI({ apiKey: env.OPENAI_API_KEY });
 
-const readAloudSchema = z.object({
-	items: z.array(
-		z.object({
-			text: z.string(),
-			topic: z.string(),
-			phonemeFocus: z.string(),
-			tips: z.string(),
-		}),
-	),
+const CEFR_CONFIG: Record<
+	CefrLevel,
+	{ wordRange: [number, number]; style: string; description: string }
+> = {
+	A1: {
+		wordRange: [60, 80],
+		style:
+			"Simple present tense, basic past tense. Common vocabulary only (top 1000 words). Short, simple sentences. Clear pronunciation patterns.",
+		description:
+			"Everyday topics: daily routine, family, food, weather, greetings",
+	},
+	A2: {
+		wordRange: [80, 100],
+		style:
+			"Simple narrative with past tense. Common vocabulary with some descriptive adjectives. Compound sentences with 'and', 'but', 'because'. Natural rhythm and intonation patterns.",
+		description:
+			"Simple narrative: travel stories, hobbies, descriptions of people and places",
+	},
+	B1: {
+		wordRange: [100, 130],
+		style:
+			"News article style. Some complex structures (relative clauses, conditionals). Mixed tenses including present perfect. Varied intonation and stress patterns.",
+		description:
+			"News/magazine article style: current events, technology, culture, environment",
+	},
+	B2: {
+		wordRange: [120, 150],
+		style:
+			"Academic/professional register. Varied syntax (passive voice, complex subordination, reported speech). Sophisticated vocabulary with some idioms. Advanced prosody patterns.",
+		description:
+			"Academic/professional topics: science, business, abstract concepts, social issues",
+	},
+	C1: {
+		wordRange: [150, 200],
+		style:
+			"Literary/philosophical style. Complex syntax (nested clauses, coordinate structures). Sophisticated vocabulary with many idioms. Advanced prosody patterns.",
+		description:
+			"Literary/philosophical topics: literature, philosophy, history, politics",
+	},
+};
+
+const paragraphSchema = z.object({
+	text: z.string(),
+	topic: z.string(),
+	focusAreas: z.array(z.string()),
+	tips: z.string(),
 });
 
-const tongueTwisterSchema = z.object({
-	items: z.array(
-		z.object({
-			text: z.string(),
-			speed: z.enum(["slow", "medium", "fast"]),
-			targetPhonemes: z.array(z.string()),
-			tip: z.string(),
-		}),
-	),
-});
-
-// ─── AI Content Generation ────────────────────────────────────────────────────
-async function generateReadAloudItems(
-	level: string,
+async function generateParagraph(
+	level: CefrLevel,
 	interests?: string[],
-	count = 5,
-): Promise<ReadAloudItem[]> {
+): Promise<ParagraphItem> {
+	const config = CEFR_CONFIG[level];
+	const [minWords, maxWords] = config.wordRange;
+
 	const interestContext =
 		interests && interests.length > 0
-			? `The learner is interested in: ${interests.join(", ")}. Try to incorporate these topics naturally.`
-			: "Use a variety of everyday topics.";
-
-	const levelGuidance: Record<string, string> = {
-		beginner:
-			"Use simple, short sentences (5-10 words). Common vocabulary only. Simple present and past tense.",
-		intermediate:
-			"Use moderate sentences (10-20 words). Include some compound sentences. Mix of tenses and some phrasal verbs.",
-		advanced:
-			"Use complex sentences (15-30 words). Include subordinate clauses, advanced vocabulary, and varied intonation patterns.",
-	};
+			? `The learner is interested in: ${interests.join(", ")}. Try to incorporate one of these topics naturally.`
+			: "";
 
 	const { output } = await generateText({
 		model: openai("gpt-4o-mini"),
-		output: Output.object({ schema: readAloudSchema }),
-		system: `You are an expert English pronunciation coach. Generate practice texts for reading aloud.
+		output: Output.object({ schema: paragraphSchema }),
+		system: `You are an expert English pronunciation coach creating read-aloud practice paragraphs.
 
-Each item should:
-- Be a single sentence or short passage appropriate for reading aloud
-- Focus on a specific pronunciation challenge (a phoneme, stress pattern, or intonation pattern)
-- Include a practical tip for pronouncing it well
+Generate a single coherent paragraph for CEFR level ${level}.
 
-Level guidance: ${levelGuidance[level] || levelGuidance.intermediate}
+Requirements:
+- Word count: ${minWords}-${maxWords} words (STRICT — count carefully)
+- Style: ${config.style}
+- Topic area: ${config.description}
+- The paragraph should flow naturally and be interesting to read aloud
+- Include a variety of pronunciation challenges appropriate for the level (vowel sounds, consonant clusters, word stress, linking sounds, intonation patterns)
+- The focusAreas should list 2-3 specific pronunciation features present in the paragraph
+- The tips should give 1-2 practical pronunciation tips for reading this paragraph well
 
-${interestContext}
-
-Generate exactly ${count} items. Make each one focus on a different pronunciation aspect.`,
-		prompt: `Generate ${count} English read-aloud practice sentences for a ${level} level learner. Each should target different pronunciation challenges like vowel sounds, consonant clusters, word stress, sentence rhythm, or linking sounds.`,
-		temperature: 0.8,
+${interestContext}`,
+		prompt: `Generate a read-aloud practice paragraph for CEFR level ${level}. Make it engaging and natural-sounding.`,
+		temperature: 0.85,
 	});
 
-	if (!output) throw new Error("Failed to generate read aloud content");
-	return output.items;
-}
+	if (!output) throw new Error("Failed to generate paragraph");
 
-async function generateTongueTwisterItems(
-	level: string,
-	focusPhonemes?: string[],
-	count = 5,
-): Promise<TongueTwisterItem[]> {
-	const phonemeContext =
-		focusPhonemes && focusPhonemes.length > 0
-			? `Focus especially on these phonemes the learner struggles with: ${focusPhonemes.join(", ")}.`
-			: "Cover a variety of challenging English phonemes.";
+	const wordCount = output.text.split(/\s+/).length;
 
-	const levelGuidance: Record<string, string> = {
-		beginner:
-			"Short tongue twisters (4-8 words). Repeat simple sound patterns. Mark all as 'slow' speed.",
-		intermediate:
-			"Medium tongue twisters (8-15 words). More complex sound combinations. Mix of 'slow' and 'medium' speeds.",
-		advanced:
-			"Long and complex tongue twisters (10-20 words). Intricate sound patterns. Mix of 'medium' and 'fast' speeds.",
+	return {
+		text: output.text,
+		topic: output.topic,
+		cefrLevel: level,
+		wordCount,
+		focusAreas: output.focusAreas,
+		tips: output.tips,
 	};
-
-	const { output } = await generateText({
-		model: openai("gpt-4o-mini"),
-		output: Output.object({ schema: tongueTwisterSchema }),
-		system: `You are an expert English pronunciation coach specializing in tongue twisters.
-
-Generate creative, fun tongue twisters that target specific pronunciation challenges.
-
-Each item should:
-- Be a tongue twister that challenges specific phonemes
-- Include the target phonemes being practiced
-- Include a tip for mastering it
-- Have an appropriate speed rating based on difficulty
-
-Level guidance: ${levelGuidance[level] || levelGuidance.intermediate}
-
-${phonemeContext}
-
-Generate exactly ${count} items. Mix classic-style tongue twisters with original ones. Make them fun and memorable.`,
-		prompt: `Generate ${count} tongue twisters for a ${level} level English learner. Each should target different sound combinations.`,
-		temperature: 0.9,
-	});
-
-	if (!output) throw new Error("Failed to generate tongue twister content");
-	return output.items;
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function mapLevelToDifficulty(
-	level: string | null | undefined,
-): "beginner" | "intermediate" | "advanced" {
+function profileLevelToCefr(level: string | null | undefined): CefrLevel {
 	switch (level) {
 		case "beginner":
+			return "A1";
 		case "elementary":
-			return "beginner";
+			return "A2";
+		case "intermediate":
+			return "B1";
 		case "upper-intermediate":
+			return "B2";
 		case "advanced":
-			return "advanced";
+			return "C1";
 		default:
-			return "intermediate";
+			return "A2";
 	}
 }
 
 export const pronunciationRouter = router({
-	startSession: protectedProcedure
+	startSession: rateLimitedProcedure(5, 60_000)
 		.input(
 			z.object({
-				mode: z.enum(["read-aloud", "tongue-twisters"]),
+				cefrLevel: z.enum(["A1", "A2", "B1", "B2", "C1"]).optional(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -166,64 +152,42 @@ export const pronunciationRouter = router({
 				.where(eq(userProfile.userId, userId))
 				.limit(1);
 
-			const difficulty = mapLevelToDifficulty(profile?.level);
-
-			let items: ReadAloudItem[] | TongueTwisterItem[];
-
-			if (input.mode === "read-aloud") {
-				items = await generateReadAloudItems(
-					difficulty,
-					profile?.interests ?? undefined,
-				);
-			} else {
-				items = await generateTongueTwisterItems(difficulty);
-			}
+			const level = input.cefrLevel ?? profileLevelToCefr(profile?.level);
+			const paragraph = await generateParagraph(
+				level,
+				profile?.interests ?? undefined,
+			);
 
 			const sessionId = crypto.randomUUID();
+
+			await recordActivity(userId, "pronunciation");
 
 			await db.insert(pronunciationSession).values({
 				id: sessionId,
 				userId,
-				mode: input.mode,
-				difficulty,
-				items,
+				mode: "read-aloud",
+				difficulty: level,
+				cefrLevel: level,
+				paragraph,
+				items: [paragraph],
 				status: "active",
 			});
 
-			return { sessionId, items };
+			return { sessionId, paragraph, level };
 		}),
 
-	// Submit an attempt with Azure pronunciation assessment data
 	submitAttempt: protectedProcedure
 		.input(
 			z.object({
 				sessionId: z.string(),
-				itemIndex: z.number().int().min(0),
+				itemIndex: z.number().int().min(0).default(0),
 				transcript: z.string(),
-				accuracyScore: z.number(),
-				fluencyScore: z.number(),
-				completenessScore: z.number(),
-				prosodyScore: z.number(),
-				pronunciationScore: z.number(),
-				words: z.array(
-					z.object({
-						word: z.string(),
-						accuracyScore: z.number(),
-						errorType: z.string(),
-						phonemes: z.array(
-							z.object({
-								phoneme: z.string(),
-								accuracyScore: z.number(),
-							}),
-						),
-					}),
-				),
+				audioUrl: z.string().url().optional(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
 			const userId = ctx.session.user.id;
 
-			// Verify session belongs to user
 			const [session] = await db
 				.select()
 				.from(pronunciationSession)
@@ -235,28 +199,7 @@ export const pronunciationRouter = router({
 				)
 				.limit(1);
 
-			if (!session) {
-				throw new Error("Session not found");
-			}
-
-			// Get the expected text from the session items
-			const items = session.items as (ReadAloudItem | TongueTwisterItem)[];
-			const item = items[input.itemIndex];
-			if (!item) {
-				throw new Error("Invalid item index");
-			}
-
-			// Use pronunciation score as overall score
-			const score = Math.round(input.pronunciationScore);
-
-			// Map words to WordResult format
-			const wordResults: WordResult[] = input.words.map((w) => ({
-				word: w.word,
-				correct: w.errorType === "None",
-				accuracyScore: w.accuracyScore,
-				errorType: w.errorType as WordResult["errorType"],
-				phonemes: w.phonemes,
-			}));
+			if (!session) throw new Error("Session not found");
 
 			const attemptId = crypto.randomUUID();
 
@@ -265,32 +208,19 @@ export const pronunciationRouter = router({
 				sessionId: input.sessionId,
 				itemIndex: input.itemIndex,
 				transcript: input.transcript,
-				score,
-				accuracyScore: Math.round(input.accuracyScore),
-				fluencyScore: Math.round(input.fluencyScore),
-				completenessScore: Math.round(input.completenessScore),
-				prosodyScore: Math.round(input.prosodyScore),
-				wordResults,
+				score: 0,
+				wordResults: [],
+				audioUrl: input.audioUrl,
 			});
 
-			return {
-				attemptId,
-				score,
-				accuracyScore: input.accuracyScore,
-				fluencyScore: input.fluencyScore,
-				completenessScore: input.completenessScore,
-				prosodyScore: input.prosodyScore,
-				words: wordResults,
-			};
+			return { attemptId };
 		}),
 
-	// Complete a session and generate summary with phoneme analysis
 	completeSession: protectedProcedure
 		.input(z.object({ sessionId: z.string() }))
 		.mutation(async ({ ctx, input }) => {
 			const userId = ctx.session.user.id;
 
-			// Verify session belongs to user
 			const [session] = await db
 				.select()
 				.from(pronunciationSession)
@@ -302,11 +232,8 @@ export const pronunciationRouter = router({
 				)
 				.limit(1);
 
-			if (!session) {
-				throw new Error("Session not found");
-			}
+			if (!session) throw new Error("Session not found");
 
-			// Get all attempts for this session
 			const attempts = await db
 				.select()
 				.from(pronunciationAttempt)
@@ -316,15 +243,16 @@ export const pronunciationRouter = router({
 				throw new Error("No attempts found for this session");
 			}
 
-			// Calculate overall score averages
 			const scores = attempts.map((a) => a.score);
-			const averageScore = Math.round(
-				scores.reduce((sum, s) => sum + s, 0) / scores.length,
-			);
+			const avg = (arr: number[]) =>
+				arr.length > 0
+					? Math.round(arr.reduce((s, v) => s + v, 0) / arr.length)
+					: 0;
+
+			const averageScore = avg(scores);
 			const bestScore = Math.max(...scores);
 			const worstScore = Math.min(...scores);
 
-			// Calculate multi-score averages
 			const accuracyScores = attempts
 				.map((a) => a.accuracyScore)
 				.filter((s): s is number => s != null);
@@ -338,19 +266,7 @@ export const pronunciationRouter = router({
 				.map((a) => a.completenessScore)
 				.filter((s): s is number => s != null);
 
-			const avg = (arr: number[]) =>
-				arr.length > 0
-					? Math.round(arr.reduce((s, v) => s + v, 0) / arr.length)
-					: 0;
-
-			const averageAccuracy = avg(accuracyScores);
-			const averageFluency = avg(fluencyScores);
-			const averageProsody = avg(prosodyScores);
-			const averageCompleteness = avg(completenessScores);
-
-			// Find weak words
 			const wordCounts = new Map<string, { correct: number; total: number }>();
-			// Aggregate phoneme scores across all attempts
 			const phonemeMap = new Map<
 				string,
 				{ totalScore: number; count: number; exampleWords: Set<string> }
@@ -359,16 +275,11 @@ export const pronunciationRouter = router({
 			for (const attempt of attempts) {
 				const results = attempt.wordResults as WordResult[];
 				for (const r of results) {
-					// Weak words tracking
-					const existing = wordCounts.get(r.word) || {
-						correct: 0,
-						total: 0,
-					};
+					const existing = wordCounts.get(r.word) || { correct: 0, total: 0 };
 					existing.total++;
 					if (r.correct) existing.correct++;
 					wordCounts.set(r.word, existing);
 
-					// Phoneme tracking
 					if (r.phonemes) {
 						for (const p of r.phonemes) {
 							const entry = phonemeMap.get(p.phoneme) || {
@@ -378,9 +289,7 @@ export const pronunciationRouter = router({
 							};
 							entry.totalScore += p.accuracyScore;
 							entry.count++;
-							if (p.accuracyScore < 80) {
-								entry.exampleWords.add(r.word);
-							}
+							if (p.accuracyScore < 80) entry.exampleWords.add(r.word);
 							phonemeMap.set(p.phoneme, entry);
 						}
 					}
@@ -394,7 +303,6 @@ export const pronunciationRouter = router({
 				}
 			}
 
-			// Identify weak phonemes (average score < 80)
 			const weakPhonemes: WeakPhoneme[] = [];
 			for (const [phoneme, data] of phonemeMap) {
 				const avgScore = Math.round(data.totalScore / data.count);
@@ -409,60 +317,66 @@ export const pronunciationRouter = router({
 			}
 			weakPhonemes.sort((a, b) => a.score - b.score);
 
-			// Calculate per-item scores
-			const itemScoreMap = new Map<
-				number,
-				{ bestScore: number; attempts: number }
-			>();
-			for (const attempt of attempts) {
-				const existing = itemScoreMap.get(attempt.itemIndex);
-				if (!existing) {
-					itemScoreMap.set(attempt.itemIndex, {
-						bestScore: attempt.score,
-						attempts: 1,
-					});
-				} else {
-					existing.bestScore = Math.max(existing.bestScore, attempt.score);
-					existing.attempts++;
-				}
-			}
-
-			const itemScores = Array.from(itemScoreMap.entries()).map(
-				([itemIndex, data]) => ({
-					itemIndex,
-					bestScore: data.bestScore,
-					attempts: data.attempts,
-				}),
-			);
-
 			const summary: PronunciationSessionSummary = {
 				averageScore,
-				averageAccuracy,
-				averageFluency,
-				averageProsody,
-				averageCompleteness,
+				averageAccuracy: avg(accuracyScores),
+				averageFluency: avg(fluencyScores),
+				averageProsody: avg(prosodyScores),
+				averageCompleteness: avg(completenessScores),
 				totalAttempts: attempts.length,
 				bestScore,
 				worstScore,
 				weakWords,
 				weakPhonemes,
-				itemScores,
 			};
 
-			// Update session
 			await db
 				.update(pronunciationSession)
 				.set({
 					status: "completed",
 					summary,
+					feedbackStatus: "pending",
 					completedAt: new Date(),
 				})
 				.where(eq(pronunciationSession.id, input.sessionId));
 
-			return summary;
+			return { summary, sessionId: input.sessionId };
 		}),
 
-	// Get a specific session with its attempts
+	deleteAttempt: protectedProcedure
+		.input(z.object({ attemptId: z.string(), sessionId: z.string() }))
+		.mutation(async ({ ctx, input }) => {
+			const userId = ctx.session.user.id;
+
+			const [session] = await db
+				.select({ id: pronunciationSession.id })
+				.from(pronunciationSession)
+				.where(
+					and(
+						eq(pronunciationSession.id, input.sessionId),
+						eq(pronunciationSession.userId, userId),
+						eq(pronunciationSession.status, "active"),
+					),
+				)
+				.limit(1);
+
+			if (!session) throw new Error("Session not found or already completed");
+
+			const [deleted] = await db
+				.delete(pronunciationAttempt)
+				.where(
+					and(
+						eq(pronunciationAttempt.id, input.attemptId),
+						eq(pronunciationAttempt.sessionId, input.sessionId),
+					),
+				)
+				.returning({ id: pronunciationAttempt.id });
+
+			if (!deleted) throw new Error("Attempt not found");
+
+			return { deleted: true };
+		}),
+
 	getSession: protectedProcedure
 		.input(z.object({ sessionId: z.string() }))
 		.query(async ({ ctx, input }) => {
@@ -479,9 +393,7 @@ export const pronunciationRouter = router({
 				)
 				.limit(1);
 
-			if (!session) {
-				throw new Error("Session not found");
-			}
+			if (!session) throw new Error("Session not found");
 
 			const attempts = await db
 				.select()
@@ -491,7 +403,33 @@ export const pronunciationRouter = router({
 			return { ...session, attempts };
 		}),
 
-	// Get recent session history
+	getFeedback: protectedProcedure
+		.input(z.object({ sessionId: z.string() }))
+		.query(async ({ ctx, input }) => {
+			const userId = ctx.session.user.id;
+
+			const [session] = await db
+				.select({
+					feedback: pronunciationSession.feedback,
+					feedbackStatus: pronunciationSession.feedbackStatus,
+				})
+				.from(pronunciationSession)
+				.where(
+					and(
+						eq(pronunciationSession.id, input.sessionId),
+						eq(pronunciationSession.userId, userId),
+					),
+				)
+				.limit(1);
+
+			if (!session) throw new Error("Session not found");
+
+			return {
+				feedback: session.feedback,
+				status: session.feedbackStatus,
+			};
+		}),
+
 	getHistory: protectedProcedure
 		.input(
 			z.object({
@@ -500,15 +438,16 @@ export const pronunciationRouter = router({
 		)
 		.query(async ({ ctx, input }) => {
 			const userId = ctx.session.user.id;
-			const limit = input.limit;
 
 			const sessions = await db
 				.select({
 					id: pronunciationSession.id,
 					mode: pronunciationSession.mode,
 					difficulty: pronunciationSession.difficulty,
+					cefrLevel: pronunciationSession.cefrLevel,
 					status: pronunciationSession.status,
 					summary: pronunciationSession.summary,
+					feedbackStatus: pronunciationSession.feedbackStatus,
 					createdAt: pronunciationSession.createdAt,
 					completedAt: pronunciationSession.completedAt,
 				})
@@ -520,7 +459,7 @@ export const pronunciationRouter = router({
 					),
 				)
 				.orderBy(desc(pronunciationSession.createdAt))
-				.limit(limit);
+				.limit(input.limit);
 
 			return sessions;
 		}),

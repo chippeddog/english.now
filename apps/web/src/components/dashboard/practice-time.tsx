@@ -59,10 +59,9 @@ export default function DailyPracticeTime() {
 			</div>
 
 			<div className="w-full rounded-xl border border-border/50 p-2.5">
-				{/* Bar Chart */}
 				<ChartContainer
 					config={chartConfig}
-					className="aspect-auto h-[120px] w-full self-stretch"
+					className="aspect-auto h-[138px] w-full self-stretch"
 				>
 					<BarChart
 						data={chartData}

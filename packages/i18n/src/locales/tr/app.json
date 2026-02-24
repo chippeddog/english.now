@@ -1,0 +1,186 @@
+{
+  "nav": {
+    "home": "Ana Sayfa",
+    "lessons": "Dersler",
+    "practice": "Pratik",
+    "vocabulary": "Kelime Bilgisi",
+    "settings": "Ayarlar",
+    "preferences": "Tercihler",
+    "voices": "Sesler",
+    "signOut": "Çıkış Yap"
+  },
+  "home": {
+    "welcomeBack": "Tekrar hoş geldiniz, {{firstName}}",
+    "subtitle": "Harika çalışmaya devam edin! Mükemmel ilerleme kaydediyorsunuz."
+  },
+  "streak": {
+    "title": "{{count}} günlük seri",
+    "currentStreak": "Mevcut seriniz {{count}} gün.",
+    "longestStreak": "En uzun seriniz {{count}} gün.",
+    "currentStreakLabel": "Mevcut Seri",
+    "longestStreakLabel": "En Uzun Seri"
+  },
+  "todaysActivities": {
+    "title": "Bugünün Etkinlikleri",
+    "minute_one": "{{count}} dakika",
+    "minute_other": "{{count}} dakika",
+    "chat": "Sohbet",
+    "readAloud": "Sesli Oku",
+    "speak": "Konuş"
+  },
+  "practiceTime": {
+    "title": "Günlük konuşma süresi",
+    "duration": "Süre"
+  },
+  "lessonsWidget": {
+    "title": "Dersler",
+    "reachToUnlock": "Bir sonraki birimi açmak için {{percentage}}% ulaşın."
+  },
+  "practice": {
+    "title": "Pratik",
+    "recentSessions": "Son Oturumlar",
+    "filterAll": "Tümü",
+    "filterConversations": "Konuşmalar",
+    "filterPronunciations": "Telaffuzlar",
+    "emptyTitle": "Henüz kaydınız yok",
+    "emptyDescription": "Çoğu insan konuşma becerisini geliştirmek için günlük olarak birden fazla kayıt oluşturur",
+    "noSessionsYet": "Henüz {{type}} oturum yok.",
+    "cantFind": "İhtiyacınızı bulamıyor musunuz?",
+    "completed": "Tamamlandı",
+    "inProgress": "Devam ediyor",
+    "view": "Görüntüle",
+    "continue": "Devam Et",
+    "deleteSession": "Oturumu sil",
+    "deleteConfirmation": "\"{{title}}\" silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+    "cancel": "İptal",
+    "delete": "Sil",
+    "deleting": "Siliniyor...",
+    "deleteSuccess": "Oturum başarıyla silindi",
+    "deleteError": "Oturum silinemedi"
+  },
+  "vocabulary": {
+    "title": "Kelime Bilgisi",
+    "words": "Kelimeler",
+    "phrases": "İfadeler",
+    "progress": "İlerleme"
+  },
+  "settings": {
+    "title": "Ayarlar",
+    "general": "Genel",
+    "personalization": "Kişiselleştirme",
+    "billing": "Faturalandırma ve Abonelik",
+    "signOut": "Çıkış Yap"
+  },
+  "upgrade": {
+    "pro": "PRO",
+    "title": "Pro'ya Yükselt",
+    "description": "<highlight>{{count}}+</highlight> öğrenciye katılın ve akıcılık yolculuğunuza bugün başlayın.",
+    "features": {
+      "conversations": "Sınırsız AI konuşmaları",
+      "feedback": "Gelişmiş AI geri bildirimi",
+      "vocabulary": "Tam kelime kütüphanesi",
+      "learningPath": "Kişiselleştirilmiş öğrenme yolu",
+      "analytics": "İlerleme takibi ve analizler"
+    },
+    "yearly": "Yıllık",
+    "monthly": "Aylık",
+    "save": "%{{percent}} tasarruf edin",
+    "perYear": "/yıl",
+    "perMonth": "/ay",
+    "startTrial": "7 Günlük Ücretsiz Deneme Başlat",
+    "legal": "Devam ederek, <terms>Hizmet Şartlarımızı</terms>, <privacy>Gizlilik</privacy> ve <refund>İade ve İptal Politikamızı</refund> kabul etmiş olursunuz.",
+    "subscriptionSuccess": "Abonelik başarılı"
+  },
+  "voicesDialog": {
+    "title": "AI Sesini Seç",
+    "description": "AI konuşmaları ve telaffuz pratiği için sesi seçin",
+    "loading": "Yükleniyor…",
+    "updated": "Ses güncellendi",
+    "updateError": "Ses güncellenemedi"
+  },
+  "pronunciation": {
+    "title": "Telaffuz Pratiği",
+    "subtitle": "Bir paragrafı sesli okuyun ve AI destekli ayrıntılı telaffuz geri bildirimi alın",
+    "chooseLevel": "Seviyenizi seçin",
+    "levels": {
+      "A1": {
+        "label": "Başlangıç",
+        "wordRange": "60-80 kelime",
+        "description": "Günlük yaşam, aile ve tanıdık konular hakkında basit cümleler"
+      },
+      "A2": {
+        "label": "İlkokul",
+        "wordRange": "80-100 kelime",
+        "description": "Seyahat ve hobiler hakkında yaygın kelime dağarcığı ile basit anlatılar"
+      },
+      "B1": {
+        "label": "Orta",
+        "wordRange": "100-130 kelime",
+        "description": "Haber makalesi tarzında karmaşık yapılar ve çeşitli zamanlar"
+      },
+      "B2": {
+        "label": "Üst Orta",
+        "wordRange": "120-150 kelime",
+        "description": "Çeşitli sözdizimi ile akademik ve profesyonel konular"
+      }
+    },
+    "generating": "Paragraf oluşturuluyor...",
+    "startPractice": "{{level}} Pratiğine Başla",
+    "howItWorks": "Nasıl çalışır",
+    "steps": {
+      "read": "Paragrafı okuyun",
+      "readDescription": "Seviyenize göre AI tarafından oluşturulmuş bir paragraf",
+      "record": "Kendinizi kaydedin",
+      "recordDescription": "Konuşurken Deepgram ile canlı transkript görünür",
+      "feedback": "Geri bildirim alın",
+      "feedbackDescription": "Azure değerlendirmesi + AI koç önerileri"
+    },
+    "recentSessions": "Son Oturumlar",
+    "readAloud": "Sesli Oku",
+    "unknownDate": "Bilinmeyen tarih",
+    "feedbackReady": "Geri bildirim hazır"
+  },
+  "lessons": {
+    "title": "Dersler",
+    "cefrLabels": {
+      "A1": "Başlangıç A1",
+      "A2": "İlkokul A2",
+      "B1": "Orta B1",
+      "B2": "Üst Orta B2",
+      "C1": "İleri C1",
+      "C2": "Yeterlilik C2"
+    },
+    "reachNextLevel": "<strong>{{nextLevel}}</strong> elde etmek için {{percentage}}% ulaşın",
+    "unlockMessage": "Açmak için önceki birimleri tamamlayın",
+    "next": "Sonraki",
+    "lessonTypes": {
+      "grammar": "Dilbilgisi",
+      "vocabulary": "Kelime Bilgisi",
+      "pronunciation": "Telaffuz",
+      "explanation": "Açıklama",
+      "reading": "Okuma",
+      "listening": "Dinleme",
+      "speaking": "Konuşma",
+      "practice": "Pratik"
+    },
+    "exerciseTypes": {
+      "lecture": "Ders",
+      "practice": "Pratik",
+      "quiz": "Test",
+      "conversation": "Konuşma"
+    },
+    "words": "Kelimeler",
+    "grammar": "Dilbilgisi",
+    "exercises": "Egzersizler",
+    "grammarToPractice": "Pratik Yapılacak Dilbilgisi",
+    "wordsToPractice": "Pratik Yapılacak Kelimeler",
+    "review": "Gözden Geçir",
+    "continue": "Devam Et",
+    "gotIt": "Anladım!",
+    "noLessons": "Henüz mevcut ders yok.",
+    "completeOnboarding": "Kişiselleştirilmiş öğrenme yolunuzu oluşturmak için başlangıç aşamasını tamamlayın.",
+    "finishLessons": "Yeni materyal almak için bu dersleri tamamlayın.",
+    "module": "Modül {{number}}",
+    "moduleProgress": "{{talked}} dakika konuştunuz. Modülü tamamlamak için {{remaining}} dakika daha konuşun."
+  }
+}

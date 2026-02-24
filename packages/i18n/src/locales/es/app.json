@@ -1,0 +1,186 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "lessons": "Lecciones",
+    "practice": "Práctica",
+    "vocabulary": "Vocabulario",
+    "settings": "Configuración",
+    "preferences": "Preferencias",
+    "voices": "Voces",
+    "signOut": "Cerrar sesión"
+  },
+  "home": {
+    "welcomeBack": "Bienvenido de nuevo, {{firstName}}",
+    "subtitle": "¡Sigue con el gran trabajo! Estás haciendo un progreso excelente."
+  },
+  "streak": {
+    "title": "Racha de {{count}} días",
+    "currentStreak": "Tu racha actual es de {{count}} días.",
+    "longestStreak": "Tu racha más larga es de {{count}} días.",
+    "currentStreakLabel": "Racha Actual",
+    "longestStreakLabel": "Racha Más Larga"
+  },
+  "todaysActivities": {
+    "title": "Actividades de Hoy",
+    "minute_one": "{{count}} minuto",
+    "minute_other": "{{count}} minutos",
+    "chat": "Chat",
+    "readAloud": "Leer en Voz Alta",
+    "speak": "Hablar"
+  },
+  "practiceTime": {
+    "title": "Tiempo diario de práctica",
+    "duration": "Duración"
+  },
+  "lessonsWidget": {
+    "title": "Lecciones",
+    "reachToUnlock": "Alcanza el {{percentage}}% para abrir la siguiente unidad."
+  },
+  "practice": {
+    "title": "Práctica",
+    "recentSessions": "Sesiones Recientes",
+    "filterAll": "Todos",
+    "filterConversations": "Conversaciones",
+    "filterPronunciations": "Pronunciaciones",
+    "emptyTitle": "Aún no tienes registros",
+    "emptyDescription": "La mayoría de las personas crean múltiples registros diarios para mejorar al hablar",
+    "noSessionsYet": "Aún no hay sesiones de {{type}}.",
+    "cantFind": "¿No encuentras lo que necesitas?",
+    "completed": "Completado",
+    "inProgress": "En progreso",
+    "view": "Ver",
+    "continue": "Continuar",
+    "deleteSession": "Eliminar sesión",
+    "deleteConfirmation": "¿Estás seguro de que deseas eliminar \"{{title}}\"? Esta acción no se puede deshacer.",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "deleting": "Eliminando...",
+    "deleteSuccess": "Sesión eliminada con éxito",
+    "deleteError": "No se pudo eliminar la sesión"
+  },
+  "vocabulary": {
+    "title": "Vocabulario",
+    "words": "Palabras",
+    "phrases": "Frases",
+    "progress": "Progreso"
+  },
+  "settings": {
+    "title": "Configuración",
+    "general": "General",
+    "personalization": "Personalización",
+    "billing": "Facturación y Suscripción",
+    "signOut": "Cerrar sesión"
+  },
+  "upgrade": {
+    "pro": "PRO",
+    "title": "Actualizar a Pro",
+    "description": "Únete a <highlight>{{count}}+</highlight> estudiantes y comienza tu camino hacia la fluidez hoy.",
+    "features": {
+      "conversations": "Conversaciones ilimitadas con IA",
+      "feedback": "Retroalimentación avanzada de IA",
+      "vocabulary": "Biblioteca completa de vocabulario",
+      "learningPath": "Ruta de aprendizaje personalizada",
+      "analytics": "Seguimiento del progreso y análisis"
+    },
+    "yearly": "Anual",
+    "monthly": "Mensual",
+    "save": "Ahorra {{percent}}%",
+    "perYear": "/año",
+    "perMonth": "/mes",
+    "startTrial": "Comienza la Prueba Gratuita de 7 Días",
+    "legal": "Al continuar, aceptas nuestros <terms>Términos de Servicio</terms>, <privacy>Privacidad</privacy> y <refund>Política de Reembolso y Cancelación</refund>.",
+    "subscriptionSuccess": "Suscripción exitosa"
+  },
+  "voicesDialog": {
+    "title": "Elegir Voz de IA",
+    "description": "Selecciona la voz para las conversaciones con IA y la práctica de pronunciación",
+    "loading": "Cargando…",
+    "updated": "Voz actualizada",
+    "updateError": "No se pudo actualizar la voz"
+  },
+  "pronunciation": {
+    "title": "Práctica de Pronunciación",
+    "subtitle": "Lee un párrafo en voz alta y recibe retroalimentación detallada de pronunciación impulsada por IA",
+    "chooseLevel": "Elige tu nivel",
+    "levels": {
+      "A1": {
+        "label": "Principiante",
+        "wordRange": "60-80 palabras",
+        "description": "Frases simples sobre la vida diaria, la familia y temas familiares"
+      },
+      "A2": {
+        "label": "Elemental",
+        "wordRange": "80-100 palabras",
+        "description": "Narraciones simples con vocabulario común sobre viajes y pasatiempos"
+      },
+      "B1": {
+        "label": "Intermedio",
+        "wordRange": "100-130 palabras",
+        "description": "Estilo de artículo de noticias con estructuras complejas y tiempos variados"
+      },
+      "B2": {
+        "label": "Intermedio Alto",
+        "wordRange": "120-150 palabras",
+        "description": "Temas académicos y profesionales con sintaxis variada"
+      }
+    },
+    "generating": "Generando párrafo...",
+    "startPractice": "Comenzar práctica {{level}}",
+    "howItWorks": "Cómo funciona",
+    "steps": {
+      "read": "Lee el párrafo",
+      "readDescription": "Un párrafo generado por IA adaptado a tu nivel",
+      "record": "Grábate",
+      "recordDescription": "La transcripción en vivo aparece mientras hablas con Deepgram",
+      "feedback": "Recibe retroalimentación",
+      "feedbackDescription": "Evaluación de Azure + sugerencias del coach de IA"
+    },
+    "recentSessions": "Sesiones Recientes",
+    "readAloud": "Leer en Voz Alta",
+    "unknownDate": "Fecha desconocida",
+    "feedbackReady": "Retroalimentación lista"
+  },
+  "lessons": {
+    "title": "Lecciones",
+    "cefrLabels": {
+      "A1": "Principiante A1",
+      "A2": "Elemental A2",
+      "B1": "Intermedio B1",
+      "B2": "Intermedio Alto B2",
+      "C1": "Avanzado C1",
+      "C2": "Competencia C2"
+    },
+    "reachNextLevel": "Alcanza el {{percentage}}% para obtener <strong>{{nextLevel}}</strong>",
+    "unlockMessage": "Completa las unidades anteriores para desbloquear",
+    "next": "Siguiente",
+    "lessonTypes": {
+      "grammar": "Gramática",
+      "vocabulary": "Vocabulario",
+      "pronunciation": "Pronunciación",
+      "explanation": "Explicación",
+      "reading": "Lectura",
+      "listening": "Escucha",
+      "speaking": "Hablar",
+      "practice": "Práctica"
+    },
+    "exerciseTypes": {
+      "lecture": "Conferencia",
+      "practice": "Práctica",
+      "quiz": "Cuestionario",
+      "conversation": "Conversación"
+    },
+    "words": "Palabras",
+    "grammar": "Gramática",
+    "exercises": "Ejercicios",
+    "grammarToPractice": "Gramática para Practicar",
+    "wordsToPractice": "Palabras para Practicar",
+    "review": "Revisar",
+    "continue": "Continuar",
+    "gotIt": "¡Entendido!",
+    "noLessons": "Aún no hay lecciones disponibles.",
+    "completeOnboarding": "Completa la incorporación para generar tu ruta de aprendizaje personalizada.",
+    "finishLessons": "Termina estas lecciones para recibir nuevo material.",
+    "module": "Módulo {{number}}",
+    "moduleProgress": "Hablaste {{talked}} minutos. Habla {{remaining}} minutos más para completar el módulo."
+  }
+}

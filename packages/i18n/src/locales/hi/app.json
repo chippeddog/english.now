@@ -1,0 +1,186 @@
+{
+  "nav": {
+    "home": "मुख्य पृष्ठ",
+    "lessons": "पाठ",
+    "practice": "अभ्यास",
+    "vocabulary": "शब्दावली",
+    "settings": "सेटिंग्स",
+    "preferences": "प्राथमिकताएँ",
+    "voices": "आवाज़ें",
+    "signOut": "साइन आउट"
+  },
+  "home": {
+    "welcomeBack": "वापसी पर स्वागत है, {{firstName}}",
+    "subtitle": "उत्कृष्ट कार्य जारी रखें! आप शानदार प्रगति कर रहे हैं।"
+  },
+  "streak": {
+    "title": "{{count}} दिन की लकीर",
+    "currentStreak": "आपकी वर्तमान लकीर {{count}} दिन की है।",
+    "longestStreak": "आपकी सबसे लंबी लकीर {{count}} दिन की है।",
+    "currentStreakLabel": "वर्तमान लकीर",
+    "longestStreakLabel": "सबसे लंबी लकीर"
+  },
+  "todaysActivities": {
+    "title": "आज की गतिविधियाँ",
+    "minute_one": "{{count}} मिनट",
+    "minute_other": "{{count}} मिनट",
+    "chat": "चैट",
+    "readAloud": "जोर से पढ़ें",
+    "speak": "बोलें"
+  },
+  "practiceTime": {
+    "title": "दैनिक बोलने का समय",
+    "duration": "अवधि"
+  },
+  "lessonsWidget": {
+    "title": "पाठ",
+    "reachToUnlock": "अगली इकाई खोलने के लिए {{percentage}}% तक पहुँचें।"
+  },
+  "practice": {
+    "title": "अभ्यास",
+    "recentSessions": "हाल की सत्र",
+    "filterAll": "सभी",
+    "filterConversations": "वार्तालाप",
+    "filterPronunciations": "उच्चारण",
+    "emptyTitle": "आपके पास अभी तक कोई रिकॉर्ड नहीं है",
+    "emptyDescription": "अधिकांश लोग बोलने में सुधार के लिए प्रतिदिन कई रिकॉर्ड बनाते हैं",
+    "noSessionsYet": "अभी तक कोई {{type}} सत्र नहीं।",
+    "cantFind": "क्या आपको जो चाहिए वह नहीं मिल रहा?",
+    "completed": "पूरा हुआ",
+    "inProgress": "प्रगति में",
+    "view": "देखें",
+    "continue": "जारी रखें",
+    "deleteSession": "सत्र हटाएं",
+    "deleteConfirmation": "क्या आप वाकई \"{{title}}\" हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।",
+    "cancel": "रद्द करें",
+    "delete": "हटाएं",
+    "deleting": "हटा रहे हैं...",
+    "deleteSuccess": "सत्र सफलतापूर्वक हटाया गया",
+    "deleteError": "सत्र हटाने में विफल"
+  },
+  "vocabulary": {
+    "title": "शब्दावली",
+    "words": "शब्द",
+    "phrases": "वाक्यांश",
+    "progress": "प्रगति"
+  },
+  "settings": {
+    "title": "सेटिंग्स",
+    "general": "सामान्य",
+    "personalization": "व्यक्तिगतकरण",
+    "billing": "बिलिंग और सदस्यता",
+    "signOut": "साइन आउट"
+  },
+  "upgrade": {
+    "pro": "प्रो",
+    "title": "प्रो में अपग्रेड करें",
+    "description": "<highlight>{{count}}+</highlight> शिक्षार्थियों में शामिल हों और आज ही अपनी धाराप्रवाह यात्रा शुरू करें।",
+    "features": {
+      "conversations": "असीमित एआई वार्तालाप",
+      "feedback": "उन्नत एआई प्रतिक्रिया",
+      "vocabulary": "पूर्ण शब्दावली पुस्तकालय",
+      "learningPath": "व्यक्तिगत सीखने का मार्ग",
+      "analytics": "प्रगति ट्रैकिंग और विश्लेषण"
+    },
+    "yearly": "वार्षिक",
+    "monthly": "मासिक",
+    "save": "{{percent}}% बचाएं",
+    "perYear": "/वर्ष",
+    "perMonth": "/माह",
+    "startTrial": "7-दिन की मुफ्त परीक्षण शुरू करें",
+    "legal": "जारी रखते हुए, आप हमारे <terms>सेवा की शर्तों</terms>, <privacy>गोपनीयता</privacy> और <refund>रिफंड और रद्दीकरण नीति</refund> से सहमत हैं।",
+    "subscriptionSuccess": "सदस्यता सफल"
+  },
+  "voicesDialog": {
+    "title": "एआई आवाज़ चुनें",
+    "description": "एआई वार्तालाप और उच्चारण अभ्यास के लिए आवाज़ चुनें",
+    "loading": "लोड हो रहा है…",
+    "updated": "आवाज़ अपडेट की गई",
+    "updateError": "आवाज़ अपडेट करने में विफल"
+  },
+  "pronunciation": {
+    "title": "उच्चारण अभ्यास",
+    "subtitle": "एक पैराग्राफ को जोर से पढ़ें और एआई द्वारा संचालित विस्तृत उच्चारण प्रतिक्रिया प्राप्त करें",
+    "chooseLevel": "अपना स्तर चुनें",
+    "levels": {
+      "A1": {
+        "label": "शुरुआती",
+        "wordRange": "60-80 शब्द",
+        "description": "दैनिक जीवन, परिवार और परिचित विषयों के बारे में सरल वाक्य"
+      },
+      "A2": {
+        "label": "प्राथमिक",
+        "wordRange": "80-100 शब्द",
+        "description": "यात्रा और शौक के बारे में सामान्य शब्दावली के साथ सरल कथाएँ"
+      },
+      "B1": {
+        "label": "मध्यम",
+        "wordRange": "100-130 शब्द",
+        "description": "समाचार लेख शैली जटिल संरचनाओं और विविध कालों के साथ"
+      },
+      "B2": {
+        "label": "उच्च-मध्यवर्ती",
+        "wordRange": "120-150 शब्द",
+        "description": "विविध वाक्य रचना के साथ शैक्षणिक और पेशेवर विषय"
+      }
+    },
+    "generating": "पैराग्राफ उत्पन्न कर रहा है...",
+    "startPractice": "{{level}} अभ्यास शुरू करें",
+    "howItWorks": "यह कैसे काम करता है",
+    "steps": {
+      "read": "पैराग्राफ पढ़ें",
+      "readDescription": "आपके स्तर के अनुसार एआई-जनित पैराग्राफ",
+      "record": "खुद को रिकॉर्ड करें",
+      "recordDescription": "जैसे ही आप बोलते हैं, लाइव ट्रांसक्रिप्ट दिखाई देता है",
+      "feedback": "प्रतिक्रिया प्राप्त करें",
+      "feedbackDescription": "एज़्योर मूल्यांकन + एआई कोच सुझाव"
+    },
+    "recentSessions": "हाल की सत्र",
+    "readAloud": "जोर से पढ़ें",
+    "unknownDate": "अज्ञात तिथि",
+    "feedbackReady": "प्रतिक्रिया तैयार"
+  },
+  "lessons": {
+    "title": "पाठ",
+    "cefrLabels": {
+      "A1": "शुरुआती A1",
+      "A2": "प्राथमिक A2",
+      "B1": "मध्यम B1",
+      "B2": "उच्च-मध्यवर्ती B2",
+      "C1": "उन्नत C1",
+      "C2": "प्रवीणता C2"
+    },
+    "reachNextLevel": "{{percentage}}% तक पहुँचें <strong>{{nextLevel}}</strong> प्राप्त करने के लिए",
+    "unlockMessage": "अनलॉक करने के लिए पिछले इकाइयों को पूरा करें",
+    "next": "अगला",
+    "lessonTypes": {
+      "grammar": "व्याकरण",
+      "vocabulary": "शब्दावली",
+      "pronunciation": "उच्चारण",
+      "explanation": "व्याख्या",
+      "reading": "पढ़ाई",
+      "listening": "सुनना",
+      "speaking": "बोलना",
+      "practice": "अभ्यास"
+    },
+    "exerciseTypes": {
+      "lecture": "व्याख्यान",
+      "practice": "अभ्यास",
+      "quiz": "प्रश्नोत्तरी",
+      "conversation": "वार्तालाप"
+    },
+    "words": "शब्द",
+    "grammar": "व्याकरण",
+    "exercises": "अभ्यास",
+    "grammarToPractice": "अभ्यास के लिए व्याकरण",
+    "wordsToPractice": "अभ्यास के लिए शब्द",
+    "review": "समीक्षा",
+    "continue": "जारी रखें",
+    "gotIt": "समझ गया!",
+    "noLessons": "अभी तक कोई पाठ उपलब्ध नहीं है।",
+    "completeOnboarding": "अपना व्यक्तिगत सीखने का मार्ग उत्पन्न करने के लिए ऑनबोर्डिंग पूरा करें।",
+    "finishLessons": "नया सामग्री प्राप्त करने के लिए इन पाठों को पूरा करें।",
+    "module": "मॉड्यूल {{number}}",
+    "moduleProgress": "आपने {{talked}} मिनट बात की। मॉड्यूल पूरा करने के लिए {{remaining}} और मिनट बोलें।"
+  }
+}

@@ -1,0 +1,186 @@
+{
+  "nav": {
+    "home": "홈",
+    "lessons": "레슨",
+    "practice": "연습",
+    "vocabulary": "어휘",
+    "settings": "설정",
+    "preferences": "환경 설정",
+    "voices": "음성",
+    "signOut": "로그아웃"
+  },
+  "home": {
+    "welcomeBack": "다시 오신 것을 환영합니다, {{firstName}}",
+    "subtitle": "훌륭한 작업을 계속하세요! 훌륭한 진전을 이루고 있습니다."
+  },
+  "streak": {
+    "title": "{{count}}일 연속",
+    "currentStreak": "현재 연속 기록은 {{count}}일입니다.",
+    "longestStreak": "가장 긴 연속 기록은 {{count}}일입니다.",
+    "currentStreakLabel": "현재 연속 기록",
+    "longestStreakLabel": "가장 긴 연속 기록"
+  },
+  "todaysActivities": {
+    "title": "오늘의 활동",
+    "minute_one": "{{count}} 분",
+    "minute_other": "{{count}} 분",
+    "chat": "채팅",
+    "readAloud": "큰 소리로 읽기",
+    "speak": "말하기"
+  },
+  "practiceTime": {
+    "title": "일일 말하기 시간",
+    "duration": "기간"
+  },
+  "lessonsWidget": {
+    "title": "레슨",
+    "reachToUnlock": "다음 단위를 열려면 {{percentage}}%에 도달하세요."
+  },
+  "practice": {
+    "title": "연습",
+    "recentSessions": "최근 세션",
+    "filterAll": "모두",
+    "filterConversations": "대화",
+    "filterPronunciations": "발음",
+    "emptyTitle": "아직 기록이 없습니다",
+    "emptyDescription": "대부분의 사람들은 말하기 실력을 향상시키기 위해 매일 여러 기록을 만듭니다",
+    "noSessionsYet": "아직 {{type}} 세션이 없습니다.",
+    "cantFind": "필요한 것을 찾을 수 없습니까?",
+    "completed": "완료됨",
+    "inProgress": "진행 중",
+    "view": "보기",
+    "continue": "계속",
+    "deleteSession": "세션 삭제",
+    "deleteConfirmation": "\"{{title}}\"을(를) 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+    "cancel": "취소",
+    "delete": "삭제",
+    "deleting": "삭제 중...",
+    "deleteSuccess": "세션이 성공적으로 삭제되었습니다",
+    "deleteError": "세션 삭제에 실패했습니다"
+  },
+  "vocabulary": {
+    "title": "어휘",
+    "words": "단어",
+    "phrases": "구문",
+    "progress": "진행"
+  },
+  "settings": {
+    "title": "설정",
+    "general": "일반",
+    "personalization": "개인화",
+    "billing": "결제 및 구독",
+    "signOut": "로그아웃"
+  },
+  "upgrade": {
+    "pro": "PRO",
+    "title": "Pro로 업그레이드",
+    "description": "<highlight>{{count}}+</highlight>명의 학습자와 함께 오늘 유창함을 향한 여정을 시작하세요.",
+    "features": {
+      "conversations": "무제한 AI 대화",
+      "feedback": "고급 AI 피드백",
+      "vocabulary": "전체 어휘 라이브러리",
+      "learningPath": "개인화된 학습 경로",
+      "analytics": "진행 추적 및 분석"
+    },
+    "yearly": "연간",
+    "monthly": "월간",
+    "save": "{{percent}}% 절약",
+    "perYear": "/년",
+    "perMonth": "/월",
+    "startTrial": "7일 무료 체험 시작",
+    "legal": "계속함으로써, 귀하는 우리의 <terms>서비스 약관</terms>, <privacy>개인정보 보호정책</privacy> 및 <refund>환불 및 취소 정책</refund>에 동의하는 것입니다.",
+    "subscriptionSuccess": "구독이 성공적으로 완료되었습니다"
+  },
+  "voicesDialog": {
+    "title": "AI 음성 선택",
+    "description": "AI 대화 및 발음 연습을 위한 음성을 선택하세요",
+    "loading": "로딩 중…",
+    "updated": "음성이 업데이트되었습니다",
+    "updateError": "음성 업데이트에 실패했습니다"
+  },
+  "pronunciation": {
+    "title": "발음 연습",
+    "subtitle": "단락을 큰 소리로 읽고 AI가 제공하는 상세한 발음 피드백을 받으세요",
+    "chooseLevel": "레벨 선택",
+    "levels": {
+      "A1": {
+        "label": "초급",
+        "wordRange": "60-80 단어",
+        "description": "일상 생활, 가족 및 익숙한 주제에 대한 간단한 문장"
+      },
+      "A2": {
+        "label": "초등",
+        "wordRange": "80-100 단어",
+        "description": "여행과 취미에 대한 일반적인 어휘를 사용한 간단한 이야기"
+      },
+      "B1": {
+        "label": "중급",
+        "wordRange": "100-130 단어",
+        "description": "복잡한 구조와 다양한 시제를 사용하는 뉴스 기사 스타일"
+      },
+      "B2": {
+        "label": "상급 중급",
+        "wordRange": "120-150 단어",
+        "description": "다양한 구문을 사용하는 학문적 및 전문적 주제"
+      }
+    },
+    "generating": "단락 생성 중...",
+    "startPractice": "{{level}} 연습 시작",
+    "howItWorks": "작동 방식",
+    "steps": {
+      "read": "단락 읽기",
+      "readDescription": "귀하의 수준에 맞춘 AI 생성 단락",
+      "record": "자신을 녹음하세요",
+      "recordDescription": "말할 때 Deepgram이 실시간으로 전사합니다",
+      "feedback": "피드백 받기",
+      "feedbackDescription": "Azure 평가 + AI 코치 제안"
+    },
+    "recentSessions": "최근 세션",
+    "readAloud": "큰 소리로 읽기",
+    "unknownDate": "알 수 없는 날짜",
+    "feedbackReady": "피드백 준비 완료"
+  },
+  "lessons": {
+    "title": "레슨",
+    "cefrLabels": {
+      "A1": "초급 A1",
+      "A2": "초등 A2",
+      "B1": "중급 B1",
+      "B2": "상급 중급 B2",
+      "C1": "고급 C1",
+      "C2": "능숙 C2"
+    },
+    "reachNextLevel": "{{percentage}}%에 도달하여 <strong>{{nextLevel}}</strong>을(를) 얻으세요",
+    "unlockMessage": "이전 단위를 완료하여 잠금을 해제하세요",
+    "next": "다음",
+    "lessonTypes": {
+      "grammar": "문법",
+      "vocabulary": "어휘",
+      "pronunciation": "발음",
+      "explanation": "설명",
+      "reading": "읽기",
+      "listening": "듣기",
+      "speaking": "말하기",
+      "practice": "연습"
+    },
+    "exerciseTypes": {
+      "lecture": "강의",
+      "practice": "연습",
+      "quiz": "퀴즈",
+      "conversation": "대화"
+    },
+    "words": "단어",
+    "grammar": "문법",
+    "exercises": "연습 문제",
+    "grammarToPractice": "연습할 문법",
+    "wordsToPractice": "연습할 단어",
+    "review": "복습",
+    "continue": "계속",
+    "gotIt": "알겠습니다!",
+    "noLessons": "아직 이용 가능한 레슨이 없습니다.",
+    "completeOnboarding": "개인화된 학습 경로를 생성하려면 온보딩을 완료하세요.",
+    "finishLessons": "새로운 자료를 받으려면 이 레슨을 완료하세요.",
+    "module": "모듈 {{number}}",
+    "moduleProgress": "당신은 {{talked}}분 동안 말했습니다. 모듈을 완료하려면 {{remaining}}분 더 말하세요."
+  }
+}

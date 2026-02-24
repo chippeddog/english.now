@@ -9,7 +9,7 @@ import en from "./locales/en";
 export const defaultNS = "common";
 export const fallbackLng = "en";
 
-export const namespaces = ["common", "onboarding", "home"] as const;
+export const namespaces = ["app", "common", "onboarding", "home"] as const;
 export type Namespace = (typeof namespaces)[number];
 
 export const supportedLanguages = [

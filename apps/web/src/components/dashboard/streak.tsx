@@ -1,3 +1,4 @@
+import { Trans, useTranslation } from "@english.now/i18n";
 import { FlameIcon, InfoIcon } from "lucide-react";
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
@@ -60,12 +61,11 @@ export default function Streak({
 	activityDates = [],
 	isLoading,
 }: StreakProps) {
+	const { t } = useTranslation("app");
 	const resolvedTimezone =
 		timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
 	const todayIndex = getTodayIndex(resolvedTimezone);
-
 	const streak = currentStreak ?? 0;
-
 	const completedDays = useMemo(() => {
 		const weekDates = getWeekDates(resolvedTimezone);
 		const activeSet = new Set(activityDates);
@@ -84,16 +84,18 @@ export default function Streak({
 			<div className="mb-2.5 flex gap-2 pl-1.5 font-medium">
 				<div>
 					<h3 className="flex items-center gap-2 font-lyon font-semibold text-xl">
-						{streak} day streak
+						<Trans>{t("streak.title", { count: streak })}</Trans>
 						<Tooltip>
 							<TooltipTrigger>
 								<InfoIcon className="size-4 text-neutral-400" strokeWidth={2} />
 							</TooltipTrigger>
 							<TooltipContent>
 								<p>
-									Your current streak is {streak} days.
+									<Trans>{t("streak.currentStreak", { count: streak })}</Trans>
 									<br />
-									Your longest streak is {longestStreak} days.
+									<Trans>
+										{t("streak.longestStreak", { count: longestStreak })}
+									</Trans>
 								</p>
 							</TooltipContent>
 						</Tooltip>
@@ -141,21 +143,6 @@ export default function Streak({
 						);
 					})}
 				</div>
-				{/* <div className="grid grid-cols-2 gap-4 pb-0">
-					<div className="flex flex-col">
-						<div className="mb-1 flex items-center font-medium text-muted-foreground text-xs">
-							Current Streak
-						</div>
-						<span className="font-semibold">{currentStreak} days</span>
-					</div>
-
-					<div className="flex flex-col">
-						<div className="mb-1 flex items-center font-medium text-muted-foreground text-xs">
-							Longest Streak
-						</div>
-						<span className="font-semibold">{longestStreak} days</span>
-					</div>
-				</div> */}
 			</div>
 		</div>
 	);

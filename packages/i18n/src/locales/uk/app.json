@@ -1,0 +1,186 @@
+{
+  "nav": {
+    "home": "Головна",
+    "lessons": "Уроки",
+    "practice": "Практика",
+    "vocabulary": "Словник",
+    "settings": "Налаштування",
+    "preferences": "Переваги",
+    "voices": "Голоси",
+    "signOut": "Вийти"
+  },
+  "home": {
+    "welcomeBack": "Ласкаво просимо назад, {{firstName}}",
+    "subtitle": "Продовжуйте в тому ж дусі! Ви робите чудовий прогрес."
+  },
+  "streak": {
+    "title": "{{count}} днів підряд",
+    "currentStreak": "Ваш поточний рядок - {{count}} днів.",
+    "longestStreak": "Ваш найдовший рядок - {{count}} днів.",
+    "currentStreakLabel": "Поточний рядок",
+    "longestStreakLabel": "Найдовший рядок"
+  },
+  "todaysActivities": {
+    "title": "Сьогоднішні заняття",
+    "minute_one": "{{count}} хвилина",
+    "minute_other": "{{count}} хвилин",
+    "chat": "Чат",
+    "readAloud": "Читати вголос",
+    "speak": "Говорити"
+  },
+  "practiceTime": {
+    "title": "Щоденний час розмови",
+    "duration": "Тривалість"
+  },
+  "lessonsWidget": {
+    "title": "Уроки",
+    "reachToUnlock": "Досягніть {{percentage}}%, щоб відкрити наступний блок."
+  },
+  "practice": {
+    "title": "Практика",
+    "recentSessions": "Останні сесії",
+    "filterAll": "Усі",
+    "filterConversations": "Розмови",
+    "filterPronunciations": "Вимова",
+    "emptyTitle": "У вас ще немає записів",
+    "emptyDescription": "Більшість людей створюють кілька записів щодня, щоб покращити свої навички мовлення",
+    "noSessionsYet": "Ще немає сесій {{type}}.",
+    "cantFind": "Не можете знайти те, що вам потрібно?",
+    "completed": "Завершено",
+    "inProgress": "В процесі",
+    "view": "Переглянути",
+    "continue": "Продовжити",
+    "deleteSession": "Видалити сесію",
+    "deleteConfirmation": "Ви впевнені, що хочете видалити \"{{title}}\"? Цю дію не можна скасувати.",
+    "cancel": "Скасувати",
+    "delete": "Видалити",
+    "deleting": "Видалення...",
+    "deleteSuccess": "Сесію успішно видалено",
+    "deleteError": "Не вдалося видалити сесію"
+  },
+  "vocabulary": {
+    "title": "Словник",
+    "words": "Слова",
+    "phrases": "Фрази",
+    "progress": "Прогрес"
+  },
+  "settings": {
+    "title": "Налаштування",
+    "general": "Загальні",
+    "personalization": "Персоналізація",
+    "billing": "Оплата та підписка",
+    "signOut": "Вийти"
+  },
+  "upgrade": {
+    "pro": "PRO",
+    "title": "Оновити до Pro",
+    "description": "Приєднуйтесь до <highlight>{{count}}+</highlight> учнів і почніть свій шлях до вільного володіння сьогодні.",
+    "features": {
+      "conversations": "Необмежені розмови з AI",
+      "feedback": "Розширений зворотний зв'язок AI",
+      "vocabulary": "Повна бібліотека словника",
+      "learningPath": "Персоналізований шлях навчання",
+      "analytics": "Відстеження прогресу та аналітика"
+    },
+    "yearly": "Щорічно",
+    "monthly": "Щомісяця",
+    "save": "Зберегти {{percent}}%",
+    "perYear": "/рік",
+    "perMonth": "/місяць",
+    "startTrial": "Почати 7-денний безкоштовний пробний період",
+    "legal": "Продовжуючи, ви погоджуєтеся з нашими <terms>Умовами обслуговування</terms>, <privacy>Політикою конфіденційності</privacy> та <refund>Політикою повернення та скасування</refund>.",
+    "subscriptionSuccess": "Підписка успішна"
+  },
+  "voicesDialog": {
+    "title": "Виберіть голос AI",
+    "description": "Виберіть голос для розмов з AI та практики вимови",
+    "loading": "Завантаження…",
+    "updated": "Голос оновлено",
+    "updateError": "Не вдалося оновити голос"
+  },
+  "pronunciation": {
+    "title": "Практика вимови",
+    "subtitle": "Прочитайте абзац вголос і отримайте детальний зворотний зв'язок щодо вимови за допомогою AI",
+    "chooseLevel": "Виберіть свій рівень",
+    "levels": {
+      "A1": {
+        "label": "Початківець",
+        "wordRange": "60-80 слів",
+        "description": "Прості речення про повсякденне життя, сім'ю та знайомі теми"
+      },
+      "A2": {
+        "label": "Елементарний",
+        "wordRange": "80-100 слів",
+        "description": "Прості розповіді з загальновживаною лексикою про подорожі та хобі"
+      },
+      "B1": {
+        "label": "Середній",
+        "wordRange": "100-130 слів",
+        "description": "Стиль статті новин зі складними структурами та різноманітними часами"
+      },
+      "B2": {
+        "label": "Вище середнього",
+        "wordRange": "120-150 слів",
+        "description": "Академічні та професійні теми з різноманітним синтаксисом"
+      }
+    },
+    "generating": "Генерація абзацу...",
+    "startPractice": "Почати практику {{level}}",
+    "howItWorks": "Як це працює",
+    "steps": {
+      "read": "Прочитайте абзац",
+      "readDescription": "Абзац, згенерований AI, відповідно до вашого рівня",
+      "record": "Запишіть себе",
+      "recordDescription": "Живий транскрипт з'являється, коли ви говорите з Deepgram",
+      "feedback": "Отримайте зворотний зв'язок",
+      "feedbackDescription": "Оцінка Azure + пропозиції AI тренера"
+    },
+    "recentSessions": "Останні сесії",
+    "readAloud": "Читати вголос",
+    "unknownDate": "Невідома дата",
+    "feedbackReady": "Зворотний зв'язок готовий"
+  },
+  "lessons": {
+    "title": "Уроки",
+    "cefrLabels": {
+      "A1": "Початківець A1",
+      "A2": "Елементарний A2",
+      "B1": "Середній B1",
+      "B2": "Вище середнього B2",
+      "C1": "Просунутий C1",
+      "C2": "Вільне володіння C2"
+    },
+    "reachNextLevel": "Досягніть {{percentage}}%, щоб отримати <strong>{{nextLevel}}</strong>",
+    "unlockMessage": "Завершіть попередні блоки, щоб відкрити",
+    "next": "Далі",
+    "lessonTypes": {
+      "grammar": "Граматика",
+      "vocabulary": "Словник",
+      "pronunciation": "Вимова",
+      "explanation": "Пояснення",
+      "reading": "Читання",
+      "listening": "Слухання",
+      "speaking": "Говоріння",
+      "practice": "Практика"
+    },
+    "exerciseTypes": {
+      "lecture": "Лекція",
+      "practice": "Практика",
+      "quiz": "Вікторина",
+      "conversation": "Розмова"
+    },
+    "words": "Слова",
+    "grammar": "Граматика",
+    "exercises": "Вправи",
+    "grammarToPractice": "Граматика для практики",
+    "wordsToPractice": "Слова для практики",
+    "review": "Огляд",
+    "continue": "Продовжити",
+    "gotIt": "Зрозуміло!",
+    "noLessons": "Уроки ще не доступні.",
+    "completeOnboarding": "Завершіть ознайомлення, щоб створити свій персоналізований шлях навчання.",
+    "finishLessons": "Завершіть ці уроки, щоб отримати новий матеріал.",
+    "module": "Модуль {{number}}",
+    "moduleProgress": "Ви говорили {{talked}} хвилин. Говоріть ще {{remaining}} хвилин, щоб завершити модуль."
+  }
+}

@@ -3,18 +3,15 @@ import { user } from "./auth";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type ReadAloudItem = {
+export type CefrLevel = "A1" | "A2" | "B1" | "B2" | "C1";
+
+export type ParagraphItem = {
 	text: string;
 	topic: string;
-	phonemeFocus: string;
+	cefrLevel: CefrLevel;
+	wordCount: number;
+	focusAreas: string[];
 	tips: string;
-};
-
-export type TongueTwisterItem = {
-	text: string;
-	speed: "slow" | "medium" | "fast";
-	targetPhonemes: string[];
-	tip: string;
 };
 
 export type PhonemeResult = {
@@ -55,7 +52,23 @@ export type PronunciationSessionSummary = {
 	worstScore: number;
 	weakWords: string[];
 	weakPhonemes: WeakPhoneme[];
-	itemScores: { itemIndex: number; bestScore: number; attempts: number }[];
+};
+
+export type PracticeSuggestion = {
+	type: "phoneme" | "word" | "pattern" | "fluency";
+	title: string;
+	description: string;
+	examples: string[];
+	priority: "high" | "medium" | "low";
+};
+
+export type PronunciationFeedback = {
+	overallAnalysis: string;
+	strengths: string[];
+	areasToImprove: string[];
+	suggestions: PracticeSuggestion[];
+	recommendedLevel: CefrLevel;
+	nextSteps: string;
 };
 
 // ─── Pronunciation Session ────────────────────────────────────────────────────
@@ -65,13 +78,17 @@ export const pronunciationSession = pgTable("pronunciation_session", {
 	userId: text("user_id")
 		.notNull()
 		.references(() => user.id, { onDelete: "cascade" }),
-	mode: text("mode").notNull(), // "read-aloud" | "tongue-twisters"
-	difficulty: text("difficulty").notNull(), // "beginner" | "intermediate" | "advanced"
-	items: jsonb("items")
-		.notNull()
-		.$type<ReadAloudItem[] | TongueTwisterItem[]>(),
-	status: text("status").notNull().default("active"), // active, completed, abandoned
+	mode: text("mode").notNull(),
+	difficulty: text("difficulty").notNull(),
+	cefrLevel: text("cefr_level").$type<CefrLevel>(),
+	paragraph: jsonb("paragraph").$type<ParagraphItem>(),
+	items: jsonb("items").notNull().$type<ParagraphItem[]>(),
+	status: text("status").notNull().default("active"),
 	summary: jsonb("summary").$type<PronunciationSessionSummary>(),
+	feedback: jsonb("feedback").$type<PronunciationFeedback>(),
+	feedbackStatus: text("feedback_status")
+		.$type<"pending" | "processing" | "completed" | "failed">()
+		.default("pending"),
 	createdAt: timestamp("created_at").notNull().defaultNow(),
 	completedAt: timestamp("completed_at"),
 	deletedAt: timestamp("deleted_at"),
@@ -91,9 +108,8 @@ export const pronunciationAttempt = pgTable("pronunciation_attempt", {
 	fluencyScore: integer("fluency_score"),
 	completenessScore: integer("completeness_score"),
 	prosodyScore: integer("prosody_score"),
-	wordResults: jsonb("word_results")
-		.notNull()
-		.$type<WordResult[]>(),
+	wordResults: jsonb("word_results").notNull().$type<WordResult[]>(),
+	audioUrl: text("audio_url"),
 	createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

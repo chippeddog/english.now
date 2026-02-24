@@ -69,6 +69,26 @@ export const auth = betterAuth<BetterAuthOptions>({
 			clientSecret: env.APPLE_CLIENT_SECRET ?? "",
 		},
 	},
+	rateLimit: {
+		enabled: true,
+		window: 60,
+		max: 100,
+		storage: "database",
+		customRules: {
+			"/sign-in/email": {
+				window: 10,
+				max: 3,
+			},
+			"/sign-up/email": {
+				window: 10,
+				max: 3,
+			},
+			"/forget-password": {
+				window: 60,
+				max: 3,
+			},
+		},
+	},
 	advanced: {
 		defaultCookieAttributes: {
 			sameSite: "none",

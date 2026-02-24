@@ -1,0 +1,1 @@
+ALTER TABLE "pronunciation_attempt" ADD COLUMN "audio_url" text;

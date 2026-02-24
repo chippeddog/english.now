@@ -1,0 +1,186 @@
+{
+  "nav": {
+    "home": "Startseite",
+    "lessons": "Lektionen",
+    "practice": "Üben",
+    "vocabulary": "Wortschatz",
+    "settings": "Einstellungen",
+    "preferences": "Präferenzen",
+    "voices": "Stimmen",
+    "signOut": "Abmelden"
+  },
+  "home": {
+    "welcomeBack": "Willkommen zurück, {{firstName}}",
+    "subtitle": "Weiter so! Du machst ausgezeichnete Fortschritte."
+  },
+  "streak": {
+    "title": "{{count}} Tage in Folge",
+    "currentStreak": "Deine aktuelle Serie beträgt {{count}} Tage.",
+    "longestStreak": "Deine längste Serie beträgt {{count}} Tage.",
+    "currentStreakLabel": "Aktuelle Serie",
+    "longestStreakLabel": "Längste Serie"
+  },
+  "todaysActivities": {
+    "title": "Heutige Aktivitäten",
+    "minute_one": "{{count}} Minute",
+    "minute_other": "{{count}} Minuten",
+    "chat": "Chat",
+    "readAloud": "Laut vorlesen",
+    "speak": "Sprechen"
+  },
+  "practiceTime": {
+    "title": "Tägliche Sprechzeit",
+    "duration": "Dauer"
+  },
+  "lessonsWidget": {
+    "title": "Lektionen",
+    "reachToUnlock": "Erreiche {{percentage}}%, um die nächste Einheit zu öffnen."
+  },
+  "practice": {
+    "title": "Üben",
+    "recentSessions": "Kürzliche Sitzungen",
+    "filterAll": "Alle",
+    "filterConversations": "Unterhaltungen",
+    "filterPronunciations": "Aussprache",
+    "emptyTitle": "Du hast noch keine Aufzeichnungen",
+    "emptyDescription": "Die meisten Menschen erstellen täglich mehrere Aufzeichnungen, um ihre Sprechfähigkeiten zu verbessern",
+    "noSessionsYet": "Noch keine {{type}} Sitzungen.",
+    "cantFind": "Kannst du nicht finden, was du brauchst?",
+    "completed": "Abgeschlossen",
+    "inProgress": "In Bearbeitung",
+    "view": "Ansehen",
+    "continue": "Fortsetzen",
+    "deleteSession": "Sitzung löschen",
+    "deleteConfirmation": "Bist du sicher, dass du \"{{title}}\" löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "deleting": "Löschen...",
+    "deleteSuccess": "Sitzung erfolgreich gelöscht",
+    "deleteError": "Fehler beim Löschen der Sitzung"
+  },
+  "vocabulary": {
+    "title": "Wortschatz",
+    "words": "Wörter",
+    "phrases": "Phrasen",
+    "progress": "Fortschritt"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "general": "Allgemein",
+    "personalization": "Personalisierung",
+    "billing": "Abrechnung & Abonnement",
+    "signOut": "Abmelden"
+  },
+  "upgrade": {
+    "pro": "PRO",
+    "title": "Upgrade auf Pro",
+    "description": "Schließe dich <highlight>{{count}}+</highlight> Lernenden an und beginne noch heute deine Reise zur Sprachbeherrschung.",
+    "features": {
+      "conversations": "Unbegrenzte KI-Unterhaltungen",
+      "feedback": "Erweitertes KI-Feedback",
+      "vocabulary": "Vollständige Wortschatzbibliothek",
+      "learningPath": "Personalisierter Lernpfad",
+      "analytics": "Fortschrittsverfolgung und Analysen"
+    },
+    "yearly": "Jährlich",
+    "monthly": "Monatlich",
+    "save": "{{percent}}% sparen",
+    "perYear": "/Jahr",
+    "perMonth": "/Monat",
+    "startTrial": "7-tägige kostenlose Testversion starten",
+    "legal": "Indem du fortfährst, stimmst du unseren <terms>Nutzungsbedingungen</terms>, <privacy>Datenschutz</privacy> und <refund>Rückerstattungs- & Stornierungsrichtlinien</refund> zu.",
+    "subscriptionSuccess": "Abonnement erfolgreich"
+  },
+  "voicesDialog": {
+    "title": "KI-Stimme wählen",
+    "description": "Wähle die Stimme für KI-Unterhaltungen und Ausspracheübungen",
+    "loading": "Laden…",
+    "updated": "Stimme aktualisiert",
+    "updateError": "Fehler beim Aktualisieren der Stimme"
+  },
+  "pronunciation": {
+    "title": "Ausspracheübung",
+    "subtitle": "Lies einen Absatz laut vor und erhalte detailliertes Aussprache-Feedback von der KI",
+    "chooseLevel": "Wähle dein Niveau",
+    "levels": {
+      "A1": {
+        "label": "Anfänger",
+        "wordRange": "60-80 Wörter",
+        "description": "Einfache Sätze über das tägliche Leben, Familie und vertraute Themen"
+      },
+      "A2": {
+        "label": "Grundstufe",
+        "wordRange": "80-100 Wörter",
+        "description": "Einfache Erzählungen mit allgemeinem Wortschatz über Reisen und Hobbys"
+      },
+      "B1": {
+        "label": "Mittelstufe",
+        "wordRange": "100-130 Wörter",
+        "description": "Nachrichtenartikel-Stil mit komplexen Strukturen und verschiedenen Zeiten"
+      },
+      "B2": {
+        "label": "Obere Mittelstufe",
+        "wordRange": "120-150 Wörter",
+        "description": "Akademische und berufliche Themen mit variierter Syntax"
+      }
+    },
+    "generating": "Absatz wird generiert...",
+    "startPractice": "{{level}} Übung starten",
+    "howItWorks": "Wie es funktioniert",
+    "steps": {
+      "read": "Lies den Absatz",
+      "readDescription": "Ein KI-generierter Absatz, der auf dein Niveau zugeschnitten ist",
+      "record": "Nimm dich auf",
+      "recordDescription": "Live-Transkript erscheint, während du mit Deepgram sprichst",
+      "feedback": "Erhalte Feedback",
+      "feedbackDescription": "Azure-Bewertung + KI-Coach-Vorschläge"
+    },
+    "recentSessions": "Kürzliche Sitzungen",
+    "readAloud": "Laut vorlesen",
+    "unknownDate": "Unbekanntes Datum",
+    "feedbackReady": "Feedback bereit"
+  },
+  "lessons": {
+    "title": "Lektionen",
+    "cefrLabels": {
+      "A1": "Anfänger A1",
+      "A2": "Grundstufe A2",
+      "B1": "Mittelstufe B1",
+      "B2": "Obere Mittelstufe B2",
+      "C1": "Fortgeschritten C1",
+      "C2": "Kompetenz C2"
+    },
+    "reachNextLevel": "Erreiche {{percentage}}%, um <strong>{{nextLevel}}</strong> zu erreichen",
+    "unlockMessage": "Vervollständige vorherige Einheiten, um freizuschalten",
+    "next": "Weiter",
+    "lessonTypes": {
+      "grammar": "Grammatik",
+      "vocabulary": "Wortschatz",
+      "pronunciation": "Aussprache",
+      "explanation": "Erklärung",
+      "reading": "Lesen",
+      "listening": "Hören",
+      "speaking": "Sprechen",
+      "practice": "Üben"
+    },
+    "exerciseTypes": {
+      "lecture": "Vortrag",
+      "practice": "Üben",
+      "quiz": "Quiz",
+      "conversation": "Unterhaltung"
+    },
+    "words": "Wörter",
+    "grammar": "Grammatik",
+    "exercises": "Übungen",
+    "grammarToPractice": "Grammatik zum Üben",
+    "wordsToPractice": "Wörter zum Üben",
+    "review": "Überprüfung",
+    "continue": "Fortsetzen",
+    "gotIt": "Verstanden!",
+    "noLessons": "Noch keine Lektionen verfügbar.",
+    "completeOnboarding": "Vervollständige das Onboarding, um deinen personalisierten Lernpfad zu erstellen.",
+    "finishLessons": "Beende diese Lektionen, um neues Material zu erhalten.",
+    "module": "Modul {{number}}",
+    "moduleProgress": "Du hast {{talked}} Minuten gesprochen. Sprich noch {{remaining}} Minuten, um das Modul abzuschließen."
+  }
+}

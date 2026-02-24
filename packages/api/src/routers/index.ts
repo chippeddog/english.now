@@ -1,4 +1,4 @@
-import { protectedProcedure, publicProcedure, router } from "../index";
+import { publicProcedure, router } from "../index";
 import { contentRouter } from "./content";
 import { conversationRouter } from "./conversation";
 import { feedbackRouter } from "./feedback";
@@ -10,12 +10,6 @@ import { vocabularyRouter } from "./vocabulary";
 export const appRouter = router({
 	healthCheck: publicProcedure.query(() => {
 		return "OK";
-	}),
-	privateData: protectedProcedure.query(({ ctx }) => {
-		return {
-			message: "This is private",
-			user: ctx.session.user,
-		};
 	}),
 	content: contentRouter,
 	vocabulary: vocabularyRouter,

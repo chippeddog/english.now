@@ -1,0 +1,186 @@
+{
+  "nav": {
+    "home": "首页",
+    "lessons": "课程",
+    "practice": "练习",
+    "vocabulary": "词汇",
+    "settings": "设置",
+    "preferences": "偏好",
+    "voices": "语音",
+    "signOut": "退出"
+  },
+  "home": {
+    "welcomeBack": "欢迎回来，{{firstName}}",
+    "subtitle": "继续保持出色的工作！你正在取得卓越的进步。"
+  },
+  "streak": {
+    "title": "{{count}} 天连胜",
+    "currentStreak": "你当前的连胜是 {{count}} 天。",
+    "longestStreak": "你最长的连胜是 {{count}} 天。",
+    "currentStreakLabel": "当前连胜",
+    "longestStreakLabel": "最长连胜"
+  },
+  "todaysActivities": {
+    "title": "今天的活动",
+    "minute_one": "{{count}} 分钟",
+    "minute_other": "{{count}} 分钟",
+    "chat": "聊天",
+    "readAloud": "朗读",
+    "speak": "说话"
+  },
+  "practiceTime": {
+    "title": "每日说话时间",
+    "duration": "时长"
+  },
+  "lessonsWidget": {
+    "title": "课程",
+    "reachToUnlock": "达到 {{percentage}}% 以开启下一个单元。"
+  },
+  "practice": {
+    "title": "练习",
+    "recentSessions": "最近的会话",
+    "filterAll": "全部",
+    "filterConversations": "对话",
+    "filterPronunciations": "发音",
+    "emptyTitle": "你还没有记录",
+    "emptyDescription": "大多数人每天创建多个记录以提高口语",
+    "noSessionsYet": "尚无 {{type}} 会话。",
+    "cantFind": "找不到你需要的东西？",
+    "completed": "已完成",
+    "inProgress": "进行中",
+    "view": "查看",
+    "continue": "继续",
+    "deleteSession": "删除会话",
+    "deleteConfirmation": "你确定要删除 \"{{title}}\" 吗？此操作无法撤销。",
+    "cancel": "取消",
+    "delete": "删除",
+    "deleting": "正在删除...",
+    "deleteSuccess": "会话删除成功",
+    "deleteError": "删除会话失败"
+  },
+  "vocabulary": {
+    "title": "词汇",
+    "words": "单词",
+    "phrases": "短语",
+    "progress": "进度"
+  },
+  "settings": {
+    "title": "设置",
+    "general": "通用",
+    "personalization": "个性化",
+    "billing": "账单与订阅",
+    "signOut": "退出"
+  },
+  "upgrade": {
+    "pro": "专业版",
+    "title": "升级到专业版",
+    "description": "加入 <highlight>{{count}}+</highlight> 学习者，今天就开始你的流利之旅。",
+    "features": {
+      "conversations": "无限制的AI对话",
+      "feedback": "高级AI反馈",
+      "vocabulary": "完整词汇库",
+      "learningPath": "个性化学习路径",
+      "analytics": "进度跟踪和分析"
+    },
+    "yearly": "年付",
+    "monthly": "月付",
+    "save": "节省 {{percent}}%",
+    "perYear": "/年",
+    "perMonth": "/月",
+    "startTrial": "开始7天免费试用",
+    "legal": "继续即表示你同意我们的 <terms>服务条款</terms>、<privacy>隐私政策</privacy> 和 <refund>退款与取消政策</refund>。",
+    "subscriptionSuccess": "订阅成功"
+  },
+  "voicesDialog": {
+    "title": "选择AI语音",
+    "description": "选择AI对话和发音练习的语音",
+    "loading": "加载中…",
+    "updated": "语音已更新",
+    "updateError": "更新语音失败"
+  },
+  "pronunciation": {
+    "title": "发音练习",
+    "subtitle": "大声朗读一段文字，并获得由AI提供的详细发音反馈",
+    "chooseLevel": "选择你的级别",
+    "levels": {
+      "A1": {
+        "label": "初学者",
+        "wordRange": "60-80 个单词",
+        "description": "关于日常生活、家庭和熟悉话题的简单句子"
+      },
+      "A2": {
+        "label": "基础",
+        "wordRange": "80-100 个单词",
+        "description": "使用常见词汇讲述旅行和爱好的简单故事"
+      },
+      "B1": {
+        "label": "中级",
+        "wordRange": "100-130 个单词",
+        "description": "新闻文章风格，包含复杂结构和多样时态"
+      },
+      "B2": {
+        "label": "中高级",
+        "wordRange": "120-150 个单词",
+        "description": "学术和专业话题，句法多样"
+      }
+    },
+    "generating": "生成段落中...",
+    "startPractice": "开始 {{level}} 练习",
+    "howItWorks": "工作原理",
+    "steps": {
+      "read": "阅读段落",
+      "readDescription": "根据你的级别生成的AI段落",
+      "record": "录音",
+      "recordDescription": "随着你说话，实时转录将通过Deepgram显示",
+      "feedback": "获得反馈",
+      "feedbackDescription": "Azure评估 + AI教练建议"
+    },
+    "recentSessions": "最近的会话",
+    "readAloud": "朗读",
+    "unknownDate": "未知日期",
+    "feedbackReady": "反馈已准备好"
+  },
+  "lessons": {
+    "title": "课程",
+    "cefrLabels": {
+      "A1": "初学者 A1",
+      "A2": "基础 A2",
+      "B1": "中级 B1",
+      "B2": "中高级 B2",
+      "C1": "高级 C1",
+      "C2": "精通 C2"
+    },
+    "reachNextLevel": "达到 {{percentage}}% 以获得 <strong>{{nextLevel}}</strong>",
+    "unlockMessage": "完成前面的单元以解锁",
+    "next": "下一个",
+    "lessonTypes": {
+      "grammar": "语法",
+      "vocabulary": "词汇",
+      "pronunciation": "发音",
+      "explanation": "解释",
+      "reading": "阅读",
+      "listening": "听力",
+      "speaking": "口语",
+      "practice": "练习"
+    },
+    "exerciseTypes": {
+      "lecture": "讲座",
+      "practice": "练习",
+      "quiz": "测验",
+      "conversation": "对话"
+    },
+    "words": "单词",
+    "grammar": "语法",
+    "exercises": "练习",
+    "grammarToPractice": "语法练习",
+    "wordsToPractice": "单词练习",
+    "review": "复习",
+    "continue": "继续",
+    "gotIt": "明白了！",
+    "noLessons": "暂无课程。",
+    "completeOnboarding": "完成入门以生成个性化学习路径。",
+    "finishLessons": "完成这些课程以获得新材料。",
+    "module": "模块 {{number}}",
+    "moduleProgress": "你已说了 {{talked}} 分钟。再说 {{remaining}} 分钟以完成模块。"
+  }
+}

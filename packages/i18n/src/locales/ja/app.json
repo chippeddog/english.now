@@ -1,0 +1,186 @@
+{
+  "nav": {
+    "home": "ホーム",
+    "lessons": "レッスン",
+    "practice": "練習",
+    "vocabulary": "語彙",
+    "settings": "設定",
+    "preferences": "設定",
+    "voices": "音声",
+    "signOut": "サインアウト"
+  },
+  "home": {
+    "welcomeBack": "おかえりなさい、{{firstName}}",
+    "subtitle": "素晴らしい仕事を続けてください！あなたは素晴らしい進歩を遂げています。"
+  },
+  "streak": {
+    "title": "{{count}}日連続",
+    "currentStreak": "現在の連続記録は{{count}}日です。",
+    "longestStreak": "最長の連続記録は{{count}}日です。",
+    "currentStreakLabel": "現在の連続記録",
+    "longestStreakLabel": "最長の連続記録"
+  },
+  "todaysActivities": {
+    "title": "今日の活動",
+    "minute_one": "{{count}}分",
+    "minute_other": "{{count}}分",
+    "chat": "チャット",
+    "readAloud": "音読",
+    "speak": "話す"
+  },
+  "practiceTime": {
+    "title": "毎日の話す時間",
+    "duration": "期間"
+  },
+  "lessonsWidget": {
+    "title": "レッスン",
+    "reachToUnlock": "次のユニットを開くには{{percentage}}%に到達してください。"
+  },
+  "practice": {
+    "title": "練習",
+    "recentSessions": "最近のセッション",
+    "filterAll": "すべて",
+    "filterConversations": "会話",
+    "filterPronunciations": "発音",
+    "emptyTitle": "まだ記録がありません",
+    "emptyDescription": "多くの人は話す能力を向上させるために毎日複数の記録を作成します",
+    "noSessionsYet": "まだ{{type}}セッションがありません。",
+    "cantFind": "必要なものが見つかりませんか？",
+    "completed": "完了",
+    "inProgress": "進行中",
+    "view": "表示",
+    "continue": "続ける",
+    "deleteSession": "セッションを削除",
+    "deleteConfirmation": "\"{{title}}\"を削除してもよろしいですか？この操作は元に戻せません。",
+    "cancel": "キャンセル",
+    "delete": "削除",
+    "deleting": "削除中...",
+    "deleteSuccess": "セッションが正常に削除されました",
+    "deleteError": "セッションの削除に失敗しました"
+  },
+  "vocabulary": {
+    "title": "語彙",
+    "words": "単語",
+    "phrases": "フレーズ",
+    "progress": "進捗"
+  },
+  "settings": {
+    "title": "設定",
+    "general": "一般",
+    "personalization": "パーソナライズ",
+    "billing": "請求とサブスクリプション",
+    "signOut": "サインアウト"
+  },
+  "upgrade": {
+    "pro": "PRO",
+    "title": "Proにアップグレード",
+    "description": "<highlight>{{count}}+</highlight>の学習者に参加して、今日から流暢さへの旅を始めましょう。",
+    "features": {
+      "conversations": "無制限のAI会話",
+      "feedback": "高度なAIフィードバック",
+      "vocabulary": "完全な語彙ライブラリ",
+      "learningPath": "個別化された学習パス",
+      "analytics": "進捗追跡と分析"
+    },
+    "yearly": "年間",
+    "monthly": "月間",
+    "save": "{{percent}}%節約",
+    "perYear": "/年",
+    "perMonth": "/月",
+    "startTrial": "7日間の無料トライアルを開始",
+    "legal": "続行することで、<terms>利用規約</terms>、<privacy>プライバシー</privacy>、および<refund>返金とキャンセルポリシー</refund>に同意したものとみなされます。",
+    "subscriptionSuccess": "サブスクリプションが成功しました"
+  },
+  "voicesDialog": {
+    "title": "AI音声を選択",
+    "description": "AI会話と発音練習のための音声を選択してください",
+    "loading": "読み込み中…",
+    "updated": "音声が更新されました",
+    "updateError": "音声の更新に失敗しました"
+  },
+  "pronunciation": {
+    "title": "発音練習",
+    "subtitle": "段落を音読して、AIによる詳細な発音フィードバックを受け取ります",
+    "chooseLevel": "レベルを選択",
+    "levels": {
+      "A1": {
+        "label": "初心者",
+        "wordRange": "60-80語",
+        "description": "日常生活、家族、身近な話題についての簡単な文"
+      },
+      "A2": {
+        "label": "初級",
+        "wordRange": "80-100語",
+        "description": "旅行や趣味についての一般的な語彙を使った簡単な物語"
+      },
+      "B1": {
+        "label": "中級",
+        "wordRange": "100-130語",
+        "description": "複雑な構造と多様な時制を含むニュース記事スタイル"
+      },
+      "B2": {
+        "label": "中上級",
+        "wordRange": "120-150語",
+        "description": "多様な構文を用いた学術的および専門的な話題"
+      }
+    },
+    "generating": "段落を生成中...",
+    "startPractice": "{{level}}練習を開始",
+    "howItWorks": "使い方",
+    "steps": {
+      "read": "段落を読む",
+      "readDescription": "あなたのレベルに合わせたAI生成の段落",
+      "record": "自分の声を録音",
+      "recordDescription": "話すと同時にDeepgramによるライブトランスクリプトが表示されます",
+      "feedback": "フィードバックを受け取る",
+      "feedbackDescription": "Azure評価 + AIコーチの提案"
+    },
+    "recentSessions": "最近のセッション",
+    "readAloud": "音読",
+    "unknownDate": "不明な日付",
+    "feedbackReady": "フィードバック準備完了"
+  },
+  "lessons": {
+    "title": "レッスン",
+    "cefrLabels": {
+      "A1": "初心者 A1",
+      "A2": "初級 A2",
+      "B1": "中級 B1",
+      "B2": "中上級 B2",
+      "C1": "上級 C1",
+      "C2": "熟練 C2"
+    },
+    "reachNextLevel": "{{percentage}}%に到達して<strong>{{nextLevel}}</strong>を取得",
+    "unlockMessage": "前のユニットを完了してロックを解除",
+    "next": "次へ",
+    "lessonTypes": {
+      "grammar": "文法",
+      "vocabulary": "語彙",
+      "pronunciation": "発音",
+      "explanation": "説明",
+      "reading": "読解",
+      "listening": "リスニング",
+      "speaking": "スピーキング",
+      "practice": "練習"
+    },
+    "exerciseTypes": {
+      "lecture": "講義",
+      "practice": "練習",
+      "quiz": "クイズ",
+      "conversation": "会話"
+    },
+    "words": "単語",
+    "grammar": "文法",
+    "exercises": "練習問題",
+    "grammarToPractice": "練習する文法",
+    "wordsToPractice": "練習する単語",
+    "review": "復習",
+    "continue": "続ける",
+    "gotIt": "わかりました！",
+    "noLessons": "まだ利用可能なレッスンはありません。",
+    "completeOnboarding": "オンボーディングを完了して、個別化された学習パスを生成してください。",
+    "finishLessons": "これらのレッスンを完了して新しい教材を受け取る。",
+    "module": "モジュール{{number}}",
+    "moduleProgress": "あなたは{{talked}}分話しました。モジュールを完了するためにあと{{remaining}}分話してください。"
+  }
+}

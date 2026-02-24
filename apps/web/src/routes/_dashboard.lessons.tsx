@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
 	ArrowRight,
 	BookOpen,
@@ -554,10 +554,12 @@ function LessonDetailDialog({
 	lesson,
 	open,
 	onClose,
+	onStart,
 }: {
 	lesson: Lesson | null;
 	open: boolean;
 	onClose: () => void;
+	onStart: (lesson: Lesson) => void;
 }) {
 	if (!lesson) return null;
 
@@ -699,13 +701,15 @@ function LessonDetailDialog({
 				<div className="mt-4">
 					<Button
 						className="h-12 w-full rounded-2xl bg-blue-600 font-semibold text-base hover:bg-blue-700"
-						onClick={onClose}
+						onClick={() => {
+							if (lesson.status === "completed") {
+								onStart(lesson);
+							} else {
+								onClose();
+							}
+						}}
 					>
-						{lesson.status === "completed"
-							? "Review"
-							: lesson.status === "current"
-								? "Continue"
-								: "Got It!"}
+						{lesson.status === "completed" ? "Review" : "Got It!"}
 					</Button>
 				</div>
 			</DialogContent>
@@ -727,6 +731,7 @@ function FooterMessage({ message }: { message: string }) {
 
 function RouteComponent() {
 	const trpc = useTRPC();
+	const navigate = useNavigate();
 	const { data: learningPathData, isLoading } = useQuery(
 		trpc.content.getLearningPath.queryOptions(),
 	);
@@ -781,6 +786,10 @@ function RouteComponent() {
 	}, [units]);
 
 	const handleSelectLesson = (lesson: Lesson) => {
+		if (lesson.status === "current" || lesson.status === "available") {
+			navigate({ to: "/lesson/$lessonId", params: { lessonId: lesson.id } });
+			return;
+		}
 		setSelectedLesson(lesson);
 		setDialogOpen(true);
 	};
@@ -875,6 +884,10 @@ function RouteComponent() {
 				lesson={selectedLesson}
 				open={dialogOpen}
 				onClose={handleCloseDialog}
+				onStart={(lesson) => {
+					handleCloseDialog();
+					navigate({ to: "/lesson/$lessonId", params: { lessonId: lesson.id } });
+				}}
 			/>
 		</div>
 	);

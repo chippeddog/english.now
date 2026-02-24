@@ -1,3 +1,4 @@
+import { Trans, useTranslation } from "@english.now/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import Lessons from "@/components/dashboard/lessons";
@@ -12,6 +13,7 @@ export const Route = createFileRoute("/_dashboard/home")({
 
 function RouteComponent() {
 	const trpc = useTRPC();
+	const { t } = useTranslation("app");
 	const { session } = Route.useRouteContext();
 	const { data: profile } = useQuery(trpc.profile.get.queryOptions());
 	const timezone =
@@ -26,12 +28,10 @@ function RouteComponent() {
 			<div className="mb-8 flex flex-col gap-1">
 				<div className="flex items-center gap-3">
 					<h1 className="font-bold font-lyon text-3xl tracking-tight">
-						Welcome back, {firstName}
+						<Trans>{t("home.welcomeBack", { firstName })}</Trans>
 					</h1>
 				</div>
-				<p className="text-muted-foreground">
-					Keep up the great work! You're making excellent progress.
-				</p>
+				<p className="text-muted-foreground">{t("home.subtitle")}</p>
 			</div>
 			<div className="grid gap-5 lg:grid-cols-3">
 				<div className="space-y-6 lg:col-span-2">

@@ -1,3 +1,4 @@
+import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { MicIcon } from "lucide-react";
 import { useState } from "react";
@@ -9,6 +10,7 @@ import {
 	DialogFooter,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { useTRPC } from "@/utils/trpc";
 
 const MODES = [
 	{
@@ -17,12 +19,12 @@ const MODES = [
 		icon: "📖",
 		description: "Read text and get instant feedback",
 	},
-	{
-		id: "tongue-twisters" as const,
-		name: "Tongue Twisters",
-		icon: "👅",
-		description: "Challenge yourself with tricky phrases",
-	},
+	// {
+	// 	id: "tongue-twisters" as const,
+	// 	name: "Tongue Twisters",
+	// 	icon: "👅",
+	// 	description: "Challenge yourself with tricky phrases",
+	// },
 	// {
 	// 	id: "minimal-pairs" as const,
 	// 	name: "Minimal Pairs",
@@ -44,16 +46,24 @@ function DialogTopicsPronunciation({
 	open: boolean;
 	setOpen: (open: boolean) => void;
 }) {
+	const trpc = useTRPC();
 	const navigate = useNavigate();
 	const [selectedMode, setSelectedMode] = useState<string>("");
 
+	const startSession = useMutation(
+		trpc.pronunciation.startSession.mutationOptions({
+			onSuccess: (data) => {
+				navigate({
+					to: "/pronunciation/$sessionId",
+					params: { sessionId: data.sessionId },
+				});
+			},
+		}),
+	);
+
 	const handleStart = () => {
 		if (selectedMode) {
-			setOpen(false);
-			navigate({
-				to: "/pronunciation",
-				search: { mode: selectedMode },
-			});
+			startSession.mutate({});
 		}
 	};
 

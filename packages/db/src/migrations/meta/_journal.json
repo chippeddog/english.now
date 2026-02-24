@@ -99,6 +99,55 @@
       "when": 1771525431361,
       "tag": "0013_yummy_human_cannonball",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1771761394905,
+      "tag": "0014_lame_selene",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1771771699173,
+      "tag": "0015_familiar_psynapse",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1771777547143,
+      "tag": "0016_boring_black_crow",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1771795338028,
+      "tag": "0017_pronunciation_attempt_audio_url",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1771919365885,
+      "tag": "0018_lesson_attempt",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1772006400000,
+      "tag": "0019_daily_suggestion",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1771936798459,
+      "tag": "0020_thick_hellion",
+      "breakpoints": true
     }
   ]
 }

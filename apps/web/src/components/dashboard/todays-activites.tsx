@@ -1,261 +1,244 @@
-import { ArrowRightIcon } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
+import { ArrowRightIcon, CheckIcon, LoaderIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { useTRPC } from "@/utils/trpc";
 
-type ActivityType = "chat" | "readAloud" | "speak";
-
-interface Activity {
-	id: number;
+type DailyActivity = {
+	id: string;
 	emoji: string;
 	title: string;
+	description: string;
 	duration: number;
-	type: ActivityType;
+	type: "pronunciation" | "conversation";
 	typeLabel: string;
+	metadata: {
+		scenario?: string;
+		scenarioName?: string;
+		scenarioDescription?: string;
+		aiRole?: string;
+		cefrLevel?: string;
+	};
+	completedAt: string | null;
+	sessionId: string | null;
+};
+
+function ActivitySkeleton() {
+	return (
+		<div className="flex min-h-48 flex-col justify-between rounded-2xl border border-border/50 bg-white p-4">
+			<div>
+				<Skeleton className="mb-4 h-6 w-16 rounded-lg" />
+				<Skeleton className="mb-2 size-9 rounded-lg" />
+				<Skeleton className="mb-1 h-4 w-full rounded" />
+				<Skeleton className="h-4 w-2/3 rounded" />
+			</div>
+			<div className="flex items-center justify-between">
+				<Skeleton className="h-7 w-20 rounded-lg" />
+				<Skeleton className="size-4 rounded" />
+			</div>
+		</div>
+	);
 }
 
-// Pool of activities — rotated daily for a personalized feel
-const activityPool: Activity[] = [
-	{
-		id: 1,
-		emoji: "📱",
-		title: "Describe Your Favorite Social App",
-		duration: 1,
-		type: "chat",
-		typeLabel: "Chat",
-	},
-	{
-		id: 2,
-		emoji: "🤔",
-		title: "Common Causes of Miscommunication",
-		duration: 4,
-		type: "readAloud",
-		typeLabel: "Read Aloud",
-	},
-	{
-		id: 3,
-		emoji: "🔄",
-		title: "Talk About a Big Life Shift",
-		duration: 5,
-		type: "speak",
-		typeLabel: "Speak",
-	},
-	{
-		id: 4,
-		emoji: "👓",
-		title: "Help Choose New Glasses",
-		duration: 4,
-		type: "chat",
-		typeLabel: "Chat",
-	},
-	{
-		id: 5,
-		emoji: "🏛️",
-		title: "How Elections Shape Our Lives",
-		duration: 2,
-		type: "readAloud",
-		typeLabel: "Read Aloud",
-	},
-	{
-		id: 6,
-		emoji: "⚡",
-		title: "Explain Why Passwords Matter",
-		duration: 3,
-		type: "speak",
-		typeLabel: "Speak",
-	},
-	{
-		id: 7,
-		emoji: "🐕",
-		title: "Share a Memorable Dog Story",
-		duration: 3,
-		type: "chat",
-		typeLabel: "Chat",
-	},
-	{
-		id: 8,
-		emoji: "🌍",
-		title: "How Music Connects Us",
-		duration: 1,
-		type: "readAloud",
-		typeLabel: "Read Aloud",
-	},
-	{
-		id: 9,
-		emoji: "😅",
-		title: "Describe an Awkward Mix-up",
-		duration: 1,
-		type: "speak",
-		typeLabel: "Speak",
-	},
-	{
-		id: 10,
-		emoji: "🎬",
-		title: "Review Your Favorite Movie",
-		duration: 3,
-		type: "chat",
-		typeLabel: "Chat",
-	},
-	{
-		id: 11,
-		emoji: "🍳",
-		title: "Explain a Recipe Step by Step",
-		duration: 4,
-		type: "readAloud",
-		typeLabel: "Read Aloud",
-	},
-	{
-		id: 12,
-		emoji: "🚀",
-		title: "Pitch a Startup Idea",
-		duration: 5,
-		type: "speak",
-		typeLabel: "Speak",
-	},
-	{
-		id: 13,
-		emoji: "🎵",
-		title: "Describe a Song That Moves You",
-		duration: 2,
-		type: "chat",
-		typeLabel: "Chat",
-	},
-	{
-		id: 14,
-		emoji: "📖",
-		title: "Summarize a News Article",
-		duration: 3,
-		type: "readAloud",
-		typeLabel: "Read Aloud",
-	},
-	{
-		id: 15,
-		emoji: "🏔️",
-		title: "Talk About a Dream Destination",
-		duration: 2,
-		type: "speak",
-		typeLabel: "Speak",
-	},
-	{
-		id: 16,
-		emoji: "💡",
-		title: "Explain a Concept You Love",
-		duration: 3,
-		type: "chat",
-		typeLabel: "Chat",
-	},
-	{
-		id: 17,
-		emoji: "🎭",
-		title: "Act Out a Dialogue Scene",
-		duration: 4,
-		type: "readAloud",
-		typeLabel: "Read Aloud",
-	},
-	{
-		id: 18,
-		emoji: "🌱",
-		title: "Share Your Morning Routine",
-		duration: 2,
-		type: "speak",
-		typeLabel: "Speak",
-	},
-];
-
 export default function TodaysActivities() {
-	/** Deterministic daily shuffle — same activities every time you reload on a given day */
-	function getDailyActivities(count = 9): Activity[] {
-		const today = new Date();
-		const seed =
-			today.getFullYear() * 10000 +
-			(today.getMonth() + 1) * 100 +
-			today.getDate();
+	const trpc = useTRPC();
+	const navigate = useNavigate();
+	const queryClient = useQueryClient();
+	const [startingId, setStartingId] = useState<string | null>(null);
 
-		const shuffled = [...activityPool];
-		let m = shuffled.length;
-		let s = seed;
-		while (m) {
-			s = (s * 1103515245 + 12345) & 0x7fffffff;
-			const i = s % m--;
-			[shuffled[m], shuffled[i]] = [shuffled[i], shuffled[m]];
+	const { data, isLoading } = useQuery(
+		trpc.practice.getDailySuggestions.queryOptions(),
+	);
+
+	const regenerate = useMutation(
+		trpc.practice.regenerateDailySuggestions.mutationOptions({
+			onSuccess: () => {
+				queryClient.invalidateQueries({
+					queryKey: trpc.practice.getDailySuggestions.queryKey(),
+				});
+			},
+		}),
+	);
+
+	const markDone = useMutation(
+		trpc.practice.markActivityDone.mutationOptions({
+			onSuccess: () => {
+				queryClient.invalidateQueries({
+					queryKey: trpc.practice.getDailySuggestions.queryKey(),
+				});
+			},
+		}),
+	);
+
+	const startPronunciation = useMutation(
+		trpc.pronunciation.startSession.mutationOptions({}),
+	);
+
+	const startConversation = useMutation(
+		trpc.conversation.start.mutationOptions({}),
+	);
+
+	useEffect(() => {
+		if (data?.isStale && !regenerate.isPending && !regenerate.isSuccess) {
+			regenerate.mutate();
 		}
+	}, [data?.isStale, regenerate.isPending, regenerate.isSuccess]);
 
-		return shuffled.slice(0, count);
+	const activities = data?.activities ?? null;
+	const isGenerating =
+		isLoading || regenerate.isPending || (data?.isStale && !activities);
+	const completedCount =
+		activities?.filter((a) => a.completedAt !== null).length ?? 0;
+
+	async function handleStart(activity: DailyActivity) {
+		if (activity.completedAt || startingId) return;
+		setStartingId(activity.id);
+
+		try {
+			if (activity.type === "pronunciation") {
+				const result = await startPronunciation.mutateAsync({
+					cefrLevel: activity.metadata.cefrLevel as
+						| "A1"
+						| "A2"
+						| "B1"
+						| "B2"
+						| "C1"
+						| undefined,
+				});
+				markDone.mutate({
+					activityId: activity.id,
+					sessionId: result.sessionId,
+				});
+				navigate({
+					to: "/pronunciation/$sessionId",
+					params: { sessionId: result.sessionId },
+				});
+			} else {
+				const result = await startConversation.mutateAsync({
+					scenario: activity.metadata.scenario ?? "small-talk",
+					scenarioName: activity.metadata.scenarioName,
+					scenarioDescription: activity.metadata.scenarioDescription,
+					aiRole: activity.metadata.aiRole,
+				});
+				markDone.mutate({
+					activityId: activity.id,
+					sessionId: result.sessionId,
+				});
+				navigate({
+					to: "/conversation/$sessionId",
+					params: { sessionId: result.sessionId },
+				});
+			}
+		} finally {
+			setStartingId(null);
+		}
 	}
-
-	const dailyActivities = getDailyActivities(9);
 
 	return (
 		<div
 			className="relative overflow-hidden rounded-3xl bg-white p-2.5"
-			// style={{
-			// 	boxShadow:
-			// 		"rgba(162, 166, 171, 0.2) 0px 0px 0px 0px inset, rgba(162, 166, 171, 0.2) 0px 0px 8px 2px inset",
-			// }}
 			style={{
 				boxShadow:
 					"0 0 0 1px rgba(0,0,0,.05),0 10px 10px -5px rgba(0,0,0,.04),0 20px 25px -5px rgba(0,0,0,.04),0 20px 32px -12px rgba(0,0,0,.04)",
 			}}
 		>
-			<div className="mt-1 mb-3 flex items-center justify-between gap-2 px-2 font-medium">
+			<div className="mt-1 mb-3 flex items-center justify-between gap-2 pr-2 pl-2 font-medium">
 				<div className="flex w-full items-center justify-between gap-2">
-					<h1 className="font-bold font-lyon text-xl">Today's Activities</h1>
-					{/* <Button
-									type="button"
-									variant="outline"
-									className="group flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-xl border border-[#C6F64D] bg-[radial-gradient(100%_100%_at_50%_0%,#EFFF9B_0%,#D8FF76_60%,#C6F64D_100%)] px-2.5 py-1.5 font-medium text-lime-900 text-sm italic shadow-none transition duration-150 ease-in-out will-change-transform hover:bg-lime-700/10 hover:brightness-95 focus:shadow-none focus:outline-none focus-visible:shadow-none"
-								>
-									Practice
-									<span className="-top-px relative font-lyon text-lg text-lime-900/80 italic group-hover:text-lime-900">
-										all
-									</span>
-								</Button> */}
+					<div className="flex w-full items-center justify-between gap-2">
+						<h1 className="font-bold font-lyon text-xl">Today's Practice</h1>
+						{activities && activities.length > 0 && (
+							<div className="font-normal text-muted-foreground text-sm">
+								{completedCount}/{activities.length} done
+							</div>
+						)}
+					</div>
 				</div>
 			</div>
 
-			{/* Personalized Daily Activities */}
 			<div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-				{dailyActivities.map((activity) => (
-					<button
-						key={activity.id}
-						type="button"
-						className={cn(
-							"group hover:-translate-y-0.5 relative flex min-h-48 cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border border-border/50 bg-white p-4 text-left transition-all hover:shadow-md",
-						)}
-					>
-						<div>
-							<Badge
-								variant="outline"
-								className="mb-4 rounded-lg border-neutral-200 bg-white px-2 py-0.5 font-normal text-xs"
-							>
-								{activity.duration}{" "}
-								{activity.duration === 1 ? "minute" : "minutes"}
-							</Badge>
-							<div className="mb-2 text-2xl xl:text-4xl">{activity.emoji}</div>
-							<h3 className="mb-3 font-semibold text-sm leading-snug">
-								{activity.title}
-							</h3>
-						</div>
-						<div className="flex items-center justify-between">
-							<div className="flex justify-end">
-								<span
+				{isGenerating
+					? ["s1", "s2", "s3", "s4", "s5", "s6"].map((key) => (
+							<ActivitySkeleton key={key} />
+						))
+					: activities?.map((activity) => {
+							const isDone = activity.completedAt !== null;
+							const isStarting = startingId === activity.id;
+
+							return (
+								<button
+									key={activity.id}
+									type="button"
+									disabled={isDone || isStarting}
+									onClick={() => handleStart(activity)}
 									className={cn(
-										"rounded-lg border px-4 py-1.5 font-medium text-xs",
+										"group relative flex min-h-48 flex-col justify-between overflow-hidden rounded-2xl border p-4 text-left transition-all",
+										isDone
+											? "border-lime-200 bg-lime-50/50"
+											: "hover:-translate-y-0.5 cursor-pointer border-border/50 bg-white hover:bg-neutral-50",
+										isStarting && "pointer-events-none opacity-70",
 									)}
 								>
-									{activity.typeLabel}
-								</span>
-							</div>
-							<ArrowRightIcon
-								className="size-4"
-								stroke="currentColor"
-								strokeWidth={2}
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								aria-hidden="true"
-							/>
-						</div>
-					</button>
-				))}
+									{isDone && (
+										<div className="absolute top-3 right-3 flex size-6 items-center justify-center rounded-full bg-lime-500">
+											<CheckIcon
+												className="size-3.5 text-white"
+												strokeWidth={3}
+											/>
+										</div>
+									)}
+
+									<div>
+										<Badge
+											variant="outline"
+											className={cn(
+												"mb-4 rounded-lg px-2 py-0.5 font-normal text-xs italic",
+												isDone
+													? "border-lime-200 bg-lime-50 text-lime-700"
+													: "border-neutral-200",
+											)}
+										>
+											{activity.duration}{" "}
+											{activity.duration === 1 ? "minute" : "minutes"}
+										</Badge>
+										<div className="mb-2 text-2xl xl:text-4xl">
+											{activity.emoji}
+										</div>
+										<h3
+											className={cn(
+												"mb-1 font-semibold text-sm leading-snug",
+												isDone && "text-lime-900",
+											)}
+										>
+											{activity.title}
+										</h3>
+									</div>
+									<div className="mt-3 flex items-center justify-between">
+										<span
+											className={cn(
+												"group flex items-center gap-1 whitespace-nowrap rounded-xl border px-2.5 py-1.5 font-medium text-neutral-700 text-xs italic shadow-none transition duration-150 ease-in-out will-change-transform hover:brightness-95 focus:shadow-none focus:outline-none focus-visible:shadow-none",
+											)}
+										>
+											{activity.typeLabel}
+										</span>
+										{isStarting ? (
+											<LoaderIcon className="size-4 animate-spin text-muted-foreground" />
+										) : isDone ? (
+											<span className="font-medium text-lime-600 text-xs">
+												Completed
+											</span>
+										) : (
+											<ArrowRightIcon
+												className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5"
+												strokeWidth={2}
+											/>
+										)}
+									</div>
+								</button>
+							);
+						})}
 			</div>
 		</div>
 	);

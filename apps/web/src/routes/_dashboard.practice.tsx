@@ -1,10 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { MoreHorizontalIcon, TrashIcon } from "lucide-react";
+import { EyeIcon, MoreHorizontalIcon, PlayIcon, TrashIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import Conversation from "@/components/practice/convesation";
 import Pronunciation from "@/components/practice/pronunciation";
+import SessionSkeleton from "@/components/practice/session-skeleton";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -23,9 +24,12 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-	NativeSelect,
-	NativeSelectOption,
-} from "@/components/ui/native-select";
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { formatRelativeDate } from "@/utils/date";
 import { createTitle, PAGE_TITLE } from "@/utils/title";
@@ -42,22 +46,27 @@ export const Route = createFileRoute("/_dashboard/practice")({
 	}),
 });
 
-function SessionSkeleton() {
-	return (
-		<div className="flex animate-pulse items-center gap-2 rounded-xl border border-border/50 p-2.5">
-			<div className="size-11 rounded-full bg-neutral-100" />
-			<div className="flex flex-1 flex-col gap-1.5">
-				<div className="h-4 w-28 rounded bg-neutral-100" />
-				<div className="h-3 w-20 rounded bg-neutral-100" />
-			</div>
-			<div className="h-4 w-17 rounded bg-neutral-100" />
-		</div>
-	);
-}
-
 function ProgressCircle({ progress }: { progress: number }) {
 	const circumference = 2 * Math.PI * 18;
 	const dashOffset = circumference - (progress / 100) * circumference;
+
+	const strokeColor =
+		progress >= 80
+			? "text-green-500"
+			: progress >= 60
+				? "text-amber-500"
+				: progress >= 40
+					? "text-orange-500"
+					: "text-red-500";
+
+	const textColor =
+		progress >= 80
+			? "text-green-600"
+			: progress >= 60
+				? "text-amber-600"
+				: progress >= 40
+					? "text-orange-600"
+					: "text-red-600";
 
 	return (
 		<div className="relative flex size-11 items-center justify-center">
@@ -83,10 +92,17 @@ function ProgressCircle({ progress }: { progress: number }) {
 					strokeDasharray={`${circumference}`}
 					strokeDashoffset={dashOffset}
 					transform="rotate(-90 22 22)"
-					className={cn("text-orange-500")}
+					className={strokeColor}
 				/>
 			</svg>
-			<span className={cn("absolute font-bold text-[10px]")}>{progress}</span>
+			<span
+				className={cn(
+					"absolute font-bold text-[10px]",
+					progress === 0 ? "" : textColor,
+				)}
+			>
+				{progress === 0 ? "-" : progress}
+			</span>
 		</div>
 	);
 }
@@ -189,23 +205,21 @@ function RouteComponent() {
 				<div className="mt-6">
 					<div className="mb-4 flex items-center justify-between">
 						<h2 className="font-semibold text-lg">Recent Sessions</h2>
-						<NativeSelect
-							className="h-8 rounded-lg bg-white px-3 py-1.5 hover:border-border/80"
+						<Select
 							value={filter}
-							onChange={(e) =>
-								setFilter(
-									e.target.value as "all" | "conversation" | "pronunciation",
-								)
+							onValueChange={(value) =>
+								setFilter(value as "all" | "conversation" | "pronunciation")
 							}
 						>
-							<NativeSelectOption value="all">All</NativeSelectOption>
-							<NativeSelectOption value="conversation">
-								Conversations
-							</NativeSelectOption>
-							<NativeSelectOption value="pronunciation">
-								Pronunciations
-							</NativeSelectOption>
-						</NativeSelect>
+							<SelectTrigger className="h-8 max-w-md rounded-lg bg-white px-3 py-1.5 hover:border-border/80">
+								<SelectValue placeholder="Select filter" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">All</SelectItem>
+								<SelectItem value="conversation">Conversations</SelectItem>
+								<SelectItem value="pronunciation">Pronunciations</SelectItem>
+							</SelectContent>
+						</Select>
 					</div>
 
 					{isLoading ? (
@@ -279,21 +293,6 @@ function RouteComponent() {
 												</div>
 											</div>
 
-											{/* {isPronunciation && session.score != null && (
-												<span
-													className={cn(
-														"shrink-0 rounded-md px-2 py-0.5 font-semibold text-xs",
-														session.score >= 80
-															? "bg-green-50 text-green-700"
-															: session.score >= 60
-																? "bg-amber-50 text-amber-700"
-																: "bg-red-50 text-rose-700",
-													)}
-												>
-													{session.score}%
-												</span>
-											)} */}
-
 											<span className="shrink-0 text-muted-foreground text-xs">
 												{formatRelativeDate(new Date(session.createdAt))}
 											</span>
@@ -310,6 +309,18 @@ function RouteComponent() {
 												</Button>
 											</DropdownMenuTrigger>
 											<DropdownMenuContent align="end">
+												{session.status === "completed" && (
+													<DropdownMenuItem>
+														<EyeIcon />
+														View
+													</DropdownMenuItem>
+												)}
+												{session.status === "active" && (
+													<DropdownMenuItem>
+														<PlayIcon />
+														Continue
+													</DropdownMenuItem>
+												)}
 												<DropdownMenuItem
 													variant="destructive"
 													onClick={() => {

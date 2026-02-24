@@ -1,0 +1,186 @@
+{
+  "nav": {
+    "home": "Strona główna",
+    "lessons": "Lekcje",
+    "practice": "Ćwiczenia",
+    "vocabulary": "Słownictwo",
+    "settings": "Ustawienia",
+    "preferences": "Preferencje",
+    "voices": "Głosy",
+    "signOut": "Wyloguj się"
+  },
+  "home": {
+    "welcomeBack": "Witaj ponownie, {{firstName}}",
+    "subtitle": "Kontynuuj świetną pracę! Robisz doskonałe postępy."
+  },
+  "streak": {
+    "title": "Seria {{count}} dni",
+    "currentStreak": "Twoja obecna seria to {{count}} dni.",
+    "longestStreak": "Twoja najdłuższa seria to {{count}} dni.",
+    "currentStreakLabel": "Obecna seria",
+    "longestStreakLabel": "Najdłuższa seria"
+  },
+  "todaysActivities": {
+    "title": "Dzisiejsze aktywności",
+    "minute_one": "{{count}} minuta",
+    "minute_other": "{{count}} minut",
+    "chat": "Czat",
+    "readAloud": "Czytaj na głos",
+    "speak": "Mów"
+  },
+  "practiceTime": {
+    "title": "Codzienny czas mówienia",
+    "duration": "Czas trwania"
+  },
+  "lessonsWidget": {
+    "title": "Lekcje",
+    "reachToUnlock": "Osiągnij {{percentage}}%, aby otworzyć następny moduł."
+  },
+  "practice": {
+    "title": "Ćwiczenia",
+    "recentSessions": "Ostatnie sesje",
+    "filterAll": "Wszystkie",
+    "filterConversations": "Rozmowy",
+    "filterPronunciations": "Wymowa",
+    "emptyTitle": "Nie masz jeszcze zapisów",
+    "emptyDescription": "Większość osób tworzy wiele zapisów dziennie, aby poprawić swoje umiejętności mówienia",
+    "noSessionsYet": "Brak sesji {{type}}.",
+    "cantFind": "Nie możesz znaleźć tego, czego potrzebujesz?",
+    "completed": "Zakończone",
+    "inProgress": "W trakcie",
+    "view": "Zobacz",
+    "continue": "Kontynuuj",
+    "deleteSession": "Usuń sesję",
+    "deleteConfirmation": "Czy na pewno chcesz usunąć \"{{title}}\"? Tej operacji nie można cofnąć.",
+    "cancel": "Anuluj",
+    "delete": "Usuń",
+    "deleting": "Usuwanie...",
+    "deleteSuccess": "Sesja została pomyślnie usunięta",
+    "deleteError": "Nie udało się usunąć sesji"
+  },
+  "vocabulary": {
+    "title": "Słownictwo",
+    "words": "Słowa",
+    "phrases": "Zwroty",
+    "progress": "Postęp"
+  },
+  "settings": {
+    "title": "Ustawienia",
+    "general": "Ogólne",
+    "personalization": "Personalizacja",
+    "billing": "Rozliczenia i subskrypcja",
+    "signOut": "Wyloguj się"
+  },
+  "upgrade": {
+    "pro": "PRO",
+    "title": "Ulepsz do Pro",
+    "description": "Dołącz do <highlight>{{count}}+</highlight> uczących się i rozpocznij swoją drogę do płynności już dziś.",
+    "features": {
+      "conversations": "Nieograniczone rozmowy AI",
+      "feedback": "Zaawansowana informacja zwrotna AI",
+      "vocabulary": "Pełna biblioteka słownictwa",
+      "learningPath": "Spersonalizowana ścieżka nauki",
+      "analytics": "Śledzenie postępów i analizy"
+    },
+    "yearly": "Rocznie",
+    "monthly": "Miesięcznie",
+    "save": "Oszczędź {{percent}}%",
+    "perYear": "/rok",
+    "perMonth": "/miesiąc",
+    "startTrial": "Rozpocznij 7-dniowy darmowy okres próbny",
+    "legal": "Kontynuując, zgadzasz się z naszymi <terms>Warunkami usługi</terms>, <privacy>Polityką prywatności</privacy> i <refund>Polityką zwrotów i anulacji</refund>.",
+    "subscriptionSuccess": "Subskrypcja zakończona pomyślnie"
+  },
+  "voicesDialog": {
+    "title": "Wybierz głos AI",
+    "description": "Wybierz głos do rozmów AI i ćwiczeń wymowy",
+    "loading": "Ładowanie…",
+    "updated": "Głos zaktualizowany",
+    "updateError": "Nie udało się zaktualizować głosu"
+  },
+  "pronunciation": {
+    "title": "Ćwiczenia wymowy",
+    "subtitle": "Przeczytaj akapit na głos i otrzymaj szczegółową informację zwrotną na temat wymowy dzięki AI",
+    "chooseLevel": "Wybierz swój poziom",
+    "levels": {
+      "A1": {
+        "label": "Początkujący",
+        "wordRange": "60-80 słów",
+        "description": "Proste zdania o codziennym życiu, rodzinie i znanych tematach"
+      },
+      "A2": {
+        "label": "Podstawowy",
+        "wordRange": "80-100 słów",
+        "description": "Proste opowieści z powszechnym słownictwem o podróżach i hobby"
+      },
+      "B1": {
+        "label": "Średniozaawansowany",
+        "wordRange": "100-130 słów",
+        "description": "Styl artykułów prasowych z złożonymi strukturami i różnorodnymi czasami"
+      },
+      "B2": {
+        "label": "Wyższy średniozaawansowany",
+        "wordRange": "120-150 słów",
+        "description": "Tematy akademickie i zawodowe z różnorodną składnią"
+      }
+    },
+    "generating": "Generowanie akapitu...",
+    "startPractice": "Rozpocznij ćwiczenia na poziomie {{level}}",
+    "howItWorks": "Jak to działa",
+    "steps": {
+      "read": "Przeczytaj akapit",
+      "readDescription": "Akapit generowany przez AI dostosowany do twojego poziomu",
+      "record": "Nagraj się",
+      "recordDescription": "Transkrypcja na żywo pojawia się, gdy mówisz z Deepgram",
+      "feedback": "Otrzymaj informację zwrotną",
+      "feedbackDescription": "Ocena Azure + sugestie trenera AI"
+    },
+    "recentSessions": "Ostatnie sesje",
+    "readAloud": "Czytaj na głos",
+    "unknownDate": "Nieznana data",
+    "feedbackReady": "Informacja zwrotna gotowa"
+  },
+  "lessons": {
+    "title": "Lekcje",
+    "cefrLabels": {
+      "A1": "Początkujący A1",
+      "A2": "Podstawowy A2",
+      "B1": "Średniozaawansowany B1",
+      "B2": "Wyższy średniozaawansowany B2",
+      "C1": "Zaawansowany C1",
+      "C2": "Biegłość C2"
+    },
+    "reachNextLevel": "Osiągnij {{percentage}}%, aby zdobyć <strong>{{nextLevel}}</strong>",
+    "unlockMessage": "Ukończ poprzednie moduły, aby odblokować",
+    "next": "Następny",
+    "lessonTypes": {
+      "grammar": "Gramatyka",
+      "vocabulary": "Słownictwo",
+      "pronunciation": "Wymowa",
+      "explanation": "Wyjaśnienie",
+      "reading": "Czytanie",
+      "listening": "Słuchanie",
+      "speaking": "Mówienie",
+      "practice": "Ćwiczenia"
+    },
+    "exerciseTypes": {
+      "lecture": "Wykład",
+      "practice": "Ćwiczenia",
+      "quiz": "Quiz",
+      "conversation": "Rozmowa"
+    },
+    "words": "Słowa",
+    "grammar": "Gramatyka",
+    "exercises": "Ćwiczenia",
+    "grammarToPractice": "Gramatyka do ćwiczenia",
+    "wordsToPractice": "Słowa do ćwiczenia",
+    "review": "Przegląd",
+    "continue": "Kontynuuj",
+    "gotIt": "Zrozumiałem!",
+    "noLessons": "Brak dostępnych lekcji.",
+    "completeOnboarding": "Ukończ wprowadzenie, aby wygenerować spersonalizowaną ścieżkę nauki.",
+    "finishLessons": "Ukończ te lekcje, aby otrzymać nowy materiał.",
+    "module": "Moduł {{number}}",
+    "moduleProgress": "Mówiłeś {{talked}} minut. Mów jeszcze {{remaining}} minut, aby ukończyć moduł."
+  }
+}

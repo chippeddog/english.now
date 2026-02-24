@@ -7,7 +7,7 @@ import {
 	useTranslation,
 } from "@english.now/i18n";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { Headphones, LogOutIcon, Settings } from "lucide-react";
+import { Headphones, Languages, LogOutIcon, Settings } from "lucide-react";
 import { useEffect, useState } from "react";
 import Logo from "@/components/logo";
 import { authClient } from "@/lib/auth-client";
@@ -18,20 +18,17 @@ import {
 	DropdownMenuItem,
 	DropdownMenuLabel,
 	DropdownMenuSeparator,
+	DropdownMenuSub,
+	DropdownMenuSubContent,
+	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "../ui/select";
 import { Skeleton } from "../ui/skeleton";
 import UpgradeDialog from "./upgrade-dialog";
 import VoicesDialog from "./voices-dialog";
 
 export default function Navbar() {
+	const { t } = useTranslation("app");
 	const [upgradeOpen, setUpgradeOpen] = useState(false);
 	const [voicesOpen, setVoicesOpen] = useState(false);
 	const [isScrolled, setIsScrolled] = useState(false);
@@ -51,22 +48,22 @@ export default function Navbar() {
 		return () => i18n.off("languageChanged", handleLanguageChanged);
 	}, [i18n]);
 
-	const _links = [
+	const links = [
 		{
 			to: "/home",
-			label: "Home",
+			label: t("nav.home"),
 		},
 		{
 			to: "/lessons",
-			label: "Lessons",
+			label: t("nav.lessons"),
 		},
 		{
 			to: "/practice",
-			label: "Practice",
+			label: t("nav.practice"),
 		},
 		{
 			to: "/vocabulary",
-			label: "Vocabulary",
+			label: t("nav.vocabulary"),
 		},
 	];
 
@@ -90,7 +87,7 @@ export default function Navbar() {
 					<div className="col-span-3 items-center gap-3 md:flex">
 						<Logo link="/home" />
 						<div className="hidden gap-1.5 md:flex">
-							{_links.map((link) => (
+							{links.map((link) => (
 								<Link
 									key={link.to}
 									to={link.to}
@@ -163,47 +160,50 @@ export default function Navbar() {
 								</DropdownMenuLabel>
 								<DropdownMenuSeparator />
 								<DropdownMenuItem>
-									<Link to="/settings" className="flex items-center gap-2">
+									<Link
+										to="/settings"
+										className="flex w-full items-center gap-2"
+									>
 										<Settings className="size-4" />
-										Settings
+										{t("nav.settings")}
 									</Link>
 								</DropdownMenuItem>
 								<DropdownMenuSeparator />
 								<DropdownMenuLabel>
 									<div className="flex flex-col text-xs">
 										<span className="font-medium text-gray-500">
-											Preferences
+											{t("nav.preferences")}
 										</span>
 									</div>
 								</DropdownMenuLabel>
-								<DropdownMenuItem>
-									<Select
-										value={language}
-										onValueChange={(value) => {
-											const lang = value as SupportedLanguage;
-											changeLanguage(lang);
-											setLanguage(lang);
-											localStorage.setItem("interface-language", lang);
-										}}
-									>
-										<SelectTrigger className="h-8 w-fit min-w-[100px] border-border/50">
-											<SelectValue />
-										</SelectTrigger>
-										<SelectContent>
-											{supportedLanguages.map((code) => (
-												<SelectItem key={code} value={code}>
-													{languageNames[code]}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-								</DropdownMenuItem>
+								<DropdownMenuSub>
+									<DropdownMenuSubTrigger className="flex items-center gap-2">
+										<Languages className="size-4" />
+										{languageNames[language]}
+									</DropdownMenuSubTrigger>
+									<DropdownMenuSubContent>
+										{supportedLanguages.map((code) => (
+											<DropdownMenuItem
+												key={code}
+												onSelect={() => {
+													const lang = code as SupportedLanguage;
+													changeLanguage(lang);
+													setLanguage(lang);
+													localStorage.setItem("interface-language", lang);
+												}}
+												className={cn(code === language && "font-medium")}
+											>
+												{languageNames[code]}
+											</DropdownMenuItem>
+										))}
+									</DropdownMenuSubContent>
+								</DropdownMenuSub>
 								<DropdownMenuItem
 									onSelect={() => setVoicesOpen(true)}
 									className="flex cursor-pointer items-center gap-2"
 								>
 									<Headphones className="size-4" />
-									Voices
+									{t("nav.voices")}
 								</DropdownMenuItem>
 								<DropdownMenuSeparator />
 								<DropdownMenuItem>
@@ -223,7 +223,7 @@ export default function Navbar() {
 										}}
 									>
 										<LogOutIcon className="size-4" />
-										Sign Out
+										{t("nav.signOut")}
 									</button>
 								</DropdownMenuItem>
 							</DropdownMenuContent>

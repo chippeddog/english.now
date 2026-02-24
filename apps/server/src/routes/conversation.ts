@@ -15,6 +15,7 @@ import type { Context, Next } from "hono";
 import { Hono } from "hono";
 import { streamText } from "hono/streaming";
 import { z } from "zod";
+import { rateLimit } from "@/middleware/rate-limit";
 import { enqueueGenerateConversationFeedback } from "../jobs";
 import { generateTTSBase64 } from "../services/tts";
 import { openai } from "../utils/ai";
@@ -170,180 +171,190 @@ The person you're talking to is learning English at a ${level} level.
 });
 
 // Send message and stream AI response
-conversation.post("/send", requireAuth, async (c) => {
-	const session = c.get("session");
-	if (!session) {
-		return c.json({ error: "Unauthorized" }, 401);
-	}
-	const body = await c.req.json();
-	const input = sendMessageSchema.parse(body);
+conversation.post(
+	"/send",
+	requireAuth,
+	rateLimit({ max: 20, windowMs: 60_000 }),
+	async (c) => {
+		const session = c.get("session");
+		if (!session) {
+			return c.json({ error: "Unauthorized" }, 401);
+		}
+		const body = await c.req.json();
+		const input = sendMessageSchema.parse(body);
 
-	// Verify session belongs to user
-	const conversationSessionResult = await db
-		.select()
-		.from(conversationSession)
-		.where(eq(conversationSession.id, input.sessionId))
-		.limit(1);
+		// Verify session belongs to user
+		const conversationSessionResult = await db
+			.select()
+			.from(conversationSession)
+			.where(eq(conversationSession.id, input.sessionId))
+			.limit(1);
 
-	const sessionData = conversationSessionResult[0];
-	if (!sessionData || sessionData.userId !== session.user.id) {
-		return c.json({ error: "Session not found" }, 404);
-	}
+		const sessionData = conversationSessionResult[0];
+		if (!sessionData || sessionData.userId !== session.user.id) {
+			return c.json({ error: "Session not found" }, 404);
+		}
 
-	// Save user message
-	const userMessageId = crypto.randomUUID();
-	await db.insert(conversationMessage).values({
-		id: userMessageId,
-		sessionId: input.sessionId,
-		role: "user",
-		content: input.content,
-		audioUrl: input.audioUrl,
-		metadata: { transcribedFrom: input.inputType },
-		createdAt: new Date(),
-	});
+		// Save user message
+		const userMessageId = crypto.randomUUID();
+		await db.insert(conversationMessage).values({
+			id: userMessageId,
+			sessionId: input.sessionId,
+			role: "user",
+			content: input.content,
+			audioUrl: input.audioUrl,
+			metadata: { transcribedFrom: input.inputType },
+			createdAt: new Date(),
+		});
 
-	// Get conversation history
-	const history = await db
-		.select()
-		.from(conversationMessage)
-		.where(eq(conversationMessage.sessionId, input.sessionId))
-		.orderBy(conversationMessage.createdAt);
+		// Get conversation history
+		const history = await db
+			.select()
+			.from(conversationMessage)
+			.where(eq(conversationMessage.sessionId, input.sessionId))
+			.orderBy(conversationMessage.createdAt);
 
-	// Build messages for AI
-	const context = sessionData.context as {
-		systemPrompt: string;
-		scenarioDescription: string;
-	} | null;
+		// Build messages for AI
+		const context = sessionData.context as {
+			systemPrompt: string;
+			scenarioDescription: string;
+		} | null;
 
-	const messages = [
-		{
-			role: "system" as const,
-			content:
-				context?.systemPrompt || getDefaultSystemPrompt(sessionData.level),
-		},
-		...history.map((m) => ({
-			role: m.role as "user" | "assistant",
-			content: m.content,
-		})),
-	];
+		const messages = [
+			{
+				role: "system" as const,
+				content:
+					context?.systemPrompt || getDefaultSystemPrompt(sessionData.level),
+			},
+			...history.map((m) => ({
+				role: m.role as "user" | "assistant",
+				content: m.content,
+			})),
+		];
 
-	// Stream AI response
-	return streamText(c, async (stream) => {
-		const aiMessageId = crypto.randomUUID();
-		let fullResponse = "";
+		// Stream AI response
+		return streamText(c, async (stream) => {
+			const aiMessageId = crypto.randomUUID();
+			let fullResponse = "";
 
-		try {
-			// Use OpenAI for real response
-			const response = await fetch(
-				"https://api.openai.com/v1/chat/completions",
-				{
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-						Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+			try {
+				// Use OpenAI for real response
+				const response = await fetch(
+					"https://api.openai.com/v1/chat/completions",
+					{
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+							Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+						},
+						body: JSON.stringify({
+							model: "gpt-4o-mini",
+							messages,
+							stream: true,
+							max_tokens: 500,
+							temperature: 0.7,
+						}),
 					},
-					body: JSON.stringify({
-						model: "gpt-4o-mini",
-						messages,
-						stream: true,
-						max_tokens: 500,
-						temperature: 0.7,
-					}),
-				},
-			);
+				);
 
-			if (!response.ok) {
-				throw new Error(`OpenAI API error: ${response.statusText}`);
-			}
+				if (!response.ok) {
+					throw new Error(`OpenAI API error: ${response.statusText}`);
+				}
 
-			const reader = response.body?.getReader();
-			const decoder = new TextDecoder();
+				const reader = response.body?.getReader();
+				const decoder = new TextDecoder();
 
-			if (!reader) {
-				throw new Error("No response body");
-			}
+				if (!reader) {
+					throw new Error("No response body");
+				}
 
-			while (true) {
-				const { done, value } = await reader.read();
-				if (done) break;
+				while (true) {
+					const { done, value } = await reader.read();
+					if (done) break;
 
-				const chunk = decoder.decode(value);
-				const lines = chunk.split("\n").filter((line) => line.trim() !== "");
+					const chunk = decoder.decode(value);
+					const lines = chunk.split("\n").filter((line) => line.trim() !== "");
 
-				for (const line of lines) {
-					if (line.startsWith("data: ")) {
-						const data = line.slice(6);
-						if (data === "[DONE]") continue;
+					for (const line of lines) {
+						if (line.startsWith("data: ")) {
+							const data = line.slice(6);
+							if (data === "[DONE]") continue;
 
-						try {
-							const parsed = JSON.parse(data);
-							const content = parsed.choices?.[0]?.delta?.content;
-							if (content) {
-								await stream.write(content);
-								fullResponse += content;
+							try {
+								const parsed = JSON.parse(data);
+								const content = parsed.choices?.[0]?.delta?.content;
+								if (content) {
+									await stream.write(content);
+									fullResponse += content;
+								}
+							} catch {
+								// Skip malformed JSON
 							}
-						} catch {
-							// Skip malformed JSON
 						}
 					}
 				}
-			}
 
-			// Save AI response to database
-			await db.insert(conversationMessage).values({
-				id: aiMessageId,
-				sessionId: input.sessionId,
-				role: "assistant",
-				content: fullResponse,
-				corrections: extractCorrections(input.content, fullResponse),
-				createdAt: new Date(),
-			});
+				// Save AI response to database
+				await db.insert(conversationMessage).values({
+					id: aiMessageId,
+					sessionId: input.sessionId,
+					role: "assistant",
+					content: fullResponse,
+					corrections: extractCorrections(input.content, fullResponse),
+					createdAt: new Date(),
+				});
 
-			// Update session timestamp
-			await db
-				.update(conversationSession)
-				.set({ updatedAt: new Date() })
-				.where(eq(conversationSession.id, input.sessionId));
+				// Update session timestamp
+				await db
+					.update(conversationSession)
+					.set({ updatedAt: new Date() })
+					.where(eq(conversationSession.id, input.sessionId));
 
-			// Generate TTS audio for the assistant response
-			if (fullResponse.trim()) {
-				const audioBase64 = await generateTTSBase64(fullResponse);
-				if (audioBase64) {
-					// Send a special delimiter followed by audio data
-					// Format: \n__TTS_AUDIO__<base64_audio_data>
-					await stream.write(`\n__TTS_AUDIO__${audioBase64}`);
+				// Generate TTS audio for the assistant response
+				if (fullResponse.trim()) {
+					const audioBase64 = await generateTTSBase64(fullResponse);
+					if (audioBase64) {
+						// Send a special delimiter followed by audio data
+						// Format: \n__TTS_AUDIO__<base64_audio_data>
+						await stream.write(`\n__TTS_AUDIO__${audioBase64}`);
+					}
 				}
+			} catch (error) {
+				console.error("Error generating AI response:", error);
+				const errorMessage =
+					"I apologize, but I'm having trouble responding right now. Please try again.";
+				await stream.write(errorMessage);
 			}
-		} catch (error) {
-			console.error("Error generating AI response:", error);
-			const errorMessage =
-				"I apologize, but I'm having trouble responding right now. Please try again.";
-			await stream.write(errorMessage);
-		}
-	});
-});
+		});
+	},
+);
 
 // Text-to-speech using Deepgram
-conversation.post("/speak", requireAuth, async (c) => {
-	const body = await c.req.json();
-	const { text, voice } = speakSchema.parse(body);
+conversation.post(
+	"/speak",
+	requireAuth,
+	rateLimit({ max: 20, windowMs: 60_000 }),
+	async (c) => {
+		const body = await c.req.json();
+		const { text, voice } = speakSchema.parse(body);
 
-	try {
-		const audioBase64 = await generateTTSBase64(text, voice);
+		try {
+			const audioBase64 = await generateTTSBase64(text, voice);
 
-		if (!audioBase64) {
+			if (!audioBase64) {
+				return c.json({ error: "Failed to generate speech" }, 500);
+			}
+
+			return c.json({
+				audio: audioBase64,
+				contentType: "audio/mp3",
+			});
+		} catch (error) {
+			console.error("TTS error:", error);
 			return c.json({ error: "Failed to generate speech" }, 500);
 		}
-
-		return c.json({
-			audio: audioBase64,
-			contentType: "audio/mp3",
-		});
-	} catch (error) {
-		console.error("TTS error:", error);
-		return c.json({ error: "Failed to generate speech" }, 500);
-	}
-});
+	},
+);
 
 // Transcribe audio using Deepgram, then persist the recording in R2
 conversation.post("/transcribe", requireAuth, async (c) => {
@@ -422,47 +433,52 @@ conversation.post("/transcribe", requireAuth, async (c) => {
 	}
 });
 
-conversation.post("/translate", requireAuth, async (c) => {
-	const session = c.get("session");
-	if (!session) {
-		return c.json({ error: "Unauthorized" }, 401);
-	}
-
-	const body = await c.req.json();
-	const { text } = z
-		.object({
-			text: z.string().min(1).max(5000),
-		})
-		.parse(body);
-
-	try {
-		// Get user's native language from profile
-		const profile = await db
-			.select()
-			.from(userProfile)
-			.where(eq(userProfile.userId, session.user.id))
-			.limit(1);
-
-		const nativeLanguage = profile[0]?.nativeLanguage ?? "Spanish";
-
-		const { output } = await generateText({
-			model: openai("gpt-4o-mini"),
-			output: Output.text(),
-			system: `You are a translator. Translate the following English text to ${nativeLanguage}. Return ONLY the translation, nothing else.`,
-			prompt: text,
-			temperature: 0.3,
-		});
-
-		if (!output) {
-			throw new Error("Failed to generate translation");
+conversation.post(
+	"/translate",
+	requireAuth,
+	rateLimit({ max: 10, windowMs: 60_000 }),
+	async (c) => {
+		const session = c.get("session");
+		if (!session) {
+			return c.json({ error: "Unauthorized" }, 401);
 		}
 
-		return c.json({ translation: output });
-	} catch (error) {
-		console.error("Translation error:", error);
-		return c.json({ error: "Failed to translate message" }, 500);
-	}
-});
+		const body = await c.req.json();
+		const { text } = z
+			.object({
+				text: z.string().min(1).max(5000),
+			})
+			.parse(body);
+
+		try {
+			// Get user's native language from profile
+			const profile = await db
+				.select()
+				.from(userProfile)
+				.where(eq(userProfile.userId, session.user.id))
+				.limit(1);
+
+			const nativeLanguage = profile[0]?.nativeLanguage ?? "Spanish";
+
+			const { output } = await generateText({
+				model: openai("gpt-4o-mini"),
+				output: Output.text(),
+				system: `You are a translator. Translate the following English text to ${nativeLanguage}. Return ONLY the translation, nothing else.`,
+				prompt: text,
+				temperature: 0.3,
+			});
+
+			if (!output) {
+				throw new Error("Failed to generate translation");
+			}
+
+			return c.json({ translation: output });
+		} catch (error) {
+			console.error("Translation error:", error);
+			return c.json({ error: "Failed to translate message" }, 500);
+		}
+	},
+);
 
 // Generate a contextual hint (what to say next)
 conversation.post("/hint", requireAuth, async (c) => {

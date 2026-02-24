@@ -1,0 +1,186 @@
+{
+  "nav": {
+    "home": "الرئيسية",
+    "lessons": "الدروس",
+    "practice": "التدريب",
+    "vocabulary": "المفردات",
+    "settings": "الإعدادات",
+    "preferences": "التفضيلات",
+    "voices": "الأصوات",
+    "signOut": "تسجيل الخروج"
+  },
+  "home": {
+    "welcomeBack": "مرحبًا بعودتك، {{firstName}}",
+    "subtitle": "استمر في العمل الرائع! أنت تحقق تقدمًا ممتازًا."
+  },
+  "streak": {
+    "title": "سلسلة {{count}} يوم",
+    "currentStreak": "سلسلتك الحالية هي {{count}} أيام.",
+    "longestStreak": "أطول سلسلة لك هي {{count}} أيام.",
+    "currentStreakLabel": "السلسلة الحالية",
+    "longestStreakLabel": "أطول سلسلة"
+  },
+  "todaysActivities": {
+    "title": "أنشطة اليوم",
+    "minute_one": "{{count}} دقيقة",
+    "minute_other": "{{count}} دقائق",
+    "chat": "دردشة",
+    "readAloud": "القراءة بصوت عالٍ",
+    "speak": "تحدث"
+  },
+  "practiceTime": {
+    "title": "وقت التحدث اليومي",
+    "duration": "المدة"
+  },
+  "lessonsWidget": {
+    "title": "الدروس",
+    "reachToUnlock": "حقق {{percentage}}% لفتح الوحدة التالية."
+  },
+  "practice": {
+    "title": "التدريب",
+    "recentSessions": "الجلسات الأخيرة",
+    "filterAll": "الكل",
+    "filterConversations": "المحادثات",
+    "filterPronunciations": "النطق",
+    "emptyTitle": "ليس لديك سجلات بعد",
+    "emptyDescription": "معظم الأشخاص ينشئون سجلات متعددة يوميًا لتحسين مهاراتهم في التحدث",
+    "noSessionsYet": "لا توجد جلسات {{type}} بعد.",
+    "cantFind": "لا يمكنك العثور على ما تحتاجه؟",
+    "completed": "مكتمل",
+    "inProgress": "قيد التقدم",
+    "view": "عرض",
+    "continue": "متابعة",
+    "deleteSession": "حذف الجلسة",
+    "deleteConfirmation": "هل أنت متأكد أنك تريد حذف \"{{title}}\"؟ لا يمكن التراجع عن هذا الإجراء.",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "deleting": "جارٍ الحذف...",
+    "deleteSuccess": "تم حذف الجلسة بنجاح",
+    "deleteError": "فشل في حذف الجلسة"
+  },
+  "vocabulary": {
+    "title": "المفردات",
+    "words": "الكلمات",
+    "phrases": "العبارات",
+    "progress": "التقدم"
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "general": "عام",
+    "personalization": "التخصيص",
+    "billing": "الفوترة والاشتراك",
+    "signOut": "تسجيل الخروج"
+  },
+  "upgrade": {
+    "pro": "PRO",
+    "title": "الترقية إلى برو",
+    "description": "انضم إلى <highlight>{{count}}+</highlight> من المتعلمين وابدأ رحلتك نحو الطلاقة اليوم.",
+    "features": {
+      "conversations": "محادثات AI غير محدودة",
+      "feedback": "تعليقات AI متقدمة",
+      "vocabulary": "مكتبة المفردات الكاملة",
+      "learningPath": "مسار تعلم مخصص",
+      "analytics": "تتبع التقدم والتحليلات"
+    },
+    "yearly": "سنوي",
+    "monthly": "شهري",
+    "save": "وفر {{percent}}%",
+    "perYear": "/سنة",
+    "perMonth": "/شهر",
+    "startTrial": "ابدأ تجربة مجانية لمدة 7 أيام",
+    "legal": "بالمتابعة، أنت توافق على <terms>شروط الخدمة</terms>، <privacy>الخصوصية</privacy> و<refund>سياسة الاسترداد والإلغاء</refund>.",
+    "subscriptionSuccess": "تم الاشتراك بنجاح"
+  },
+  "voicesDialog": {
+    "title": "اختر صوت AI",
+    "description": "اختر الصوت للمحادثات AI وممارسة النطق",
+    "loading": "جارٍ التحميل…",
+    "updated": "تم تحديث الصوت",
+    "updateError": "فشل في تحديث الصوت"
+  },
+  "pronunciation": {
+    "title": "ممارسة النطق",
+    "subtitle": "اقرأ فقرة بصوت عالٍ واحصل على تعليقات تفصيلية عن النطق مدعومة بالذكاء الاصطناعي",
+    "chooseLevel": "اختر مستواك",
+    "levels": {
+      "A1": {
+        "label": "مبتدئ",
+        "wordRange": "60-80 كلمة",
+        "description": "جمل بسيطة عن الحياة اليومية، العائلة، والمواضيع المألوفة"
+      },
+      "A2": {
+        "label": "أساسي",
+        "wordRange": "80-100 كلمة",
+        "description": "سرد بسيط بمفردات شائعة عن السفر والهوايات"
+      },
+      "B1": {
+        "label": "متوسط",
+        "wordRange": "100-130 كلمة",
+        "description": "أسلوب مقالات إخبارية بهياكل معقدة وأزمنة متنوعة"
+      },
+      "B2": {
+        "label": "متوسط أعلى",
+        "wordRange": "120-150 كلمة",
+        "description": "مواضيع أكاديمية ومهنية بتركيب نحوي متنوع"
+      }
+    },
+    "generating": "جارٍ إنشاء الفقرة...",
+    "startPractice": "ابدأ ممارسة {{level}}",
+    "howItWorks": "كيف يعمل",
+    "steps": {
+      "read": "اقرأ الفقرة",
+      "readDescription": "فقرة مولدة بواسطة AI تناسب مستواك",
+      "record": "سجل نفسك",
+      "recordDescription": "يظهر النص المباشر أثناء التحدث مع Deepgram",
+      "feedback": "احصل على تعليقات",
+      "feedbackDescription": "تقييم Azure + اقتراحات مدرب AI"
+    },
+    "recentSessions": "الجلسات الأخيرة",
+    "readAloud": "القراءة بصوت عالٍ",
+    "unknownDate": "تاريخ غير معروف",
+    "feedbackReady": "التعليقات جاهزة"
+  },
+  "lessons": {
+    "title": "الدروس",
+    "cefrLabels": {
+      "A1": "مبتدئ A1",
+      "A2": "أساسي A2",
+      "B1": "متوسط B1",
+      "B2": "متوسط أعلى B2",
+      "C1": "متقدم C1",
+      "C2": "إتقان C2"
+    },
+    "reachNextLevel": "حقق {{percentage}}% للحصول على <strong>{{nextLevel}}</strong>",
+    "unlockMessage": "أكمل الوحدات السابقة لفتح",
+    "next": "التالي",
+    "lessonTypes": {
+      "grammar": "القواعد",
+      "vocabulary": "المفردات",
+      "pronunciation": "النطق",
+      "explanation": "الشرح",
+      "reading": "القراءة",
+      "listening": "الاستماع",
+      "speaking": "التحدث",
+      "practice": "التدريب"
+    },
+    "exerciseTypes": {
+      "lecture": "محاضرة",
+      "practice": "التدريب",
+      "quiz": "اختبار",
+      "conversation": "محادثة"
+    },
+    "words": "الكلمات",
+    "grammar": "القواعد",
+    "exercises": "التمارين",
+    "grammarToPractice": "القواعد للتدريب",
+    "wordsToPractice": "الكلمات للتدريب",
+    "review": "مراجعة",
+    "continue": "متابعة",
+    "gotIt": "فهمت!",
+    "noLessons": "لا توجد دروس متاحة بعد.",
+    "completeOnboarding": "أكمل الإعداد لإنشاء مسار تعلم مخصص لك.",
+    "finishLessons": "أكمل هذه الدروس لتلقي مواد جديدة.",
+    "module": "الوحدة {{number}}",
+    "moduleProgress": "لقد تحدثت {{talked}} دقيقة. تحدث {{remaining}} دقيقة إضافية لإكمال الوحدة."
+  }
+}
