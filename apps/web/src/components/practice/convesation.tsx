@@ -294,7 +294,7 @@ export default function Conversation() {
 				<button
 					type="button"
 					onClick={() => setDialogOpen(true)}
-					className="group flex w-full cursor-pointer items-center justify-between border-border/50 border-b p-3.5 transition-colors duration-300 hover:bg-neutral-100"
+					className="group flex w-full cursor-pointer items-center justify-between p-3.5 transition-colors duration-300 hover:bg-neutral-100"
 				>
 					<div className="flex items-center gap-3">
 						<div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-[#C6F64D] bg-radial from-[#EFFF9B] to-[#D8FF76]">
@@ -322,7 +322,6 @@ export default function Conversation() {
 						/>
 					</svg>
 				</button>
-				<div className="p-3.5">test</div>
 			</div>
 		</div>
 	);

@@ -266,6 +266,17 @@ function PronunciationSessionPage() {
 							summary={summary}
 							sessionId={sessionId}
 							cefrLevel={cefrLevel}
+							paragraphText={paragraph.text}
+							attempts={(sessionData.attempts ?? []).map((a) => ({
+								id: a.id,
+								score: a.score,
+								wordResults: (a.wordResults ?? []) as {
+									word: string;
+									accuracyScore: number;
+									errorType: string;
+									phonemes: { phoneme: string; accuracyScore: number }[];
+								}[],
+							}))}
 						/>
 					</div>
 				</div>
