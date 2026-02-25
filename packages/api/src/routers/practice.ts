@@ -11,6 +11,7 @@ import {
 	desc,
 	eq,
 	isNull,
+	lt,
 	pronunciationSession,
 	userProfile,
 } from "@english.now/db";
@@ -327,57 +328,73 @@ export const practiceRouter = router({
 
 	getRecentSessions: protectedProcedure
 		.input(
-			z
-				.object({
-					limit: z.number().min(1).max(50).default(20),
-				})
-				.optional(),
+			z.object({
+				limit: z.number().min(1).max(50).default(10),
+				type: z.enum(["all", "conversation", "pronunciation"]).default("all"),
+				cursor: z.string().datetime().nullish(),
+			}),
 		)
 		.query(async ({ ctx, input }) => {
 			const userId = ctx.session.user.id;
-			const limit = input?.limit ?? 20;
+			const { limit, type, cursor } = input;
+			const fetchLimit = limit + 1;
 
-			const [pronunciationSessions, conversationSessions] = await Promise.all([
-				db
-					.select({
-						id: pronunciationSession.id,
-						mode: pronunciationSession.mode,
-						difficulty: pronunciationSession.difficulty,
-						status: pronunciationSession.status,
-						summary: pronunciationSession.summary,
-						createdAt: pronunciationSession.createdAt,
-						completedAt: pronunciationSession.completedAt,
-					})
-					.from(pronunciationSession)
-					.where(
-						and(
-							eq(pronunciationSession.userId, userId),
-							isNull(pronunciationSession.deletedAt),
-						),
-					)
-					.orderBy(desc(pronunciationSession.createdAt))
-					.limit(limit),
-				db
-					.select({
-						id: conversationSession.id,
-						scenario: conversationSession.scenario,
-						level: conversationSession.level,
-						status: conversationSession.status,
-						createdAt: conversationSession.createdAt,
-					})
-					.from(conversationSession)
-					.where(
-						and(
-							eq(conversationSession.userId, userId),
-							isNull(conversationSession.deletedAt),
-						),
-					)
-					.orderBy(desc(conversationSession.createdAt))
-					.limit(limit),
+			const cursorDate = cursor ? new Date(cursor) : undefined;
+
+			const includePronunciation = type === "all" || type === "pronunciation";
+			const includeConversation = type === "all" || type === "conversation";
+
+			const [pronResults, convResults] = await Promise.all([
+				includePronunciation
+					? db
+							.select({
+								id: pronunciationSession.id,
+								mode: pronunciationSession.mode,
+								difficulty: pronunciationSession.difficulty,
+								status: pronunciationSession.status,
+								summary: pronunciationSession.summary,
+								createdAt: pronunciationSession.createdAt,
+								completedAt: pronunciationSession.completedAt,
+							})
+							.from(pronunciationSession)
+							.where(
+								and(
+									eq(pronunciationSession.userId, userId),
+									isNull(pronunciationSession.deletedAt),
+									cursorDate
+										? lt(pronunciationSession.createdAt, cursorDate)
+										: undefined,
+								),
+							)
+							.orderBy(desc(pronunciationSession.createdAt))
+							.limit(fetchLimit)
+					: [],
+				includeConversation
+					? db
+							.select({
+								id: conversationSession.id,
+								scenario: conversationSession.scenario,
+								level: conversationSession.level,
+								status: conversationSession.status,
+								createdAt: conversationSession.createdAt,
+							})
+							.from(conversationSession)
+							.where(
+								and(
+									eq(conversationSession.userId, userId),
+									isNull(conversationSession.deletedAt),
+									cursorDate
+										? lt(conversationSession.createdAt, cursorDate)
+										: undefined,
+								),
+							)
+							.orderBy(desc(conversationSession.createdAt))
+							.limit(fetchLimit)
+					: [],
 			]);
 
 			const unified = [
-				...pronunciationSessions.map((s) => ({
+				...pronResults.map((s) => ({
 					id: s.id,
 					type: "pronunciation" as const,
 					title: s.mode === "read-aloud" ? "Read Aloud" : "Tongue Twisters",
@@ -388,7 +405,7 @@ export const practiceRouter = router({
 						null,
 					createdAt: s.createdAt,
 				})),
-				...conversationSessions.map((s) => ({
+				...convResults.map((s) => ({
 					id: s.id,
 					type: "conversation" as const,
 					title: s.scenario,
@@ -401,6 +418,12 @@ export const practiceRouter = router({
 
 			unified.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
-			return unified.slice(0, limit);
+			const items = unified.slice(0, limit);
+			const hasMore = unified.length > limit;
+			const nextCursor = hasMore
+				? items[items.length - 1]?.createdAt.toISOString()
+				: null;
+
+			return { items, nextCursor };
 		}),
 });

@@ -1,4 +1,5 @@
 import type { AppRouter } from "@english.now/api/routers/index";
+import { initI18n, useTranslation } from "@english.now/i18n";
 import type { QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import {
@@ -11,6 +12,7 @@ import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import type { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { getLanguageCookie } from "@/functions/get-language";
 import appCss from "../index.css?url";
 export interface RouterAppContext {
 	trpc: TRPCOptionsProxy<AppRouter>;
@@ -18,6 +20,12 @@ export interface RouterAppContext {
 }
 
 export const Route = createRootRouteWithContext<RouterAppContext>()({
+	beforeLoad: async () => {
+		if (typeof window === "undefined") {
+			const language = await getLanguageCookie();
+			await initI18n(language);
+		}
+	},
 	head: () => ({
 		meta: [
 			{
@@ -43,8 +51,9 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 });
 
 function RootDocument() {
+	const { i18n } = useTranslation();
 	return (
-		<html lang="en" suppressHydrationWarning>
+		<html lang={i18n.language} suppressHydrationWarning>
 			<head>
 				<HeadContent />
 				<script

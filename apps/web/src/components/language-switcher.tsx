@@ -63,7 +63,6 @@ export function LanguageSwitcher({ className }: { className?: string }) {
 		const lang = value as SupportedLanguage;
 		await changeLanguage(lang);
 		setInterfaceLang(lang);
-		localStorage.setItem("interface-language", lang);
 		setOpen(false);
 	};
 

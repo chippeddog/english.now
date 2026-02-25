@@ -56,7 +56,11 @@
     "delete": "हटाएं",
     "deleting": "हटा रहे हैं...",
     "deleteSuccess": "सत्र सफलतापूर्वक हटाया गया",
-    "deleteError": "सत्र हटाने में विफल"
+    "deleteError": "सत्र हटाने में विफल",
+    "conversation": "संवाद",
+    "pronunciation": "उच्चारण",
+    "practiceYourEnglish": "अपनी अंग्रेजी का अभ्यास करें",
+    "practiceYourPronunciation": "अपने उच्चारण का अभ्यास करें"
   },
   "vocabulary": {
     "title": "शब्दावली",

@@ -22,7 +22,7 @@ function getSavedLanguage(): SupportedLanguage {
 }
 
 // Initialize i18n with saved or preferred language
-initI18n(getSavedLanguage());
+await initI18n(getSavedLanguage());
 
 import {
 	QueryCache,

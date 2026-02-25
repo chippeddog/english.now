@@ -56,7 +56,11 @@
     "delete": "Excluir",
     "deleting": "Excluindo...",
     "deleteSuccess": "Sessão excluída com sucesso",
-    "deleteError": "Falha ao excluir sessão"
+    "deleteError": "Falha ao excluir sessão",
+    "conversation": "Conversa",
+    "pronunciation": "Pronúncia",
+    "practiceYourEnglish": "Pratique seu inglês",
+    "practiceYourPronunciation": "Pratique sua pronúncia"
   },
   "vocabulary": {
     "title": "Vocabulário",

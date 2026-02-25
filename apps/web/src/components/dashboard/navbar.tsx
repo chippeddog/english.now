@@ -189,7 +189,6 @@ export default function Navbar() {
 													const lang = code as SupportedLanguage;
 													changeLanguage(lang);
 													setLanguage(lang);
-													localStorage.setItem("interface-language", lang);
 												}}
 												className={cn(code === language && "font-medium")}
 											>

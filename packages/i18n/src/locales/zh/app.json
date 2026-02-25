@@ -56,7 +56,11 @@
     "delete": "删除",
     "deleting": "正在删除...",
     "deleteSuccess": "会话删除成功",
-    "deleteError": "删除会话失败"
+    "deleteError": "删除会话失败",
+    "conversation": "对话",
+    "pronunciation": "发音",
+    "practiceYourEnglish": "练习你的英语",
+    "practiceYourPronunciation": "练习你的发音"
   },
   "vocabulary": {
     "title": "词汇",

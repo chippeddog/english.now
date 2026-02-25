@@ -56,7 +56,11 @@
     "delete": "Usuń",
     "deleting": "Usuwanie...",
     "deleteSuccess": "Sesja została pomyślnie usunięta",
-    "deleteError": "Nie udało się usunąć sesji"
+    "deleteError": "Nie udało się usunąć sesji",
+    "conversation": "Rozmowa",
+    "pronunciation": "Wymowa",
+    "practiceYourEnglish": "Ćwicz swój angielski",
+    "practiceYourPronunciation": "Ćwicz swoją wymowę"
   },
   "vocabulary": {
     "title": "Słownictwo",

@@ -56,7 +56,11 @@
     "delete": "削除",
     "deleting": "削除中...",
     "deleteSuccess": "セッションが正常に削除されました",
-    "deleteError": "セッションの削除に失敗しました"
+    "deleteError": "セッションの削除に失敗しました",
+    "conversation": "会話",
+    "pronunciation": "発音",
+    "practiceYourEnglish": "英語を練習する",
+    "practiceYourPronunciation": "発音を練習する"
   },
   "vocabulary": {
     "title": "語彙",

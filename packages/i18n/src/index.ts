@@ -69,12 +69,17 @@ export function isRTL(lng?: SupportedLanguage): boolean {
  *
  * @param lng - Initial language to use (defaults to "en")
  */
-export function initI18n(lng: SupportedLanguage = "en") {
+export async function initI18n(lng: SupportedLanguage = "en") {
+	setLanguageCookie(lng);
+
 	if (i18n.isInitialized) {
+		if (i18n.language !== lng) {
+			await i18n.changeLanguage(lng);
+		}
 		return i18n;
 	}
 
-	i18n
+	await i18n
 		.use(initReactI18next)
 		.use(
 			resourcesToBackend(
@@ -93,7 +98,7 @@ export function initI18n(lng: SupportedLanguage = "en") {
 			// By default i18next resolves init on the next tick (initImmediate: true),
 			// which causes a flash of raw keys on first render. Setting this to false
 			// makes init resolve synchronously when resources are already bundled.
-			initImmediate: false,
+			// initImmediate: false,
 			interpolation: {
 				escapeValue: false, // React already escapes values
 			},
@@ -106,7 +111,17 @@ export function initI18n(lng: SupportedLanguage = "en") {
 }
 
 /**
- * Change the current language and persist the choice to localStorage.
+ * Persist the language choice to a cookie so the server can read it during SSR.
+ * Max-age is 1 year.
+ */
+function setLanguageCookie(lng: string) {
+	if (typeof document !== "undefined") {
+		document.cookie = `interface-language=${lng};path=/;max-age=31536000;SameSite=Lax`;
+	}
+}
+
+/**
+ * Change the current language and persist the choice to localStorage + cookie.
  *
  * @param lng - The language code to switch to
  */
@@ -114,6 +129,7 @@ export function changeLanguage(lng: SupportedLanguage) {
 	if (typeof localStorage !== "undefined") {
 		localStorage.setItem("interface-language", lng);
 	}
+	setLanguageCookie(lng);
 	return i18n.changeLanguage(lng);
 }
 

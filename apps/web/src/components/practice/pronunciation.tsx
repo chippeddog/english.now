@@ -2,6 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { MicIcon } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -48,6 +49,7 @@ function DialogTopicsPronunciation({
 }) {
 	const trpc = useTRPC();
 	const navigate = useNavigate();
+	const { t } = useTranslation("app");
 	const [selectedMode, setSelectedMode] = useState<string>("");
 
 	const startSession = useMutation(
@@ -72,10 +74,10 @@ function DialogTopicsPronunciation({
 			<DialogContent showCloseButton={false}>
 				<div className="mb-3 flex flex-col gap-2 text-center">
 					<h1 className="mt-1 font-bold font-lyon text-3xl tracking-tight">
-						Practice Pronunciation
+						{t("practice.pronunciation")}
 					</h1>
 					<p className="text-muted-foreground text-sm">
-						Select a mode to start practicing
+						{t("practice.selectMode")}
 					</p>
 				</div>
 
@@ -124,6 +126,7 @@ function DialogTopicsPronunciation({
 }
 
 export default function Pronunciation() {
+	const { t } = useTranslation("app");
 	const [dialogOpen, setDialogOpen] = useState(false);
 	return (
 		<div
@@ -144,9 +147,11 @@ export default function Pronunciation() {
 						<MicIcon className="size-5 text-lime-700" />
 					</div>
 					<div className="text-left">
-						<h2 className="font-medium text-slate-900">Pronunciation</h2>
+						<h2 className="font-medium text-slate-900">
+							{t("practice.pronunciation")}
+						</h2>
 						<p className="text-muted-foreground text-sm">
-							Practice your pronunciation
+							{t("practice.practiceYourPronunciation")}
 						</p>
 					</div>
 				</div>

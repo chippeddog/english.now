@@ -78,11 +78,22 @@ function ConversationPage() {
 		}
 
 		return (
-			<ReviewView
-				feedback={feedbackData.feedback}
-				messages={feedbackData.messages}
-				session={feedbackData.session}
-			/>
+			<>
+				<div className="sticky border-black/5 border-b bg-white">
+					<div className="container relative z-10 mx-auto max-w-5xl px-4">
+						<nav className="flex grid-cols-2 items-center justify-between py-5 md:grid-cols-5">
+							<div className="items-center gap-2 md:flex">
+								<Logo link="/practice" />
+							</div>
+						</nav>
+					</div>
+				</div>
+				<ReviewView
+					feedback={feedbackData.feedback}
+					messages={feedbackData.messages}
+					session={feedbackData.session}
+				/>
+			</>
 		);
 	}
 
@@ -92,7 +103,7 @@ function ConversationPage() {
 				<div className="container relative z-10 mx-auto max-w-3xl px-4">
 					<nav className="flex grid-cols-2 items-center justify-between py-5 md:grid-cols-5">
 						<div className="items-center gap-2 md:flex">
-							<Logo />
+							<Logo link="/practice" />
 						</div>
 						<ReportIssueDialog />
 					</nav>

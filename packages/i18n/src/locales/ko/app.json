@@ -56,7 +56,11 @@
     "delete": "삭제",
     "deleting": "삭제 중...",
     "deleteSuccess": "세션이 성공적으로 삭제되었습니다",
-    "deleteError": "세션 삭제에 실패했습니다"
+    "deleteError": "세션 삭제에 실패했습니다",
+    "conversation": "대화",
+    "pronunciation": "발음",
+    "practiceYourEnglish": "영어 연습하기",
+    "practiceYourPronunciation": "발음 연습하기"
   },
   "vocabulary": {
     "title": "어휘",

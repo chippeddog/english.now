@@ -56,7 +56,11 @@
     "delete": "Видалити",
     "deleting": "Видалення...",
     "deleteSuccess": "Сесію успішно видалено",
-    "deleteError": "Не вдалося видалити сесію"
+    "deleteError": "Не вдалося видалити сесію",
+    "conversation": "Розмова",
+    "pronunciation": "Вимова",
+    "practiceYourEnglish": "Практикуйте свою англійську",
+    "practiceYourPronunciation": "Практикуйте свою вимову"
   },
   "vocabulary": {
     "title": "Словник",

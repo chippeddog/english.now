@@ -56,7 +56,11 @@
     "delete": "حذف",
     "deleting": "جارٍ الحذف...",
     "deleteSuccess": "تم حذف الجلسة بنجاح",
-    "deleteError": "فشل في حذف الجلسة"
+    "deleteError": "فشل في حذف الجلسة",
+    "conversation": "المحادثة",
+    "pronunciation": "النطق",
+    "practiceYourEnglish": "تمرن على لغتك الإنجليزية",
+    "practiceYourPronunciation": "تمرن على النطق"
   },
   "vocabulary": {
     "title": "المفردات",

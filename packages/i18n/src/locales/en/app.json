@@ -39,6 +39,10 @@
     "practice": {
         "title": "Practice",
         "recentSessions": "Recent Sessions",
+        "conversation": "Conversation",
+        "pronunciation": "Pronunciation",
+        "practiceYourEnglish": "Practice your English",
+        "practiceYourPronunciation": "Practice your pronunciation",
         "filterAll": "All",
         "filterConversations": "Conversations",
         "filterPronunciations": "Pronunciations",

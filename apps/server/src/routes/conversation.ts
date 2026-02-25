@@ -93,40 +93,25 @@ conversation.post("/start", requireAuth, async (c) => {
 	const level = profile[0]?.level ?? "beginner";
 	const voiceModel = profile[0]?.voiceModel ?? "aura-2-thalia-en";
 	console.log("voiceModel", voiceModel);
-	// Check if it's a built-in scenario
-	const builtInConfig = getScenarioConfig(scenario, level);
-	const isBuiltIn = scenario in getBuiltInScenarioIds();
 
-	let finalName: string;
-	let finalDescription: string;
-	let finalSystemPrompt: string;
-	let greeting: string;
-
-	if (isBuiltIn) {
-		finalName = builtInConfig.name;
-		finalDescription = builtInConfig.description;
-		finalSystemPrompt = builtInConfig.context.systemPrompt;
-		greeting = builtInConfig.greeting;
-	} else {
-		finalName = scenarioName ?? scenario.replace(/-/g, " ");
-		finalDescription =
-			scenarioDescription ??
-			`Practice English through a ${finalName} conversation`;
-		const role = aiRole ?? "conversation partner";
-		finalSystemPrompt = `You are a ${role} in a ${finalName} scenario. ${finalDescription}.
+	const finalName = scenarioName ?? scenario.replace(/-/g, " ");
+	const finalDescription =
+		scenarioDescription ??
+		`Practice English through a ${finalName} conversation`;
+	const role = aiRole ?? "conversation partner";
+	const finalSystemPrompt = `You are a ${role} in a ${finalName} scenario. ${finalDescription}.
 The person you're talking to is learning English at a ${level} level.
 - Keep your language appropriate for their level
 - Be encouraging and supportive
 - After they respond, provide helpful corrections for any grammar or vocabulary mistakes
 - Ask follow-up questions to keep the conversation flowing
 - Use natural, authentic language for this scenario`;
-		greeting = generateDynamicGreeting(finalName, role, level);
-	}
+	const greeting = generateDynamicGreeting(finalName, role, level);
 
 	await db.insert(conversationSession).values({
 		id: sessionId,
 		userId: session.user.id,
-		scenario,
+		scenario: scenarioName ?? scenario,
 		level,
 		context: {
 			systemPrompt: finalSystemPrompt,
@@ -433,53 +418,6 @@ conversation.post("/transcribe", requireAuth, async (c) => {
 	}
 });
 
-conversation.post(
-	"/translate",
-	requireAuth,
-	rateLimit({ max: 10, windowMs: 60_000 }),
-	async (c) => {
-		const session = c.get("session");
-		if (!session) {
-			return c.json({ error: "Unauthorized" }, 401);
-		}
-
-		const body = await c.req.json();
-		const { text } = z
-			.object({
-				text: z.string().min(1).max(5000),
-			})
-			.parse(body);
-
-		try {
-			// Get user's native language from profile
-			const profile = await db
-				.select()
-				.from(userProfile)
-				.where(eq(userProfile.userId, session.user.id))
-				.limit(1);
-
-			const nativeLanguage = profile[0]?.nativeLanguage ?? "Spanish";
-
-			const { output } = await generateText({
-				model: openai("gpt-4o-mini"),
-				output: Output.text(),
-				system: `You are a translator. Translate the following English text to ${nativeLanguage}. Return ONLY the translation, nothing else.`,
-				prompt: text,
-				temperature: 0.3,
-			});
-
-			if (!output) {
-				throw new Error("Failed to generate translation");
-			}
-
-			return c.json({ translation: output });
-		} catch (error) {
-			console.error("Translation error:", error);
-			return c.json({ error: "Failed to translate message" }, 500);
-		}
-	},
-);
-
 // Generate a contextual hint (what to say next)
 conversation.post("/hint", requireAuth, async (c) => {
 	const session = c.get("session");
@@ -656,114 +594,6 @@ conversation.post("/finish", requireAuth, async (c) => {
 		status: "generating",
 	});
 });
-
-// Helper functions
-function getScenarioConfig(scenario: string, level: string) {
-	const scenarios: Record<
-		string,
-		{
-			name: string;
-			description: string;
-			systemPrompt: string;
-			greeting: string;
-		}
-	> = {
-		"job-interview": {
-			name: "Job Interview",
-			description: "Practice common job interview questions",
-			systemPrompt: `You are a friendly HR manager conducting a job interview. The candidate is learning English at a ${level} level. Be encouraging, ask appropriate questions, and gently correct any grammar or vocabulary mistakes they make. Include corrections naturally in your response when appropriate.`,
-			greeting:
-				level === "beginner"
-					? "Hello! Welcome to our company. Please sit down. I'm going to ask you some easy questions today. Are you ready?"
-					: level === "intermediate"
-						? "Good morning! Thank you for coming in today. I'm Sarah, the HR manager. I'll be conducting your interview. How are you feeling today?"
-						: "Good morning and welcome. I'm Sarah Chen, Head of Human Resources. Thank you for taking the time to interview with us. Before we dive into the specifics of your experience, could you tell me a bit about what drew you to this position?",
-		},
-		"restaurant-order": {
-			name: "Restaurant Ordering",
-			description: "Practice ordering food",
-			systemPrompt: `You are a friendly waiter at a restaurant. The customer is learning English at a ${level} level. Help them order food, be patient, and gently correct any English mistakes. Use natural restaurant language.`,
-			greeting:
-				level === "beginner"
-					? "Hello! Welcome to our restaurant. Here is the menu. What would you like to eat today?"
-					: level === "intermediate"
-						? "Good evening! Welcome to The Garden Bistro. My name is Alex, and I'll be your server tonight. Can I start you off with something to drink?"
-						: "Good evening and welcome to The Garden Bistro. I'm Alex, and I'll be taking care of you this evening. May I offer you something from our wine list to start?",
-		},
-		"travel-directions": {
-			name: "Asking for Directions",
-			description: "Practice asking and understanding directions",
-			systemPrompt: `You are a helpful local person. A tourist learning English at a ${level} level is asking for directions. Give clear directions and gently correct their English mistakes.`,
-			greeting:
-				level === "beginner"
-					? "Hello! You look lost. Can I help you? Where do you want to go?"
-					: level === "intermediate"
-						? "Hi there! You seem like you're looking for something. I'm a local - can I help you find your way?"
-						: "Excuse me, I couldn't help but notice you checking your phone. I've lived here for years - perhaps I could help you find what you're looking for?",
-		},
-		"small-talk": {
-			name: "Casual Small Talk",
-			description: "Practice everyday conversation",
-			systemPrompt: `You are a friendly person making casual conversation. The person is learning English at a ${level} level. Keep the conversation natural, ask open-ended questions, and gently correct mistakes.`,
-			greeting:
-				level === "beginner"
-					? "Hi! Nice weather today. Do you live near here?"
-					: level === "intermediate"
-						? "Hey there! Beautiful day, isn't it? I don't think I've seen you around here before."
-						: "What a gorgeous afternoon! This is my favorite time of year. Have you been enjoying the weather?",
-		},
-		"doctor-visit": {
-			name: "Doctor's Appointment",
-			description: "Practice medical conversations",
-			systemPrompt: `You are a friendly doctor. Your patient is learning English at a ${level} level. Ask about symptoms, use clear vocabulary, and gently correct their English when appropriate.`,
-			greeting:
-				level === "beginner"
-					? "Hello! I'm Doctor Smith. How do you feel today? What is the problem?"
-					: level === "intermediate"
-						? "Good morning! I'm Dr. Smith. What brings you to see me today?"
-						: "Good morning, I'm Dr. Elizabeth Smith. What concerns have brought you in today?",
-		},
-		shopping: {
-			name: "Shopping Experience",
-			description: "Practice shopping conversations",
-			systemPrompt: `You are a helpful store assistant. The customer is learning English at a ${level} level. Help them find products, discuss options, and gently correct their English.`,
-			greeting:
-				level === "beginner"
-					? "Hello! Welcome to our store. Can I help you find something?"
-					: level === "intermediate"
-						? "Hi there! Welcome to StyleMart. Is there anything specific you're looking for today?"
-						: "Good afternoon and welcome to StyleMart! I'm Jamie, a personal stylist. Are you shopping for a particular occasion?",
-		},
-	};
-
-	const config = scenarios[scenario] ?? {
-		name: "Casual Small Talk",
-		description: "Practice everyday conversation",
-		systemPrompt: `You are a friendly person making casual conversation. The person is learning English at a ${level} level. Keep the conversation natural, ask open-ended questions, and gently correct mistakes.`,
-		greeting: "Hi! Nice weather today. Do you live near here?",
-	};
-	return {
-		name: config.name,
-		description: config.description,
-		systemPrompt: config.systemPrompt,
-		greeting: config.greeting,
-		context: {
-			systemPrompt: config.systemPrompt,
-			scenarioDescription: config.description,
-		},
-	};
-}
-
-function getBuiltInScenarioIds(): Record<string, boolean> {
-	return {
-		"job-interview": true,
-		"restaurant-order": true,
-		"travel-directions": true,
-		"small-talk": true,
-		"doctor-visit": true,
-		shopping: true,
-	};
-}
 
 function generateDynamicGreeting(
 	scenarioName: string,

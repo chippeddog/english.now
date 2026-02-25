@@ -56,7 +56,11 @@
     "delete": "Elimina",
     "deleting": "Eliminazione in corso...",
     "deleteSuccess": "Sessione eliminata con successo",
-    "deleteError": "Eliminazione della sessione fallita"
+    "deleteError": "Eliminazione della sessione fallita",
+    "conversation": "Conversazione",
+    "pronunciation": "Pronuncia",
+    "practiceYourEnglish": "Pratica il tuo inglese",
+    "practiceYourPronunciation": "Pratica la tua pronuncia"
   },
   "vocabulary": {
     "title": "Vocabolario",

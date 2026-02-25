@@ -56,7 +56,11 @@
     "delete": "Löschen",
     "deleting": "Löschen...",
     "deleteSuccess": "Sitzung erfolgreich gelöscht",
-    "deleteError": "Fehler beim Löschen der Sitzung"
+    "deleteError": "Fehler beim Löschen der Sitzung",
+    "conversation": "Konversation",
+    "pronunciation": "Aussprache",
+    "practiceYourEnglish": "Üben Sie Ihr Englisch",
+    "practiceYourPronunciation": "Üben Sie Ihre Aussprache"
   },
   "vocabulary": {
     "title": "Wortschatz",

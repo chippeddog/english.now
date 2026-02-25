@@ -56,7 +56,11 @@
     "delete": "Sil",
     "deleting": "Siliniyor...",
     "deleteSuccess": "Oturum başarıyla silindi",
-    "deleteError": "Oturum silinemedi"
+    "deleteError": "Oturum silinemedi",
+    "conversation": "Konuşma",
+    "pronunciation": "Telaffuz",
+    "practiceYourEnglish": "İngilizcenizi pratiğe dökün",
+    "practiceYourPronunciation": "Telaffuzunuzu pratiğe dökün"
   },
   "vocabulary": {
     "title": "Kelime Bilgisi",

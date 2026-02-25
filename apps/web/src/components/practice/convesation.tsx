@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { Loader2, MessageCircleIcon, PlusIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -24,7 +25,7 @@ type RoleplayItem = {
 
 function SkeletonCard() {
 	return (
-		<div className="flex h-16 animate-pulse items-center justify-center gap-2 rounded-xl border border-transparent bg-neutral-100" />
+		<div className="flex h-12 animate-pulse items-center justify-center gap-2 rounded-xl border border-transparent bg-neutral-100" />
 	);
 }
 
@@ -229,8 +230,6 @@ function DialogTopics({
 							<SkeletonCard />
 							<SkeletonCard />
 							<SkeletonCard />
-							<SkeletonCard />
-							<SkeletonCard />
 						</>
 					) : (
 						roleplays.map((roleplay) => (
@@ -281,6 +280,7 @@ function DialogTopics({
 
 export default function Conversation() {
 	const [dialogOpen, setDialogOpen] = useState(false);
+	const { t } = useTranslation("app");
 	return (
 		<div
 			className="overflow-hidden rounded-[1.2rem] bg-white"
@@ -301,9 +301,11 @@ export default function Conversation() {
 							<MessageCircleIcon className="size-5 text-lime-700" />
 						</div>
 						<div className="text-left">
-							<h2 className="font-medium text-slate-900">Conversation</h2>
+							<h2 className="font-medium text-slate-900">
+								{t("practice.conversation")}
+							</h2>
 							<p className="text-muted-foreground text-sm">
-								Practice your English
+								{t("practice.practiceYourEnglish")}
 							</p>
 						</div>
 					</div>

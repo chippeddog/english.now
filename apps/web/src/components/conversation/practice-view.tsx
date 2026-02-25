@@ -1,7 +1,7 @@
 import { env } from "@english.now/env/client";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { Languages, Loader2, PauseIcon, PlayIcon } from "lucide-react";
+import { Languages, Loader, Loader2, PauseIcon, PlayIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	AlertDialog,
@@ -14,6 +14,9 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import useAudioDevices from "@/hooks/use-audio-devices";
+import useAudioPlayback from "@/hooks/use-audio-playback";
+import useAudioRecorder from "@/hooks/use-audio-recoder";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/utils/trpc";
 import { ControlToolbar } from "./control-toolbar";
@@ -29,31 +32,26 @@ type Message = {
 export default function PracticeView({ sessionId }: { sessionId: string }) {
 	const trpc = useTRPC();
 	const navigate = useNavigate();
-
 	const [messages, setMessages] = useState<Message[]>([]);
 	const [translations, setTranslations] = useState<Record<string, string>>({});
-	const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
-	const [selectedDevice, setSelectedDevice] = useState<string>("");
-	const [settingsOpen, setSettingsOpen] = useState(false);
 	const [showHint, setShowHint] = useState(false);
 	const [hintSuggestions, setHintSuggestions] = useState<string[]>([]);
-	const [recordingState, setRecordingState] = useState<
-		"idle" | "recording" | "transcribing"
-	>("idle");
 	const [isLoadingHint, setIsLoadingHint] = useState(false);
-	const [isPlaying, setIsPlaying] = useState<string | null>(null);
-	const [generatingTTS, setGeneratingTTS] = useState<Set<string>>(new Set());
-	const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
 	const [translatingId, setTranslatingId] = useState<string | null>(null);
 	const [showFinishDialog, setShowFinishDialog] = useState(false);
 	const [isFinishing, setIsFinishing] = useState(false);
-
-	const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-	const audioChunksRef = useRef<Blob[]>([]);
+	const [generatingTTS, setGeneratingTTS] = useState<Set<string>>(new Set());
 	const hasPlayedInitialAudio = useRef(false);
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 	const streamRef = useRef<MediaStream | null>(null);
-	const audioRef = useRef<HTMLAudioElement | null>(null);
+
+	const {
+		audioDevices,
+		selectedDevice,
+		settingsOpen,
+		setSelectedDevice,
+		setSettingsOpen,
+	} = useAudioDevices();
 
 	const { data: profile } = useQuery(trpc.profile.get.queryOptions());
 
@@ -66,6 +64,8 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 	});
 
 	const voice = profile?.voiceModel ?? "aura-2-asteria-en";
+	const { audioRef, isPlaying, playAudio, setIsPlaying } =
+		useAudioPlayback(voice);
 	const userMessageCount = messages.filter((m) => m.role === "user").length;
 	const canGetFeedback = userMessageCount >= 3;
 
@@ -88,28 +88,6 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 	}, []);
 
 	useEffect(() => {
-		const getDevices = async () => {
-			try {
-				await navigator.mediaDevices.getUserMedia({ audio: true });
-				const devices = await navigator.mediaDevices.enumerateDevices();
-				const audioInputs = devices.filter(
-					(device) => device.kind === "audioinput",
-				);
-				setAudioDevices(audioInputs);
-				if (audioInputs.length > 0 && !selectedDevice) {
-					setSelectedDevice(audioInputs[0].deviceId);
-				}
-			} catch (err) {
-				console.error("Error getting audio devices:", err);
-			}
-		};
-
-		if (settingsOpen) {
-			getDevices();
-		}
-	}, [settingsOpen, selectedDevice]);
-
-	useEffect(() => {
 		const handler = (e: BeforeUnloadEvent) => {
 			if (messages.filter((m) => m.role === "user").length > 0) {
 				e.preventDefault();
@@ -118,6 +96,10 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 		window.addEventListener("beforeunload", handler);
 		return () => window.removeEventListener("beforeunload", handler);
 	}, [messages]);
+
+	const translateMutation = useMutation(
+		trpc.conversation.translate.mutationOptions({}),
+	);
 
 	const translateMessage = useCallback(
 		async (messageId: string, text: string) => {
@@ -132,17 +114,7 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 
 			setTranslatingId(messageId);
 			try {
-				const response = await fetch(
-					`${env.VITE_SERVER_URL}/api/conversation/translate`,
-					{
-						method: "POST",
-						headers: { "Content-Type": "application/json" },
-						credentials: "include",
-						body: JSON.stringify({ text }),
-					},
-				);
-				if (!response.ok) throw new Error("Translation failed");
-				const { translation } = await response.json();
+				const { translation } = await translateMutation.mutateAsync({ text });
 				setTranslations((prev) => ({ ...prev, [messageId]: translation }));
 			} catch (err) {
 				console.error("Translation error:", err);
@@ -150,7 +122,7 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 				setTranslatingId(null);
 			}
 		},
-		[translations],
+		[translations, translateMutation],
 	);
 
 	const fetchHintSuggestions = useCallback(async () => {
@@ -176,107 +148,6 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 			setIsLoadingHint(false);
 		}
 	}, [sessionId]);
-
-	const generateTTS = useCallback(
-		async (text: string, messageId: string) => {
-			setGeneratingTTS((prev) => new Set(prev).add(messageId));
-			try {
-				const response = await fetch(
-					`${env.VITE_SERVER_URL}/api/conversation/speak`,
-					{
-						method: "POST",
-						headers: { "Content-Type": "application/json" },
-						credentials: "include",
-						body: JSON.stringify({ text, voice }),
-					},
-				);
-				if (!response.ok) return null;
-				const { audio } = await response.json();
-
-				setMessages((prev) =>
-					prev.map((m) => (m.id === messageId ? { ...m, audio } : m)),
-				);
-
-				return audio as string;
-			} catch (err) {
-				console.error("TTS generation error:", err);
-				return null;
-			} finally {
-				setGeneratingTTS((prev) => {
-					const next = new Set(prev);
-					next.delete(messageId);
-					return next;
-				});
-			}
-		},
-		[voice],
-	);
-
-	const playAudio = useCallback((audioBase64: string, messageId?: string) => {
-		if (audioRef.current) {
-			audioRef.current.pause();
-			audioRef.current = null;
-		}
-
-		try {
-			const audio = new Audio(`data:audio/mp3;base64,${audioBase64}`);
-			audioRef.current = audio;
-
-			if (messageId) {
-				setIsPlaying(messageId);
-			}
-
-			audio.onended = () => {
-				setIsPlaying(null);
-				audioRef.current = null;
-			};
-
-			audio.onerror = () => {
-				console.error("Audio playback error");
-				setIsPlaying(null);
-				audioRef.current = null;
-			};
-
-			audio.play().catch((err) => {
-				console.error("Failed to play audio:", err);
-				setIsPlaying(null);
-			});
-		} catch (err) {
-			console.error("Error creating audio:", err);
-		}
-	}, []);
-
-	const transcribeAndSend = async (blob: Blob) => {
-		try {
-			const arrayBuffer = await blob.arrayBuffer();
-			const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-
-			const response = await fetch(
-				`${env.VITE_SERVER_URL}/api/conversation/transcribe`,
-				{
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					credentials: "include",
-					body: JSON.stringify({ audio: base64, sessionId }),
-				},
-			);
-
-			if (!response.ok) throw new Error("Transcription failed");
-
-			const { transcript, audioUrl } = await response.json();
-
-			if (transcript) {
-				await sendMessage(transcript, "voice", audioUrl);
-			} else {
-				alert("Couldn't understand the audio. Please try again.");
-			}
-		} catch (error) {
-			console.error("Transcription error:", error);
-			alert("Failed to transcribe audio. Please try again.");
-		} finally {
-			setRecordingState("idle");
-		}
-	};
 
 	const sendMessage = useCallback(
 		async (
@@ -388,69 +259,40 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 		[sessionId, playAudio],
 	);
 
-	const startRecording = async () => {
-		try {
-			const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-			streamRef.current = stream;
-			setAudioStream(stream);
+	const generateTTS = useCallback(
+		async (text: string, messageId: string) => {
+			setGeneratingTTS((prev) => new Set(prev).add(messageId));
+			try {
+				const response = await fetch(
+					`${env.VITE_SERVER_URL}/api/conversation/speak`,
+					{
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						credentials: "include",
+						body: JSON.stringify({ text, voice }),
+					},
+				);
+				if (!response.ok) return null;
+				const { audio } = await response.json();
 
-			const mediaRecorder = new MediaRecorder(stream, {
-				mimeType: "audio/webm;codecs=opus",
-			});
-			mediaRecorderRef.current = mediaRecorder;
-			audioChunksRef.current = [];
+				setMessages((prev) =>
+					prev.map((m) => (m.id === messageId ? { ...m, audio } : m)),
+				);
 
-			mediaRecorder.ondataavailable = (event) => {
-				if (event.data.size > 0) {
-					audioChunksRef.current.push(event.data);
-				}
-			};
-
-			mediaRecorder.onstop = async () => {
-				const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
-
-				setAudioStream(null);
-				if (streamRef.current) {
-					for (const track of streamRef.current.getTracks()) {
-						track.stop();
-					}
-					streamRef.current = null;
-				}
-
-				setRecordingState("transcribing");
-				await transcribeAndSend(blob);
-			};
-
-			mediaRecorder.start();
-			setRecordingState("recording");
-		} catch (err) {
-			console.error("Error accessing microphone:", err);
-			alert("Failed to access microphone. Please check your permissions.");
-		}
-	};
-
-	const stopRecording = () => {
-		if (mediaRecorderRef.current && recordingState === "recording") {
-			mediaRecorderRef.current.stop();
-		}
-	};
-
-	const cancelRecording = () => {
-		if (mediaRecorderRef.current && recordingState === "recording") {
-			mediaRecorderRef.current.ondataavailable = null;
-			mediaRecorderRef.current.onstop = null;
-			mediaRecorderRef.current.stop();
-		}
-		audioChunksRef.current = [];
-		setAudioStream(null);
-		if (streamRef.current) {
-			for (const track of streamRef.current.getTracks()) {
-				track.stop();
+				return audio as string;
+			} catch (err) {
+				console.error("TTS generation error:", err);
+				return null;
+			} finally {
+				setGeneratingTTS((prev) => {
+					const next = new Set(prev);
+					next.delete(messageId);
+					return next;
+				});
 			}
-			streamRef.current = null;
-		}
-		setRecordingState("idle");
-	};
+		},
+		[voice],
+	);
 
 	const handleFinishSession = useCallback(async () => {
 		if (!sessionId) return;
@@ -510,6 +352,13 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 		}
 	}, [data, generateTTS, playAudio]);
 
+	const {
+		startRecording,
+		stopRecording,
+		cancelRecording,
+		recordingState,
+		audioStream,
+	} = useAudioRecorder(sessionId, sendMessage);
 	return (
 		<>
 			{/* Messages */}
@@ -589,7 +438,7 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 											}
 										>
 											{generatingTTS.has(message.id) ? (
-												<Loader2 className="size-3 animate-spin" />
+												<Loader className="size-3 animate-spin" />
 											) : isPlaying === message.id ? (
 												<PauseIcon className="size-3" fill="currentColor" />
 											) : (
@@ -615,7 +464,7 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 											}
 										>
 											{translatingId === message.id ? (
-												<Loader2 className="size-3 animate-spin" />
+												<Loader className="size-3 animate-spin" />
 											) : (
 												<Languages className="size-3" />
 											)}
