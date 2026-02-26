@@ -268,6 +268,9 @@ function RouteComponent() {
 				<h1 className="mb-6 font-bold font-lyon text-5xl tracking-tight md:text-6xl">
 					Everything you need to master English
 				</h1>
+				<p className="text-balance text-center text-muted-foreground text-sm md:mx-auto md:max-w-boundary-sm md:text-lg">
+					All plans include access to our AI-powered learning tools.
+				</p>
 			</div>
 
 			{/* Features Grid */}

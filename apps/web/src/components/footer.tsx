@@ -122,7 +122,7 @@ export default function Footer() {
 					</div>
 				</div>
 
-				<div className="mt-8 flex flex-row items-center justify-between py-3.5 pb-5">
+				<div className="mt-8 flex flex-row items-center justify-between border-border/50 border-t py-4">
 					<div className="flex items-center text-center">
 						<div className="font-medium text-muted-foreground text-xs">
 							© {new Date().getFullYear()} English Now.{" "}

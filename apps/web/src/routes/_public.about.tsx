@@ -11,6 +11,9 @@ export default function About() {
 				<h1 className="mb-2 font-bold font-lyon text-4xl tracking-tight md:text-6xl">
 					The story behind English Now
 				</h1>
+				<p className="text-balance text-center text-muted-foreground text-sm md:mx-auto md:max-w-boundary-sm md:text-lg">
+					All plans include access to our AI-powered learning tools.
+				</p>
 			</div>
 			<div className="flex justify-center lg:gap-20">
 				<div className="-mt-1.5 relative w-full shrink-0 lg:w-[64%]">

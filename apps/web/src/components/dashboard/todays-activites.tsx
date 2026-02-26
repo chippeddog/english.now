@@ -182,7 +182,7 @@ export default function TodaysActivities() {
 									)}
 								>
 									{isDone && (
-										<div className="absolute top-3 right-3 flex size-6 items-center justify-center rounded-full bg-lime-500">
+										<div className="absolute top-4 right-4 flex size-6 items-center justify-center rounded-full bg-lime-500">
 											<CheckIcon
 												className="size-3.5 text-white"
 												strokeWidth={3}
@@ -218,17 +218,30 @@ export default function TodaysActivities() {
 									<div className="mt-3 flex items-center justify-between">
 										<span
 											className={cn(
-												"group flex items-center gap-1 whitespace-nowrap rounded-xl border px-2.5 py-1.5 font-medium text-neutral-700 text-xs italic shadow-none transition duration-150 ease-in-out will-change-transform hover:brightness-95 focus:shadow-none focus:outline-none focus-visible:shadow-none",
+												"group flex items-center gap-1 whitespace-nowrap rounded-xl border px-2.5 py-1.5 font-medium text-neutral-700 text-xs italic shadow-none transition duration-150 ease-in-out will-change-transform focus:shadow-none focus:outline-none focus-visible:shadow-none",
+												isDone
+													? "border-lime-200 bg-lime-50 text-lime-700"
+													: "border-neutral-200 hover:brightness-95",
 											)}
 										>
 											{activity.typeLabel}
 										</span>
-										{isStarting ? (
+										{/* {isStarting ? (
 											<LoaderIcon className="size-4 animate-spin text-muted-foreground" />
 										) : isDone ? (
 											<span className="font-medium text-lime-600 text-xs">
 												Completed
 											</span>
+										) : (
+											<ArrowRightIcon
+												className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5"
+												strokeWidth={2}
+											/>
+										)} */}
+										{isStarting ? (
+											<LoaderIcon className="size-4 animate-spin text-muted-foreground" />
+										) : isDone ? (
+											<></>
 										) : (
 											<ArrowRightIcon
 												className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5"

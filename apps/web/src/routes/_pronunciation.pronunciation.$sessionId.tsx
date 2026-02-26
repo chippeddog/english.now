@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Check, CircleDashed, Loader2 } from "lucide-react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Check, ChevronLeft, CircleDashed, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import Logo from "@/components/logo";
 import ReadAloudMode from "@/components/pronunciation/read-aloud";
 import SessionReview from "@/components/pronunciation/session-review";
 import SessionLoader from "@/components/session/loader";
@@ -231,9 +232,9 @@ function PronunciationSessionPage() {
 	if (!paragraph) return null;
 
 	return (
-		<div className="min-h-screen pb-12">
-			<div className="container relative z-10 mx-auto max-w-3xl px-4 py-6 pt-8">
-				{view === "practice" && (
+		<div className="min-h-screen">
+			{view === "practice" && (
+				<div className="container relative z-10 mx-auto max-w-3xl px-4 py-6">
 					<div className="fade-in slide-in-from-bottom-4 animate-in duration-300">
 						<ReadAloudMode
 							sessionId={sessionId}
@@ -248,38 +249,58 @@ function PronunciationSessionPage() {
 							onFinish={handleFinish}
 						/>
 					</div>
-				)}
-				{view === "processing" && (
+				</div>
+			)}
+			{view === "processing" && (
+				<div className="container relative z-10 mx-auto max-w-3xl px-4 py-6">
 					<div className="fade-in slide-in-from-bottom-4 animate-in duration-300">
 						<ProcessingView
 							sessionStatus={sessionData.status}
 							feedbackStatus={sessionData.feedbackStatus}
 						/>
 					</div>
-				)}
-			</div>
+				</div>
+			)}
 
 			{view === "review" && summary && (
-				<div className="container relative z-10 mx-auto max-w-5xl px-4 py-6 pt-8">
-					<div className="fade-in slide-in-from-bottom-4 animate-in duration-300">
-						<SessionReview
-							summary={summary}
-							sessionId={sessionId}
-							cefrLevel={cefrLevel}
-							paragraphText={paragraph.text}
-							attempts={(sessionData.attempts ?? []).map((a) => ({
-								id: a.id,
-								score: a.score,
-								wordResults: (a.wordResults ?? []) as {
-									word: string;
-									accuracyScore: number;
-									errorType: string;
-									phonemes: { phoneme: string; accuracyScore: number }[];
-								}[],
-							}))}
-						/>
+				<>
+					<div className="sticky top-0 z-10 border-black/5 border-b bg-white dark:bg-neutral-900">
+						<div className="container relative z-10 mx-auto max-w-5xl px-4">
+							<nav className="flex grid-cols-2 items-center justify-between py-5 md:grid-cols-5">
+								<div className="items-center gap-2 md:flex">
+									<Logo link="/practice" />
+								</div>
+								<Link
+									to="/pronunciation"
+									className="flex items-center gap-1 text-muted-foreground text-sm transition-colors hover:text-foreground"
+								>
+									<ChevronLeft className="size-4" />
+									Back to practice
+								</Link>
+							</nav>
+						</div>
 					</div>
-				</div>
+					<div className="container relative z-10 mx-auto max-w-5xl px-4 py-6 pt-8">
+						<div className="fade-in slide-in-from-bottom-4 animate-in duration-300">
+							<SessionReview
+								summary={summary}
+								sessionId={sessionId}
+								cefrLevel={cefrLevel}
+								paragraphText={paragraph.text}
+								attempts={(sessionData.attempts ?? []).map((a) => ({
+									id: a.id,
+									score: a.score,
+									wordResults: (a.wordResults ?? []) as {
+										word: string;
+										accuracyScore: number;
+										errorType: string;
+										phonemes: { phoneme: string; accuracyScore: number }[];
+									}[],
+								}))}
+							/>
+						</div>
+					</div>
+				</>
 			)}
 		</div>
 	);
