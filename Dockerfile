@@ -36,11 +36,8 @@ FROM deps AS builder
 # Copy full source
 COPY . .
 
-# Build only the server package (name from apps/server/package.json)
+# Build the server
 RUN turbo run build --filter=server
-
-# Prune to production deps only for server
-RUN pnpm prune --filter server --prod
 
 ###########
 # Runtime image
