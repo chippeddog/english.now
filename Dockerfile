@@ -18,29 +18,33 @@ WORKDIR /repo
 ###########
 FROM base AS deps
 
-# Root manifests (for catalogs + workspaces)
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 
-# Package manifests only (better cache)
 COPY apps/server/package.json apps/server/package.json
 COPY packages ./packages
 
-# Install all workspace deps (uses catalogs & workspace:*)
 RUN pnpm install --frozen-lockfile
+
+###########
+# Production dependencies only (hoisted → real files, no symlinks)
+###########
+FROM base AS proddeps
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+
+COPY apps/server/package.json apps/server/package.json
+COPY packages ./packages
+
+RUN pnpm install --frozen-lockfile --prod
 
 ###########
 # Build server via Turbo
 ###########
 FROM deps AS builder
 
-# Copy full source
 COPY . .
 
-# Build the server
 RUN turbo run build --filter=server
-
-# Create a standalone deployment dir with real files (no pnpm symlinks)
-RUN pnpm deploy --filter=server --prod /deployed
 
 ###########
 # Runtime image
@@ -52,10 +56,9 @@ WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs \
   && adduser --system --uid 1001 hono
 
-# Copy built output + production node_modules from pnpm deploy
 COPY --from=builder --chown=hono:nodejs /repo/apps/server/dist ./dist
-COPY --from=builder --chown=hono:nodejs /deployed/package.json ./package.json
-COPY --from=builder --chown=hono:nodejs /deployed/node_modules ./node_modules
+COPY --from=builder --chown=hono:nodejs /repo/apps/server/package.json ./package.json
+COPY --from=proddeps --chown=hono:nodejs /repo/node_modules ./node_modules
 
 USER hono
 EXPOSE 3000
