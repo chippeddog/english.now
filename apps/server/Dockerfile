@@ -5,11 +5,14 @@ FROM base AS builder
 RUN apk add --no-cache gcompat
 WORKDIR /app
 
-COPY package*json tsconfig.json src ./
+# include lockfile if you have it
+COPY package*.json pnpm-lock.yaml tsconfig.json src ./
 
-RUN pnpm install && \
-    pnpm run build && \
-    pnpm prune --production
+# install pnpm, then deps, build, prune
+RUN npm install -g pnpm \
+  && pnpm install --frozen-lockfile \
+  && pnpm run build \
+  && pnpm prune --prod
 
 FROM base AS runner
 WORKDIR /app
@@ -23,5 +26,4 @@ COPY --from=builder --chown=hono:nodejs /app/package.json /app/package.json
 
 USER hono
 EXPOSE 3000
-
 CMD ["node", "/app/dist/index.js"]
