@@ -39,6 +39,9 @@ COPY . .
 # Build the server
 RUN turbo run build --filter=server
 
+# Create a standalone deployment dir with real files (no pnpm symlinks)
+RUN pnpm deploy --filter=server --prod /deployed
+
 ###########
 # Runtime image
 ###########
@@ -49,10 +52,10 @@ WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs \
   && adduser --system --uid 1001 hono
 
-# Copy built server + its node_modules
+# Copy built output + production node_modules from pnpm deploy
 COPY --from=builder --chown=hono:nodejs /repo/apps/server/dist ./dist
-COPY --from=builder --chown=hono:nodejs /repo/apps/server/package.json ./package.json
-COPY --from=builder --chown=hono:nodejs /repo/apps/server/node_modules ./node_modules
+COPY --from=builder --chown=hono:nodejs /deployed/package.json ./package.json
+COPY --from=builder --chown=hono:nodejs /deployed/node_modules ./node_modules
 
 USER hono
 EXPOSE 3000
