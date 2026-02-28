@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import Explore from "@/components/vocabulary/explore";
+// import Explore from "@/components/vocabulary/explore";
 import Phrases from "@/components/vocabulary/phrases";
 import Practice from "@/components/vocabulary/practice";
 import Progress from "@/components/vocabulary/progress";
@@ -20,7 +20,7 @@ function VocabularyPage() {
 	return (
 		<div>
 			<div className="container relative z-10 mx-auto max-w-5xl px-4 py-6 pt-8">
-				<div className="mb-4 flex flex-col items-center md:flex-row md:items-center md:justify-between">
+				<div className="mb-6 flex flex-col items-center md:flex-row md:items-center md:justify-between">
 					<div className="flex items-center">
 						<div>
 							<h1 className="font-bold font-lyon text-2.5xl text-neutral-950 tracking-tight md:text-3xl">
@@ -29,7 +29,6 @@ function VocabularyPage() {
 						</div>
 					</div>
 				</div>
-
 				<Tabs
 					value={activeView}
 					onValueChange={(v) => setActiveView(v as typeof activeView)}
@@ -77,7 +76,7 @@ function VocabularyPage() {
 
 						<div className="flex gap-3">
 							<Practice />
-							<Explore />
+							{/* <Explore /> */}
 						</div>
 					</div>
 

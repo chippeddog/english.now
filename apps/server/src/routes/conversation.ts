@@ -73,14 +73,16 @@ conversation.post("/start", requireAuth, async (c) => {
 	}
 	const body = await c.req.json();
 
-	const { scenario, scenarioName, scenarioDescription, aiRole } = z
-		.object({
-			scenario: z.string(),
-			scenarioName: z.string().optional(),
-			scenarioDescription: z.string().optional(),
-			aiRole: z.string().optional(),
-		})
-		.parse(body);
+	const { scenario, scenarioName, scenarioDescription, aiRole, scenarioType } =
+		z
+			.object({
+				scenario: z.string(),
+				scenarioName: z.string().optional(),
+				scenarioDescription: z.string().optional(),
+				aiRole: z.string().optional(),
+				scenarioType: z.enum(["topic", "roleplay"]).optional(),
+			})
+			.parse(body);
 
 	const sessionId = crypto.randomUUID();
 
@@ -117,6 +119,8 @@ The person you're talking to is learning English at a ${level} level.
 			systemPrompt: finalSystemPrompt,
 			scenarioDescription: finalDescription,
 			goals: [],
+			scenarioType,
+			aiRole: role,
 		},
 		status: "active",
 		createdAt: new Date(),

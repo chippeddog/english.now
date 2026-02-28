@@ -16,36 +16,91 @@ import { z } from "zod";
 import { openai } from "../utils/ai";
 
 const feedbackSchema = z.object({
-	overallAnalysis: z
-		.string()
-		.describe("2-3 sentence analysis of the learner's pronunciation performance in this session"),
-	strengths: z
-		.array(z.string())
-		.describe("2-4 specific pronunciation strengths observed"),
-	areasToImprove: z
-		.array(z.string())
-		.describe("2-4 specific areas needing improvement"),
-	suggestions: z
+	mistakePatterns: z
 		.array(
 			z.object({
-				type: z.enum(["phoneme", "word", "pattern", "fluency"]),
-				title: z.string().describe("Short title for this suggestion"),
+				type: z.enum([
+					"phoneme",
+					"word_stress",
+					"omission",
+					"mispronunciation",
+					"fluency",
+				]),
+				sound: z
+					.string()
+					.describe("Target phoneme in IPA, e.g. /θ/, /ɪ/. Empty string if not applicable"),
 				description: z
 					.string()
-					.describe("Practical advice for improvement"),
-				examples: z
+					.describe("Brief pattern label, e.g. 'Difficulty with th sounds'"),
+				words: z
 					.array(z.string())
-					.describe("Example words or phrases to practice"),
+					.describe("Words from the session where this error occurred"),
+				practiceWords: z
+					.array(z.string())
+					.describe("5-8 additional words to drill this same pattern"),
 				priority: z.enum(["high", "medium", "low"]),
 			}),
 		)
-		.describe("3-6 actionable practice suggestions ranked by priority"),
-	recommendedLevel: z
-		.enum(["A1", "A2", "B1", "B2"])
-		.describe("Recommended CEFR level for next practice based on performance"),
-	nextSteps: z
-		.string()
-		.describe("1-2 sentence motivational guidance for what to focus on next"),
+		.describe(
+			"2-5 distinct mistake patterns found in the session, ordered by priority",
+		),
+	exercises: z
+		.array(
+			z.object({
+				type: z.enum([
+					"repeat_after",
+					"minimal_pairs",
+					"tongue_twister",
+					"word_chain",
+					"sentence_practice",
+				]),
+				title: z.string().describe("Short exercise title"),
+				instruction: z
+					.string()
+					.describe("One sentence telling the learner what to do"),
+				items: z
+					.array(z.string())
+					.describe("4-8 words, word pairs, or sentences for the exercise"),
+				targetSkill: z
+					.string()
+					.describe("What skill this drills, e.g. '/θ/ vs /s/ distinction'"),
+			}),
+		)
+		.describe("2-4 mini practice exercises the learner can do right away"),
+	weakAreas: z
+		.array(
+			z.object({
+				category: z.enum([
+					"vowels",
+					"consonants",
+					"word_stress",
+					"rhythm",
+					"intonation",
+					"linking",
+				]),
+				severity: z.enum(["high", "medium", "low"]),
+				sounds: z
+					.array(z.string())
+					.describe("Specific sounds affected, in IPA"),
+				description: z
+					.string()
+					.describe("One sentence describing the weakness"),
+			}),
+		)
+		.describe("1-4 categorized weak areas"),
+	practiceWordSets: z
+		.array(
+			z.object({
+				word: z.string().describe("The word the learner struggled with"),
+				issue: z
+					.string()
+					.describe("Brief issue label, e.g. 'omitted final consonant'"),
+				relatedWords: z
+					.array(z.string())
+					.describe("3-5 words with the same sound pattern to practice"),
+			}),
+		)
+		.describe("3-8 word sets built from the learner's actual mistakes"),
 });
 
 export async function generatePronunciationFeedback(
@@ -81,7 +136,7 @@ export async function generatePronunciationFeedback(
 
 		const paragraph = session.paragraph as ParagraphItem | null;
 		const summary = session.summary as PronunciationSessionSummary | null;
-		const cefrLevel = (session.cefrLevel ?? "A2") as CefrLevel;
+		const cefrLevel = (session.level ?? "A2") as CefrLevel;
 
 		const allWords: WordResult[] = [];
 		for (const attempt of attempts) {
@@ -90,7 +145,10 @@ export async function generatePronunciationFeedback(
 
 		const weakWordsDetail = allWords
 			.filter((w) => w.accuracyScore < 70)
-			.map((w) => `"${w.word}" (score: ${Math.round(w.accuracyScore)}, error: ${w.errorType})`)
+			.map(
+				(w) =>
+					`"${w.word}" (score: ${Math.round(w.accuracyScore)}, error: ${w.errorType})`,
+			)
 			.slice(0, 15);
 
 		const weakPhonemeDetail =
@@ -108,9 +166,9 @@ export async function generatePronunciationFeedback(
 		const { experimental_output } = await generateText({
 			model: openai("gpt-4o-mini"),
 			output: Output.object({ schema: feedbackSchema }),
-			system: `You are an expert English pronunciation coach analyzing a read-aloud practice session.
+			system: `You are an expert English pronunciation coach. Your job is to analyze a practice session and produce ONLY structured, actionable data that will power mini-lessons and practice exercises in the app.
 
-The learner practiced at CEFR level ${cefrLevel}. Analyze their performance and generate actionable feedback.
+The learner practiced at CEFR level ${cefrLevel}.
 
 Scoring context:
 - Scores are 0-100 from Azure Speech Assessment
@@ -119,10 +177,14 @@ Scoring context:
 - Completeness: how much of the text was actually spoken
 - Prosody: intonation, stress patterns, and rhythm
 
-Be encouraging but honest. Focus on the most impactful improvements.
-Suggestions should be specific and actionable with concrete practice examples.
-For recommendedLevel, suggest the same level if score >= 70, one level down if < 50, one level up if >= 90.`,
-			prompt: `Analyze this pronunciation practice session:
+Rules:
+- Focus on MISTAKES and WEAK AREAS only. Do not describe strengths or give motivational text.
+- Every mistake pattern must include real words from the session AND extra practice words.
+- Exercises must be concrete drills the learner can do immediately (minimal pairs, tongue twisters, repeat-after chains, etc.).
+- Use IPA notation for sounds where possible.
+- practiceWordSets should be built directly from the learner's worst-scoring words, grouping by shared sound pattern.
+- Keep descriptions terse — these power UI labels, not paragraphs.`,
+			prompt: `Analyze this pronunciation session and extract actionable practice data:
 
 Paragraph practiced (${cefrLevel}): "${paragraph?.text ?? "Unknown"}"
 Topic: ${paragraph?.topic ?? "Unknown"}
@@ -143,7 +205,7 @@ Problematic words: ${weakWordsDetail.length > 0 ? weakWordsDetail.join("; ") : "
 Weak phonemes: ${weakPhonemeDetail.length > 0 ? weakPhonemeDetail.join("; ") : "None significant"}
 
 Weak words: ${summary?.weakWords?.join(", ") ?? "None"}`,
-			temperature: 0.4,
+			temperature: 0.3,
 		});
 
 		if (!experimental_output) {
@@ -160,9 +222,7 @@ Weak words: ${summary?.weakWords?.join(", ") ?? "None"}`,
 			})
 			.where(eq(pronunciationSession.id, sessionId));
 
-		console.log(
-			`[pronunciation-feedback] completed for session ${sessionId}`,
-		);
+		console.log(`[pronunciation-feedback] completed for session ${sessionId}`);
 
 		return { feedbackId: sessionId };
 	} catch (err) {

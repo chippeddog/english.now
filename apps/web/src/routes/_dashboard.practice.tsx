@@ -136,7 +136,10 @@ function RouteComponent() {
 								disabled={isLoading}
 								className="h-8 max-w-md rounded-xl bg-white px-3 py-1.5 italic hover:border-border/80"
 							>
-								<SelectValue placeholder={t("practice.filterAll")} />
+								<SelectValue
+									defaultValue="all"
+									placeholder={t("practice.filterAll")}
+								/>
 							</SelectTrigger>
 							<SelectContent
 								className="rounded-xl"
@@ -178,10 +181,13 @@ function RouteComponent() {
 								</div>
 							</div>
 						) : (
-							<p className="py-8 text-center text-muted-foreground text-sm">
-								No{" "}
-								{filter === "conversation" ? "conversation" : "pronunciation"}{" "}
-								sessions yet.
+							<p className="py-8 text-center text-muted-foreground">
+								{t("practice.noSessionsYet", {
+									type:
+										filter === "conversation"
+											? t("practice.conversation")
+											: t("practice.pronunciation"),
+								})}
 							</p>
 						)
 					) : (
@@ -215,7 +221,7 @@ function RouteComponent() {
 										>
 											<div className="flex items-center gap-2">
 												<ProgressCircle progress={session.score ?? 0} />
-												<div className="flex min-w-0 flex-1 flex-col">
+												<div className="flex min-w-0 flex-1 flex-col items-start">
 													<span className="truncate text-left font-medium text-sm">
 														{session.title}
 													</span>

@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { MicIcon } from "lucide-react";
-import { useState } from "react";
+import { Loader2, MicIcon, RefreshCwIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,32 +13,27 @@ import {
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/utils/trpc";
 
-const MODES = [
-	{
-		id: "read-aloud" as const,
-		name: "Read Aloud",
-		icon: "📖",
-		description: "Read text and get instant feedback",
-	},
-	// {
-	// 	id: "tongue-twisters" as const,
-	// 	name: "Tongue Twisters",
-	// 	icon: "👅",
-	// 	description: "Challenge yourself with tricky phrases",
-	// },
-	// {
-	// 	id: "minimal-pairs" as const,
-	// 	name: "Minimal Pairs",
-	// 	icon: "👂",
-	// 	description: "Master similar sounding words",
-	// },
-	// {
-	// 	id: "shadowing" as const,
-	// 	name: "Shadowing",
-	// 	icon: "🎧",
-	// 	description: "Listen and repeat immediately",
-	// },
-];
+type ParagraphPreview = {
+	text: string;
+	topic: string;
+	cefrLevel: string;
+	wordCount: number;
+	focusAreas: string[];
+	tips: string;
+};
+
+function SkeletonText() {
+	return (
+		<div className="flex flex-col gap-2 pt-3">
+			<div className="h-3.5 w-full animate-pulse rounded bg-neutral-100" />
+			<div className="h-3.5 w-full animate-pulse rounded bg-neutral-100" />
+			<div className="h-3.5 w-[90%] animate-pulse rounded bg-neutral-100" />
+			<div className="h-3.5 w-[75%] animate-pulse rounded bg-neutral-100" />
+			<div className="h-3.5 w-full animate-pulse rounded bg-neutral-100" />
+			<div className="h-3.5 w-[90%] animate-pulse rounded bg-neutral-100" />
+		</div>
+	);
+}
 
 function DialogTopicsPronunciation({
 	open,
@@ -50,7 +45,21 @@ function DialogTopicsPronunciation({
 	const trpc = useTRPC();
 	const navigate = useNavigate();
 	const { t } = useTranslation("app");
-	const [selectedMode, setSelectedMode] = useState<string>("");
+	const [preview, setPreview] = useState<ParagraphPreview | null>(null);
+
+	const generatePreview = useMutation(
+		trpc.pronunciation.generatePreview.mutationOptions({
+			onSuccess: (data) => {
+				setPreview(data.paragraph);
+			},
+		}),
+	);
+
+	useEffect(() => {
+		if (open && !preview && !generatePreview.isPending) {
+			generatePreview.mutate();
+		}
+	}, [open]);
 
 	const startSession = useMutation(
 		trpc.pronunciation.startSession.mutationOptions({
@@ -64,59 +73,83 @@ function DialogTopicsPronunciation({
 	);
 
 	const handleStart = () => {
-		if (selectedMode) {
-			startSession.mutate({});
-		}
+		if (!preview) return;
+		startSession.mutate({ paragraph: preview });
 	};
+
+	const handleRefresh = () => {
+		generatePreview.mutate();
+	};
+
+	const isGenerating = generatePreview.isPending;
 
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogContent showCloseButton={false}>
 				<div className="mb-3 flex flex-col gap-2 text-center">
-					<h1 className="mt-1 font-bold font-lyon text-3xl tracking-tight">
+					<h1 className="font-bold font-lyon text-3xl tracking-tight">
 						{t("practice.pronunciation")}
 					</h1>
 					<p className="text-muted-foreground text-sm">
 						{t("practice.selectMode")}
 					</p>
 				</div>
-
-				<div className="grid grid-cols-2 gap-4 sm:grid-cols-2">
-					{MODES.map((mode) => (
-						<button
-							key={mode.id}
-							type="button"
-							onClick={() => setSelectedMode(mode.id)}
-							className={cn(
-								"flex flex-col gap-2 rounded-xl border p-4 text-left transition-all hover:border-border/50 hover:bg-neutral-100",
-								selectedMode === mode.id
-									? "border-lime-500 bg-lime-100 hover:border-lime-500 hover:bg-lime-100"
-									: "border-transparent bg-neutral-50",
-							)}
-						>
-							<span className="text-2xl">{mode.icon}</span>
-							<span className="font-semibold">{mode.name}</span>
-							<span className="text-muted-foreground text-sm">
-								{mode.description}
-							</span>
-						</button>
-					))}
+				<div className="relative overflow-hidden border-neutral-200 border-b border-dashed p-4 pt-0.5 pb-0">
+					<div
+						className="min-h-48 rounded-t-2xl border-neutral-200 border-b-0 p-4"
+						style={{
+							boxShadow:
+								"0 0 0 1px rgba(0,0,0,.05),0 10px 10px -5px rgba(0,0,0,.04),0 20px 25px -5px rgba(0,0,0,.04),0 20px 32px -12px rgba(0,0,0,.04)",
+						}}
+					>
+						<div className="flex items-center justify-between">
+							<h3 className="font-semibold text-sm italic">Read Aloud</h3>
+							<button
+								type="button"
+								onClick={handleRefresh}
+								disabled={isGenerating}
+								className="relative flex size-6 shrink-0 cursor-pointer items-center justify-center gap-1.5 overflow-hidden whitespace-nowrap rounded-lg bg-linear-to-t from-[#202020] to-[#2F2F2F] font-base text-white shadow-[inset_0_1px_4px_0_rgba(255,255,255,0.4)] outline-none backdrop-blur transition-all hover:opacity-90 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-40 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:from-[rgb(192,192,192)] dark:to-[rgb(255,255,255)] dark:shadow-[inset_0_1px_4px_0_rgba(128,128,128,0.2)] dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none"
+							>
+								<RefreshCwIcon
+									className={cn("size-3.5", isGenerating && "animate-spin")}
+								/>
+							</button>
+						</div>
+						{isGenerating && !preview ? (
+							<SkeletonText />
+						) : preview ? (
+							<div className={cn("pt-3", isGenerating && "opacity-50")}>
+								<p className="text-sm leading-relaxed">{preview.text}</p>
+								<div className="mt-3 flex items-center gap-2">
+									<span className="rounded-md bg-lime-100 px-1.5 py-0.5 font-medium text-lime-700 text-xs">
+										{preview.cefrLevel}
+									</span>
+									<span className="text-muted-foreground text-xs">
+										{preview.topic}
+									</span>
+								</div>
+							</div>
+						) : null}
+					</div>
 				</div>
 
-				<DialogFooter className="mt-3">
+				<DialogFooter>
 					<DialogClose asChild>
 						<Button
 							variant="ghost"
 							className="flex-1 rounded-xl italic sm:flex-none"
 						>
-							Cancel
+							{t("practice.cancel")}
 						</Button>
 					</DialogClose>
 					<Button
 						onClick={handleStart}
-						disabled={!selectedMode}
+						disabled={!preview || isGenerating || startSession.isPending}
 						className="relative flex shrink-0 cursor-pointer items-center justify-center gap-1.5 overflow-hidden whitespace-nowrap rounded-xl bg-linear-to-t from-[#202020] to-[#2F2F2F] font-base text-white italic shadow-[inset_0_1px_4px_0_rgba(255,255,255,0.4)] outline-none backdrop-blur transition-all hover:opacity-90 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-40 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:from-[rgb(192,192,192)] dark:to-[rgb(255,255,255)] dark:shadow-[inset_0_1px_4px_0_rgba(128,128,128,0.2)] dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none"
 					>
+						{startSession.isPending && (
+							<Loader2 className="size-5 animate-spin" />
+						)}
 						Start Practice
 					</Button>
 				</DialogFooter>

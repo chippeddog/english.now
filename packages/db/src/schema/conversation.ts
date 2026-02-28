@@ -5,6 +5,7 @@ export type ConversationTopic = {
 	id: string;
 	name: string;
 	icon: string;
+	description: string;
 };
 
 export type ConversationRoleplay = {
@@ -26,6 +27,8 @@ export const conversationSession = pgTable("conversation_session", {
 		systemPrompt: string;
 		scenarioDescription: string;
 		goals: string[];
+		scenarioType?: "topic" | "roleplay";
+		aiRole?: string;
 	}>(),
 	status: text("status").notNull().default("active"), // active, completed, abandoned
 	createdAt: timestamp("created_at").notNull().defaultNow(),

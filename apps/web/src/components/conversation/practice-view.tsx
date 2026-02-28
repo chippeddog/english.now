@@ -1,7 +1,14 @@
 import { env } from "@english.now/env/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { Languages, Loader, Loader2, PauseIcon, PlayIcon } from "lucide-react";
+import {
+	InfoIcon,
+	Languages,
+	Loader,
+	Loader2,
+	PauseIcon,
+	PlayIcon,
+} from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	AlertDialog,
@@ -41,6 +48,9 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 	const [showFinishDialog, setShowFinishDialog] = useState(false);
 	const [isFinishing, setIsFinishing] = useState(false);
 	const [generatingTTS, setGeneratingTTS] = useState<Set<string>>(new Set());
+	const [autoTranslate, setAutoTranslate] = useState(() => {
+		return localStorage.getItem("conversation:autoTranslate") === "true";
+	});
 	const hasPlayedInitialAudio = useRef(false);
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 	const streamRef = useRef<MediaStream | null>(null);
@@ -97,6 +107,10 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 		return () => window.removeEventListener("beforeunload", handler);
 	}, [messages]);
 
+	useEffect(() => {
+		localStorage.setItem("conversation:autoTranslate", String(autoTranslate));
+	}, [autoTranslate]);
+
 	const translateMutation = useMutation(
 		trpc.conversation.translate.mutationOptions({}),
 	);
@@ -124,6 +138,46 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 		},
 		[translations, translateMutation],
 	);
+
+	const autoTranslateRef = useRef(autoTranslate);
+	autoTranslateRef.current = autoTranslate;
+
+	const handleAutoTranslateToggle = useCallback(
+		(enabled: boolean) => {
+			setAutoTranslate(enabled);
+			if (enabled) {
+				const untranslated = messages.filter(
+					(m) =>
+						m.role === "assistant" &&
+						!m.isStreaming &&
+						m.content &&
+						!translations[m.id],
+				);
+				for (const msg of untranslated) {
+					translateMessage(msg.id, msg.content);
+				}
+			}
+		},
+		[messages, translations, translateMessage],
+	);
+
+	const prevMessagesRef = useRef<Message[]>([]);
+
+	useEffect(() => {
+		if (!autoTranslateRef.current) {
+			prevMessagesRef.current = messages;
+			return;
+		}
+		for (const msg of messages) {
+			if (msg.role !== "assistant" || msg.isStreaming || !msg.content) continue;
+			const prev = prevMessagesRef.current.find((m) => m.id === msg.id);
+			const justFinishedStreaming = prev?.isStreaming && !msg.isStreaming;
+			if (justFinishedStreaming && !translations[msg.id]) {
+				translateMessage(msg.id, msg.content);
+			}
+		}
+		prevMessagesRef.current = messages;
+	}, [messages, translations, translateMessage]);
 
 	const fetchHintSuggestions = useCallback(async () => {
 		if (!sessionId) return;
@@ -363,6 +417,27 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 		<>
 			{/* Messages */}
 			<div className="flex-1 space-y-4 overflow-y-auto px-1 py-4">
+				{data?.session.context?.scenarioDescription && (
+					<div className="mx-auto flex max-w-xl flex-col items-start gap-2 rounded-xl border border-neutral-200 border-dashed p-3">
+						<div className="flex items-center gap-1 text-neutral-800 text-xs italic">
+							{/* <InfoIcon className="size-3 shrink-0" /> */}
+							Instructions:
+						</div>
+						<p className="text-neutral-600 text-xs leading-relaxed">
+							{data.session.context.scenarioType === "roleplay" &&
+							data.session.context.aiRole ? (
+								<>
+									<span className="font-medium text-neutral-800">
+										Your partner is playing as {data.session.context.aiRole}.
+									</span>{" "}
+									{data.session.context.scenarioDescription}
+								</>
+							) : (
+								data.session.context.scenarioDescription
+							)}
+						</p>
+					</div>
+				)}
 				{messages.map((message) => (
 					<div
 						key={message.id}
@@ -534,6 +609,8 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 				audioDevices={audioDevices}
 				selectedDevice={selectedDevice}
 				setSelectedDevice={setSelectedDevice}
+				autoTranslate={autoTranslate}
+				onAutoTranslateChange={handleAutoTranslateToggle}
 			/>
 
 			<AlertDialog open={showFinishDialog} onOpenChange={setShowFinishDialog}>

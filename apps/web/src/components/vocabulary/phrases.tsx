@@ -7,8 +7,9 @@ import {
 	MessageSquare,
 	Plus,
 	Trash2,
+	Volume2,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,8 +24,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/utils/trpc";
-
-type CEFRLevel = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
 
 const MASTERY_LABELS: Record<string, string> = {
 	new: "New",
@@ -42,7 +41,7 @@ const LEVEL_COLORS: Record<string, { bg: string }> = {
 	C2: { bg: "bg-rose-500" },
 };
 
-const CEFR_LEVELS: CEFRLevel[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
+type CEFRLevel = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
 
 export default function Phrases() {
 	const trpc = useTRPC();
@@ -52,17 +51,37 @@ export default function Phrases() {
 	);
 
 	const [viewMode, setViewMode] = useState<"grid" | "list">("list");
-	const [selectedCategory, setSelectedCategory] = useState<string | "all">(
-		"all",
-	);
 	const [addDialogOpen, setAddDialogOpen] = useState(false);
-	const [newPhrase, setNewPhrase] = useState({
-		phrase: "",
-		meaning: "",
-		exampleUsage: "",
-		level: "B1" as CEFRLevel,
-		category: "",
-	});
+	const [newPhrase, setNewPhrase] = useState("");
+
+	const audioRef = useRef<HTMLAudioElement | null>(null);
+	const [playingId, setPlayingId] = useState<string | null>(null);
+
+	const playAudio = useCallback(
+		(url: string, id: string) => {
+			if (audioRef.current) {
+				audioRef.current.pause();
+				audioRef.current = null;
+			}
+			if (playingId === id) {
+				setPlayingId(null);
+				return;
+			}
+			const audio = new Audio(url);
+			audioRef.current = audio;
+			setPlayingId(id);
+			audio.onended = () => {
+				setPlayingId(null);
+				audioRef.current = null;
+			};
+			audio.onerror = () => {
+				setPlayingId(null);
+				audioRef.current = null;
+			};
+			audio.play().catch(() => setPlayingId(null));
+		},
+		[playingId],
+	);
 
 	const addPhraseMutation = useMutation(
 		trpc.vocabulary.addPhrase.mutationOptions({
@@ -71,19 +90,13 @@ export default function Phrases() {
 					queryKey: trpc.vocabulary.getPhrases.queryKey(),
 				});
 				setAddDialogOpen(false);
-				setNewPhrase({
-					phrase: "",
-					meaning: "",
-					exampleUsage: "",
-					level: "B1",
-					category: "",
-				});
+				setNewPhrase("");
 			},
 		}),
 	);
 
-	const deletePhraseMutation = useMutation(
-		trpc.vocabulary.deletePhrase.mutationOptions({
+	const removePhraseMutation = useMutation(
+		trpc.vocabulary.removePhrase.mutationOptions({
 			onSuccess: () => {
 				queryClient.invalidateQueries({
 					queryKey: trpc.vocabulary.getPhrases.queryKey(),
@@ -92,27 +105,12 @@ export default function Phrases() {
 		}),
 	);
 
-	const categories = useMemo(() => {
-		if (!phrases) return [];
-		const cats = new Set(phrases.map((p) => p.category).filter(Boolean));
-		return Array.from(cats) as string[];
-	}, [phrases]);
-
-	const filteredPhrases = useMemo(() => {
-		if (!phrases) return [];
-		if (selectedCategory === "all") return phrases;
-		return phrases.filter((p) => p.category === selectedCategory);
-	}, [phrases, selectedCategory]);
+	const filteredPhrases = useMemo(() => phrases ?? [], [phrases]);
 
 	const handleAddPhrase = () => {
-		if (!newPhrase.phrase.trim() || !newPhrase.meaning.trim()) return;
-		addPhraseMutation.mutate({
-			phrase: newPhrase.phrase.trim(),
-			meaning: newPhrase.meaning.trim(),
-			exampleUsage: newPhrase.exampleUsage.trim() || undefined,
-			level: newPhrase.level,
-			category: newPhrase.category.trim() || undefined,
-		});
+		const trimmed = newPhrase.trim();
+		if (!trimmed) return;
+		addPhraseMutation.mutate({ phrase: trimmed, source: "manual" });
 	};
 
 	if (isLoading) {
@@ -132,7 +130,7 @@ export default function Phrases() {
 				<div className="mb-6 flex flex-col items-center justify-center gap-3">
 					<h3 className="font-semibold text-lg">No phrases added yet</h3>
 					<p className="max-w-sm text-center text-muted-foreground">
-						Add phrases manually or explore lists to build your collection.
+						Add phrases manually to build your collection.
 					</p>
 				</div>
 				<Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
@@ -160,20 +158,6 @@ export default function Phrases() {
 					<span className="font-medium text-lg">
 						{filteredPhrases.length} Phrases
 					</span>
-					{categories.length > 0 && (
-						<select
-							value={selectedCategory}
-							onChange={(e) => setSelectedCategory(e.target.value)}
-							className="rounded-lg border bg-white/80 px-3 py-1.5 text-sm"
-						>
-							<option value="all">All Categories</option>
-							{categories.map((cat) => (
-								<option key={cat} value={cat}>
-									{cat}
-								</option>
-							))}
-						</select>
-					)}
 				</div>
 				<div className="flex items-center gap-2">
 					<div className="flex rounded-lg bg-neutral-100 backdrop-blur">
@@ -217,22 +201,39 @@ export default function Phrases() {
 				<div className="space-y-2">
 					{filteredPhrases.map((p) => (
 						<div
-							key={p.id}
+							key={p.userPhraseId}
 							className="group flex items-start justify-between rounded-xl border bg-white p-4 transition-all hover:shadow-sm dark:bg-slate-900"
 						>
 							<div className="flex items-start gap-4">
 								<div
 									className={cn(
 										"mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-lg text-white",
-										LEVEL_COLORS[p.level]?.bg ?? "bg-blue-500",
+										LEVEL_COLORS[p.level ?? ""]?.bg ?? "bg-blue-500",
 									)}
 								>
-									<MessageSquare className="size-4" />
+									{p.audioUrl ? (
+										<button
+											type="button"
+											onClick={() =>
+												playAudio(p.audioUrl ?? "", p.userPhraseId)
+											}
+											className="flex size-full items-center justify-center"
+										>
+											<Volume2
+												className={cn(
+													"size-4",
+													playingId === p.userPhraseId && "animate-pulse",
+												)}
+											/>
+										</button>
+									) : (
+										<MessageSquare className="size-4" />
+									)}
 								</div>
 								<div className="min-w-0">
-									<p className="font-semibold">{p.phrase}</p>
+									<p className="font-semibold">{p.text}</p>
 									<p className="mt-0.5 text-muted-foreground text-sm">
-										{p.meaning}
+										{p.translation ?? p.meaning}
 									</p>
 									{p.exampleUsage && (
 										<p className="mt-1 text-muted-foreground text-xs italic">
@@ -258,7 +259,9 @@ export default function Phrases() {
 								<button
 									type="button"
 									onClick={() =>
-										deletePhraseMutation.mutate({ phraseId: p.id })
+										removePhraseMutation.mutate({
+											userPhraseId: p.userPhraseId,
+										})
 									}
 									className="ml-1 rounded-lg p-1.5 text-muted-foreground opacity-0 transition-all hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
 								>
@@ -272,35 +275,61 @@ export default function Phrases() {
 				<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 					{filteredPhrases.map((p) => (
 						<div
-							key={p.id}
+							key={p.userPhraseId}
 							className="group relative overflow-hidden rounded-2xl border bg-white p-5 shadow-sm transition-all hover:shadow-md dark:bg-slate-900"
 						>
 							<button
 								type="button"
-								onClick={() => deletePhraseMutation.mutate({ phraseId: p.id })}
+								onClick={() =>
+									removePhraseMutation.mutate({
+										userPhraseId: p.userPhraseId,
+									})
+								}
 								className="absolute top-3 right-3 rounded-lg p-1.5 text-muted-foreground opacity-0 transition-all hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
 							>
 								<Trash2 className="size-3.5" />
 							</button>
 							<div className="mb-3 flex items-center justify-between">
-								<Badge variant={p.level as CEFRLevel}>{p.level}</Badge>
-								<Badge
-									variant={
-										p.mastery === "mastered"
-											? "mastered"
-											: p.mastery === "learning"
-												? "learning"
-												: p.mastery === "new"
-													? "notStarted"
-													: "secondary"
-									}
-									className="text-xs"
-								>
-									{MASTERY_LABELS[p.mastery] ?? p.mastery}
+								<Badge variant={(p.level ?? "B1") as CEFRLevel}>
+									{p.level}
 								</Badge>
+								<div className="flex items-center gap-2">
+									{p.audioUrl ? (
+										<button
+											type="button"
+											onClick={() =>
+												playAudio(p.audioUrl ?? "", p.userPhraseId)
+											}
+											className={cn(
+												"rounded-md p-1 transition-colors hover:bg-primary/10",
+												playingId === p.userPhraseId
+													? "text-primary"
+													: "text-muted-foreground",
+											)}
+										>
+											<Volume2 className="size-3.5" />
+										</button>
+									) : null}
+									<Badge
+										variant={
+											p.mastery === "mastered"
+												? "mastered"
+												: p.mastery === "learning"
+													? "learning"
+													: p.mastery === "new"
+														? "notStarted"
+														: "secondary"
+										}
+										className="text-xs"
+									>
+										{MASTERY_LABELS[p.mastery] ?? p.mastery}
+									</Badge>
+								</div>
 							</div>
-							<h3 className="mb-1 font-bold">{p.phrase}</h3>
-							<p className="mb-2 text-muted-foreground text-sm">{p.meaning}</p>
+							<h3 className="mb-1 font-bold">{p.text}</h3>
+							<p className="mb-2 text-muted-foreground text-sm">
+								{p.translation ?? p.meaning}
+							</p>
 							{p.exampleUsage && (
 								<p className="text-muted-foreground text-xs italic">
 									"{p.exampleUsage}"
@@ -328,22 +357,8 @@ function AddPhraseDialogContent({
 	onSubmit,
 	isPending,
 }: {
-	newPhrase: {
-		phrase: string;
-		meaning: string;
-		exampleUsage: string;
-		level: CEFRLevel;
-		category: string;
-	};
-	setNewPhrase: React.Dispatch<
-		React.SetStateAction<{
-			phrase: string;
-			meaning: string;
-			exampleUsage: string;
-			level: CEFRLevel;
-			category: string;
-		}>
-	>;
+	newPhrase: string;
+	setNewPhrase: React.Dispatch<React.SetStateAction<string>>;
 	onSubmit: () => void;
 	isPending: boolean;
 }) {
@@ -360,84 +375,23 @@ function AddPhraseDialogContent({
 					<Input
 						id="phrase"
 						placeholder='e.g., "Break a leg"'
-						value={newPhrase.phrase}
-						onChange={(e) =>
-							setNewPhrase((prev) => ({ ...prev, phrase: e.target.value }))
-						}
+						value={newPhrase}
+						onChange={(e) => setNewPhrase(e.target.value)}
+						onKeyDown={(e) => {
+							if (e.key === "Enter") onSubmit();
+						}}
 					/>
-				</div>
-				<div className="space-y-2">
-					<Label htmlFor="meaning">Meaning</Label>
-					<Input
-						id="meaning"
-						placeholder="What does this phrase mean?"
-						value={newPhrase.meaning}
-						onChange={(e) =>
-							setNewPhrase((prev) => ({ ...prev, meaning: e.target.value }))
-						}
-					/>
-				</div>
-				<div className="space-y-2">
-					<Label htmlFor="example">Example Usage</Label>
-					<Input
-						id="example"
-						placeholder="A sentence using this phrase"
-						value={newPhrase.exampleUsage}
-						onChange={(e) =>
-							setNewPhrase((prev) => ({
-								...prev,
-								exampleUsage: e.target.value,
-							}))
-						}
-					/>
-				</div>
-				<div className="grid grid-cols-2 gap-4">
-					<div className="space-y-2">
-						<Label htmlFor="phrase-level">Level</Label>
-						<select
-							id="phrase-level"
-							value={newPhrase.level}
-							onChange={(e) =>
-								setNewPhrase((prev) => ({
-									...prev,
-									level: e.target.value as CEFRLevel,
-								}))
-							}
-							className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
-						>
-							{CEFR_LEVELS.map((lvl) => (
-								<option key={lvl} value={lvl}>
-									{lvl}
-								</option>
-							))}
-						</select>
-					</div>
-					<div className="space-y-2">
-						<Label htmlFor="phrase-category">Category</Label>
-						<Input
-							id="phrase-category"
-							placeholder="e.g., Greetings"
-							value={newPhrase.category}
-							onChange={(e) =>
-								setNewPhrase((prev) => ({
-									...prev,
-									category: e.target.value,
-								}))
-							}
-						/>
-					</div>
+					<p className="text-muted-foreground text-xs">
+						Meaning, pronunciation, and translation will be generated
+						automatically.
+					</p>
 				</div>
 			</div>
 			<div className="flex justify-end gap-2">
 				<DialogClose asChild>
 					<Button variant="outline">Cancel</Button>
 				</DialogClose>
-				<Button
-					onClick={onSubmit}
-					disabled={
-						!newPhrase.phrase.trim() || !newPhrase.meaning.trim() || isPending
-					}
-				>
+				<Button onClick={onSubmit} disabled={!newPhrase.trim() || isPending}>
 					{isPending ? (
 						<Loader2 className="mr-2 size-4 animate-spin" />
 					) : (

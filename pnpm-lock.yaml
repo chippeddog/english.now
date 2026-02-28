@@ -414,6 +414,9 @@ importers:
       '@ai-sdk/openai':
         specifier: ^3.0.28
         version: 3.0.28(zod@4.1.12)
+      '@aws-sdk/client-s3':
+        specifier: ^3.705.0
+        version: 3.975.0
       '@english.now/auth':
         specifier: workspace:*
         version: link:../auth

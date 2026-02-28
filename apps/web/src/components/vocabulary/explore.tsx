@@ -26,8 +26,8 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
 import { authClient } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
 import { useTRPC } from "@/utils/trpc";
 import { Button } from "../ui/button";
 
@@ -154,57 +154,58 @@ export default function Explore() {
 		}),
 	);
 
-	const generateList = useCallback(
-		async (topic: string, type: ListType) => {
-			setIsGenerating(true);
-			setGeneratedWords([]);
-			setGeneratedPhrases([]);
-			setSelectedItems(new Set());
+	const generateList = useCallback(async (topic: string, type: ListType) => {
+		setIsGenerating(true);
+		setGeneratedWords([]);
+		setGeneratedPhrases([]);
+		setSelectedItems(new Set());
 
-			try {
-				const session = await authClient.getSession();
-				const headers: Record<string, string> = {
-					"Content-Type": "application/json",
-				};
-				if (session.data?.session) {
-					headers.Cookie = `better-auth.session_token=${session.data.session.token}`;
-				}
-
-				const response = await fetch(
-					`${env.VITE_SERVER_URL}/api/content/generate-list`,
-					{
-						method: "POST",
-						headers,
-						credentials: "include",
-						body: JSON.stringify({ topic, type, count: type === "words" ? 20 : 15 }),
-					},
-				);
-
-				if (!response.ok) {
-					throw new Error("Failed to generate list");
-				}
-
-				const data = await response.json();
-				if (type === "words" && data.words) {
-					setGeneratedWords(data.words);
-					// Select all by default
-					setSelectedItems(
-						new Set(data.words.map((_: GeneratedWord, i: number) => i)),
-					);
-				} else if (type === "phrases" && data.phrases) {
-					setGeneratedPhrases(data.phrases);
-					setSelectedItems(
-						new Set(data.phrases.map((_: GeneratedPhrase, i: number) => i)),
-					);
-				}
-			} catch (error) {
-				console.error("Generation error:", error);
-			} finally {
-				setIsGenerating(false);
+		try {
+			const session = await authClient.getSession();
+			const headers: Record<string, string> = {
+				"Content-Type": "application/json",
+			};
+			if (session.data?.session) {
+				headers.Cookie = `better-auth.session_token=${session.data.session.token}`;
 			}
-		},
-		[],
-	);
+
+			const response = await fetch(
+				`${env.VITE_SERVER_URL}/api/content/generate-list`,
+				{
+					method: "POST",
+					headers,
+					credentials: "include",
+					body: JSON.stringify({
+						topic,
+						type,
+						count: type === "words" ? 20 : 15,
+					}),
+				},
+			);
+
+			if (!response.ok) {
+				throw new Error("Failed to generate list");
+			}
+
+			const data = await response.json();
+			if (type === "words" && data.words) {
+				setGeneratedWords(data.words);
+				// Select all by default
+				setSelectedItems(
+					new Set(data.words.map((_: GeneratedWord, i: number) => i)),
+				);
+			} else if (type === "phrases" && data.phrases) {
+				setGeneratedPhrases(data.phrases);
+				setSelectedItems(
+					new Set(data.phrases.map((_: GeneratedPhrase, i: number) => i)),
+				);
+			}
+		} catch (error) {
+			console.error("Generation error:", error);
+		} finally {
+			setIsGenerating(false);
+		}
+	}, []);
 
 	const toggleItem = (index: number) => {
 		setSelectedItems((prev) => {
@@ -224,7 +225,9 @@ export default function Explore() {
 		if (selectedItems.size === totalItems) {
 			setSelectedItems(new Set());
 		} else {
-			setSelectedItems(new Set(Array.from({ length: totalItems }, (_, i) => i)));
+			setSelectedItems(
+				new Set(Array.from({ length: totalItems }, (_, i) => i)),
+			);
 		}
 	};
 
@@ -360,7 +363,9 @@ export default function Explore() {
 							value={customTopic}
 							onChange={(e) => setCustomTopic(e.target.value)}
 							onKeyDown={(e) =>
-								e.key === "Enter" && customTopic.trim() && handleCustomGenerate()
+								e.key === "Enter" &&
+								customTopic.trim() &&
+								handleCustomGenerate()
 							}
 							className="flex-1"
 						/>
@@ -381,7 +386,10 @@ export default function Explore() {
 				</div>
 
 				{/* Content area */}
-				<div className="min-h-0 flex-1 overflow-y-auto" style={{ scrollbarWidth: "none" }}>
+				<div
+					className="min-h-0 flex-1 overflow-y-auto"
+					style={{ scrollbarWidth: "none" }}
+				>
 					{/* Back button when viewing results */}
 					{selectedCategory && (
 						<div className="sticky top-0 z-10 border-b bg-white/95 px-4 py-2 backdrop-blur-sm">
@@ -443,52 +451,54 @@ export default function Explore() {
 					)}
 
 					{/* Generated words results */}
-					{!isGenerating && generatedWords.length > 0 && listType === "words" && (
-						<div className="space-y-1 p-4">
-							{generatedWords.map((word, index) => (
-								<button
-									type="button"
-									key={`${word.word}-${index}`}
-									onClick={() => toggleItem(index)}
-									className={cn(
-										"flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-all",
-										selectedItems.has(index)
-											? "border-lime-500/50 bg-lime-50"
-											: "border-transparent bg-white hover:bg-neutral-50",
-									)}
-								>
-									<div
+					{!isGenerating &&
+						generatedWords.length > 0 &&
+						listType === "words" && (
+							<div className="space-y-1 p-4">
+								{generatedWords.map((word, index) => (
+									<button
+										type="button"
+										key={`${word.word}-${index}`}
+										onClick={() => toggleItem(index)}
 										className={cn(
-											"flex size-5 shrink-0 items-center justify-center rounded-md border-2 transition-all",
+											"flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-all",
 											selectedItems.has(index)
-												? "border-lime-500 bg-lime-500"
-												: "border-neutral-300",
+												? "border-lime-500/50 bg-lime-50"
+												: "border-transparent bg-white hover:bg-neutral-50",
 										)}
 									>
-										{selectedItems.has(index) && (
-											<Check className="size-3 text-white" />
-										)}
-									</div>
-									<div className="min-w-0 flex-1">
-										<div className="flex items-center gap-2">
-											<span className="font-semibold">{word.word}</span>
-											{word.translation && (
-												<span className="text-muted-foreground text-xs">
-													{word.translation}
-												</span>
+										<div
+											className={cn(
+												"flex size-5 shrink-0 items-center justify-center rounded-md border-2 transition-all",
+												selectedItems.has(index)
+													? "border-lime-500 bg-lime-500"
+													: "border-neutral-300",
+											)}
+										>
+											{selectedItems.has(index) && (
+												<Check className="size-3 text-white" />
 											)}
 										</div>
-										<p className="line-clamp-1 text-muted-foreground text-sm">
-											{word.definition}
-										</p>
-									</div>
-									<span className="shrink-0 rounded-md bg-muted px-2 py-0.5 text-muted-foreground text-xs">
-										{word.level}
-									</span>
-								</button>
-							))}
-						</div>
-					)}
+										<div className="min-w-0 flex-1">
+											<div className="flex items-center gap-2">
+												<span className="font-semibold">{word.word}</span>
+												{word.translation && (
+													<span className="text-muted-foreground text-xs">
+														{word.translation}
+													</span>
+												)}
+											</div>
+											<p className="line-clamp-1 text-muted-foreground text-sm">
+												{word.definition}
+											</p>
+										</div>
+										<span className="shrink-0 rounded-md bg-muted px-2 py-0.5 text-muted-foreground text-xs">
+											{word.level}
+										</span>
+									</button>
+								))}
+							</div>
+						)}
 
 					{/* Generated phrases results */}
 					{!isGenerating &&

@@ -6,6 +6,7 @@ import Logo from "@/components/logo";
 import ReadAloudMode from "@/components/pronunciation/read-aloud";
 import SessionReview from "@/components/pronunciation/session-review";
 import SessionLoader from "@/components/session/loader";
+import ReportIssueDialog from "@/components/session/report-issue-dialog";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/utils/trpc";
 
@@ -130,9 +131,9 @@ function ProcessingView({
 		<div className="flex min-h-[60vh] items-center justify-center">
 			<div className="w-full max-w-md space-y-8">
 				<div className="text-center">
-					<div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-primary/10">
+					{/* <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-primary/10">
 						<Loader2 className="size-8 animate-spin text-primary" />
-					</div>
+					</div> */}
 					<h2 className="font-bold font-lyon text-2xl tracking-tight">
 						Processing your session
 					</h2>
@@ -227,29 +228,43 @@ function PronunciationSessionPage() {
 
 	const paragraph = (sessionData.paragraph ??
 		(sessionData.items as ParagraphItem[])?.[0]) as ParagraphItem | null;
-	const cefrLevel = sessionData.cefrLevel ?? sessionData.difficulty ?? "A2";
 
 	if (!paragraph) return null;
 
 	return (
 		<div className="min-h-screen">
 			{view === "practice" && (
-				<div className="container relative z-10 mx-auto max-w-3xl px-4 py-6">
-					<div className="fade-in slide-in-from-bottom-4 animate-in duration-300">
-						<ReadAloudMode
-							sessionId={sessionId}
-							paragraph={paragraph}
-							initialAttempts={(sessionData.attempts ?? [])
-								.filter((a) => a.audioUrl)
-								.map((a) => ({
-									id: a.id,
-									audioUrl: a.audioUrl ?? "",
-									transcript: a.transcript,
-								}))}
-							onFinish={handleFinish}
-						/>
+				<>
+					<div className="sticky top-0 z-10 border-black/5 border-b bg-white dark:bg-neutral-900">
+						<div className="container relative z-10 mx-auto max-w-3xl px-4">
+							<nav className="flex grid-cols-2 items-center justify-between py-5 md:grid-cols-5">
+								<div className="items-center gap-2 md:flex">
+									<Logo link="/practice" />
+								</div>
+								<ReportIssueDialog
+									sessionId={sessionId}
+									sessionType="pronunciation"
+								/>
+							</nav>
+						</div>
 					</div>
-				</div>
+					<div className="container relative z-10 mx-auto max-w-3xl px-4 py-6">
+						<div className="fade-in slide-in-from-bottom-4 animate-in duration-300">
+							<ReadAloudMode
+								sessionId={sessionId}
+								paragraph={paragraph}
+								initialAttempts={(sessionData.attempts ?? [])
+									.filter((a) => a.audioUrl)
+									.map((a) => ({
+										id: a.id,
+										audioUrl: a.audioUrl ?? "",
+										transcript: a.transcript,
+									}))}
+								onFinish={handleFinish}
+							/>
+						</div>
+					</div>
+				</>
 			)}
 			{view === "processing" && (
 				<div className="container relative z-10 mx-auto max-w-3xl px-4 py-6">
@@ -285,7 +300,6 @@ function PronunciationSessionPage() {
 							<SessionReview
 								summary={summary}
 								sessionId={sessionId}
-								cefrLevel={cefrLevel}
 								paragraphText={paragraph.text}
 								attempts={(sessionData.attempts ?? []).map((a) => ({
 									id: a.id,

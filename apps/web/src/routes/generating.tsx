@@ -1,14 +1,7 @@
 import { env } from "@english.now/env/client";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
-import {
-	BookOpen,
-	Check,
-	GraduationCap,
-	Loader2,
-	MessageSquare,
-	Sparkles,
-} from "lucide-react";
+import { BookOpen, Check, GraduationCap, Loader2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Logo from "@/components/logo";
 import { Button } from "@/components/ui/button";
@@ -31,7 +24,7 @@ export const Route = createFileRoute("/generating")({
 type GenerationStep = {
 	id: string;
 	label: string;
-	icon: typeof Sparkles;
+	icon: typeof GraduationCap;
 	progressThreshold: number;
 };
 
@@ -40,24 +33,12 @@ const STEPS: GenerationStep[] = [
 		id: "outline",
 		label: "Creating your course structure",
 		icon: GraduationCap,
-		progressThreshold: 25,
+		progressThreshold: 50,
 	},
 	{
 		id: "lessons",
 		label: "Generating personalized lessons",
 		icon: BookOpen,
-		progressThreshold: 50,
-	},
-	{
-		id: "vocabulary",
-		label: "Building your vocabulary",
-		icon: MessageSquare,
-		progressThreshold: 75,
-	},
-	{
-		id: "phrases",
-		label: "Preparing phrases & expressions",
-		icon: Sparkles,
 		progressThreshold: 100,
 	},
 ];

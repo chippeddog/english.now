@@ -11,6 +11,7 @@ export * from "./schema/auth";
 export * from "./schema/content";
 export * from "./schema/conversation";
 export * from "./schema/daily-suggestion";
+export * from "./schema/issue-report";
 export * from "./schema/lesson-attempt";
 export * from "./schema/profile";
 export * from "./schema/pronunciation";

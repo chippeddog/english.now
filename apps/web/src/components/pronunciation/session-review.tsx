@@ -1,16 +1,15 @@
 import { env } from "@english.now/env/client";
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
 import {
 	AlertCircle,
-	ArrowUpRight,
+	AlertTriangle,
 	BookOpen,
-	Lightbulb,
+	Dumbbell,
 	Loader2,
-	RefreshCw,
+	Repeat,
 	Sparkles,
-	Star,
 	Target,
+	Volume2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { OverallScore, ScoreBreakdown } from "@/components/pronunciation/score";
@@ -44,21 +43,52 @@ type SessionSummary = {
 	weakPhonemes: WeakPhoneme[];
 };
 
-type PracticeSuggestion = {
-	type: "phoneme" | "word" | "pattern" | "fluency";
-	title: string;
+type MistakePattern = {
+	type: "phoneme" | "word_stress" | "omission" | "mispronunciation" | "fluency";
+	sound: string;
 	description: string;
-	examples: string[];
+	words: string[];
+	practiceWords: string[];
 	priority: "high" | "medium" | "low";
 };
 
+type MiniExercise = {
+	type:
+		| "repeat_after"
+		| "minimal_pairs"
+		| "tongue_twister"
+		| "word_chain"
+		| "sentence_practice";
+	title: string;
+	instruction: string;
+	items: string[];
+	targetSkill: string;
+};
+
+type WeakArea = {
+	category:
+		| "vowels"
+		| "consonants"
+		| "word_stress"
+		| "rhythm"
+		| "intonation"
+		| "linking";
+	severity: "high" | "medium" | "low";
+	sounds: string[];
+	description: string;
+};
+
+type PracticeWordSet = {
+	word: string;
+	issue: string;
+	relatedWords: string[];
+};
+
 type PronunciationFeedback = {
-	overallAnalysis: string;
-	strengths: string[];
-	areasToImprove: string[];
-	suggestions: PracticeSuggestion[];
-	recommendedLevel: string;
-	nextSteps: string;
+	mistakePatterns: MistakePattern[];
+	exercises: MiniExercise[];
+	weakAreas: WeakArea[];
+	practiceWordSets: PracticeWordSet[];
 };
 
 const PRIORITY_STYLES: Record<string, string> = {
@@ -68,10 +98,26 @@ const PRIORITY_STYLES: Record<string, string> = {
 	low: "border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20",
 };
 
-const SUGGESTION_ICONS: Record<string, typeof Target> = {
+const SEVERITY_STYLES: Record<string, string> = {
+	high: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
+	medium:
+		"bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
+	low: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+};
+
+const EXERCISE_ICONS: Record<string, typeof Target> = {
+	repeat_after: Volume2,
+	minimal_pairs: Repeat,
+	tongue_twister: Sparkles,
+	word_chain: BookOpen,
+	sentence_practice: Dumbbell,
+};
+
+const MISTAKE_ICONS: Record<string, typeof Target> = {
 	phoneme: Target,
-	word: BookOpen,
-	pattern: Lightbulb,
+	word_stress: AlertTriangle,
+	omission: AlertCircle,
+	mispronunciation: Volume2,
 	fluency: Sparkles,
 };
 
@@ -334,17 +380,14 @@ function TranscriptFeedback({
 export default function SessionReview({
 	summary,
 	sessionId,
-	cefrLevel,
 	paragraphText,
 	attempts = [],
 }: {
 	summary: SessionSummary;
 	sessionId: string;
-	cefrLevel: string;
 	paragraphText?: string;
 	attempts?: AttemptForReview[];
 }) {
-	const navigate = useNavigate();
 	const trpc = useTRPC();
 
 	const {
@@ -498,96 +541,69 @@ export default function SessionReview({
 
 					{feedbackStatus === "completed" && feedback && (
 						<div className="space-y-4">
-							{/* Analysis */}
-							<div className="rounded-2xl border bg-card p-6">
-								<p className="text-foreground leading-relaxed">
-									{feedback.overallAnalysis}
-								</p>
-							</div>
-
-							{/* Strengths */}
-							{feedback.strengths.length > 0 && (
-								<div className="rounded-2xl border border-green-200 bg-green-50 p-6 dark:border-green-800 dark:bg-green-900/20">
-									<div className="mb-3 flex items-center gap-2">
-										<Star className="size-5 text-green-600" />
-										<h4 className="font-semibold text-green-700 dark:text-green-300">
-											Strengths
-										</h4>
-									</div>
-									<ul className="space-y-2">
-										{feedback.strengths.map((s) => (
-											<li
-												key={s}
-												className="flex items-start gap-2 text-green-800 dark:text-green-200"
-											>
-												<span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-green-500" />
-												{s}
-											</li>
-										))}
-									</ul>
-								</div>
-							)}
-
-							{/* Areas to improve */}
-							{feedback.areasToImprove.length > 0 && (
-								<div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 dark:border-amber-800 dark:bg-amber-900/20">
-									<div className="mb-3 flex items-center gap-2">
-										<ArrowUpRight className="size-5 text-amber-600" />
-										<h4 className="font-semibold text-amber-700 dark:text-amber-300">
-											Areas to Improve
-										</h4>
-									</div>
-									<ul className="space-y-2">
-										{feedback.areasToImprove.map((s) => (
-											<li
-												key={s}
-												className="flex items-start gap-2 text-amber-800 dark:text-amber-200"
-											>
-												<span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-amber-500" />
-												{s}
-											</li>
-										))}
-									</ul>
-								</div>
-							)}
-
-							{/* Practice Suggestions */}
-							{feedback.suggestions.length > 0 && (
+							{/* Mistake Patterns */}
+							{feedback.mistakePatterns?.length > 0 && (
 								<div className="space-y-3">
-									<h4 className="font-semibold text-lg">
-										Practice Suggestions
-									</h4>
-									{feedback.suggestions.map((suggestion) => {
-										const Icon = SUGGESTION_ICONS[suggestion.type] ?? Target;
+									<h4 className="font-semibold text-lg">Mistake Patterns</h4>
+									{feedback.mistakePatterns.map((pattern) => {
+										const Icon = MISTAKE_ICONS[pattern.type] ?? Target;
 										return (
 											<div
-												key={suggestion.title}
+												key={pattern.description}
 												className={cn(
 													"rounded-xl border p-4",
-													PRIORITY_STYLES[suggestion.priority] ??
+													PRIORITY_STYLES[pattern.priority] ??
 														PRIORITY_STYLES.medium,
 												)}
 											>
 												<div className="mb-2 flex items-center gap-2">
 													<Icon className="size-4" />
 													<span className="font-medium">
-														{suggestion.title}
+														{pattern.description}
 													</span>
+													{pattern.sound && (
+														<span className="rounded-md bg-white/60 px-2 py-0.5 font-mono text-xs dark:bg-black/20">
+															{pattern.sound}
+														</span>
+													)}
 													<span className="ml-auto rounded-full bg-white/50 px-2 py-0.5 text-xs uppercase dark:bg-black/20">
-														{suggestion.priority}
+														{pattern.priority}
 													</span>
 												</div>
-												<p className="mb-2 text-sm">{suggestion.description}</p>
-												{suggestion.examples.length > 0 && (
-													<div className="flex flex-wrap gap-1.5">
-														{suggestion.examples.map((ex) => (
-															<span
-																key={ex}
-																className="rounded-md bg-white/60 px-2 py-0.5 font-mono text-sm dark:bg-black/20"
-															>
-																{ex}
-															</span>
-														))}
+
+												{pattern.words.length > 0 && (
+													<div className="mb-2">
+														<p className="mb-1 text-muted-foreground text-xs">
+															Your mistakes
+														</p>
+														<div className="flex flex-wrap gap-1.5">
+															{pattern.words.map((w) => (
+																<span
+																	key={w}
+																	className="rounded-md bg-red-100 px-2 py-0.5 font-mono text-red-700 text-sm dark:bg-red-900/40 dark:text-red-300"
+																>
+																	{w}
+																</span>
+															))}
+														</div>
+													</div>
+												)}
+
+												{pattern.practiceWords.length > 0 && (
+													<div>
+														<p className="mb-1 text-muted-foreground text-xs">
+															Practice these
+														</p>
+														<div className="flex flex-wrap gap-1.5">
+															{pattern.practiceWords.map((w) => (
+																<span
+																	key={w}
+																	className="rounded-md bg-white/60 px-2 py-0.5 font-mono text-sm dark:bg-black/20"
+																>
+																	{w}
+																</span>
+															))}
+														</div>
 													</div>
 												)}
 											</div>
@@ -596,31 +612,114 @@ export default function SessionReview({
 								</div>
 							)}
 
-							{/* Recommended Level */}
-							{feedback.recommendedLevel && (
-								<div className="rounded-2xl border bg-card p-6 text-center">
-									<p className="text-muted-foreground text-sm">
-										Recommended level for next session
-									</p>
-									<p className="mt-1 font-bold text-2xl text-primary">
-										{feedback.recommendedLevel}
-									</p>
-									{feedback.recommendedLevel !== cefrLevel && (
-										<p className="mt-1 text-muted-foreground text-xs">
-											{feedback.recommendedLevel > cefrLevel
-												? "Great progress! Ready for a challenge."
-												: "Let's build a stronger foundation first."}
-										</p>
-									)}
+							{/* Mini Exercises */}
+							{feedback.exercises?.length > 0 && (
+								<div className="space-y-3">
+									<h4 className="font-semibold text-lg">Mini Practice</h4>
+									{feedback.exercises.map((exercise) => {
+										const Icon = EXERCISE_ICONS[exercise.type] ?? Dumbbell;
+										return (
+											<div
+												key={exercise.title}
+												className="rounded-xl border bg-card p-4"
+											>
+												<div className="mb-2 flex items-center gap-2">
+													<Icon className="size-4 text-primary" />
+													<span className="font-medium">{exercise.title}</span>
+													<span className="ml-auto rounded-full bg-primary/10 px-2 py-0.5 text-primary text-xs">
+														{exercise.targetSkill}
+													</span>
+												</div>
+												<p className="mb-3 text-muted-foreground text-sm">
+													{exercise.instruction}
+												</p>
+												<div className="flex flex-wrap gap-2">
+													{exercise.items.map((item) => (
+														<span
+															key={item}
+															className="rounded-lg border bg-muted/50 px-3 py-1.5 font-mono text-sm"
+														>
+															{item}
+														</span>
+													))}
+												</div>
+											</div>
+										);
+									})}
 								</div>
 							)}
 
-							{/* Next Steps */}
-							{feedback.nextSteps && (
-								<div className="rounded-2xl border bg-primary/5 p-6 text-center">
-									<p className="font-medium text-primary leading-relaxed">
-										{feedback.nextSteps}
-									</p>
+							{/* Weak Areas */}
+							{feedback.weakAreas?.length > 0 && (
+								<div className="space-y-3">
+									<h4 className="font-semibold text-lg">Weak Areas</h4>
+									{feedback.weakAreas.map((area) => (
+										<div
+											key={`${area.category}-${area.description}`}
+											className="flex items-start gap-3 rounded-xl border p-4"
+										>
+											<span
+												className={cn(
+													"mt-0.5 shrink-0 rounded-full px-2 py-0.5 font-medium text-xs capitalize",
+													SEVERITY_STYLES[area.severity] ??
+														SEVERITY_STYLES.medium,
+												)}
+											>
+												{area.severity}
+											</span>
+											<div className="min-w-0 flex-1">
+												<p className="font-medium capitalize">
+													{area.category.replace("_", " ")}
+												</p>
+												<p className="text-muted-foreground text-sm">
+													{area.description}
+												</p>
+												{area.sounds.length > 0 && (
+													<div className="mt-2 flex flex-wrap gap-1.5">
+														{area.sounds.map((s) => (
+															<span
+																key={s}
+																className="rounded-md bg-muted px-2 py-0.5 font-mono text-xs"
+															>
+																{s}
+															</span>
+														))}
+													</div>
+												)}
+											</div>
+										</div>
+									))}
+								</div>
+							)}
+
+							{/* Practice Word Sets */}
+							{feedback.practiceWordSets?.length > 0 && (
+								<div className="space-y-3">
+									<h4 className="font-semibold text-lg">Word Practice Sets</h4>
+									<div className="grid gap-3">
+										{feedback.practiceWordSets.map((set) => (
+											<div key={set.word} className="rounded-xl border p-4">
+												<div className="mb-2 flex items-center gap-2">
+													<span className="rounded-md bg-red-100 px-2.5 py-1 font-mono font-semibold text-red-700 dark:bg-red-900/40 dark:text-red-300">
+														{set.word}
+													</span>
+													<span className="text-muted-foreground text-sm">
+														{set.issue}
+													</span>
+												</div>
+												<div className="flex flex-wrap gap-1.5">
+													{set.relatedWords.map((rw) => (
+														<span
+															key={rw}
+															className="rounded-md bg-muted/50 px-2 py-0.5 font-mono text-sm"
+														>
+															{rw}
+														</span>
+													))}
+												</div>
+											</div>
+										))}
+									</div>
 								</div>
 							)}
 						</div>

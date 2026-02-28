@@ -122,6 +122,7 @@ export default function TodaysActivities() {
 					scenarioName: activity.metadata.scenarioName,
 					scenarioDescription: activity.metadata.scenarioDescription,
 					aiRole: activity.metadata.aiRole,
+					scenarioType: activity.metadata.aiRole ? "roleplay" : "topic",
 				});
 				markDone.mutate({
 					activityId: activity.id,

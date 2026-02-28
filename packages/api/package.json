@@ -22,9 +22,10 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.28",
-    "@english.now/env": "workspace:*",
+    "@aws-sdk/client-s3": "^3.705.0",
     "@english.now/auth": "workspace:*",
     "@english.now/db": "workspace:*",
+    "@english.now/env": "workspace:*",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "ai": "^6.0.85",

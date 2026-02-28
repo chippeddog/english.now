@@ -2,7 +2,6 @@ import { integer, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { user } from "./auth";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-
 export type CefrLevel = "A1" | "A2" | "B1" | "B2" | "C1";
 
 export type ParagraphItem = {
@@ -54,24 +53,53 @@ export type PronunciationSessionSummary = {
 	weakPhonemes: WeakPhoneme[];
 };
 
-export type PracticeSuggestion = {
-	type: "phoneme" | "word" | "pattern" | "fluency";
-	title: string;
+export type MistakePattern = {
+	type: "phoneme" | "word_stress" | "omission" | "mispronunciation" | "fluency";
+	sound: string;
 	description: string;
-	examples: string[];
+	words: string[];
+	practiceWords: string[];
 	priority: "high" | "medium" | "low";
 };
 
-export type PronunciationFeedback = {
-	overallAnalysis: string;
-	strengths: string[];
-	areasToImprove: string[];
-	suggestions: PracticeSuggestion[];
-	recommendedLevel: CefrLevel;
-	nextSteps: string;
+export type MiniExercise = {
+	type:
+		| "repeat_after"
+		| "minimal_pairs"
+		| "tongue_twister"
+		| "word_chain"
+		| "sentence_practice";
+	title: string;
+	instruction: string;
+	items: string[];
+	targetSkill: string;
 };
 
-// ─── Pronunciation Session ────────────────────────────────────────────────────
+export type WeakArea = {
+	category:
+		| "vowels"
+		| "consonants"
+		| "word_stress"
+		| "rhythm"
+		| "intonation"
+		| "linking";
+	severity: "high" | "medium" | "low";
+	sounds: string[];
+	description: string;
+};
+
+export type PracticeWordSet = {
+	word: string;
+	issue: string;
+	relatedWords: string[];
+};
+
+export type PronunciationFeedback = {
+	mistakePatterns: MistakePattern[];
+	exercises: MiniExercise[];
+	weakAreas: WeakArea[];
+	practiceWordSets: PracticeWordSet[];
+};
 
 export const pronunciationSession = pgTable("pronunciation_session", {
 	id: text("id").primaryKey(),
@@ -79,8 +107,7 @@ export const pronunciationSession = pgTable("pronunciation_session", {
 		.notNull()
 		.references(() => user.id, { onDelete: "cascade" }),
 	mode: text("mode").notNull(),
-	difficulty: text("difficulty").notNull(),
-	cefrLevel: text("cefr_level").$type<CefrLevel>(),
+	level: text("level"),
 	paragraph: jsonb("paragraph").$type<ParagraphItem>(),
 	items: jsonb("items").notNull().$type<ParagraphItem[]>(),
 	status: text("status").notNull().default("active"),
@@ -93,8 +120,6 @@ export const pronunciationSession = pgTable("pronunciation_session", {
 	completedAt: timestamp("completed_at"),
 	deletedAt: timestamp("deleted_at"),
 });
-
-// ─── Pronunciation Attempt ────────────────────────────────────────────────────
 
 export const pronunciationAttempt = pgTable("pronunciation_attempt", {
 	id: text("id").primaryKey(),
@@ -112,8 +137,6 @@ export const pronunciationAttempt = pgTable("pronunciation_attempt", {
 	audioUrl: text("audio_url"),
 	createdAt: timestamp("created_at").notNull().defaultNow(),
 });
-
-// ─── Type Exports ─────────────────────────────────────────────────────────────
 
 export type PronunciationSession = typeof pronunciationSession.$inferSelect;
 export type NewPronunciationSession = typeof pronunciationSession.$inferInsert;

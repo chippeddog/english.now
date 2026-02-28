@@ -350,7 +350,7 @@ export const practiceRouter = router({
 							.select({
 								id: pronunciationSession.id,
 								mode: pronunciationSession.mode,
-								difficulty: pronunciationSession.difficulty,
+								level: pronunciationSession.level,
 								status: pronunciationSession.status,
 								summary: pronunciationSession.summary,
 								createdAt: pronunciationSession.createdAt,

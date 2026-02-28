@@ -14,7 +14,12 @@ import {
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/utils/trpc";
 
-type TopicItem = { id: string; name: string; icon: string };
+type TopicItem = {
+	id: string;
+	name: string;
+	icon: string;
+	description: string;
+};
 type RoleplayItem = {
 	id: string;
 	name: string;
@@ -45,6 +50,7 @@ function DialogTopics({
 		name: string;
 		description?: string;
 		aiRole?: string;
+		scenarioType?: "topic" | "roleplay";
 	} | null>(null);
 
 	// Fetch personalized suggestions
@@ -98,6 +104,7 @@ function DialogTopics({
 			scenarioName?: string;
 			scenarioDescription?: string;
 			aiRole?: string;
+			scenarioType?: "topic" | "roleplay";
 		}) => {
 			const response = await fetch(
 				`${env.VITE_SERVER_URL}/api/conversation/start`,
@@ -127,13 +134,18 @@ function DialogTopics({
 				scenarioName: selectedMeta?.name,
 				scenarioDescription: selectedMeta?.description,
 				aiRole: selectedMeta?.aiRole,
+				scenarioType: selectedMeta?.scenarioType,
 			});
 		}
 	};
 
 	const handleSelectTopic = (topic: TopicItem) => {
 		setSelectedScenario(topic.id);
-		setSelectedMeta({ name: topic.name });
+		setSelectedMeta({
+			name: topic.name,
+			description: topic.description,
+			scenarioType: "topic",
+		});
 	};
 
 	const handleSelectRoleplay = (roleplay: RoleplayItem) => {
@@ -142,6 +154,7 @@ function DialogTopics({
 			name: roleplay.name,
 			description: roleplay.description,
 			aiRole: roleplay.aiRole,
+			scenarioType: "roleplay",
 		});
 	};
 
@@ -155,7 +168,7 @@ function DialogTopics({
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogContent showCloseButton={false}>
 				<div className="mb-3 flex flex-col gap-2 text-center">
-					<h1 className="mt-1 font-bold font-lyon text-3xl tracking-tight">
+					<h1 className="font-bold font-lyon text-3xl tracking-tight">
 						What would you like to talk about?
 					</h1>
 					<p className="text-muted-foreground text-sm">

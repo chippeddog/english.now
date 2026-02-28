@@ -17,6 +17,7 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
+import { Switch } from "@/components/ui/switch";
 import {
 	Tooltip,
 	TooltipContent,
@@ -44,6 +45,8 @@ type ControlToolbarProps = {
 	audioDevices: MediaDeviceInfo[];
 	selectedDevice: string;
 	setSelectedDevice: (deviceId: string) => void;
+	autoTranslate: boolean;
+	onAutoTranslateChange: (enabled: boolean) => void;
 };
 
 export function ControlToolbar({
@@ -63,6 +66,8 @@ export function ControlToolbar({
 	audioDevices,
 	selectedDevice,
 	setSelectedDevice,
+	autoTranslate,
+	onAutoTranslateChange,
 }: ControlToolbarProps) {
 	const trpc = useTRPC();
 	const queryClient = useQueryClient();
@@ -302,6 +307,21 @@ export function ControlToolbar({
 												);
 											})}
 										</div>
+									</div>
+
+									<div className="h-px bg-border" />
+
+									<div className="flex items-center justify-between">
+										<div className="flex flex-col gap-0.5">
+											<p className="font-medium text-sm">Auto-translate</p>
+											<p className="text-muted-foreground text-xs">
+												Translate messages to your native language
+											</p>
+										</div>
+										<Switch
+											checked={autoTranslate}
+											onCheckedChange={onAutoTranslateChange}
+										/>
 									</div>
 								</div>
 							</PopoverContent>

@@ -1,15 +1,40 @@
-import { and, db, eq, vocabularyPhrase, vocabularyWord } from "@english.now/db";
+import {
+	and,
+	db,
+	eq,
+	phrase,
+	phraseTranslation,
+	userPhrase,
+	userProfile,
+	userWord,
+	word,
+	wordTranslation,
+} from "@english.now/db";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure, router } from "../index";
+import {
+	ensurePhraseTranslation,
+	ensureWordTranslation,
+	getOrCreatePhrase,
+	getOrCreateWord,
+	validateEnglishPhrase,
+	validateEnglishWord,
+} from "../services/vocabulary-catalog";
+
+async function getUserLanguage(userId: string): Promise<string> {
+	const [profile] = await db
+		.select({ nativeLanguage: userProfile.nativeLanguage })
+		.from(userProfile)
+		.where(eq(userProfile.userId, userId))
+		.limit(1);
+	return profile?.nativeLanguage ?? "uk";
+}
 
 export const vocabularyRouter = router({
-	// ─── Words ─────────────────────────────────────────────────────────────────
-
-	// Get vocabulary words with filtering
-	getVocabulary: protectedProcedure
+	getWords: protectedProcedure
 		.input(
 			z.object({
-				category: z.string().optional(),
 				level: z.string().optional(),
 				mastery: z.string().optional(),
 				search: z.string().optional(),
@@ -18,147 +43,135 @@ export const vocabularyRouter = router({
 			}),
 		)
 		.query(async ({ ctx, input }) => {
-			const words = await db
-				.select()
-				.from(vocabularyWord)
-				.where(eq(vocabularyWord.userId, ctx.session.user.id))
+			const userId = ctx.session.user.id;
+			const language = await getUserLanguage(userId);
+
+			const rows = await db
+				.select({
+					userWordId: userWord.id,
+					mastery: userWord.mastery,
+					source: userWord.source,
+					notes: userWord.notes,
+					addedAt: userWord.createdAt,
+					wordId: word.id,
+					lemma: word.lemma,
+					ipa: word.ipa,
+					audioUrl: word.audioUrl,
+					partOfSpeech: word.partOfSpeech,
+					definition: word.definition,
+					exampleSentence: word.exampleSentence,
+					level: word.level,
+					frequencyRank: word.frequencyRank,
+					translation: wordTranslation.translation,
+				})
+				.from(userWord)
+				.innerJoin(word, eq(userWord.wordId, word.id))
+				.leftJoin(
+					wordTranslation,
+					and(
+						eq(wordTranslation.wordId, word.id),
+						eq(wordTranslation.language, language),
+					),
+				)
+				.where(eq(userWord.userId, userId))
 				.limit(input.limit)
 				.offset(input.offset);
 
-			let filtered = words;
-			if (input.category) {
-				filtered = filtered.filter((w) => w.category === input.category);
-			}
+			let filtered = rows;
 			if (input.level) {
-				filtered = filtered.filter((w) => w.level === input.level);
+				filtered = filtered.filter((r) => r.level === input.level);
 			}
 			if (input.mastery) {
-				filtered = filtered.filter((w) => w.mastery === input.mastery);
+				filtered = filtered.filter((r) => r.mastery === input.mastery);
 			}
 			if (input.search) {
-				const search = input.search.toLowerCase();
+				const s = input.search.toLowerCase();
 				filtered = filtered.filter(
-					(w) =>
-						w.word.toLowerCase().includes(search) ||
-						w.definition.toLowerCase().includes(search),
+					(r) =>
+						r.lemma.toLowerCase().includes(s) ||
+						r.definition.toLowerCase().includes(s),
 				);
 			}
 
 			return filtered;
 		}),
 
-	// Add a single custom word
 	addWord: protectedProcedure
 		.input(
 			z.object({
 				word: z.string().min(1),
-				translation: z.string().optional(),
-				definition: z.string().min(1),
-				level: z.string(),
-				category: z.string().optional(),
-				tags: z.array(z.string()).optional(),
+				source: z
+					.enum(["manual", "lesson", "chat", "explore"])
+					.default("manual"),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
-			const id = crypto.randomUUID();
-			await db.insert(vocabularyWord).values({
-				id,
-				userId: ctx.session.user.id,
-				word: input.word,
-				translation: input.translation,
-				definition: input.definition,
-				level: input.level,
-				mastery: "new",
-				category: input.category,
-				tags: input.tags,
-				source: "custom",
-			});
-			return { id };
-		}),
-
-	// Bulk add words (from explore/generated list)
-	addWords: protectedProcedure
-		.input(
-			z.object({
-				words: z.array(
-					z.object({
-						word: z.string().min(1),
-						translation: z.string().optional(),
-						definition: z.string().min(1),
-						level: z.string(),
-						category: z.string().optional(),
-						tags: z.array(z.string()).optional(),
-					}),
-				),
-				source: z.enum(["explore", "custom"]).default("explore"),
-			}),
-		)
-		.mutation(async ({ ctx, input }) => {
-			const rows = input.words.map((w) => ({
-				id: crypto.randomUUID(),
-				userId: ctx.session.user.id,
-				word: w.word,
-				translation: w.translation,
-				definition: w.definition,
-				level: w.level,
-				mastery: "new" as const,
-				category: w.category,
-				tags: w.tags,
-				source: input.source,
-			}));
-
-			// Insert in batches of 50
-			for (let i = 0; i < rows.length; i += 50) {
-				const batch = rows.slice(i, i + 50);
-				await db.insert(vocabularyWord).values(batch);
+			const isEnglish = await validateEnglishWord(input.word);
+			if (!isEnglish) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Please enter a valid English word.",
+				});
 			}
 
-			return { count: rows.length };
+			const userId = ctx.session.user.id;
+			const language = await getUserLanguage(userId);
+
+			const wordId = await getOrCreateWord(input.word);
+			await ensureWordTranslation(wordId, language);
+
+			const id = crypto.randomUUID();
+			await db
+				.insert(userWord)
+				.values({
+					id,
+					userId,
+					wordId,
+					mastery: "new",
+					source: input.source,
+				})
+				.onConflictDoNothing();
+
+			return { id, wordId };
 		}),
 
-	// Delete a word (verify ownership)
-	deleteWord: protectedProcedure
-		.input(z.object({ wordId: z.string() }))
+	removeWord: protectedProcedure
+		.input(z.object({ userWordId: z.string() }))
 		.mutation(async ({ ctx, input }) => {
 			await db
-				.delete(vocabularyWord)
+				.delete(userWord)
 				.where(
 					and(
-						eq(vocabularyWord.id, input.wordId),
-						eq(vocabularyWord.userId, ctx.session.user.id),
+						eq(userWord.id, input.userWordId),
+						eq(userWord.userId, ctx.session.user.id),
 					),
 				);
 			return { success: true };
 		}),
 
-	// Update word mastery level
 	updateWordMastery: protectedProcedure
 		.input(
 			z.object({
-				wordId: z.string(),
+				userWordId: z.string(),
 				mastery: z.enum(["new", "learning", "reviewing", "mastered"]),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
 			await db
-				.update(vocabularyWord)
+				.update(userWord)
 				.set({ mastery: input.mastery })
 				.where(
 					and(
-						eq(vocabularyWord.id, input.wordId),
-						eq(vocabularyWord.userId, ctx.session.user.id),
+						eq(userWord.id, input.userWordId),
+						eq(userWord.userId, ctx.session.user.id),
 					),
 				);
 			return { success: true };
 		}),
 
-	// ─── Phrases ───────────────────────────────────────────────────────────────
-
-	// Get phrases with filtering
 	getPhrases: protectedProcedure
 		.input(
 			z.object({
-				category: z.string().optional(),
 				level: z.string().optional(),
 				mastery: z.string().optional(),
 				limit: z.number().min(1).max(100).default(50),
@@ -166,126 +179,118 @@ export const vocabularyRouter = router({
 			}),
 		)
 		.query(async ({ ctx, input }) => {
-			const phrases = await db
-				.select()
-				.from(vocabularyPhrase)
-				.where(eq(vocabularyPhrase.userId, ctx.session.user.id))
+			const userId = ctx.session.user.id;
+			const language = await getUserLanguage(userId);
+
+			const rows = await db
+				.select({
+					userPhraseId: userPhrase.id,
+					mastery: userPhrase.mastery,
+					source: userPhrase.source,
+					notes: userPhrase.notes,
+					addedAt: userPhrase.createdAt,
+					phraseId: phrase.id,
+					text: phrase.text,
+					ipa: phrase.ipa,
+					audioUrl: phrase.audioUrl,
+					level: phrase.level,
+					meaning: phrase.meaning,
+					exampleUsage: phrase.exampleUsage,
+					translation: phraseTranslation.translation,
+					literalTranslation: phraseTranslation.literalTranslation,
+				})
+				.from(userPhrase)
+				.innerJoin(phrase, eq(userPhrase.phraseId, phrase.id))
+				.leftJoin(
+					phraseTranslation,
+					and(
+						eq(phraseTranslation.phraseId, phrase.id),
+						eq(phraseTranslation.language, language),
+					),
+				)
+				.where(eq(userPhrase.userId, userId))
 				.limit(input.limit)
 				.offset(input.offset);
 
-			let filtered = phrases;
-			if (input.category) {
-				filtered = filtered.filter((p) => p.category === input.category);
-			}
+			let filtered = rows;
 			if (input.level) {
-				filtered = filtered.filter((p) => p.level === input.level);
+				filtered = filtered.filter((r) => r.level === input.level);
 			}
 			if (input.mastery) {
-				filtered = filtered.filter((p) => p.mastery === input.mastery);
+				filtered = filtered.filter((r) => r.mastery === input.mastery);
 			}
 
 			return filtered;
 		}),
 
-	// Add a single custom phrase
 	addPhrase: protectedProcedure
 		.input(
 			z.object({
 				phrase: z.string().min(1),
-				meaning: z.string().min(1),
-				exampleUsage: z.string().optional(),
-				category: z.string().optional(),
-				level: z.string(),
-				literalTranslation: z.string().optional(),
-				tags: z.array(z.string()).optional(),
+				source: z
+					.enum(["manual", "lesson", "chat", "explore"])
+					.default("manual"),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
+			const isEnglish = await validateEnglishPhrase(input.phrase);
+			if (!isEnglish) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Please enter a valid English phrase.",
+				});
+			}
+
+			const userId = ctx.session.user.id;
+			const language = await getUserLanguage(userId);
+
+			const phraseId = await getOrCreatePhrase(input.phrase);
+			await ensurePhraseTranslation(phraseId, language);
+
 			const id = crypto.randomUUID();
-			await db.insert(vocabularyPhrase).values({
-				id,
-				userId: ctx.session.user.id,
-				phrase: input.phrase,
-				meaning: input.meaning,
-				exampleUsage: input.exampleUsage,
-				category: input.category,
-				level: input.level,
-				mastery: "new",
-				literalTranslation: input.literalTranslation,
-				tags: input.tags,
-				source: "custom",
-			});
-			return { id };
+			await db
+				.insert(userPhrase)
+				.values({
+					id,
+					userId,
+					phraseId,
+					mastery: "new",
+					source: input.source,
+				})
+				.onConflictDoNothing();
+
+			return { id, phraseId };
 		}),
 
-	// Bulk add phrases
-	addPhrases: protectedProcedure
-		.input(
-			z.object({
-				phrases: z.array(
-					z.object({
-						phrase: z.string().min(1),
-						meaning: z.string().min(1),
-						exampleUsage: z.string().optional(),
-						category: z.string().optional(),
-						level: z.string(),
-						literalTranslation: z.string().optional(),
-						tags: z.array(z.string()).optional(),
-					}),
-				),
-				source: z.enum(["explore", "custom"]).default("explore"),
-			}),
-		)
-		.mutation(async ({ ctx, input }) => {
-			const rows = input.phrases.map((p) => ({
-				id: crypto.randomUUID(),
-				userId: ctx.session.user.id,
-				phrase: p.phrase,
-				meaning: p.meaning,
-				exampleUsage: p.exampleUsage,
-				category: p.category,
-				level: p.level,
-				mastery: "new" as const,
-				literalTranslation: p.literalTranslation,
-				tags: p.tags,
-				source: input.source,
-			}));
-
-			await db.insert(vocabularyPhrase).values(rows);
-			return { count: rows.length };
-		}),
-
-	// Delete a phrase (verify ownership)
-	deletePhrase: protectedProcedure
-		.input(z.object({ phraseId: z.string() }))
+	removePhrase: protectedProcedure
+		.input(z.object({ userPhraseId: z.string() }))
 		.mutation(async ({ ctx, input }) => {
 			await db
-				.delete(vocabularyPhrase)
+				.delete(userPhrase)
 				.where(
 					and(
-						eq(vocabularyPhrase.id, input.phraseId),
-						eq(vocabularyPhrase.userId, ctx.session.user.id),
+						eq(userPhrase.id, input.userPhraseId),
+						eq(userPhrase.userId, ctx.session.user.id),
 					),
 				);
 			return { success: true };
 		}),
 
-	// Update phrase mastery level
 	updatePhraseMastery: protectedProcedure
 		.input(
 			z.object({
-				phraseId: z.string(),
+				userPhraseId: z.string(),
 				mastery: z.enum(["new", "learning", "reviewing", "mastered"]),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
 			await db
-				.update(vocabularyPhrase)
+				.update(userPhrase)
 				.set({ mastery: input.mastery })
 				.where(
 					and(
-						eq(vocabularyPhrase.id, input.phraseId),
-						eq(vocabularyPhrase.userId, ctx.session.user.id),
+						eq(userPhrase.id, input.userPhraseId),
+						eq(userPhrase.userId, ctx.session.user.id),
 					),
 				);
 			return { success: true };

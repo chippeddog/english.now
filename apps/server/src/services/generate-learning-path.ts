@@ -5,8 +5,6 @@ import {
 	lesson,
 	unit,
 	userProfile,
-	vocabularyPhrase,
-	vocabularyWord,
 } from "@english.now/db";
 import type { LessonContent } from "@english.now/db";
 import { generateText, Output } from "ai";
@@ -16,12 +14,7 @@ import { openai } from "../utils/ai";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type GenerationStep =
-	| "outline"
-	| "lessons"
-	| "vocabulary"
-	| "phrases"
-	| "complete";
+export type GenerationStep = "outline" | "lessons" | "complete";
 
 // ─── Zod Schemas ──────────────────────────────────────────────────────────────
 
@@ -30,33 +23,6 @@ const translationsSchema = z.object({
 		z.object({
 			word: z.string(),
 			translation: z.string(),
-		}),
-	),
-});
-
-const generatedVocabularySchema = z.object({
-	words: z.array(
-		z.object({
-			word: z.string(),
-			translation: z.string(),
-			definition: z.string(),
-			level: z.string(),
-			category: z.string(),
-			tags: z.array(z.string()),
-		}),
-	),
-});
-
-const generatedPhrasesSchema = z.object({
-	phrases: z.array(
-		z.object({
-			phrase: z.string(),
-			meaning: z.string(),
-			exampleUsage: z.string(),
-			category: z.string(),
-			level: z.string(),
-			literalTranslation: z.string(),
-			tags: z.array(z.string()),
 		}),
 	),
 });
@@ -133,23 +99,10 @@ export async function generateLearningPath(
 			learningPathId,
 			curriculum,
 		);
-		await updateProgress(learningPathId, 20, "Course structure created");
+		await updateProgress(learningPathId, 50, "Course structure created");
 
 		// ── Step 2: Translate lesson vocabulary to native language ──────────
 		await translateLessonVocabulary(savedUnits, nativeLanguageName);
-		await updateProgress(learningPathId, 40, "Lesson content localized");
-
-		// ── Step 3: Generate vocabulary ─────────────────────────────────────
-		await generateAndSaveVocabulary(
-			userId,
-			cefrLevel,
-			goal,
-			nativeLanguageName,
-		);
-		await updateProgress(learningPathId, 70, "Vocabulary built");
-
-		// ── Step 4: Generate phrases ────────────────────────────────────────
-		await generateAndSavePhrases(userId, cefrLevel, goal, nativeLanguageName);
 
 		// ── Mark complete ───────────────────────────────────────────────────
 		await db
@@ -299,153 +252,6 @@ async function translateLessonVocabulary(
 				.where(eq(lesson.id, l.id));
 		}
 	}
-}
-
-// ─── Step 3: Vocabulary ───────────────────────────────────────────────────────
-
-async function generateAndSaveVocabulary(
-	userId: string,
-	cefrLevel: string,
-	goal: string,
-	nativeLanguageName: string,
-): Promise<void> {
-	const systemPrompt = `You are an expert English vocabulary teacher. Generate a vocabulary list with simple, clear entries.
-
-Your output must be valid JSON with this exact structure:
-{
-  "words": [
-    {
-      "word": "English word",
-      "translation": "Translation in ${nativeLanguageName}",
-      "definition": "Clear, concise definition",
-      "level": "${cefrLevel}",
-      "category": "Category name",
-      "tags": ["tag1", "tag2"]
-    }
-  ]
-}
-
-Rules:
-- Generate exactly 80 words
-- Words must be appropriate for CEFR ${cefrLevel} level
-- Include a mix of nouns, verbs, adjectives, and adverbs
-- Categories should be diverse and relevant to the learning goal
-- Translations must be in ${nativeLanguageName}
-- Definitions should be concise (one sentence max)
-- Each word needs at least 1 tag`;
-
-	const userPrompt = `Generate 80 vocabulary words for an English learner at CEFR ${cefrLevel} level whose learning goal is "${goal}".
-
-Include words from these categories:
-- Everyday life & social situations
-- ${goal}-specific vocabulary
-- Common useful words for the level
-- Action verbs and descriptive adjectives
-
-The words should be practical and immediately useful.`;
-
-	const { output: generated } = await generateText({
-		model: openai("gpt-4o-mini"),
-		output: Output.object({ schema: generatedVocabularySchema }),
-		system: systemPrompt,
-		prompt: userPrompt,
-		temperature: 0.7,
-	});
-
-	if (!generated) {
-		throw new Error("Failed to generate vocabulary");
-	}
-
-	const wordRows = generated.words.map((w) => ({
-		id: crypto.randomUUID(),
-		userId,
-		word: w.word,
-		translation: w.translation,
-		definition: w.definition,
-		level: w.level || cefrLevel,
-		mastery: "new" as const,
-		category: w.category,
-		tags: w.tags,
-		source: "generated" as const,
-	}));
-
-	for (let i = 0; i < wordRows.length; i += 50) {
-		const batch = wordRows.slice(i, i + 50);
-		await db.insert(vocabularyWord).values(batch);
-	}
-}
-
-// ─── Step 4: Phrases ──────────────────────────────────────────────────────────
-
-async function generateAndSavePhrases(
-	userId: string,
-	cefrLevel: string,
-	goal: string,
-	nativeLanguageName: string,
-): Promise<void> {
-	const systemPrompt = `You are an expert English teacher specializing in common phrases and expressions.
-
-Your output must be valid JSON with this exact structure:
-{
-  "phrases": [
-    {
-      "phrase": "Common English phrase or expression",
-      "meaning": "What the phrase means",
-      "exampleUsage": "A natural dialog or sentence using the phrase",
-      "category": "Category name",
-      "level": "${cefrLevel}",
-      "literalTranslation": "Word-by-word translation in ${nativeLanguageName}",
-      "tags": ["tag1", "tag2"]
-    }
-  ]
-}
-
-Rules:
-- Generate exactly 30 phrases
-- Phrases must be appropriate for CEFR ${cefrLevel} level
-- Include a mix of: greetings, small talk, opinions, requests, reactions, idioms
-- Categories should group related phrases together
-- Literal translations help learners understand word order differences
-- Example usage should show the phrase in a natural context`;
-
-	const userPrompt = `Generate 30 common English phrases and expressions for an English learner at CEFR ${cefrLevel} level whose learning goal is "${goal}".
-
-Include phrases for:
-- Daily conversations and small talk
-- ${goal}-related situations
-- Expressing opinions and feelings
-- Making requests and suggestions
-- Common reactions and responses
-
-Phrases should be ones native speakers actually use frequently.`;
-
-	const { output: generated } = await generateText({
-		model: openai("gpt-4o-mini"),
-		output: Output.object({ schema: generatedPhrasesSchema }),
-		system: systemPrompt,
-		prompt: userPrompt,
-		temperature: 0.7,
-	});
-
-	if (!generated) {
-		throw new Error("Failed to generate phrases");
-	}
-
-	const phraseRows = generated.phrases.map((p) => ({
-		id: crypto.randomUUID(),
-		userId,
-		phrase: p.phrase,
-		meaning: p.meaning,
-		exampleUsage: p.exampleUsage,
-		category: p.category,
-		level: p.level || cefrLevel,
-		mastery: "new" as const,
-		literalTranslation: p.literalTranslation,
-		tags: p.tags,
-		source: "generated" as const,
-	}));
-
-	await db.insert(vocabularyPhrase).values(phraseRows);
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

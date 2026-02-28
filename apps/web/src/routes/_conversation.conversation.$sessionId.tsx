@@ -3,12 +3,12 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Loader } from "lucide-react";
 import { useEffect } from "react";
 import PracticeView from "@/components/conversation/practice-view";
-import ReportIssueDialog from "@/components/conversation/report-issue-dialog";
 import ReviewView, {
 	LoadingState,
 } from "@/components/conversation/review-view";
 import Logo from "@/components/logo";
 import SessionLoader from "@/components/session/loader";
+import ReportIssueDialog from "@/components/session/report-issue-dialog";
 import { useTRPC } from "@/utils/trpc";
 
 export const Route = createFileRoute("/_conversation/conversation/$sessionId")({
@@ -105,7 +105,10 @@ function ConversationPage() {
 						<div className="items-center gap-2 md:flex">
 							<Logo link="/practice" />
 						</div>
-						<ReportIssueDialog />
+						<ReportIssueDialog
+							sessionId={sessionId}
+							sessionType="conversation"
+						/>
 					</nav>
 				</div>
 			</div>
