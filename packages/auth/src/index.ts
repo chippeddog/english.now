@@ -93,12 +93,17 @@ export const auth = betterAuth<BetterAuthOptions>({
 			},
 		},
 	},
-	advanced: {
-		crossSubDomainCookies: {
-			enabled: true,
-			domain: ".english.now",
-		},
-	},
 
+	advanced: {
+		defaultCookieAttributes: {
+			sameSite: "none",
+			secure: true,
+			partitioned: true,
+		},
+		// 	crossSubDomainCookies: {
+		// 		enabled: true,
+		// 		domain: ".english.now",
+	},
+	// },
 	plugins: [expo()],
 });
