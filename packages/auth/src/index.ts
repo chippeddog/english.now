@@ -6,16 +6,6 @@ import { env } from "@english.now/env/server";
 import { type BetterAuthOptions, betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 
-const cookieDomain = (() => {
-	try {
-		const { hostname } = new URL(env.CORS_ORIGIN);
-		if (hostname === "localhost" || hostname === "127.0.0.1") return undefined;
-		return `.${hostname}`;
-	} catch {
-		return undefined;
-	}
-})();
-
 export const auth = betterAuth<BetterAuthOptions>({
 	database: drizzleAdapter(db, {
 		provider: "pg",
@@ -38,6 +28,7 @@ export const auth = betterAuth<BetterAuthOptions>({
 	},
 	trustedOrigins: [
 		env.CORS_ORIGIN,
+		"https://api.english.now",
 		"mybettertapp://",
 		"exp://",
 		"https://appleid.apple.com",
@@ -103,9 +94,11 @@ export const auth = betterAuth<BetterAuthOptions>({
 		},
 	},
 	advanced: {
-		crossSubDomainCookies: cookieDomain
-			? { enabled: true, domain: cookieDomain }
-			: { enabled: false },
+		crossSubDomainCookies: {
+			enabled: true,
+			domain: ".english.now",
+		},
 	},
+
 	plugins: [expo()],
 });
