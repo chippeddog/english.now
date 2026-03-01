@@ -106,7 +106,6 @@ export const auth = betterAuth<BetterAuthOptions>({
 		crossSubDomainCookies: cookieDomain
 			? { enabled: true, domain: cookieDomain }
 			: { enabled: false },
-		useSecureCookies: true,
 	},
 	plugins: [expo()],
 });
