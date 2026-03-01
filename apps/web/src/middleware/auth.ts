@@ -7,6 +7,7 @@ export const authMiddleware = createMiddleware().server(
 			fetchOptions: {
 				headers: request.headers,
 				throw: true,
+				credentials: "include",
 			},
 		});
 		return next({
