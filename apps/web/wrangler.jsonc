@@ -1,0 +1,19 @@
+{
+    "$schema": "node_modules/wrangler/config-schema.json",
+    "name": "english-now",
+    "compatibility_date": "2025-09-02",
+    "compatibility_flags": [
+        "nodejs_compat"
+    ],
+    "main": "@tanstack/react-start/server-entry",
+    "vars": {
+        "VITE_SERVER_URL": "https://api.english.now",
+        "VITE_PADDLE_CLIENT_TOKEN": "test_ff78a1c2ad0b539c77ae84ed3b7",
+        "VITE_PADDLE_ENVIRONMENT": "sandbox",
+        "VITE_PADDLE_PRICE_MONTHLY": "pri_01kh1nvx0wzte3e2eh167dmpn1",
+        "VITE_PADDLE_PRICE_YEARLY": "pri_01kh1nxwx4xjmzas0fgwkvjb1k"
+    },
+    "observability": {
+        "enabled": true
+    }
+}

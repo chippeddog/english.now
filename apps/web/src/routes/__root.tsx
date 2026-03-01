@@ -1,5 +1,10 @@
 import type { AppRouter } from "@english.now/api/routers/index";
-import { initI18n, useTranslation } from "@english.now/i18n";
+import {
+	initI18n,
+	isRTL,
+	type SupportedLanguage,
+	useTranslation,
+} from "@english.now/i18n";
 import type { QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import {
@@ -53,13 +58,17 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 function RootDocument() {
 	const { i18n } = useTranslation();
 	return (
-		<html lang={i18n.language} suppressHydrationWarning>
+		<html
+			lang={i18n.language}
+			suppressHydrationWarning
+			dir={isRTL(i18n.language as SupportedLanguage) ? "rtl" : "ltr"}
+		>
 			<head>
 				<HeadContent />
 				<script
-					dangerouslySetInnerHTML={{
-						__html: `(function(){try{var t=localStorage.getItem("theme");var d=document.documentElement;d.classList.remove("light","dark");if(t==="dark"||(t==="system"&&window.matchMedia("(prefers-color-scheme:dark)").matches)){d.classList.add("dark")}else{d.classList.add("light")}}catch(e){document.documentElement.classList.add("light")}})()`,
-					}}
+				// dangerouslySetInnerHTML={{
+				// 	__html: `(function(){try{var t=localStorage.getItem("theme");var d=document.documentElement;d.classList.remove("light","dark");if(t==="dark"||(t==="system"&&window.matchMedia("(prefers-color-scheme:dark)").matches)){d.classList.add("dark")}else{d.classList.add("light")}}catch(e){document.documentElement.classList.add("light")}})()`,
+				// }}
 				/>
 				{/* <script
 					dangerouslySetInnerHTML={{

@@ -5,13 +5,16 @@
   "scripts": {
     "build": "vite build",
     "serve": "vite preview",
-    "dev": "vite dev --port=3001"
+    "dev": "vite dev --port=3001",
+    "deploy": "pnpm run build && wrangler deploy"
   },
   "dependencies": {
     "@english.now/api": "workspace:*",
     "@english.now/auth": "workspace:*",
     "@english.now/env": "workspace:*",
     "@english.now/i18n": "workspace:*",
+    "@fontsource-variable/noto-sans-arabic": "^5.2.10",
+    "@fontsource/pt-serif": "^5.2.8",
     "@paddle/paddle-js": "^1.6.2",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-popover": "^1.1.15",
@@ -48,6 +51,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.25.6",
     "@tanstack/react-query-devtools": "^5.90.2",
     "@tanstack/react-router-devtools": "^1.133.34",
     "@testing-library/dom": "^10.4.1",
@@ -58,6 +62,7 @@
     "jsdom": "^26.1.0",
     "typescript": "catalog:",
     "vite": "^7.1.12",
-    "web-vitals": "^5.1.0"
+    "web-vitals": "^5.1.0",
+    "wrangler": "^4.69.0"
   }
 }

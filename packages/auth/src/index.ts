@@ -6,6 +6,16 @@ import { env } from "@english.now/env/server";
 import { type BetterAuthOptions, betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 
+const cookieDomain = (() => {
+	try {
+		const { hostname } = new URL(env.CORS_ORIGIN);
+		if (hostname === "localhost" || hostname === "127.0.0.1") return undefined;
+		return `.${hostname}`;
+	} catch {
+		return undefined;
+	}
+})();
+
 export const auth = betterAuth<BetterAuthOptions>({
 	database: drizzleAdapter(db, {
 		provider: "pg",
@@ -35,6 +45,7 @@ export const auth = betterAuth<BetterAuthOptions>({
 	emailAndPassword: {
 		enabled: true,
 		requireEmailVerification: true,
+		disableSignUp: true,
 		sendResetPassword: async ({ user, url }) => {
 			void sendEmail({
 				to: user.email,
@@ -61,10 +72,12 @@ export const auth = betterAuth<BetterAuthOptions>({
 	},
 	socialProviders: {
 		google: {
+			disableSignUp: true,
 			clientId: env.GOOGLE_CLIENT_ID,
 			clientSecret: env.GOOGLE_CLIENT_SECRET,
 		},
 		apple: {
+			disableSignUp: true,
 			clientId: env.APPLE_CLIENT_ID ?? "",
 			clientSecret: env.APPLE_CLIENT_SECRET ?? "",
 		},
@@ -90,11 +103,10 @@ export const auth = betterAuth<BetterAuthOptions>({
 		},
 	},
 	advanced: {
-		defaultCookieAttributes: {
-			sameSite: "none",
-			secure: true,
-			httpOnly: true,
-		},
+		crossSubDomainCookies: cookieDomain
+			? { enabled: true, domain: cookieDomain }
+			: { enabled: false },
+		useSecureCookies: true,
 	},
 	plugins: [expo()],
 });

@@ -1,14 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-	Globe,
-	LayoutGrid,
-	List,
-	Loader2,
-	MessageSquare,
-	Plus,
-	Trash2,
-	Volume2,
-} from "lucide-react";
+import { Loader2, MessageSquare, Plus, Trash2, Volume2 } from "lucide-react";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -40,8 +31,6 @@ const LEVEL_COLORS: Record<string, { bg: string }> = {
 	C1: { bg: "bg-purple-500" },
 	C2: { bg: "bg-rose-500" },
 };
-
-type CEFRLevel = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
 
 export default function Phrases() {
 	const trpc = useTRPC();
@@ -155,29 +144,9 @@ export default function Phrases() {
 		<div>
 			<div className="mb-4 flex items-center justify-between">
 				<div className="flex items-center gap-2">
-					<span className="font-medium text-lg">
-						{filteredPhrases.length} Phrases
-					</span>
+					<span className="font-medium text-lg">Phrases</span>
 				</div>
 				<div className="flex items-center gap-2">
-					<div className="flex rounded-lg bg-neutral-100 backdrop-blur">
-						<Button
-							variant={viewMode === "list" ? "secondary" : "ghost"}
-							size="icon"
-							className="size-8"
-							onClick={() => setViewMode("list")}
-						>
-							<List className="size-4" />
-						</Button>
-						<Button
-							variant={viewMode === "grid" ? "secondary" : "ghost"}
-							size="icon"
-							className="size-8"
-							onClick={() => setViewMode("grid")}
-						>
-							<LayoutGrid className="size-4" />
-						</Button>
-					</div>
 					<Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
 						<DialogTrigger asChild>
 							<button
@@ -197,87 +166,57 @@ export default function Phrases() {
 				</div>
 			</div>
 
-			{viewMode === "list" ? (
-				<div className="space-y-2">
-					{filteredPhrases.map((p) => (
-						<div
-							key={p.userPhraseId}
-							className="group flex items-start justify-between rounded-xl border bg-white p-4 transition-all hover:shadow-sm dark:bg-slate-900"
-						>
-							<div className="flex items-start gap-4">
-								<div
-									className={cn(
-										"mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-lg text-white",
-										LEVEL_COLORS[p.level ?? ""]?.bg ?? "bg-blue-500",
-									)}
-								>
-									{p.audioUrl ? (
-										<button
-											type="button"
-											onClick={() =>
-												playAudio(p.audioUrl ?? "", p.userPhraseId)
-											}
-											className="flex size-full items-center justify-center"
-										>
-											<Volume2
-												className={cn(
-													"size-4",
-													playingId === p.userPhraseId && "animate-pulse",
-												)}
-											/>
-										</button>
-									) : (
-										<MessageSquare className="size-4" />
-									)}
-								</div>
-								<div className="min-w-0">
-									<p className="font-semibold">{p.text}</p>
-									<p className="mt-0.5 text-muted-foreground text-sm">
-										{p.translation ?? p.meaning}
-									</p>
-									{p.exampleUsage && (
-										<p className="mt-1 text-muted-foreground text-xs italic">
-											"{p.exampleUsage}"
-										</p>
-									)}
-								</div>
+			<div className="space-y-2">
+				{filteredPhrases.map((p) => (
+					<div
+						key={p.userPhraseId}
+						className="group flex items-start justify-between rounded-xl border bg-white p-4 transition-all hover:shadow-sm dark:bg-slate-900"
+					>
+						<div className="flex items-start gap-3">
+							<div>
+								{p.audioUrl ? (
+									<button
+										type="button"
+										onClick={() => playAudio(p.audioUrl ?? "", p.userPhraseId)}
+										className={cn(
+											"flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-neutral-100",
+											playingId === p.userPhraseId
+												? "text-primary"
+												: "text-muted-foreground",
+										)}
+									>
+										<Volume2 className="size-4" />
+									</button>
+								) : (
+									<MessageSquare className="size-4" />
+								)}
 							</div>
-							<div className="flex shrink-0 items-center gap-2">
-								<Badge
-									variant={
-										p.mastery === "mastered"
-											? "mastered"
-											: p.mastery === "learning"
-												? "learning"
-												: p.mastery === "new"
-													? "notStarted"
-													: "secondary"
-									}
-								>
-									{MASTERY_LABELS[p.mastery] ?? p.mastery}
-								</Badge>
-								<button
-									type="button"
-									onClick={() =>
-										removePhraseMutation.mutate({
-											userPhraseId: p.userPhraseId,
-										})
-									}
-									className="ml-1 rounded-lg p-1.5 text-muted-foreground opacity-0 transition-all hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
-								>
-									<Trash2 className="size-3.5" />
-								</button>
+							<div className="min-w-0">
+								<p className="font-semibold">{p.text}</p>
+								<p className="mt-0.5 text-muted-foreground text-sm">
+									{p.translation ?? p.meaning}
+								</p>
+								{p.exampleUsage && (
+									<p className="mt-1 text-muted-foreground text-xs italic">
+										"{p.exampleUsage}"
+									</p>
+								)}
 							</div>
 						</div>
-					))}
-				</div>
-			) : (
-				<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-					{filteredPhrases.map((p) => (
-						<div
-							key={p.userPhraseId}
-							className="group relative overflow-hidden rounded-2xl border bg-white p-5 shadow-sm transition-all hover:shadow-md dark:bg-slate-900"
-						>
+						<div className="flex shrink-0 items-center gap-2">
+							<Badge
+								variant={
+									p.mastery === "mastered"
+										? "mastered"
+										: p.mastery === "learning"
+											? "learning"
+											: p.mastery === "new"
+												? "notStarted"
+												: "secondary"
+								}
+							>
+								{MASTERY_LABELS[p.mastery] ?? p.mastery}
+							</Badge>
 							<button
 								type="button"
 								onClick={() =>
@@ -285,66 +224,14 @@ export default function Phrases() {
 										userPhraseId: p.userPhraseId,
 									})
 								}
-								className="absolute top-3 right-3 rounded-lg p-1.5 text-muted-foreground opacity-0 transition-all hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
+								className="ml-1 rounded-lg p-1.5 text-muted-foreground opacity-0 transition-all hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
 							>
 								<Trash2 className="size-3.5" />
 							</button>
-							<div className="mb-3 flex items-center justify-between">
-								<Badge variant={(p.level ?? "B1") as CEFRLevel}>
-									{p.level}
-								</Badge>
-								<div className="flex items-center gap-2">
-									{p.audioUrl ? (
-										<button
-											type="button"
-											onClick={() =>
-												playAudio(p.audioUrl ?? "", p.userPhraseId)
-											}
-											className={cn(
-												"rounded-md p-1 transition-colors hover:bg-primary/10",
-												playingId === p.userPhraseId
-													? "text-primary"
-													: "text-muted-foreground",
-											)}
-										>
-											<Volume2 className="size-3.5" />
-										</button>
-									) : null}
-									<Badge
-										variant={
-											p.mastery === "mastered"
-												? "mastered"
-												: p.mastery === "learning"
-													? "learning"
-													: p.mastery === "new"
-														? "notStarted"
-														: "secondary"
-										}
-										className="text-xs"
-									>
-										{MASTERY_LABELS[p.mastery] ?? p.mastery}
-									</Badge>
-								</div>
-							</div>
-							<h3 className="mb-1 font-bold">{p.text}</h3>
-							<p className="mb-2 text-muted-foreground text-sm">
-								{p.translation ?? p.meaning}
-							</p>
-							{p.exampleUsage && (
-								<p className="text-muted-foreground text-xs italic">
-									"{p.exampleUsage}"
-								</p>
-							)}
-							{p.literalTranslation && (
-								<div className="mt-3 flex items-center gap-1 text-muted-foreground text-xs">
-									<Globe className="size-3" />
-									{p.literalTranslation}
-								</div>
-							)}
 						</div>
-					))}
-				</div>
-			)}
+					</div>
+				))}
+			</div>
 		</div>
 	);
 }

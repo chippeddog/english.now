@@ -1,7 +1,8 @@
-import { Trans, useTranslation } from "@english.now/i18n";
+import { i18n, Trans, useTranslation } from "@english.now/i18n";
 import { Link } from "@tanstack/react-router";
 import { PlayIcon } from "lucide-react";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 import DialogDemo from "../dialog-demo";
 import { Button } from "../ui/button";
 
@@ -14,7 +15,15 @@ export default function Hero() {
 			<DialogDemo open={open} setOpen={setOpen} />
 			<div className="relative mx-auto flex flex-col lg:flex-row lg:items-center">
 				<div className="mb-6 flex flex-1 flex-col items-start gap-6 md:mb-0">
-					<h1 className="font-bold font-lyon text-5xl text-neutral-900 tracking-tight sm:text-5xl lg:text-6xl dark:text-white">
+					<h1
+						className={cn(
+							"font-bold font-lyon text-5xl text-neutral-900 tracking-tight sm:text-5xl lg:text-6xl dark:text-white",
+							{
+								"text-4xl leading-tight sm:text-4xl lg:text-5xl":
+									i18n.language === "uk",
+							},
+						)}
+					>
 						<Trans components={{ br: <br className="" /> }}>
 							{t("hero.title")}
 						</Trans>

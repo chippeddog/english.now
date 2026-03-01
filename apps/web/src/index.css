@@ -1,5 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "@fontsource-variable/noto-sans-arabic";
+@import "@fontsource/pt-serif/cyrillic.css";
+@import "@fontsource/pt-serif/cyrillic-700.css";
 
 @font-face {
 	font-family: "Inter";
@@ -48,13 +51,18 @@
 		"Inter", "Geist", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
 		"Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 	--font-lyon: "Lyon", sans-serif;
+	--font-arabic: "Noto Sans Arabic", sans-serif;
+}
+
+html:lang(uk) {
+	--font-lyon: "PT Serif", serif;
 }
 
 html,
 body {
 	@apply bg-white dark:bg-neutral-900;
-	@media (prefers-color-scheme: dark) {
-		color-scheme: dark;
+	@media (prefers-color-scheme: light) {
+		color-scheme: light;
 	}
 }
 

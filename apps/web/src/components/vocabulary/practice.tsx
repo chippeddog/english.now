@@ -1,15 +1,8 @@
-import {
-	BookOpen,
-	CheckCircle2,
-	Clock,
-	Mic,
-	Sparkles,
-	Zap,
-} from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { BookOpen, Mic, Sparkles } from "lucide-react";
 import { useState } from "react";
 import {
 	Dialog,
-	DialogClose,
 	DialogContent,
 	DialogDescription,
 	DialogFooter,
@@ -18,81 +11,56 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { useTRPC } from "@/utils/trpc";
 import { Button } from "../ui/button";
 import { Checkbox } from "../ui/checkbox";
-import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
+import PracticeSession, { type FlashcardItem } from "./practice-session";
 
-type PracticeContent = "words" | "phrases" | "idioms";
-type ExerciseType =
-	| "multiple-choice"
-	| "flashcards"
-	| "fill-blank"
-	| "matching";
-type Duration = "5" | "10" | "15" | "20";
+type PracticeContent = "words" | "phrases";
 
-const contentOptions: {
-	id: PracticeContent;
-	label: string;
-	icon: React.ReactNode;
-	count: number;
-}[] = [
-	{
-		id: "words",
-		label: "Words",
-		icon: <BookOpen className="size-4" />,
-		count: 42,
-	},
-	{
-		id: "phrases",
-		label: "Phrases",
-		icon: <Sparkles className="size-4" />,
-		count: 18,
-	},
-];
+const MASTERY_PRIORITY: Record<string, number> = {
+	new: 0,
+	learning: 1,
+	reviewing: 2,
+	mastered: 3,
+};
 
-const exerciseOptions: {
-	id: ExerciseType;
-	label: string;
-	description: string;
-}[] = [
-	{
-		id: "multiple-choice",
-		label: "Multiple Choice",
-		description: "Choose the correct answer",
-	},
-	{
-		id: "flashcards",
-		label: "Flashcards",
-		description: "Review with flip cards",
-	},
-	{
-		id: "fill-blank",
-		label: "Fill in the Blank",
-		description: "Complete the sentence",
-	},
-	{
-		id: "matching",
-		label: "Matching",
-		description: "Match words with meanings",
-	},
-];
+function shuffle<T>(arr: T[]): T[] {
+	const copy = [...arr];
+	for (let i = copy.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		const tmp = copy[i];
+		copy[i] = copy[j] as T;
+		copy[j] = tmp as T;
+	}
+	return copy;
+}
 
-const durationOptions: { value: Duration; label: string }[] = [
-	{ value: "5", label: "5 min" },
-	{ value: "10", label: "10 min" },
-	{ value: "15", label: "15 min" },
-	{ value: "20", label: "20 min" },
-];
+const ITEM_COUNTS = [5, 10, 15, 20] as const;
 
 export default function Practice() {
+	const trpc = useTRPC();
+
+	const { data: words } = useQuery(
+		trpc.vocabulary.getWords.queryOptions({ limit: 200 }),
+	);
+	const { data: phrases } = useQuery(
+		trpc.vocabulary.getPhrases.queryOptions({ limit: 100 }),
+	);
+
+	const [setupOpen, setSetupOpen] = useState(false);
 	const [selectedContent, setSelectedContent] = useState<PracticeContent[]>([
 		"words",
 	]);
-	const [selectedExercises, setSelectedExercises] = useState<ExerciseType[]>([
-		"multiple-choice",
-	]);
-	const [duration, setDuration] = useState<Duration>("10");
-	const [open, setOpen] = useState(false);
+	const [itemCount, setItemCount] = useState<number>(10);
+
+	const [sessionCards, setSessionCards] = useState<FlashcardItem[] | null>(
+		null,
+	);
+
+	const wordCount = words?.filter((w) => w.mastery !== "mastered").length ?? 0;
+	const phraseCount =
+		phrases?.filter((p) => p.mastery !== "mastered").length ?? 0;
 
 	const toggleContent = (id: PracticeContent) => {
 		setSelectedContent((prev) =>
@@ -100,187 +68,198 @@ export default function Practice() {
 		);
 	};
 
-	const toggleExercise = (id: ExerciseType) => {
-		setSelectedExercises((prev) =>
-			prev.includes(id) ? prev.filter((e) => e !== id) : [...prev, id],
-		);
-	};
+	const buildCards = (): FlashcardItem[] => {
+		const items: FlashcardItem[] = [];
 
-	const canStart = selectedContent.length > 0 && selectedExercises.length > 0;
+		if (selectedContent.includes("words") && words) {
+			for (const w of words) {
+				items.push({
+					id: w.userWordId,
+					type: "word",
+					prompt: w.translation ?? w.definition,
+					answer: w.lemma,
+					ipa: w.ipa,
+					audioUrl: w.audioUrl,
+					detail: w.exampleSentence,
+					level: w.level,
+					currentMastery: w.mastery,
+				});
+			}
+		}
+
+		if (selectedContent.includes("phrases") && phrases) {
+			for (const p of phrases) {
+				items.push({
+					id: p.userPhraseId,
+					type: "phrase",
+					prompt: p.translation ?? p.meaning,
+					answer: p.text,
+					ipa: p.ipa,
+					audioUrl: p.audioUrl,
+					detail: p.exampleUsage,
+					level: p.level,
+					currentMastery: p.mastery,
+				});
+			}
+		}
+
+		items.sort(
+			(a, b) =>
+				(MASTERY_PRIORITY[a.currentMastery] ?? 4) -
+				(MASTERY_PRIORITY[b.currentMastery] ?? 4),
+		);
+
+		return shuffle(items.slice(0, itemCount));
+	};
 
 	const handleStart = () => {
-		// Client-side only - just log the selections for now
-		console.log("Starting practice:", {
-			content: selectedContent,
-			exercises: selectedExercises,
-			duration,
-		});
-		setOpen(false);
+		const cards = buildCards();
+		if (cards.length === 0) return;
+		setSetupOpen(false);
+		setSessionCards(cards);
 	};
 
+	const handleSessionClose = () => {
+		setSessionCards(null);
+	};
+
+	const handleRestart = () => {
+		const cards = buildCards();
+		if (cards.length === 0) return;
+		setSessionCards(null);
+		requestAnimationFrame(() => setSessionCards(cards));
+	};
+
+	const canStart =
+		selectedContent.length > 0 &&
+		((selectedContent.includes("words") && wordCount > 0) ||
+			(selectedContent.includes("phrases") && phraseCount > 0));
+
+	const contentOptions = [
+		{
+			id: "words" as PracticeContent,
+			label: "Words",
+			icon: <BookOpen className="size-4" />,
+			count: wordCount,
+		},
+		{
+			id: "phrases" as PracticeContent,
+			label: "Phrases",
+			icon: <Sparkles className="size-4" />,
+			count: phraseCount,
+		},
+	];
+
 	return (
-		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogTrigger asChild>
-				<Button
-					type="button"
-					variant="outline"
-					className="group flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-xl border border-[#C6F64D] bg-[radial-gradient(100%_100%_at_50%_0%,#EFFF9B_0%,#D8FF76_60%,#C6F64D_100%)] px-2.5 py-1.5 font-medium text-lime-900 text-sm italic shadow-none transition duration-150 ease-in-out will-change-transform hover:bg-lime-700/10 hover:brightness-95 focus:shadow-none focus:outline-none focus-visible:shadow-none"
-				>
-					<Mic className="size-4" />
-					Practice
-					{/* <span className="-top-px relative font-lyon text-lg text-lime-900/80 italic group-hover:text-lime-900">
-						now
-					</span> */}
-				</Button>
-			</DialogTrigger>
-			<DialogContent className="max-w-md" showCloseButton={false}>
-				{/* <div className="mx-auto mb-3 flex size-14 items-center justify-center rounded-full bg-linear-to-br from-lime-400 to-lime-500 shadow-lg shadow-lime-200">
-						<CheckCircle2 className="size-7 text-white" />
-					</div> */}
-				<DialogHeader>
-					<DialogTitle className="font-bold font-lyon text-2xl tracking-tight">
-						Practice Session
-					</DialogTitle>
-					<DialogDescription className="text-neutral-500">
-						Customize your practice to fit your goals
-					</DialogDescription>
-				</DialogHeader>
+		<>
+			<Dialog open={setupOpen} onOpenChange={setSetupOpen}>
+				<DialogTrigger asChild>
+					<Button
+						type="button"
+						variant="outline"
+						className="group flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-xl border border-[#C6F64D] bg-[radial-gradient(100%_100%_at_50%_0%,#EFFF9B_0%,#D8FF76_60%,#C6F64D_100%)] px-2.5 py-1.5 font-medium text-lime-900 text-sm italic shadow-none transition duration-150 ease-in-out will-change-transform hover:bg-lime-700/10 hover:brightness-95 focus:shadow-none focus:outline-none focus-visible:shadow-none"
+					>
+						<Mic className="size-4" />
+						Practice
+					</Button>
+				</DialogTrigger>
 
-				<div className="space-y-5 pb-6">
-					{/* What to Practice */}
-					<div className="space-y-3">
-						<h3 className="font-semibold text-neutral-700 text-sm uppercase tracking-wide">
-							What to Practice
-						</h3>
-						<div className="flex flex-row space-y-2">
-							{contentOptions.map((option) => (
-								<div
-									key={option.id}
-									onClick={() => toggleContent(option.id)}
-									onKeyDown={(e) =>
-										e.key === "Enter" && toggleContent(option.id)
-									}
-									role="checkbox"
-									aria-checked={selectedContent.includes(option.id)}
-									tabIndex={0}
-									className={cn(
-										"flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition-all",
-										selectedContent.includes(option.id)
-											? "border-lime-400 bg-lime-50"
-											: "border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50",
-									)}
-								>
-									<Checkbox
-										checked={selectedContent.includes(option.id)}
-										onCheckedChange={() => toggleContent(option.id)}
-										tabIndex={-1}
-										className="data-[state=checked]:border-lime-500 data-[state=checked]:bg-lime-500"
-									/>
-									<span className="flex items-center gap-2 text-neutral-700">
-										{option.icon}
-										{option.label}
-									</span>
-									<span className="ml-auto font-medium text-neutral-400 text-xs">
-										{option.count} items
-									</span>
-								</div>
-							))}
-						</div>
-					</div>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle className="font-bold font-lyon text-2xl tracking-tight">
+							Quick Practice
+						</DialogTitle>
+						<DialogDescription className="text-neutral-500">
+							Flash through your vocabulary
+						</DialogDescription>
+					</DialogHeader>
 
-					{/* Exercise Types */}
-					<div className="space-y-3">
-						<h3 className="font-semibold text-neutral-700 text-sm uppercase tracking-wide">
-							Exercise Types
-						</h3>
-						<div className="grid grid-cols-2 gap-2">
-							{exerciseOptions.map((option) => (
-								<div
-									key={option.id}
-									onClick={() => toggleExercise(option.id)}
-									onKeyDown={(e) =>
-										e.key === "Enter" && toggleExercise(option.id)
-									}
-									role="checkbox"
-									aria-checked={selectedExercises.includes(option.id)}
-									tabIndex={0}
-									className={cn(
-										"flex cursor-pointer flex-col rounded-xl border p-3 transition-all",
-										selectedExercises.includes(option.id)
-											? "border-lime-400 bg-lime-50"
-											: "border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50",
-									)}
-								>
-									<div className="flex items-center gap-2">
+					<div className="space-y-5 pb-2">
+						<div className="space-y-3">
+							<h3 className="font-semibold text-neutral-700 text-sm uppercase tracking-wide">
+								What to practice
+							</h3>
+							<div className="flex gap-2">
+								{contentOptions.map((option) => (
+									<button
+										key={option.id}
+										type="button"
+										onClick={() => toggleContent(option.id)}
+										className={cn(
+											"flex flex-1 cursor-pointer items-center gap-3 rounded-xl border p-3 transition-all",
+											selectedContent.includes(option.id)
+												? "border-lime-400 bg-lime-50"
+												: "border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50",
+										)}
+									>
 										<Checkbox
-											checked={selectedExercises.includes(option.id)}
-											onCheckedChange={() => toggleExercise(option.id)}
+											checked={selectedContent.includes(option.id)}
+											onCheckedChange={() => toggleContent(option.id)}
 											tabIndex={-1}
-											className="data-[state=checked]:border-lime-500 data-[state=checked]:bg-lime-500"
+											className="pointer-events-none data-[state=checked]:border-lime-500 data-[state=checked]:bg-lime-500"
 										/>
-										<span className="font-medium text-neutral-700 text-sm">
+										<span className="flex items-center gap-2 text-neutral-700">
+											{option.icon}
 											{option.label}
 										</span>
-									</div>
-									<span className="mt-1 ml-6 text-neutral-400 text-xs">
-										{option.description}
-									</span>
-								</div>
-							))}
+										<span className="ml-auto font-medium text-neutral-400 text-xs">
+											{option.count}
+										</span>
+									</button>
+								))}
+							</div>
+						</div>
+
+						<div className="space-y-3">
+							<h3 className="font-semibold text-neutral-700 text-sm uppercase tracking-wide">
+								How many
+							</h3>
+							<div className="flex gap-2">
+								{ITEM_COUNTS.map((n) => (
+									<button
+										key={n}
+										type="button"
+										onClick={() => setItemCount(n)}
+										className={cn(
+											"flex flex-1 items-center justify-center rounded-xl border px-3 py-2.5 font-medium text-sm transition-all",
+											itemCount === n
+												? "border-lime-400 bg-lime-50 text-lime-700"
+												: "border-neutral-200 text-neutral-600 hover:border-neutral-300 hover:bg-neutral-50",
+										)}
+									>
+										{n}
+									</button>
+								))}
+							</div>
 						</div>
 					</div>
 
-					{/* Duration */}
-					<div className="space-y-3">
-						<h3 className="flex items-center gap-2 font-semibold text-neutral-700 text-sm uppercase tracking-wide">
-							Duration
-						</h3>
-						<RadioGroup
-							value={duration}
-							onValueChange={(v) => setDuration(v as Duration)}
-							className="flex gap-2"
+					<DialogFooter>
+						<Button
+							variant="ghost"
+							className="flex-1 sm:flex-none"
+							onClick={() => setSetupOpen(false)}
 						>
-							{durationOptions.map((option) => (
-								<div
-									key={option.value}
-									onClick={() => setDuration(option.value)}
-									onKeyDown={(e) =>
-										e.key === "Enter" && setDuration(option.value)
-									}
-									role="radio"
-									aria-checked={duration === option.value}
-									tabIndex={0}
-									className={cn(
-										"flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl border px-3 py-2.5 font-medium text-sm transition-all",
-										duration === option.value
-											? "border-lime-400 bg-lime-50 text-lime-700"
-											: "border-neutral-200 text-neutral-600 hover:border-neutral-300 hover:bg-neutral-50",
-									)}
-								>
-									<RadioGroupItem value={option.value} className="sr-only" />
-									{option.label}
-								</div>
-							))}
-						</RadioGroup>
-					</div>
-				</div>
-
-				{/* Footer */}
-				<DialogFooter>
-					<DialogClose asChild>
-						<Button variant="ghost" className="flex-1 sm:flex-none">
 							Cancel
 						</Button>
-					</DialogClose>
-					<Button
-						onClick={handleStart}
-						disabled={!canStart}
-						className="flex-1 rounded-xl bg-neutral-900 text-white hover:bg-neutral-800 sm:flex-none"
-					>
-						Start Practice
-					</Button>
-				</DialogFooter>
-			</DialogContent>
-		</Dialog>
+						<Button
+							onClick={handleStart}
+							disabled={!canStart}
+							className="flex-1 rounded-xl bg-neutral-900 text-white hover:bg-neutral-800 sm:flex-none"
+						>
+							Start Practice
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+
+			{sessionCards && (
+				<PracticeSession
+					cards={sessionCards}
+					onClose={handleSessionClose}
+					onRestart={handleRestart}
+				/>
+			)}
+		</>
 	);
 }

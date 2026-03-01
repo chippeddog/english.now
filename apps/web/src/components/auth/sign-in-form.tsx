@@ -95,7 +95,7 @@ export default function SignInForm() {
 					onClick={() =>
 						authClient.signIn.social({
 							provider: "google",
-							callbackURL: "http://localhost:3001/home",
+							callbackURL: `${import.meta.env.MODE === "development" ? "http://localhost:3001/home" : "https://english.now/home"}`,
 						})
 					}
 				>
@@ -142,7 +142,7 @@ export default function SignInForm() {
 					onClick={() =>
 						authClient.signIn.social({
 							provider: "apple",
-							callbackURL: "http://localhost:3001/home",
+							callbackURL: `${import.meta.env.MODE === "development" ? "http://localhost:3001/home" : "https://english.now/home"}`,
 						})
 					}
 				>

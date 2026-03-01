@@ -93,7 +93,7 @@ export default function SignUpForm() {
 					onClick={() =>
 						authClient.signIn.social({
 							provider: "google",
-							callbackURL: "http://localhost:3001/home",
+							callbackURL: `${import.meta.env.MODE === "development" ? "http://localhost:3001/home" : "https://english.now/home"}`,
 						})
 					}
 				>
@@ -139,10 +139,17 @@ export default function SignUpForm() {
 							"0px 0px 0px 1px rgba(0, 0, 0, 0.1), 0px 1px 0px 0px rgb(255, 255, 255, 1) inset, 0px 1px 2px 1px rgba(0, 0, 0, 0.06)",
 					}}
 					onClick={() =>
-						authClient.signIn.social({
-							provider: "google",
-							callbackURL: "http://localhost:3001/home",
-						})
+						authClient.signIn.social(
+							{
+								provider: "google",
+								callbackURL: `${import.meta.env.MODE === "development" ? "http://localhost:3001/home" : "https://english.now/home"}`,
+							},
+							{
+								onError: (error) => {
+									toast.error(error.error.message || error.error.statusText);
+								},
+							},
+						)
 					}
 				>
 					<svg
