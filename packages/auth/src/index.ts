@@ -28,7 +28,7 @@ export const auth = betterAuth<BetterAuthOptions>({
 	},
 	trustedOrigins: [
 		env.CORS_ORIGIN,
-		"english.now",
+		"https://english.now",
 		"mybettertapp://",
 		"exp://",
 		"https://appleid.apple.com",

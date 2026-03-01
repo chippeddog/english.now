@@ -9,6 +9,7 @@ export const getProfile = createServerFn({ method: "GET" })
 			headers: {
 				cookie: context.requestHeaders.get("cookie") ?? "",
 			},
+			credentials: "include",
 		});
 
 		if (!response.ok) return null;
