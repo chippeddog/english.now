@@ -27,7 +27,6 @@
     "better-auth": "catalog:",
     "dotenv": "catalog:",
     "drizzle-orm": "^0.44.2",
-    "ffmpeg-static": "^5.3.0",
     "hono": "catalog:",
     "microsoft-cognitiveservices-speech-sdk": "^1.48.0",
     "pg-boss": "^12.13.0",

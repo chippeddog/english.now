@@ -76,7 +76,7 @@ export default function Hero() {
 					</div>
 				</div>
 
-				<div className="relative min-h-[300px] flex-1 overflow-hidden border-border/50 border-b lg:min-h-[440px]">
+				<div className="relative min-h-[330px] flex-1 overflow-hidden border-border/50 border-b lg:min-h-[440px]">
 					<div
 						className="absolute right-0 bottom-0 h-full w-full overflow-hidden rounded-t-3xl border border-[#C6F64D] bg-[radial-gradient(100%_100%_at_50%_0%,#EFFF9B_0%,#D8FF76_60%,#C6F64D_100%)]"
 						style={{
@@ -93,7 +93,7 @@ export default function Hero() {
 					>
 						<div className="relative mb-0.5 flex items-center gap-1.5">
 							<span className="font-semibold text-xs md:text-sm">Feedback</span>{" "}
-							<span className="rounded-md bg-radial from-[#EFFF9B] to-[#D8FF76] px-1.5 py-0.5 font-medium text-black text-sm text-xs normal-case tracking-normal md:py-[0.165rem] md:text-xs">
+							<span className="rounded-md bg-radial from-[#EFFF9B] to-[#D8FF76] px-1.5 py-0.5 font-medium text-black text-xs normal-case tracking-normal md:py-[0.165rem] md:text-xs">
 								AI
 							</span>
 						</div>

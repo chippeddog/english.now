@@ -1,5 +1,6 @@
 import { useTranslation } from "@english.now/i18n";
 import { Link } from "@tanstack/react-router";
+import { Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import Logo from "@/components/logo";
 import { Button } from "./ui/button";
@@ -7,6 +8,7 @@ import { Button } from "./ui/button";
 export default function Navbar() {
 	const { t } = useTranslation("common");
 	const [isScrolled, setIsScrolled] = useState(false);
+	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
 	const _links = [
 		{
@@ -42,7 +44,7 @@ export default function Navbar() {
 			}`}
 		>
 			<div className="container relative z-10 mx-auto max-w-5xl px-4">
-				<nav className="flex items-center justify-between py-5 md:grid-cols-5">
+				<nav className="flex items-center justify-between py-3 md:grid-cols-5 md:py-5">
 					<div className="col-span-3 items-center gap-3 md:flex">
 						<Logo />
 						<div className="hidden items-center gap-1.5 md:flex">
@@ -79,8 +81,61 @@ export default function Navbar() {
 								</span>
 							</Link>
 						</Button>
+						<button
+							type="button"
+							onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+							className="inline-flex items-center justify-center rounded-xl p-2 transition-colors hover:bg-neutral-200/60 md:hidden"
+							aria-label="Toggle menu"
+							aria-expanded={isMobileMenuOpen}
+						>
+							{isMobileMenuOpen ? (
+								<X className="size-5" />
+							) : (
+								<Menu className="size-5" />
+							)}
+						</button>
 					</div>
 				</nav>
+
+				{isMobileMenuOpen && (
+					<div className="fade-in slide-in-from-top-2 animate-in border-border/50 border-t pb-6 md:hidden">
+						<div className="flex flex-col gap-1 pt-4">
+							{_links.map((link) => (
+								<Link
+									key={link.to}
+									to={link.to}
+									onClick={() => setIsMobileMenuOpen(false)}
+									className="rounded-xl px-3 py-2.5 font-medium transition-colors hover:bg-neutral-200/60"
+								>
+									{link.label}
+								</Link>
+							))}
+						</div>
+						{/* <div className="mt-4 flex flex-col gap-2 px-3">
+							<Button
+								asChild
+								variant="ghost"
+								className="w-full justify-center rounded-xl font-medium hover:bg-neutral-200/60"
+							>
+								<Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
+									{t("auth.signIn")}
+								</Link>
+							</Button>
+							<Button
+								asChild
+								className="w-full justify-center rounded-xl bg-linear-to-t from-[#202020] to-[#2F2F2F] font-base text-white shadow-[inset_0_1px_4px_0_rgba(255,255,255,0.4)] hover:opacity-90 dark:from-[rgb(192,192,192)] dark:to-[rgb(255,255,255)] dark:shadow-[inset_0_1px_4px_0_rgba(128,128,128,0.2)]"
+							>
+								<Link to="/signup" onClick={() => setIsMobileMenuOpen(false)}>
+									{t("auth.signUp")}{" "}
+									<span className="text-neutral-500 text-sm">-</span>
+									<span className="font-lyon text-lg text-neutral-500 italic">
+										free
+									</span>
+								</Link>
+							</Button>
+						</div> */}
+					</div>
+				)}
 			</div>
 		</div>
 	);

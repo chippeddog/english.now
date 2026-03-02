@@ -48,19 +48,21 @@ export default function FAQ() {
 		<div className="group mx-auto my-20 md:my-32">
 			<div className="flex flex-col gap-4 md:flex-row">
 				<div className="md:w-1/4">
-					<h2 className="mb-4 font-bold font-lyon text-5xl tracking-tight md:text-5xl">
-						FAQs
-					</h2>
-					<div className="flex flex-col gap-3">
-						<p className="text-balance text-muted-foreground text-sm md:mx-auto md:max-w-boundary-sm md:text-lg">
-							Can't find the answer you are looking for?
-						</p>
-						<a
-							href="mailto:support@english.now"
-							className="text-lime-700 text-sm underline transition-all duration-300 hover:text-lime-700/80 md:text-base"
-						>
-							support@english.now
-						</a>
+					<div className="mb-14 text-center">
+						<h2 className="mb-4 text-center font-bold font-lyon text-4xl tracking-tight md:text-left md:text-5xl">
+							FAQs
+						</h2>
+						<div className="flex flex-col gap-0 text-center md:gap-3 md:text-left">
+							<p className="text-balance text-muted-foreground text-sm md:mx-auto md:max-w-boundary-sm md:text-lg">
+								Can't find the answer you are looking for?
+							</p>
+							<a
+								href="mailto:support@english.now"
+								className="text-lime-700 text-sm underline transition-all duration-300 hover:text-lime-700/80 md:text-base"
+							>
+								support@english.now
+							</a>
+						</div>
 					</div>
 				</div>
 				<div className="md:w-3/4">
@@ -80,11 +82,11 @@ export default function FAQ() {
 									value={`item-${index}`}
 									className="border-border/50 border-b bg-background px-6 transition-all duration-300 first:rounded-t-2xl last:rounded-b-2xl last:border-b-0"
 								>
-									<AccordionTrigger className="cursor-pointer text-left font-medium transition-all duration-300 hover:no-underline">
+									<AccordionTrigger className="cursor-pointer text-left font-medium text-sm transition-all duration-300 hover:no-underline md:text-base">
 										{item.question}
 									</AccordionTrigger>
 									<AccordionContent>
-										<p className="text-muted-foreground text-sm leading-relaxed transition-all duration-300 md:text-base">
+										<p className="text-muted-foreground text-xs leading-relaxed transition-all duration-300 md:text-base">
 											{item.answer}
 										</p>
 									</AccordionContent>

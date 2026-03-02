@@ -21,6 +21,7 @@
 .react-router/
 .tanstack/
 .nitro/
+.content-collections
 
 # Deployment
 .vercel

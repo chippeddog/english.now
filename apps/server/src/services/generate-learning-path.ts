@@ -1,3 +1,4 @@
+import type { LessonContent } from "@english.now/db";
 import {
 	db,
 	eq,
@@ -6,7 +7,6 @@ import {
 	unit,
 	userProfile,
 } from "@english.now/db";
-import type { LessonContent } from "@english.now/db";
 import { generateText, Output } from "ai";
 import { z } from "zod";
 import { B1_CURRICULUM, type Curriculum } from "../curriculum/b1";
@@ -174,11 +174,7 @@ async function seedCurriculumFromTemplate(
 				type: l.type,
 				order: j + 1,
 				status:
-					i === 0 && j === 0
-						? "current"
-						: i === 0
-							? "available"
-							: "locked",
+					i === 0 && j === 0 ? "current" : i === 0 ? "available" : "locked",
 				progress: 0,
 				content: l.content as LessonContent,
 			};
@@ -240,8 +236,7 @@ async function translateLessonVocabulary(
 			const content = existingLesson.content as LessonContent;
 			const updatedWords = content.wordsToLearn.map((w) => ({
 				...w,
-				translation:
-					translationMap.get(w.word.toLowerCase()) || w.translation,
+				translation: translationMap.get(w.word.toLowerCase()) || w.translation,
 			}));
 
 			await db

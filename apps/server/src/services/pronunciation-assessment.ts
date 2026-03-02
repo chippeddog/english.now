@@ -1,12 +1,9 @@
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import { env } from "@english.now/env/server";
-import ffmpegPath from "ffmpeg-static";
 import * as sdk from "microsoft-cognitiveservices-speech-sdk";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 export type PhonemeResult = {
 	phoneme: string;
@@ -55,17 +52,6 @@ type AzureWord = {
 
 // ─── Audio Conversion ─────────────────────────────────────────────────────────
 
-function getFFmpegPath(): string {
-	const p =
-		typeof ffmpegPath === "string"
-			? ffmpegPath
-			: (ffmpegPath as unknown as { default: string }).default;
-	if (!p || typeof p !== "string") {
-		throw new Error("ffmpeg-static path not resolved");
-	}
-	return p;
-}
-
 function convertWebmToWav(webmBuffer: Buffer): Buffer {
 	const tmpDir = os.tmpdir();
 	const id = crypto.randomUUID();
@@ -75,21 +61,31 @@ function convertWebmToWav(webmBuffer: Buffer): Buffer {
 	try {
 		fs.writeFileSync(inputPath, webmBuffer);
 
-		const ffmpeg = getFFmpegPath();
-		execSync(
-			`"${ffmpeg}" -i "${inputPath}" -ar 16000 -ac 1 -sample_fmt s16 "${outputPath}" -y`,
+		execFileSync(
+			"ffmpeg",
+			[
+				"-i",
+				inputPath,
+				"-ar",
+				"16000",
+				"-ac",
+				"1",
+				"-sample_fmt",
+				"s16",
+				outputPath,
+				"-y",
+			],
 			{ stdio: "pipe" },
 		);
 
-		const wavBuffer = fs.readFileSync(outputPath);
-		return wavBuffer;
+		return fs.readFileSync(outputPath);
 	} finally {
 		try {
 			fs.unlinkSync(inputPath);
-		} catch (_) {}
+		} catch {}
 		try {
 			fs.unlinkSync(outputPath);
-		} catch (_) {}
+		} catch {}
 	}
 }
 

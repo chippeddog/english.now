@@ -40,7 +40,7 @@ const comparisons = [
 ];
 export function Compare() {
 	return (
-		<div className="group mx-auto max-w-4xl sm:mt-24">
+		<div className="mx-auto mt-24 max-w-4xl">
 			<div className="mx-auto mb-10 max-w-xl text-center md:mb-14">
 				<h2 className="mb-4 font-bold font-lyon text-4xl tracking-tight md:text-5xl">
 					Private-tutor in your pocket for 50x cheaper than a real one

@@ -5,7 +5,7 @@
 ###########
 FROM node:22-alpine AS base
 
-RUN apk add --no-cache gcompat curl \
+RUN apk add --no-cache gcompat curl ffmpeg \
   && npm install -g pnpm turbo
 
 ENV PNPM_HOME=/root/.local/share/pnpm

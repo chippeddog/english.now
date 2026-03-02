@@ -447,7 +447,7 @@ function PersonalizedLessonsDemo() {
 		<div className="relative flex h-full w-full gap-4">
 			<div className="flex flex-col gap-2.5">
 				<div
-					className="relative hidden w-[200px] rounded-2xl bg-white p-4 pt-3 md:block"
+					className="relative hidden w-[180px] rounded-2xl bg-white p-4 pt-3 md:block"
 					style={{
 						boxShadow:
 							"0 0 0 1px rgba(0,0,0,.05),0 10px 10px -5px rgba(0,0,0,.04),0 20px 25px -5px rgba(0,0,0,.04),0 20px 32px -12px rgba(0,0,0,.04)",
@@ -660,14 +660,14 @@ export function Features() {
 						</Link>
 					</p>
 				</div>
-				<div className="relative grid grid-cols-1 gap-6 md:grid-cols-3">
+				<div className="-mx-4 flex gap-4 overflow-x-auto px-4 [scrollbar-width:none] md:mx-0 md:grid md:grid-cols-3 md:gap-6 md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden">
 					{_features.map((feature, _i) => (
 						<div
 							className={cn(
-								"relative h-full min-h-[400px] w-full overflow-hidden rounded-3xl border border-border/50",
+								"relative h-full min-h-[400px] w-[85vw] shrink-0 overflow-hidden rounded-3xl border border-border/50 md:w-auto md:shrink",
 								feature.id === "grammar" || feature.id === "lessons"
-									? "col-span-2"
-									: "col-span-1",
+									? "md:col-span-2"
+									: "md:col-span-1",
 							)}
 							key={feature.id}
 						>

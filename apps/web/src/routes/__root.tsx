@@ -19,6 +19,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { getLanguageCookie } from "@/functions/get-language";
 import appCss from "../index.css?url";
+
 export interface RouterAppContext {
 	trpc: TRPCOptionsProxy<AppRouter>;
 	queryClient: QueryClient;
@@ -46,6 +47,20 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 		],
 		links: [
 			{
+				rel: "preload",
+				href: "/fonts/inter/InterVariable.woff2",
+				as: "font",
+				type: "font/woff2",
+				crossOrigin: "anonymous",
+			},
+			{
+				rel: "preload",
+				href: "/fonts/Lyon-Roman.woff2",
+				as: "font",
+				type: "font/woff2",
+				crossOrigin: "anonymous",
+			},
+			{
 				rel: "stylesheet",
 				href: appCss,
 			},
@@ -65,11 +80,6 @@ function RootDocument() {
 		>
 			<head>
 				<HeadContent />
-				<script
-				// dangerouslySetInnerHTML={{
-				// 	__html: `(function(){try{var t=localStorage.getItem("theme");var d=document.documentElement;d.classList.remove("light","dark");if(t==="dark"||(t==="system"&&window.matchMedia("(prefers-color-scheme:dark)").matches)){d.classList.add("dark")}else{d.classList.add("light")}}catch(e){document.documentElement.classList.add("light")}})()`,
-				// }}
-				/>
 				{/* <script
 					dangerouslySetInnerHTML={{
 						__html: `window.helploomSettings={clientId:'hl-_q4ptbUWr8VbQJTB9EcV_'};(function(){var w=window;var hl=w.Helploom;if(typeof hl==="function"){hl('update',w.helploomSettings);}else{var q=function(){q.c(arguments);};q.q=[];q.c=function(args){q.q.push(args);};w.Helploom=q;var l=function(){var s=document.createElement('script');s.type='text/javascript';s.async=true;s.src='https://helploom.com/widget.js';var x=document.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);};if(document.readyState==='complete'){l();}else if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})();`,

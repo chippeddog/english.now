@@ -45,8 +45,8 @@ export default function Footer() {
 		{
 			label: tHome("footer.legal"),
 			items: [
-				{ label: tHome("footer.privacy"), to: "/privacy-policy" },
-				{ label: tHome("footer.terms"), to: "/terms-of-service" },
+				{ label: tHome("footer.privacy"), to: "/privacy" },
+				{ label: tHome("footer.terms"), to: "/terms" },
 				{
 					label: tHome("footer.cancellation"),
 					to: "/refund",

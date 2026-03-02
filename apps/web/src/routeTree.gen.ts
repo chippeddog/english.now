@@ -40,11 +40,13 @@ import { Route as DashboardGrammarRouteImport } from './routes/_dashboard.gramma
 import { Route as DashboardFluencyRouteImport } from './routes/_dashboard.fluency'
 import { Route as DashboardCoursesRouteImport } from './routes/_dashboard.courses'
 import { Route as SessionSessionIndexRouteImport } from './routes/_session.session.index'
+import { Route as PublicBlogIndexRouteImport } from './routes/_public.blog.index'
 import { Route as PronunciationPronunciationIndexRouteImport } from './routes/_pronunciation.pronunciation.index'
 import { Route as DashboardCoursesIndexRouteImport } from './routes/_dashboard.courses.index'
 import { Route as ConversationConversationIndexRouteImport } from './routes/_conversation.conversation.index'
 import { Route as SessionSessionSessionIdRouteImport } from './routes/_session.session.$sessionId'
 import { Route as SessionFeedbackSessionIdRouteImport } from './routes/_session.feedback.$sessionId'
+import { Route as PublicBlogSlugRouteImport } from './routes/_public.blog.$slug'
 import { Route as PronunciationPronunciationSessionIdRouteImport } from './routes/_pronunciation.pronunciation.$sessionId'
 import { Route as LessonLessonLessonIdRouteImport } from './routes/_lesson.lesson.$lessonId'
 import { Route as DashboardCoursesCourseIdRouteImport } from './routes/_dashboard.courses.$courseId'
@@ -198,6 +200,11 @@ const SessionSessionIndexRoute = SessionSessionIndexRouteImport.update({
   path: '/session/',
   getParentRoute: () => SessionRoute,
 } as any)
+const PublicBlogIndexRoute = PublicBlogIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PublicBlogRoute,
+} as any)
 const PronunciationPronunciationIndexRoute =
   PronunciationPronunciationIndexRouteImport.update({
     id: '/pronunciation/',
@@ -226,6 +233,11 @@ const SessionFeedbackSessionIdRoute =
     path: '/feedback/$sessionId',
     getParentRoute: () => SessionRoute,
   } as any)
+const PublicBlogSlugRoute = PublicBlogSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => PublicBlogRoute,
+} as any)
 const PronunciationPronunciationSessionIdRoute =
   PronunciationPronunciationSessionIdRouteImport.update({
     id: '/pronunciation/$sessionId',
@@ -267,7 +279,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof LoginSignupRoute
   '/verify': typeof LoginVerifyRoute
   '/about': typeof PublicAboutRoute
-  '/blog': typeof PublicBlogRoute
+  '/blog': typeof PublicBlogRouteWithChildren
   '/features': typeof PublicFeaturesRoute
   '/pricing': typeof PublicPricingRoute
   '/privacy': typeof PublicPrivacyRoute
@@ -278,11 +290,13 @@ export interface FileRoutesByFullPath {
   '/courses/$courseId': typeof DashboardCoursesCourseIdRoute
   '/lesson/$lessonId': typeof LessonLessonLessonIdRoute
   '/pronunciation/$sessionId': typeof PronunciationPronunciationSessionIdRoute
+  '/blog/$slug': typeof PublicBlogSlugRoute
   '/feedback/$sessionId': typeof SessionFeedbackSessionIdRoute
   '/session/$sessionId': typeof SessionSessionSessionIdRoute
   '/conversation': typeof ConversationConversationIndexRoute
   '/courses/': typeof DashboardCoursesIndexRoute
   '/pronunciation': typeof PronunciationPronunciationIndexRoute
+  '/blog/': typeof PublicBlogIndexRoute
   '/session': typeof SessionSessionIndexRoute
 }
 export interface FileRoutesByTo {
@@ -301,7 +315,6 @@ export interface FileRoutesByTo {
   '/signup': typeof LoginSignupRoute
   '/verify': typeof LoginVerifyRoute
   '/about': typeof PublicAboutRoute
-  '/blog': typeof PublicBlogRoute
   '/features': typeof PublicFeaturesRoute
   '/pricing': typeof PublicPricingRoute
   '/privacy': typeof PublicPrivacyRoute
@@ -312,11 +325,13 @@ export interface FileRoutesByTo {
   '/courses/$courseId': typeof DashboardCoursesCourseIdRoute
   '/lesson/$lessonId': typeof LessonLessonLessonIdRoute
   '/pronunciation/$sessionId': typeof PronunciationPronunciationSessionIdRoute
+  '/blog/$slug': typeof PublicBlogSlugRoute
   '/feedback/$sessionId': typeof SessionFeedbackSessionIdRoute
   '/session/$sessionId': typeof SessionSessionSessionIdRoute
   '/conversation': typeof ConversationConversationIndexRoute
   '/courses': typeof DashboardCoursesIndexRoute
   '/pronunciation': typeof PronunciationPronunciationIndexRoute
+  '/blog': typeof PublicBlogIndexRoute
   '/session': typeof SessionSessionIndexRoute
 }
 export interface FileRoutesById {
@@ -344,7 +359,7 @@ export interface FileRoutesById {
   '/_login/signup': typeof LoginSignupRoute
   '/_login/verify': typeof LoginVerifyRoute
   '/_public/about': typeof PublicAboutRoute
-  '/_public/blog': typeof PublicBlogRoute
+  '/_public/blog': typeof PublicBlogRouteWithChildren
   '/_public/features': typeof PublicFeaturesRoute
   '/_public/pricing': typeof PublicPricingRoute
   '/_public/privacy': typeof PublicPrivacyRoute
@@ -355,11 +370,13 @@ export interface FileRoutesById {
   '/_dashboard/courses/$courseId': typeof DashboardCoursesCourseIdRoute
   '/_lesson/lesson/$lessonId': typeof LessonLessonLessonIdRoute
   '/_pronunciation/pronunciation/$sessionId': typeof PronunciationPronunciationSessionIdRoute
+  '/_public/blog/$slug': typeof PublicBlogSlugRoute
   '/_session/feedback/$sessionId': typeof SessionFeedbackSessionIdRoute
   '/_session/session/$sessionId': typeof SessionSessionSessionIdRoute
   '/_conversation/conversation/': typeof ConversationConversationIndexRoute
   '/_dashboard/courses/': typeof DashboardCoursesIndexRoute
   '/_pronunciation/pronunciation/': typeof PronunciationPronunciationIndexRoute
+  '/_public/blog/': typeof PublicBlogIndexRoute
   '/_session/session/': typeof SessionSessionIndexRoute
 }
 export interface FileRouteTypes {
@@ -392,11 +409,13 @@ export interface FileRouteTypes {
     | '/courses/$courseId'
     | '/lesson/$lessonId'
     | '/pronunciation/$sessionId'
+    | '/blog/$slug'
     | '/feedback/$sessionId'
     | '/session/$sessionId'
     | '/conversation'
     | '/courses/'
     | '/pronunciation'
+    | '/blog/'
     | '/session'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -415,7 +434,6 @@ export interface FileRouteTypes {
     | '/signup'
     | '/verify'
     | '/about'
-    | '/blog'
     | '/features'
     | '/pricing'
     | '/privacy'
@@ -426,11 +444,13 @@ export interface FileRouteTypes {
     | '/courses/$courseId'
     | '/lesson/$lessonId'
     | '/pronunciation/$sessionId'
+    | '/blog/$slug'
     | '/feedback/$sessionId'
     | '/session/$sessionId'
     | '/conversation'
     | '/courses'
     | '/pronunciation'
+    | '/blog'
     | '/session'
   id:
     | '__root__'
@@ -468,11 +488,13 @@ export interface FileRouteTypes {
     | '/_dashboard/courses/$courseId'
     | '/_lesson/lesson/$lessonId'
     | '/_pronunciation/pronunciation/$sessionId'
+    | '/_public/blog/$slug'
     | '/_session/feedback/$sessionId'
     | '/_session/session/$sessionId'
     | '/_conversation/conversation/'
     | '/_dashboard/courses/'
     | '/_pronunciation/pronunciation/'
+    | '/_public/blog/'
     | '/_session/session/'
   fileRoutesById: FileRoutesById
 }
@@ -707,6 +729,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SessionSessionIndexRouteImport
       parentRoute: typeof SessionRoute
     }
+    '/_public/blog/': {
+      id: '/_public/blog/'
+      path: '/'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof PublicBlogIndexRouteImport
+      parentRoute: typeof PublicBlogRoute
+    }
     '/_pronunciation/pronunciation/': {
       id: '/_pronunciation/pronunciation/'
       path: '/pronunciation'
@@ -741,6 +770,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/feedback/$sessionId'
       preLoaderRoute: typeof SessionFeedbackSessionIdRouteImport
       parentRoute: typeof SessionRoute
+    }
+    '/_public/blog/$slug': {
+      id: '/_public/blog/$slug'
+      path: '/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof PublicBlogSlugRouteImport
+      parentRoute: typeof PublicBlogRoute
     }
     '/_pronunciation/pronunciation/$sessionId': {
       id: '/_pronunciation/pronunciation/$sessionId'
@@ -871,9 +907,23 @@ const PronunciationRouteWithChildren = PronunciationRoute._addFileChildren(
   PronunciationRouteChildren,
 )
 
+interface PublicBlogRouteChildren {
+  PublicBlogSlugRoute: typeof PublicBlogSlugRoute
+  PublicBlogIndexRoute: typeof PublicBlogIndexRoute
+}
+
+const PublicBlogRouteChildren: PublicBlogRouteChildren = {
+  PublicBlogSlugRoute: PublicBlogSlugRoute,
+  PublicBlogIndexRoute: PublicBlogIndexRoute,
+}
+
+const PublicBlogRouteWithChildren = PublicBlogRoute._addFileChildren(
+  PublicBlogRouteChildren,
+)
+
 interface PublicRouteChildren {
   PublicAboutRoute: typeof PublicAboutRoute
-  PublicBlogRoute: typeof PublicBlogRoute
+  PublicBlogRoute: typeof PublicBlogRouteWithChildren
   PublicFeaturesRoute: typeof PublicFeaturesRoute
   PublicPricingRoute: typeof PublicPricingRoute
   PublicPrivacyRoute: typeof PublicPrivacyRoute
@@ -884,7 +934,7 @@ interface PublicRouteChildren {
 
 const PublicRouteChildren: PublicRouteChildren = {
   PublicAboutRoute: PublicAboutRoute,
-  PublicBlogRoute: PublicBlogRoute,
+  PublicBlogRoute: PublicBlogRouteWithChildren,
   PublicFeaturesRoute: PublicFeaturesRoute,
   PublicPricingRoute: PublicPricingRoute,
   PublicPrivacyRoute: PublicPrivacyRoute,
