@@ -53,6 +53,8 @@ FROM node:22-alpine AS runner
 
 WORKDIR /app
 
+RUN apk add --no-cache ffmpeg
+
 RUN addgroup --system --gid 1001 nodejs \
   && adduser --system --uid 1001 hono
 
