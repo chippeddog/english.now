@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 // import Explore from "@/components/vocabulary/explore";
 import Phrases from "@/components/vocabulary/phrases";
 import Practice from "@/components/vocabulary/practice";
@@ -8,14 +8,38 @@ import Words from "@/components/vocabulary/words";
 import { Tabs, TabsContent } from "../components/ui/tabs";
 import { cn } from "../lib/utils";
 
+const tabs = ["words", "phrases", "progress"] as const;
+type Tab = (typeof tabs)[number];
+
 export const Route = createFileRoute("/_dashboard/vocabulary")({
 	component: VocabularyPage,
+	validateSearch: (search: Record<string, unknown>): { tab?: Tab } => {
+		const tab = search.tab as string;
+		if (tab && tabs.includes(tab as Tab) && tab !== "words") {
+			return { tab: tab as Tab };
+		}
+		return {};
+	},
 });
 
 function VocabularyPage() {
-	const [activeView, setActiveView] = useState<
-		"words" | "phrases" | "progress"
-	>("words");
+	const navigate = useNavigate();
+	const { tab } = Route.useSearch();
+
+	const [activeView, setActiveView] = useState<Tab>(() => tab ?? "words");
+
+	useEffect(() => {
+		setActiveView(tab ?? "words");
+	}, [tab]);
+
+	const handleTabChange = (value: Tab) => {
+		setActiveView(value);
+		if (value === "words") {
+			navigate({ to: "/vocabulary", replace: true });
+		} else {
+			navigate({ to: "/vocabulary", search: { tab: value }, replace: true });
+		}
+	};
 
 	return (
 		<div>
@@ -31,7 +55,7 @@ function VocabularyPage() {
 				</div>
 				<Tabs
 					value={activeView}
-					onValueChange={(v) => setActiveView(v as typeof activeView)}
+					onValueChange={(v) => handleTabChange(v as Tab)}
 					className="space-y-5"
 				>
 					<div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -44,7 +68,7 @@ function VocabularyPage() {
 									activeView === "words" &&
 										"bg-background text-foreground shadow-sm",
 								)}
-								onClick={() => setActiveView("words")}
+								onClick={() => handleTabChange("words")}
 							>
 								Words
 							</button>
@@ -56,7 +80,7 @@ function VocabularyPage() {
 									activeView === "phrases" &&
 										"bg-background text-foreground shadow-sm",
 								)}
-								onClick={() => setActiveView("phrases")}
+								onClick={() => handleTabChange("phrases")}
 							>
 								Phrases
 							</button>
@@ -68,7 +92,7 @@ function VocabularyPage() {
 									activeView === "progress" &&
 										"bg-background text-foreground shadow-sm",
 								)}
-								onClick={() => setActiveView("progress")}
+								onClick={() => handleTabChange("progress")}
 							>
 								Progress
 							</button>

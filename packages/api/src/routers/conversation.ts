@@ -1,5 +1,4 @@
 import { createOpenAI } from "@ai-sdk/openai";
-import type { ConversationRoleplay, ConversationTopic } from "@english.now/db";
 import {
 	conversationMessage,
 	conversationSession,
@@ -9,11 +8,10 @@ import {
 } from "@english.now/db";
 import { env } from "@english.now/env/server";
 import { generateText, Output } from "ai";
-import { and, desc, eq, isNull } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure, rateLimitedProcedure, router } from "../index";
 import { generateSuggestions } from "../services/generate-suggestions";
-import { recordActivity } from "../services/record-activity";
 
 const openai = createOpenAI({ apiKey: env.OPENAI_API_KEY });
 
@@ -177,8 +175,6 @@ The person you're talking to is learning English at a ${level} level.
 			};
 
 			await db.insert(conversationSession).values(newSession);
-
-			recordActivity(ctx.session.user.id, "conversation").catch(console.error);
 
 			const messageId = crypto.randomUUID();
 			await db.insert(conversationMessage).values({

@@ -35,5 +35,142 @@
   "start": {
     "title": "这本该只花一个周末，而不是一生。",
     "subtitle": "7天免费试用，无需信用卡"
+  },
+  "compare": {
+    "title": "口袋里的私人导师，比真人便宜50倍",
+    "subtitle": "高质量的学习不必昂贵。无需再等待课程。",
+    "subtitleLine2": "无需再等待课程。",
+    "realTutors": "真人导师",
+    "comparisons": {
+      "costPerMonth": "每月费用（美元）",
+      "availability": "全天候可用——随时随地学习",
+      "personalizedFeedback": "个性化反馈，瞬时提供",
+      "selfPaced": "支持自定进度学习",
+      "tracksProgress": "跟踪您的进度并每日调整",
+      "noScheduling": "无排课压力或取消",
+      "builtInAI": "内置先进的AI语言模型"
+    },
+    "usPrice": "~$12",
+    "themPrice": "~$400+"
+  },
+  "letter": {
+    "title": "English.now背后的故事",
+    "subtitle": "我每天也依赖English Now，我痴迷于将其打造成最好的英语学习应用。",
+    "readMore": "阅读更多",
+    "greeting": "你好，我是Dmytro。",
+    "paragraph1": "我在乌克兰长大，学习英语对我来说就像是一座难以攀登的高山。传统课程枯燥无味，教材过时，应用程序更像是游戏而不是实际的学习工具。",
+    "highlight1": "学习语言的最佳方式是实际使用它。",
+    "paragraph2": "不是通过记忆单词表或完成游戏化的课程，这些课程给你积分但并不能为真实世界的对话做好准备。",
+    "paragraph3": "English.now是我对语言学习中所有让我感到沮丧的事情的回答。它建立在一个简单的信念之上：",
+    "highlight2": "AI可以是那个耐心的朋友。",
+    "paragraph4": "它从不评判你的错误，它全天候可用，并且能够根据你学习旅程中的确切位置进行调整。",
+    "freeToStart": "免费开始",
+    "freeNote": "，我承诺保持这种状态。",
+    "signOff": "感谢您使用English Now。",
+    "founder": "Dmytro Tihunov",
+    "founderTitle": "English Now创始人"
+  },
+  "pricing": {
+    "title": "定价",
+    "subtitle": "选择适合您的计划。",
+    "save20": "节省20%",
+    "mostPopular": "最受欢迎",
+    "whatsIncluded": "包含内容",
+    "startTrial": "开始7天试用",
+    "getStarted": "开始",
+    "duration": {
+      "forever": "永久",
+      "month": "月",
+      "year": "年"
+    },
+    "plans": {
+      "free": {
+        "name": "免费",
+        "description": "适合初学者。",
+        "features": [
+          "每天1次AI对话",
+          "基础语法课程",
+          "有限的词汇练习",
+          "进度跟踪"
+        ]
+      },
+      "monthly": {
+        "name": "每月",
+        "description": "适合中级学习者。",
+        "features": [
+          "无限AI对话",
+          "高级AI反馈",
+          "完整词汇库",
+          "个性化学习路径",
+          "进度跟踪和分析"
+        ]
+      },
+      "yearly": {
+        "name": "每年",
+        "description": "适合高级学习者。",
+        "features": [
+          "无限AI对话",
+          "高级AI反馈",
+          "完整词汇库",
+          "个性化学习路径",
+          "进度跟踪和分析"
+        ]
+      }
+    }
+  },
+  "faq": {
+    "title": "常见问题",
+    "subtitle": "找不到您要找的答案？",
+    "contact": "support@english.now",
+    "items": {
+      "0": {
+        "question": "English Now如何帮助我学习英语？",
+        "answer": "English Now是一款集会话练习、词汇构建、语法课程和个性化反馈于一体的英语学习应用。我们的AI驱动系统会根据您的学习风格进行调整，并提供实时纠正和建议，帮助您更快提高。"
+      },
+      "1": {
+        "question": "使用English Now需要付费吗？",
+        "answer": "我们提供免费和高级计划。免费计划包括有限的会话练习和词汇练习。我们的高级计划解锁无限练习课程、高级AI反馈、个性化学习路径和优先支持。"
+      },
+      "2": {
+        "question": "我可以用这个应用练习英语口语吗？",
+        "answer": "可以！English Now包括会话练习功能，您可以与我们的AI导师进行实时对话。AI将帮助您练习发音、纠正错误，并引导您进行各种主题的自然对话。"
+      },
+      "3": {
+        "question": "我的进度会在设备间同步吗？",
+        "answer": "当然！当您使用账户登录时，您的进度、词汇和学习历史会自动同步到所有设备上。您可以在手机、平板电脑或电脑上无缝继续学习。"
+      },
+      "4": {
+        "question": "这与其他英语学习应用有何不同？",
+        "answer": "English Now将多种学习方法结合在一个应用中——会话练习、词汇、语法和个性化反馈——全部由先进的AI驱动。无需在不同应用间切换，您可以在一个地方获得所需的一切，享受适应您需求的学习体验。"
+      },
+      "5": {
+        "question": "我可以离线使用English Now吗？",
+        "answer": "某些功能可以离线使用，例如查看已保存的词汇和已完成的课程。然而，会话练习和AI反馈需要互联网连接。我们正在努力在未来更新中扩展离线功能。"
+      },
+      "howDoesItHelp": {
+        "question": "English Now 如何帮助我学习英语？",
+        "answer": "English Now 是一个集会话练习、词汇构建、语法课程和个性化反馈于一体的英语学习应用程序。我们的 AI 驱动系统会根据您的学习风格进行调整，并提供实时纠正和建议，帮助您更快提高。"
+      },
+      "doINeedToPay": {
+        "question": "我需要付费使用 English Now 吗？",
+        "answer": "我们提供免费和高级计划。免费计划包括基本功能，如有限的会话练习和词汇练习。我们的高级计划解锁无限的练习课程、先进的 AI 反馈、个性化学习路径和优先支持。"
+      },
+      "canIPracticeSpeaking": {
+        "question": "我可以用这个应用练习英语口语吗？",
+        "answer": "可以！English Now 包括会话练习功能，您可以与我们的 AI 导师进行实时对话。AI 会帮助您练习发音，纠正错误，并引导您在各种话题上进行自然对话。"
+      },
+      "isProgressSaved": {
+        "question": "我的进度会在设备间保存吗？",
+        "answer": "当然！当您使用账户登录时，您的进度、词汇和学习历史会自动同步到所有设备上。您可以在手机、平板或电脑上无缝继续学习。"
+      },
+      "howIsDifferent": {
+        "question": "这与其他英语学习应用有何不同？",
+        "answer": "English Now 将多种学习方法结合在一个应用中——会话练习、词汇、语法和个性化反馈——全部由先进的 AI 驱动。您无需在不同应用之间切换，您所需的一切都在一个地方，提供适应您需求的学习体验。"
+      },
+      "canIUseOffline": {
+        "question": "我可以离线使用 English Now 吗？",
+        "answer": "某些功能可以离线使用，例如查看已保存的词汇和已完成的课程。然而，会话练习和 AI 反馈需要网络连接。我们正在努力在未来更新中扩展离线功能。"
+      }
+    }
   }
 }

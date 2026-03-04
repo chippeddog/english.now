@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
 	Bar,
 	BarChart,
@@ -10,15 +11,71 @@ import {
 import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
 
-const mockWeekData = [
-	{ day: "Mon", date: 16, seconds: 0, isToday: false },
-	{ day: "Tue", date: 17, seconds: 0, isToday: false },
-	{ day: "Wed", date: 18, seconds: 53, isToday: false },
-	{ day: "Thu", date: 19, seconds: 0, isToday: false },
-	{ day: "Fri", date: 20, seconds: 0, isToday: true },
-	{ day: "Sat", date: 21, seconds: 0, isToday: false },
-	{ day: "Sun", date: 22, seconds: 0, isToday: false },
-];
+type DayData = {
+	day: string;
+	date: number;
+	seconds: number;
+	isToday: boolean;
+};
+
+const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+function buildWeekData(
+	practiceData: { date: string; seconds: number }[],
+	timezone: string,
+): DayData[] {
+	const now = new Date();
+	const formatter = new Intl.DateTimeFormat("en-US", {
+		timeZone: timezone,
+		weekday: "short",
+		day: "numeric",
+		year: "numeric",
+		month: "2-digit",
+	});
+
+	const todayParts = formatter.formatToParts(now);
+	const todayWeekday = todayParts.find((p) => p.type === "weekday")?.value;
+
+	const todayYMD = new Intl.DateTimeFormat("en-CA", {
+		timeZone: timezone,
+		year: "numeric",
+		month: "2-digit",
+		day: "2-digit",
+	}).format(now);
+
+	const todayIdx = DAY_LABELS.indexOf(todayWeekday ?? "Mon");
+
+	const secondsMap = new Map<string, number>();
+	for (const d of practiceData) {
+		secondsMap.set(d.date, d.seconds);
+	}
+
+	const week: DayData[] = [];
+	for (let i = 0; i < 7; i++) {
+		const offset = i - todayIdx;
+		const date = new Date(now);
+		date.setDate(date.getDate() + offset);
+
+		const ymd = new Intl.DateTimeFormat("en-CA", {
+			timeZone: timezone,
+			year: "numeric",
+			month: "2-digit",
+			day: "2-digit",
+		}).format(date);
+
+		const parts = formatter.formatToParts(date);
+		const dayNum = Number(parts.find((p) => p.type === "day")?.value ?? 0);
+
+		week.push({
+			day: DAY_LABELS[i],
+			date: dayNum,
+			seconds: secondsMap.get(ymd) ?? 0,
+			isToday: ymd === todayYMD,
+		});
+	}
+
+	return week;
+}
 
 const chartConfig = {
 	minutes: {
@@ -28,20 +85,29 @@ const chartConfig = {
 } as const;
 
 function formatDuration(seconds: number): string {
-	if (seconds < 60) return `${seconds}s`;
 	const mins = Math.floor(seconds / 60);
-	const secs = seconds % 60;
-	return secs > 0 ? `${mins}m ${secs}s` : `${mins}m`;
+	const secs = Math.round(seconds % 60);
+	if (mins === 0 && secs === 0) return "0 min";
+	if (mins === 0) return `${secs} sec`;
+	return secs > 0 ? `${mins} min ${secs} sec` : `${mins} min`;
 }
 
-export default function DailyPracticeTime() {
-	const committedMinutes = 5; // User's daily goal from onboarding
+export default function DailyPracticeTime({
+	practiceData,
+	dailyGoal,
+	timezone,
+}: {
+	practiceData: { date: string; seconds: number }[];
+	dailyGoal: number;
+	timezone: string;
+}) {
+	const committedMinutes = dailyGoal || 5;
 	const committedSeconds = committedMinutes * 60;
-	// Add minutes for chart Y-axis
-	const chartData = mockWeekData.map((d) => ({
-		...d,
-		minutes: Math.round((d.seconds / 60) * 10) / 10, // Display as minutes
-	}));
+
+	const weekData = useMemo(
+		() => buildWeekData(practiceData, timezone),
+		[practiceData, timezone],
+	);
 
 	return (
 		<div
@@ -51,11 +117,8 @@ export default function DailyPracticeTime() {
 					"0 0 0 1px rgba(0,0,0,.05),0 10px 10px -5px rgba(0,0,0,.04),0 20px 25px -5px rgba(0,0,0,.04),0 20px 32px -12px rgba(0,0,0,.04)",
 			}}
 		>
-			<div className="mt-1 mb-2 flex flex-col gap-0.5 pl-1.5">
-				<div className="font-bold font-lyon text-xl">Daily speaking time</div>
-				{/* <p className="text-muted-foreground text-sm">
-					Try to speak for at least {committedMinutes} minutes each day.
-				</p> */}
+			<div className="mt-1 mb-2 flex flex-col pl-1.5">
+				<div className="font-bold font-lyon text-xl">Daily Practice</div>
 			</div>
 
 			<div className="w-full rounded-xl border border-border/50 p-2.5">
@@ -64,8 +127,8 @@ export default function DailyPracticeTime() {
 					className="aspect-auto h-[138px] w-full self-stretch"
 				>
 					<BarChart
-						data={chartData}
-						margin={{ top: 8, right: 4, left: 4, bottom: 0 }}
+						data={weekData}
+						margin={{ top: 8, right: 2, left: 2, bottom: 0 }}
 					>
 						<CartesianGrid
 							strokeDasharray="3 3"
@@ -83,7 +146,7 @@ export default function DailyPracticeTime() {
 							tick={false}
 							tickLine={false}
 							axisLine={false}
-							domain={[0, committedMinutes]}
+							domain={[0, committedSeconds]}
 							width={0}
 						/>
 						<Tooltip
@@ -91,7 +154,7 @@ export default function DailyPracticeTime() {
 								<ChartTooltipContent
 									formatter={(value) => (
 										<span className="font-medium font-mono tabular-nums">
-											{formatDuration((value as number) * 60)}
+											{formatDuration(value as number)}
 										</span>
 									)}
 									labelFormatter={(label) => label}
@@ -100,41 +163,42 @@ export default function DailyPracticeTime() {
 							cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }}
 						/>
 						<ReferenceLine
-							y={committedMinutes}
-							stroke="rgb(251 146 60)"
+							y={committedSeconds}
+							stroke="#FF8904"
 							strokeDasharray="4 4"
 							strokeWidth={1}
 							label={{
 								value: `${committedMinutes} min`,
 								position: "bottom",
-								fill: "rgb(234 88 12)",
+								fill: "#E17100",
 								fontSize: 12,
 								fontWeight: 500,
 							}}
 						/>
 						<Bar
-							dataKey="minutes"
-							fill="hsl(var(--muted-foreground) / 0.4)"
+							dataKey="seconds"
+							fill="#262626"
+							stroke="#262626"
+							strokeWidth={1}
 							radius={[4, 4, 0, 0]}
 							maxBarSize={32}
 						/>
 					</BarChart>
 				</ChartContainer>
-				<div className="flex justify-between rounded-xl bg-neutral-50 p-0.5">
-					{mockWeekData.map((day) => (
-						<button
-							type="button"
+				<div className="grid grid-cols-7 rounded-lg bg-neutral-50 px-0.5">
+					{weekData.map((day) => (
+						<div
 							key={day.day}
 							className={cn(
-								"flex flex-col items-center rounded-xl p-2 transition-colors",
-								day.isToday ? "bg-white shadow-sm" : "hover:bg-white/50",
+								"flex flex-col items-center rounded-xl p-1.5 transition-colors",
+								day.isToday ? "bg-white shadow-sm" : null,
 							)}
 						>
 							<span className="text-muted-foreground text-xs">{day.day}</span>
 							<span
 								className={cn(
 									"font-semibold",
-									day.isToday ? "text-neutral-900" : "text-neutral-600",
+									day.isToday ? "text-neutral-900" : "text-neutral-500",
 								)}
 							>
 								{day.date}
@@ -145,11 +209,11 @@ export default function DailyPracticeTime() {
 										"mt-0.5 size-1.5 rounded-full bg-neutral-100",
 										day.seconds >= committedSeconds
 											? "bg-lime-500"
-											: "bg-orange-400",
+											: "bg-amber-500",
 									)}
 								/>
 							)}
-						</button>
+						</div>
 					))}
 				</div>
 			</div>

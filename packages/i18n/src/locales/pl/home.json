@@ -35,5 +35,142 @@
   "start": {
     "title": "To miało zająć <br/> weekend, nie życie.",
     "subtitle": "7-dniowy darmowy okres próbny, bez karty kredytowej"
+  },
+  "compare": {
+    "title": "Prywatny nauczyciel w Twojej kieszeni 50 razy tańszy niż prawdziwy",
+    "subtitle": "Nauka na wysokim poziomie nie musi być kosztowna. Koniec z czekaniem na lekcję.",
+    "subtitleLine2": "Koniec z czekaniem na lekcję.",
+    "realTutors": "Prawdziwi nauczyciele",
+    "comparisons": {
+      "costPerMonth": "Koszt miesięczny (USD)",
+      "availability": "Dostępność 24/7 — ucz się w dowolnym czasie i miejscu",
+      "personalizedFeedback": "Spersonalizowana informacja zwrotna, natychmiast",
+      "selfPaced": "Wsparcie dla nauki we własnym tempie",
+      "tracksProgress": "Śledzi Twój postęp i dostosowuje się codziennie",
+      "noScheduling": "Brak stresu związanego z harmonogramem lub odwołaniami",
+      "builtInAI": "Wbudowane zaawansowane modele językowe AI"
+    },
+    "usPrice": "~$12",
+    "themPrice": "~$400+"
+  },
+  "letter": {
+    "title": "Historia English.now",
+    "subtitle": "Ja również codziennie polegam na English Now i jestem zafascynowany, aby uczynić ją najlepszą aplikacją do nauki angielskiego.",
+    "readMore": "Czytaj więcej",
+    "greeting": "Cześć, jestem Dmytro.",
+    "paragraph1": "Dorastałem na Ukrainie, gdzie nauka angielskiego wydawała się niemożliwą do pokonania górą. Tradycyjne zajęcia były nudne, podręczniki przestarzałe, a aplikacje bardziej przypominały gry niż prawdziwe narzędzia do nauki.",
+    "highlight1": "najlepszym sposobem na naukę języka jest jego faktyczne używanie.",
+    "paragraph2": "Nie poprzez zapamiętywanie list słówek czy ukończenie lekcji w formie gry, które dają punkty, ale nie przygotowują do rozmów w rzeczywistym świecie.",
+    "paragraph3": "English.now jest moją odpowiedzią na wszystko, co frustrowało mnie w nauce języków. Jest zbudowana na prostym przekonaniu:",
+    "highlight2": "AI może być tym cierpliwym przyjacielem.",
+    "paragraph4": "Nigdy nie ocenia Twoich błędów, jest dostępna 24/7 i dostosowuje się dokładnie do miejsca, w którym jesteś w swojej podróży edukacyjnej.",
+    "freeToStart": "darmowa na start",
+    "freeNote": ", i zobowiązuję się, aby tak pozostało.",
+    "signOff": "Dziękuję za korzystanie z English Now.",
+    "founder": "Dmytro Tihunov",
+    "founderTitle": "Założyciel, English Now"
+  },
+  "pricing": {
+    "title": "Cennik",
+    "subtitle": "Wybierz plan, który jest dla Ciebie odpowiedni.",
+    "save20": "Oszczędź 20%",
+    "mostPopular": "Najbardziej popularny",
+    "whatsIncluded": "Co jest w zestawie",
+    "startTrial": "Rozpocznij 7-dniowy okres próbny",
+    "getStarted": "Zacznij",
+    "duration": {
+      "forever": "na zawsze",
+      "month": "miesiąc",
+      "year": "rok"
+    },
+    "plans": {
+      "free": {
+        "name": "Darmowy",
+        "description": "Świetny dla początkujących.",
+        "features": [
+          "1 rozmowa AI dziennie",
+          "Podstawowe lekcje gramatyki",
+          "Ograniczone ćwiczenia słownictwa",
+          "Śledzenie postępów"
+        ]
+      },
+      "monthly": {
+        "name": "Miesięczny",
+        "description": "Świetny dla średniozaawansowanych.",
+        "features": [
+          "Nieograniczone rozmowy AI",
+          "Zaawansowana informacja zwrotna AI",
+          "Pełna biblioteka słownictwa",
+          "Spersonalizowana ścieżka nauki",
+          "Śledzenie postępów i analityka"
+        ]
+      },
+      "yearly": {
+        "name": "Roczny",
+        "description": "Świetny dla zaawansowanych.",
+        "features": [
+          "Nieograniczone rozmowy AI",
+          "Zaawansowana informacja zwrotna AI",
+          "Pełna biblioteka słownictwa",
+          "Spersonalizowana ścieżka nauki",
+          "Śledzenie postępów i analityka"
+        ]
+      }
+    }
+  },
+  "faq": {
+    "title": "Najczęściej zadawane pytania",
+    "subtitle": "Nie możesz znaleźć odpowiedzi, której szukasz?",
+    "contact": "support@english.now",
+    "items": {
+      "0": {
+        "question": "Jak English Now pomaga mi w nauce angielskiego?",
+        "answer": "English Now to kompleksowa aplikacja do nauki angielskiego, która łączy praktykę konwersacyjną, budowanie słownictwa, lekcje gramatyki i spersonalizowaną informację zwrotną. Nasz system oparty na AI dostosowuje się do Twojego stylu nauki i zapewnia korekty oraz sugestie w czasie rzeczywistym, aby pomóc Ci szybciej się poprawić."
+      },
+      "1": {
+        "question": "Czy muszę płacić za korzystanie z English Now?",
+        "answer": "Oferujemy zarówno darmowe, jak i premium plany. Darmowy plan obejmuje podstawowe funkcje, takie jak ograniczona praktyka konwersacyjna i ćwiczenia słownictwa. Nasz plan premium odblokowuje nieograniczone sesje praktyczne, zaawansowaną informację zwrotną AI, spersonalizowane ścieżki nauki i priorytetowe wsparcie."
+      },
+      "2": {
+        "question": "Czy mogę ćwiczyć mówienie po angielsku za pomocą aplikacji?",
+        "answer": "Tak! English Now zawiera funkcje praktyki konwersacyjnej, gdzie możesz prowadzić rozmowy w czasie rzeczywistym z naszym AI nauczycielem. AI pomoże Ci ćwiczyć wymowę, poprawiać błędy i prowadzić naturalne rozmowy na różne tematy."
+      },
+      "3": {
+        "question": "Czy mój postęp jest zapisywany na różnych urządzeniach?",
+        "answer": "Absolutnie! Twój postęp, słownictwo i historia nauki są automatycznie synchronizowane na wszystkich Twoich urządzeniach, gdy logujesz się na swoje konto. Możesz bezproblemowo kontynuować naukę na telefonie, tablecie lub komputerze."
+      },
+      "4": {
+        "question": "Czym różni się to od innych aplikacji do nauki angielskiego?",
+        "answer": "English Now łączy wiele metod nauki w jednej aplikacji - praktykę konwersacyjną, słownictwo, gramatykę i spersonalizowaną informację zwrotną - wszystko zasilane zaawansowanym AI. Zamiast przełączać się między różnymi aplikacjami, masz wszystko, czego potrzebujesz w jednym miejscu, z doświadczeniem nauki dostosowanym do Twoich potrzeb."
+      },
+      "5": {
+        "question": "Czy mogę korzystać z English Now offline?",
+        "answer": "Niektóre funkcje są dostępne offline, takie jak przeglądanie zapisanych słówek i ukończonych lekcji. Jednak praktyka konwersacyjna i informacja zwrotna AI wymagają połączenia z internetem. Pracujemy nad rozszerzeniem możliwości offline w przyszłych aktualizacjach."
+      },
+      "howDoesItHelp": {
+        "question": "Jak English Now pomaga mi uczyć się angielskiego?",
+        "answer": "English Now to kompleksowa aplikacja do nauki angielskiego, która łączy praktykę konwersacji, budowanie słownictwa, lekcje gramatyki i spersonalizowane opinie. Nasz system oparty na sztucznej inteligencji dostosowuje się do Twojego stylu nauki i zapewnia korekty oraz sugestie w czasie rzeczywistym, aby pomóc Ci szybciej się poprawiać."
+      },
+      "doINeedToPay": {
+        "question": "Czy muszę płacić za korzystanie z English Now?",
+        "answer": "Oferujemy zarówno darmowe, jak i premium plany. Darmowy plan obejmuje podstawowe funkcje, takie jak ograniczona praktyka konwersacji i ćwiczenia słownictwa. Nasz plan premium odblokowuje nieograniczone sesje praktyczne, zaawansowane opinie AI, spersonalizowane ścieżki nauki i priorytetowe wsparcie."
+      },
+      "canIPracticeSpeaking": {
+        "question": "Czy mogę ćwiczyć mówienie po angielsku za pomocą aplikacji?",
+        "answer": "Tak! English Now zawiera funkcje praktyki konwersacji, gdzie możesz prowadzić rozmowy w czasie rzeczywistym z naszym AI tutorem. AI pomoże Ci ćwiczyć wymowę, poprawiać błędy i prowadzić naturalne rozmowy na różne tematy."
+      },
+      "isProgressSaved": {
+        "question": "Czy mój postęp jest zapisywany na różnych urządzeniach?",
+        "answer": "Oczywiście! Twój postęp, słownictwo i historia nauki są automatycznie synchronizowane na wszystkich Twoich urządzeniach, gdy zalogujesz się na swoje konto. Możesz bezproblemowo kontynuować naukę na telefonie, tablecie lub komputerze."
+      },
+      "howIsDifferent": {
+        "question": "Czym różni się to od innych aplikacji do nauki angielskiego?",
+        "answer": "English Now łączy wiele metod nauki w jednej aplikacji - praktykę konwersacji, słownictwo, gramatykę i spersonalizowane opinie - wszystko zasilane zaawansowaną sztuczną inteligencją. Zamiast przełączać się między różnymi aplikacjami, masz wszystko, czego potrzebujesz w jednym miejscu, z doświadczeniem nauki dostosowanym do Twoich potrzeb."
+      },
+      "canIUseOffline": {
+        "question": "Czy mogę używać English Now offline?",
+        "answer": "Niektóre funkcje są dostępne offline, takie jak przeglądanie zapisanego słownictwa i ukończonych lekcji. Jednak praktyka konwersacji i opinie AI wymagają połączenia z internetem. Pracujemy nad rozszerzeniem możliwości offline w przyszłych aktualizacjach."
+      }
+    }
   }
 }

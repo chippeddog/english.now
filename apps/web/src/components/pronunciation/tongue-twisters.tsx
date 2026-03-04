@@ -85,11 +85,13 @@ export default function TongueTwistersMode({
 	items,
 	initialIndex,
 	onComplete,
+	getElapsedSeconds,
 }: {
 	sessionId: string;
 	items: TongueTwisterItem[];
 	initialIndex: number;
 	onComplete: (summary: SessionSummary) => void;
+	getElapsedSeconds?: () => number;
 }) {
 	const trpc = useTRPC();
 	const [currentIndex, setCurrentIndex] = useState(initialIndex);
@@ -212,7 +214,10 @@ export default function TongueTwistersMode({
 
 	const handleNext = () => {
 		if (isLastItem) {
-			completeSession.mutate({ sessionId });
+			completeSession.mutate({
+				sessionId,
+				durationSeconds: getElapsedSeconds?.(),
+			});
 		} else {
 			setCurrentIndex((prev) => prev + 1);
 			setResult(null);

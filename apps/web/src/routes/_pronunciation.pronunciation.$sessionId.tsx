@@ -7,6 +7,7 @@ import ReadAloudMode from "@/components/pronunciation/read-aloud";
 import SessionReview from "@/components/pronunciation/session-review";
 import SessionLoader from "@/components/session/loader";
 import ReportIssueDialog from "@/components/session/report-issue-dialog";
+import { usePracticeTimer } from "@/hooks/use-practice-timer";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/utils/trpc";
 
@@ -162,6 +163,7 @@ function PronunciationSessionPage() {
 	const trpc = useTRPC();
 	const navigate = useNavigate();
 	const { sessionId } = Route.useParams();
+	const { getElapsedSeconds } = usePracticeTimer();
 	const [view, setView] = useState<"practice" | "processing" | "review">(
 		"practice",
 	);
@@ -261,6 +263,7 @@ function PronunciationSessionPage() {
 										transcript: a.transcript,
 									}))}
 								onFinish={handleFinish}
+								getElapsedSeconds={getElapsedSeconds}
 							/>
 						</div>
 					</div>

@@ -6,48 +6,47 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
 
-export default function AddWordDialog({
+export default function AddPhraseDialogContent({
+	newPhrase,
+	setNewPhrase,
+	onSubmit,
 	addDialogOpen,
 	setAddDialogOpen,
-	newWord,
-	setNewWord,
-	onSubmit,
 	isPending,
 }: {
-	addDialogOpen: boolean;
-	setAddDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
-	newWord: string;
-	setNewWord: React.Dispatch<React.SetStateAction<string>>;
+	newPhrase: string;
+	setNewPhrase: React.Dispatch<React.SetStateAction<string>>;
 	onSubmit: () => void;
 	isPending: boolean;
+	addDialogOpen: boolean;
+	setAddDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
 	return (
 		<Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
 					<DialogTitle className="font-bold font-lyon text-xl">
-						Add New Word
+						Add New Phrase
 					</DialogTitle>
 				</DialogHeader>
 				<div className="space-y-4 py-2">
 					<div className="space-y-2">
-						<Label htmlFor="word">Word</Label>
+						<Label htmlFor="phrase">Phrase</Label>
 						<Input
-							id="word"
-							placeholder="e.g., serendipity"
-							value={newWord}
-							onChange={(e) => setNewWord(e.target.value)}
+							id="phrase"
+							placeholder='e.g., "Break a leg"'
+							value={newPhrase}
+							onChange={(e) => setNewPhrase(e.target.value)}
 							onKeyDown={(e) => {
 								if (e.key === "Enter") onSubmit();
 							}}
 						/>
 						<p className="text-muted-foreground text-xs">
-							Definition, pronunciation, and translation will be added
+							Meaning, pronunciation, and translation will be added
 							automatically.
 						</p>
 					</div>
@@ -56,13 +55,13 @@ export default function AddWordDialog({
 					<DialogClose asChild>
 						<Button variant="outline">Cancel</Button>
 					</DialogClose>
-					<Button onClick={onSubmit} disabled={!newWord.trim() || isPending}>
+					<Button onClick={onSubmit} disabled={!newPhrase.trim() || isPending}>
 						{isPending ? (
 							<Loader className="mr-2 size-4 animate-spin" />
 						) : (
 							<Plus className="mr-2 size-4" />
 						)}
-						Add Word
+						Add Phrase
 					</Button>
 				</div>
 			</DialogContent>

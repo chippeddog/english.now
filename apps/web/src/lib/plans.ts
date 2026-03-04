@@ -5,11 +5,12 @@ const PADDLE_PRICE_IDS = {
 
 const _plans = [
 	{
+		key: "free" as const,
 		name: "Free",
 		description: "Great for beginners.",
 		price: 0,
 		isPopular: false,
-		duration: "forever",
+		duration: "forever" as const,
 		paddlePriceId: null as string | null,
 		features: [
 			"1 AI conversations per day",
@@ -19,11 +20,12 @@ const _plans = [
 		],
 	},
 	{
+		key: "monthly" as const,
 		name: "Monthly",
 		description: "Great for intermediate learners.",
 		price: 12,
 		isPopular: true,
-		duration: "month",
+		duration: "month" as const,
 		paddlePriceId: PADDLE_PRICE_IDS.monthly,
 		features: [
 			"Unlimited AI conversations",
@@ -34,11 +36,12 @@ const _plans = [
 		],
 	},
 	{
+		key: "yearly" as const,
 		name: "Yearly",
 		description: "Great for advanced learners.",
 		price: 100,
 		isPopular: false,
-		duration: "year",
+		duration: "year" as const,
 		paddlePriceId: PADDLE_PRICE_IDS.yearly,
 		features: [
 			"Unlimited AI conversations",

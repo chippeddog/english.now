@@ -19,6 +19,119 @@
       "lessons": "Personalized lessons"
     }
   },
+  "compare": {
+    "title": "Private-tutor in your pocket for 50x cheaper than a real one",
+    "subtitle": "High-quality learning doesn't have to be costly. No more waiting for a lesson.",
+    "subtitleLine2": "No more waiting for a lesson.",
+    "realTutors": "Real Tutors",
+    "comparisons": {
+      "costPerMonth": "Cost per month (USD)",
+      "availability": "24/7 availability — learn any time, anywhere",
+      "personalizedFeedback": "Personalized feedback, instantly",
+      "selfPaced": "Supports self-paced progression",
+      "tracksProgress": "Tracks your progress and adapts daily",
+      "noScheduling": "No scheduling stress or cancellations",
+      "builtInAI": "Built-in advanced AI language models"
+    },
+    "usPrice": "~$12",
+    "themPrice": "~$400+"
+  },
+  "letter": {
+    "title": "The story behind English.now",
+    "subtitle": "I depend on English Now every day too, and I'm obsessed with making it the best English learning app out there.",
+    "readMore": "Read more",
+    "greeting": "Hi, I'm Dmytro.",
+    "paragraph1": "I grew up in Ukraine where learning English felt like an impossible mountain to climb. Traditional classes were boring, textbooks were outdated, and apps felt more like games than real learning tools.",
+    "highlight1": "the best way to learn a language is by actually using it.",
+    "paragraph2": "Not by memorizing vocabulary lists or completing gamified lessons that give you points but don't prepare you for real-world conversations.",
+    "paragraph3": "English.now is my answer to everything that frustrated me about language learning. It's built on a simple belief:",
+    "highlight2": "AI can be that patient friend.",
+    "paragraph4": "It never judges your mistakes, it's available 24/7, and it adapts to exactly where you are in your learning journey.",
+    "freeToStart": "free to start",
+    "freeNote": ", and I'm committed to keeping it that way.",
+    "signOff": "Thank you for using English Now.",
+    "founder": "Dmytro Tihunov",
+    "founderTitle": "Founder, English Now"
+  },
+  "pricing": {
+    "title": "Pricing",
+    "subtitle": "Choose the plan that's right for you.",
+    "save20": "Save 20%",
+    "mostPopular": "Most Popular",
+    "whatsIncluded": "What's included",
+    "startTrial": "Start 7-day trial",
+    "getStarted": "Get started",
+    "duration": {
+      "forever": "forever",
+      "month": "month",
+      "year": "year"
+    },
+    "plans": {
+      "free": {
+        "name": "Free",
+        "description": "Great for beginners.",
+        "features": [
+          "1 AI conversations per day",
+          "Basic grammar lessons",
+          "Limited vocabulary exercises",
+          "Progress tracking"
+        ]
+      },
+      "monthly": {
+        "name": "Monthly",
+        "description": "Great for intermediate learners.",
+        "features": [
+          "Unlimited AI conversations",
+          "Advanced AI feedback",
+          "Full vocabulary library",
+          "Personalized learning path",
+          "Progress tracking and analytics"
+        ]
+      },
+      "yearly": {
+        "name": "Yearly",
+        "description": "Great for advanced learners.",
+        "features": [
+          "Unlimited AI conversations",
+          "Advanced AI feedback",
+          "Full vocabulary library",
+          "Personalized learning path",
+          "Progress tracking and analytics"
+        ]
+      }
+    }
+  },
+  "faq": {
+    "title": "FAQs",
+    "subtitle": "Can't find the answer you are looking for?",
+    "contact": "support@english.now",
+    "items": {
+      "howDoesItHelp": {
+        "question": "How does English Now help me learn English?",
+        "answer": "English Now is an all-in-one English learning app that combines conversation practice, vocabulary building, grammar lessons, and personalized feedback. Our AI-powered system adapts to your learning style and provides real-time corrections and suggestions to help you improve faster."
+      },
+      "doINeedToPay": {
+        "question": "Do I need to pay to use English Now?",
+        "answer": "We offer both free and premium plans. The free plan includes basic features like limited conversation practice and vocabulary exercises. Our premium plan unlocks unlimited practice sessions, advanced AI feedback, personalized learning paths, and priority support."
+      },
+      "canIPracticeSpeaking": {
+        "question": "Can I practice speaking English with the app?",
+        "answer": "Yes! English Now includes conversation practice features where you can have real-time conversations with our AI tutor. The AI will help you practice pronunciation, correct your mistakes, and guide you through natural conversations on various topics."
+      },
+      "isProgressSaved": {
+        "question": "Is my progress saved across devices?",
+        "answer": "Absolutely! Your progress, vocabulary, and learning history are automatically synced across all your devices when you sign in with your account. You can seamlessly continue learning on your phone, tablet, or computer."
+      },
+      "howIsDifferent": {
+        "question": "How is this different from other English learning apps?",
+        "answer": "English Now combines multiple learning methods in one app - conversation practice, vocabulary, grammar, and personalized feedback - all powered by advanced AI. Instead of switching between different apps, you get everything you need in one place, with a learning experience that adapts to your needs."
+      },
+      "canIUseOffline": {
+        "question": "Can I use English Now offline?",
+        "answer": "Some features are available offline, such as reviewing your saved vocabulary and completed lessons. However, conversation practice and AI feedback require an internet connection. We're working on expanding offline capabilities in future updates."
+      }
+    }
+  },
   "start": {
     "title": "It was supposed to take <br/> a weekend, not a life.",
     "subtitle": "7-day free trial, no credit card required"

@@ -1,0 +1,1 @@
+ALTER TABLE "user_activity" ADD COLUMN "duration_seconds" integer;

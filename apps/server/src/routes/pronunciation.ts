@@ -1,4 +1,5 @@
 import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { recordActivity } from "@english.now/api/services/record-activity";
 import { auth } from "@english.now/auth";
 import {
 	and,
@@ -126,7 +127,9 @@ pronunciation.post("/assess-and-complete", requireAuth, async (c) => {
 	if (!session) return c.json({ error: "Unauthorized" }, 401);
 
 	const body = await c.req.json();
-	const { sessionId } = z.object({ sessionId: z.string() }).parse(body);
+	const { sessionId, durationSeconds } = z
+		.object({ sessionId: z.string(), durationSeconds: z.number().optional() })
+		.parse(body);
 
 	const [dbSession] = await db
 		.select()
@@ -158,6 +161,10 @@ pronunciation.post("/assess-and-complete", requireAuth, async (c) => {
 		.update(pronunciationSession)
 		.set({ status: "assessing" })
 		.where(eq(pronunciationSession.id, sessionId));
+
+	recordActivity(session.user.id, "pronunciation", durationSeconds).catch(
+		console.error,
+	);
 
 	const boss = getQueue();
 	await enqueueProcessPronunciationSession(boss, {

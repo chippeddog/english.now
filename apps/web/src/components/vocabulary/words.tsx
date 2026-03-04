@@ -1,20 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-	Check,
-	Loader2,
-	MoreHorizontalIcon,
-	Plus,
-	Trash2,
-	Volume2,
-} from "lucide-react";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { Loader, Plus } from "lucide-react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
 	Select,
 	SelectContent,
@@ -23,76 +10,10 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import AddWordDialog from "@/components/vocabulary/add-world-dialog";
-import { cn } from "@/lib/utils";
+import usePlaybackFromUrl from "@/hooks/use-playback-from-url";
 import { useTRPC } from "@/utils/trpc";
 import { Button } from "../ui/button";
-
-const MASTERY_LABELS: Record<string, string> = {
-	new: "New",
-	learning: "Learning",
-	reviewing: "Reviewing",
-	mastered: "Mastered",
-};
-
-function MasteryIndicator({ mastery }: { mastery: string }) {
-	const circumference = 2 * Math.PI * 8;
-	const progress =
-		mastery === "new"
-			? 0
-			: mastery === "learning"
-				? 0.25
-				: mastery === "reviewing"
-					? 0.7
-					: 1;
-	const dashOffset = circumference - progress * circumference;
-
-	if (mastery === "mastered") {
-		return (
-			<div className="flex size-6 items-center justify-center">
-				<div
-					className="flex size-[18px] shrink-0 items-center justify-center rounded-full bg-green-500 text-white"
-					title={MASTERY_LABELS[mastery] ?? mastery}
-				>
-					<Check className="size-3" strokeWidth={2.5} />
-				</div>
-			</div>
-		);
-	}
-
-	return (
-		<div
-			className="relative flex size-6 shrink-0 items-center justify-center"
-			title={MASTERY_LABELS[mastery] ?? mastery}
-		>
-			<svg className="size-6" viewBox="0 0 24 24" aria-hidden="true">
-				<circle
-					cx="12"
-					cy="12"
-					r="8"
-					fill="none"
-					stroke="currentColor"
-					strokeWidth="2"
-					className="text-neutral-200 dark:text-neutral-600"
-				/>
-				{progress > 0 && (
-					<circle
-						cx="12"
-						cy="12"
-						r="8"
-						fill="none"
-						stroke="currentColor"
-						strokeWidth="2"
-						strokeLinecap="round"
-						strokeDasharray={`${circumference}`}
-						strokeDashoffset={dashOffset}
-						transform="rotate(-90 12 12)"
-						className="text-green-500"
-					/>
-				)}
-			</svg>
-		</div>
-	);
-}
+import ItemRow from "./item-row";
 
 export default function Words() {
 	const trpc = useTRPC();
@@ -107,34 +28,7 @@ export default function Words() {
 		"all" | "learning" | "reviewing" | "mastered"
 	>("all");
 
-	const audioRef = useRef<HTMLAudioElement | null>(null);
-	const [playingId, setPlayingId] = useState<string | null>(null);
-
-	const playAudio = useCallback(
-		(url: string, id: string) => {
-			if (audioRef.current) {
-				audioRef.current.pause();
-				audioRef.current = null;
-			}
-			if (playingId === id) {
-				setPlayingId(null);
-				return;
-			}
-			const audio = new Audio(url);
-			audioRef.current = audio;
-			setPlayingId(id);
-			audio.onended = () => {
-				setPlayingId(null);
-				audioRef.current = null;
-			};
-			audio.onerror = () => {
-				setPlayingId(null);
-				audioRef.current = null;
-			};
-			audio.play().catch(() => setPlayingId(null));
-		},
-		[playingId],
-	);
+	const { playAudio, playingId } = usePlaybackFromUrl();
 
 	const addWordMutation = useMutation(
 		trpc.vocabulary.addWord.mutationOptions({
@@ -173,7 +67,7 @@ export default function Words() {
 	if (isLoading) {
 		return (
 			<div className="flex items-center justify-center py-16">
-				<Loader2 className="size-6 animate-spin text-muted-foreground" />
+				<Loader className="size-5 animate-spin text-muted-foreground" />
 			</div>
 		);
 	}
@@ -190,7 +84,6 @@ export default function Words() {
 						Add words manually to build your vocabulary.
 					</p>
 				</div>
-
 				<Button
 					className="gap-1.5 rounded-xl border border-neutral-200 bg-linear-to-b from-neutral-50 to-neutral-100 text-neutral-700 italic"
 					onClick={() => setAddDialogOpen(true)}
@@ -214,7 +107,7 @@ export default function Words() {
 		<div>
 			<div className="mb-4 flex items-center justify-between">
 				<div className="flex items-center gap-2">
-					<span className="font-medium text-lg">Words</span>
+					<span className="font-semibold text-lg">Words</span>
 				</div>
 				<div className="flex items-center gap-2">
 					<Select
@@ -261,71 +154,20 @@ export default function Words() {
 
 			<div className="space-y-2">
 				{filteredWords.map((w) => (
-					<div
+					<ItemRow
 						key={w.userWordId}
-						className="group flex w-full items-center justify-between gap-3 rounded-2xl border border-border/50 bg-white p-2.5 px-3 text-left transition-colors hover:border-border/80 hover:shadow-xs dark:bg-slate-900"
-					>
-						<div className="flex items-center gap-3">
-							{w.audioUrl ? (
-								<button
-									type="button"
-									onClick={() => playAudio(w.audioUrl ?? "", w.userWordId)}
-									className={cn(
-										"flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-neutral-100",
-										playingId === w.userWordId
-											? "text-primary"
-											: "text-muted-foreground",
-									)}
-								>
-									<Volume2 className="size-4" />
-								</button>
-							) : null}
-							<div>
-								<div className="flex items-center gap-2">
-									<span className="truncate text-left font-medium text-sm">
-										{w.lemma}
-									</span>
-									{w.ipa && (
-										<span className="text-muted-foreground text-xs">
-											{w.ipa}
-										</span>
-									)}
-								</div>
-								<p className="line-clamp-1 text-muted-foreground text-sm">
-									{w.translation ?? w.definition}
-								</p>
-							</div>
-						</div>
-						<div className="flex items-center gap-2">
-							<MasteryIndicator mastery={w.mastery} />
-							{/* <span className="text-muted-foreground text-xs">
-								{MASTERY_LABELS[w.mastery] ?? w.mastery}
-							</span> */}
-
-							<DropdownMenu>
-								<DropdownMenuTrigger asChild>
-									<Button
-										className="size-6 hover:bg-neutral-100"
-										variant="ghost"
-										size="icon"
-									>
-										<MoreHorizontalIcon className="size-4" />
-									</Button>
-								</DropdownMenuTrigger>
-								<DropdownMenuContent align="end">
-									<DropdownMenuItem
-										variant="destructive"
-										onClick={() =>
-											removeWordMutation.mutate({ userWordId: w.userWordId })
-										}
-									>
-										<Trash2 />
-										Delete
-									</DropdownMenuItem>
-								</DropdownMenuContent>
-							</DropdownMenu>
-						</div>
-					</div>
+						id={w.userWordId}
+						primaryText={w.lemma}
+						secondaryText={w.translation ?? w.definition}
+						ipa={w.ipa}
+						audioUrl={w.audioUrl}
+						mastery={w.mastery}
+						playingId={playingId}
+						onPlay={playAudio}
+						onDelete={() =>
+							removeWordMutation.mutate({ userWordId: w.userWordId })
+						}
+					/>
 				))}
 			</div>
 		</div>

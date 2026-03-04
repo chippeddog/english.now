@@ -106,7 +106,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
 			</PopoverTrigger>
 			<PopoverContent className="w-48 rounded-xl p-0 shadow-none" align="start">
 				<div className="flex flex-col">
-					<div className="border-b p-2">
+					{/* <div className="border-b p-2">
 						<div className="relative">
 							<Search className="-translate-y-1/2 absolute top-1/2 left-2.5 size-4 text-muted-foreground" />
 							<Input
@@ -117,7 +117,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
 								className="h-8 pl-8 text-sm"
 							/>
 						</div>
-					</div>
+					</div> */}
 					<div className="flex-1 overflow-auto p-1">
 						{filteredLanguages.length === 0 ? (
 							<div className="py-6 text-center text-muted-foreground text-sm">

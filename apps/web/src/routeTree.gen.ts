@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as GeneratingRouteImport } from './routes/generating'
 import { Route as SessionRouteImport } from './routes/_session'
@@ -52,6 +53,11 @@ import { Route as LessonLessonLessonIdRouteImport } from './routes/_lesson.lesso
 import { Route as DashboardCoursesCourseIdRouteImport } from './routes/_dashboard.courses.$courseId'
 import { Route as ConversationConversationSessionIdRouteImport } from './routes/_conversation.conversation.$sessionId'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
@@ -265,6 +271,7 @@ const ConversationConversationSessionIdRoute =
 export interface FileRoutesByFullPath {
   '/generating': typeof GeneratingRoute
   '/onboarding': typeof OnboardingRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/courses': typeof DashboardCoursesRouteWithChildren
   '/fluency': typeof DashboardFluencyRoute
   '/grammar': typeof DashboardGrammarRoute
@@ -302,6 +309,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/generating': typeof GeneratingRoute
   '/onboarding': typeof OnboardingRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/fluency': typeof DashboardFluencyRoute
   '/grammar': typeof DashboardGrammarRoute
   '/home': typeof DashboardHomeRoute
@@ -345,6 +353,7 @@ export interface FileRoutesById {
   '/_session': typeof SessionRouteWithChildren
   '/generating': typeof GeneratingRoute
   '/onboarding': typeof OnboardingRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_dashboard/courses': typeof DashboardCoursesRouteWithChildren
   '/_dashboard/fluency': typeof DashboardFluencyRoute
   '/_dashboard/grammar': typeof DashboardGrammarRoute
@@ -384,6 +393,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/generating'
     | '/onboarding'
+    | '/sitemap.xml'
     | '/courses'
     | '/fluency'
     | '/grammar'
@@ -421,6 +431,7 @@ export interface FileRouteTypes {
   to:
     | '/generating'
     | '/onboarding'
+    | '/sitemap.xml'
     | '/fluency'
     | '/grammar'
     | '/home'
@@ -463,6 +474,7 @@ export interface FileRouteTypes {
     | '/_session'
     | '/generating'
     | '/onboarding'
+    | '/sitemap.xml'
     | '/_dashboard/courses'
     | '/_dashboard/fluency'
     | '/_dashboard/grammar'
@@ -508,10 +520,18 @@ export interface RootRouteChildren {
   SessionRoute: typeof SessionRouteWithChildren
   GeneratingRoute: typeof GeneratingRoute
   OnboardingRoute: typeof OnboardingRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/onboarding': {
       id: '/onboarding'
       path: '/onboarding'
@@ -971,6 +991,7 @@ const rootRouteChildren: RootRouteChildren = {
   SessionRoute: SessionRouteWithChildren,
   GeneratingRoute: GeneratingRoute,
   OnboardingRoute: OnboardingRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -1,3 +1,20 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /home
+Disallow: /practice
+Disallow: /lessons
+Disallow: /vocabulary
+Disallow: /grammar
+Disallow: /fluency
+Disallow: /settings
+Disallow: /courses
+Disallow: /conversation
+Disallow: /pronunciation
+Disallow: /session
+Disallow: /feedback
+Disallow: /lesson
+Disallow: /onboarding
+Disallow: /generating
+
+Sitemap: https://english.now/sitemap.xml

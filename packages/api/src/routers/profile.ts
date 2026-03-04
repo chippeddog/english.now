@@ -52,6 +52,30 @@ export const profileRouter = router({
 
 			return rows.map((r) => r.date);
 		}),
+	getDailyPracticeTime: protectedProcedure
+		.input(z.object({ timezone: z.string() }))
+		.query(async ({ ctx, input }) => {
+			const rows = await db
+				.select({
+					date: sql<string>`to_char((${userActivity.activityAt} AT TIME ZONE ${input.timezone})::date, 'YYYY-MM-DD')`.as(
+						"date",
+					),
+					seconds:
+						sql<number>`COALESCE(SUM(${userActivity.durationSeconds}), 0)`.as(
+							"seconds",
+						),
+				})
+				.from(userActivity)
+				.where(
+					and(
+						eq(userActivity.userId, ctx.session.user.id),
+						sql`${userActivity.activityAt} >= DATE_TRUNC('week', NOW() AT TIME ZONE ${input.timezone})::timestamptz`,
+					),
+				)
+				.groupBy(sql`1`);
+
+			return rows.map((r) => ({ date: r.date, seconds: Number(r.seconds) }));
+		}),
 	getSubscription: protectedProcedure.query(async ({ ctx }) => {
 		const [sub] = await db
 			.select()

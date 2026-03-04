@@ -1,14 +1,7 @@
 import { env } from "@english.now/env/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import {
-	InfoIcon,
-	Languages,
-	Loader,
-	Loader2,
-	PauseIcon,
-	PlayIcon,
-} from "lucide-react";
+import { Languages, Loader, Loader2, PauseIcon, PlayIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	AlertDialog,
@@ -24,8 +17,10 @@ import { Button } from "@/components/ui/button";
 import useAudioDevices from "@/hooks/use-audio-devices";
 import useAudioPlayback from "@/hooks/use-audio-playback";
 import useAudioRecorder from "@/hooks/use-audio-recoder";
+import { usePracticeTimer } from "@/hooks/use-practice-timer";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/utils/trpc";
+import ClickableMessage from "./clickable-message";
 import { ControlToolbar } from "./control-toolbar";
 
 type Message = {
@@ -39,6 +34,7 @@ type Message = {
 export default function PracticeView({ sessionId }: { sessionId: string }) {
 	const trpc = useTRPC();
 	const navigate = useNavigate();
+	const { getElapsedSeconds } = usePracticeTimer();
 	const [messages, setMessages] = useState<Message[]>([]);
 	const [translations, setTranslations] = useState<Record<string, string>>({});
 	const [showHint, setShowHint] = useState(false);
@@ -48,6 +44,7 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 	const [showFinishDialog, setShowFinishDialog] = useState(false);
 	const [isFinishing, setIsFinishing] = useState(false);
 	const [generatingTTS, setGeneratingTTS] = useState<Set<string>>(new Set());
+	const [vocabMode, setVocabMode] = useState(false);
 	const [autoTranslate, setAutoTranslate] = useState(() => {
 		return localStorage.getItem("conversation:autoTranslate") === "true";
 	});
@@ -351,6 +348,7 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 	const handleFinishSession = useCallback(async () => {
 		if (!sessionId) return;
 		setIsFinishing(true);
+		const durationSeconds = getElapsedSeconds();
 		try {
 			if (canGetFeedback) {
 				const response = await fetch(
@@ -359,7 +357,7 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 						method: "POST",
 						headers: { "Content-Type": "application/json" },
 						credentials: "include",
-						body: JSON.stringify({ sessionId }),
+						body: JSON.stringify({ sessionId, durationSeconds }),
 					},
 				);
 				if (!response.ok) throw new Error("Failed to finish session");
@@ -372,7 +370,7 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
 					credentials: "include",
-					body: JSON.stringify({ sessionId }),
+					body: JSON.stringify({ sessionId, durationSeconds }),
 				});
 				navigate({ to: "/practice" });
 			}
@@ -380,7 +378,7 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 			console.error("Error finishing session:", error);
 			setIsFinishing(false);
 		}
-	}, [sessionId, canGetFeedback, navigate]);
+	}, [sessionId, canGetFeedback, navigate, getElapsedSeconds]);
 
 	useEffect(() => {
 		if (data?.messages && !hasPlayedInitialAudio.current) {
@@ -459,7 +457,11 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 							}}
 						>
 							<p className="whitespace-pre-wrap text-sm leading-relaxed">
-								{message.content}
+								<ClickableMessage
+									content={message.content}
+									vocabMode={vocabMode}
+									disabled={message.isStreaming}
+								/>
 								{message.isStreaming && (
 									<span className="flex gap-1 py-1">
 										<span className="size-1.5 animate-bounce rounded-full bg-current opacity-60" />
@@ -611,6 +613,8 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 				setSelectedDevice={setSelectedDevice}
 				autoTranslate={autoTranslate}
 				onAutoTranslateChange={handleAutoTranslateToggle}
+				vocabMode={vocabMode}
+				setVocabMode={setVocabMode}
 			/>
 
 			<AlertDialog open={showFinishDialog} onOpenChange={setShowFinishDialog}>

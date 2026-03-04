@@ -9,6 +9,12 @@ import { Button } from "../ui/button";
 export default function Hero() {
 	const { t } = useTranslation("home");
 	const [open, setOpen] = useState(false);
+	const avatarLetters = [
+		{ id: "1", letter: "A" },
+		{ id: "2", letter: "L" },
+		{ id: "3", letter: "M" },
+		{ id: "4", letter: "O" },
+	];
 
 	return (
 		<section className="relative pt-10 md:pt-16">
@@ -60,16 +66,16 @@ export default function Hero() {
 					<div className="flex items-center gap-4 pt-4 text-muted-foreground text-sm">
 						<span className="flex items-center gap-1.5">
 							<span className="-space-x-1 flex">
-								{[1, 2, 3, 4].map((_avatar, _i) => (
+								{avatarLetters.map(({ id, letter }) => (
 									<div
-										key={_avatar}
+										key={id}
 										className="flex size-7 items-center justify-center rounded-full border-2 border-white bg-[radial-gradient(100%_100%_at_50%_0%,#EFFF9B_0%,#D8FF76_60%,#C6F64D_100%)] font-bold font-lyon text-lime-800 text-xs shadow-xs"
 									>
-										K
+										{letter}
 									</div>
 								))}
 							</span>
-							<span>{t("hero.learners", { count: "10k" })}</span>
+							<span>{t("hero.learners", { count: 10000 })}</span>
 						</span>
 						<span className="h-4 w-px bg-neutral-400" />
 						<span>{t("hero.noCard")}</span>

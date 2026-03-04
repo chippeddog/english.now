@@ -4,6 +4,7 @@ import { Loader2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import ExercisePlayer from "@/components/lesson/exercise-player";
 import LessonSummary from "@/components/lesson/lesson-summary";
+import { usePracticeTimer } from "@/hooks/use-practice-timer";
 import { useTRPC } from "@/utils/trpc";
 
 export const Route = createFileRoute("/_lesson/lesson/$lessonId")({
@@ -31,6 +32,7 @@ function LessonPage() {
 	const { lessonId } = Route.useParams();
 	const navigate = useNavigate();
 	const trpc = useTRPC();
+	const { getElapsedSeconds } = usePracticeTimer();
 
 	const [attemptId, setAttemptId] = useState<string | null>(null);
 	const [exercises, setExercises] = useState<Exercise[]>([]);
@@ -110,12 +112,21 @@ function LessonPage() {
 	const handleNext = useCallback(() => {
 		if (currentIndex + 1 >= totalCount) {
 			if (attemptId) {
-				completeMutation.mutate({ attemptId });
+				completeMutation.mutate({
+					attemptId,
+					durationSeconds: getElapsedSeconds(),
+				});
 			}
 		} else {
 			setCurrentIndex((i) => i + 1);
 		}
-	}, [currentIndex, totalCount, attemptId, completeMutation]);
+	}, [
+		currentIndex,
+		totalCount,
+		attemptId,
+		completeMutation,
+		getElapsedSeconds,
+	]);
 
 	const handleBackToLessons = useCallback(() => {
 		navigate({ to: "/lessons" });

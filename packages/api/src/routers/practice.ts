@@ -19,6 +19,7 @@ import { env } from "@english.now/env/server";
 import { generateText, Output } from "ai";
 import { z } from "zod";
 import { protectedProcedure, router } from "../index";
+import { recordActivity } from "../services/record-activity";
 
 const openai = createOpenAI({ apiKey: env.OPENAI_API_KEY });
 
@@ -323,6 +324,22 @@ export const practiceRouter = router({
 				}
 			}
 
+			return { success: true };
+		}),
+
+	recordPracticeTime: protectedProcedure
+		.input(
+			z.object({
+				activityType: z.string(),
+				durationSeconds: z.number(),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			await recordActivity(
+				ctx.session.user.id,
+				input.activityType,
+				input.durationSeconds,
+			);
 			return { success: true };
 		}),
 

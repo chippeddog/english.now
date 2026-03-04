@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, RotateCcw, Volume2, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { usePracticeTimer } from "@/hooks/use-practice-timer";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/utils/trpc";
 import { Button } from "../ui/button";
@@ -35,6 +36,7 @@ export default function PracticeSession({
 }) {
 	const trpc = useTRPC();
 	const queryClient = useQueryClient();
+	const { getElapsedSeconds } = usePracticeTimer();
 
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const [flipped, setFlipped] = useState(false);
@@ -52,6 +54,9 @@ export default function PracticeSession({
 	);
 	const updatePhraseMastery = useMutation(
 		trpc.vocabulary.updatePhraseMastery.mutationOptions({}),
+	);
+	const recordPracticeTime = useMutation(
+		trpc.practice.recordPracticeTime.mutationOptions({}),
 	);
 
 	const currentCard = cards[currentIndex];
@@ -104,6 +109,10 @@ export default function PracticeSession({
 
 			if (currentIndex + 1 >= cards.length) {
 				setPhase("results");
+				recordPracticeTime.mutate({
+					activityType: "vocabulary",
+					durationSeconds: getElapsedSeconds(),
+				});
 				queryClient.invalidateQueries({
 					queryKey: trpc.vocabulary.getWords.queryKey(),
 				});

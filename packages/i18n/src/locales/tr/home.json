@@ -35,5 +35,142 @@
   "start": {
     "title": "Bir hafta sonu sürmesi gerekiyordu, bir ömür değil.",
     "subtitle": "7 günlük ücretsiz deneme, kredi kartı gerektirmez"
+  },
+  "compare": {
+    "title": "Gerçek bir özel öğretmenden 50 kat daha ucuz cebinizde özel öğretmen",
+    "subtitle": "Yüksek kaliteli öğrenme pahalı olmak zorunda değil. Ders beklemeye son.",
+    "subtitleLine2": "Ders beklemeye son.",
+    "realTutors": "Gerçek Öğretmenler",
+    "comparisons": {
+      "costPerMonth": "Aylık maliyet (USD)",
+      "availability": "7/24 erişilebilirlik — her zaman, her yerde öğrenin",
+      "personalizedFeedback": "Kişiselleştirilmiş geri bildirim, anında",
+      "selfPaced": "Kendi hızınıza göre ilerlemeyi destekler",
+      "tracksProgress": "İlerlemenizi takip eder ve günlük olarak uyum sağlar",
+      "noScheduling": "Planlama stresi veya iptaller yok",
+      "builtInAI": "Gelişmiş yapay zeka dil modelleri ile entegre"
+    },
+    "usPrice": "~$12",
+    "themPrice": "~$400+"
+  },
+  "letter": {
+    "title": "English.now'un arkasındaki hikaye",
+    "subtitle": "Ben de her gün English Now'a güveniyorum ve onu en iyi İngilizce öğrenme uygulaması yapmak için takıntılıyım.",
+    "readMore": "Daha fazla oku",
+    "greeting": "Merhaba, ben Dmytro.",
+    "paragraph1": "İngilizce öğrenmenin aşılması imkansız bir dağ gibi hissettirdiği Ukrayna'da büyüdüm. Geleneksel dersler sıkıcıydı, ders kitapları günceldi ve uygulamalar gerçek öğrenme araçlarından çok oyun gibiydi.",
+    "highlight1": "bir dili öğrenmenin en iyi yolu onu gerçekten kullanmaktır.",
+    "paragraph2": "Kelime listelerini ezberleyerek veya size puan veren ama gerçek dünya konuşmalarına hazırlamayan oyunlaştırılmış dersleri tamamlayarak değil.",
+    "paragraph3": "English.now, dil öğrenme konusunda beni rahatsız eden her şeye cevabım. Basit bir inanç üzerine kurulu:",
+    "highlight2": "Yapay zeka sabırlı bir arkadaş olabilir.",
+    "paragraph4": "Hatalarınızı asla yargılamaz, 7/24 erişilebilir ve öğrenme yolculuğunuzda tam olarak nerede olduğunuzu anlamaya uyum sağlar.",
+    "freeToStart": "başlamak ücretsiz",
+    "freeNote": ", ve bunu böyle tutmaya kararlıyım.",
+    "signOff": "English Now'u kullandığınız için teşekkür ederim.",
+    "founder": "Dmytro Tihunov",
+    "founderTitle": "Kurucu, English Now"
+  },
+  "pricing": {
+    "title": "Fiyatlandırma",
+    "subtitle": "Size uygun planı seçin.",
+    "save20": "%20 Tasarruf edin",
+    "mostPopular": "En Popüler",
+    "whatsIncluded": "Neler dahil",
+    "startTrial": "7 günlük denemeye başlayın",
+    "getStarted": "Başlayın",
+    "duration": {
+      "forever": "sonsuz",
+      "month": "ay",
+      "year": "yıl"
+    },
+    "plans": {
+      "free": {
+        "name": "Ücretsiz",
+        "description": "Yeni başlayanlar için harika.",
+        "features": [
+          "Günde 1 yapay zeka konuşması",
+          "Temel dil bilgisi dersleri",
+          "Sınırlı kelime egzersizleri",
+          "İlerleme takibi"
+        ]
+      },
+      "monthly": {
+        "name": "Aylık",
+        "description": "Orta düzey öğrenenler için harika.",
+        "features": [
+          "Sınırsız yapay zeka konuşmaları",
+          "Gelişmiş yapay zeka geri bildirimi",
+          "Tam kelime kütüphanesi",
+          "Kişiselleştirilmiş öğrenme yolu",
+          "İlerleme takibi ve analiz"
+        ]
+      },
+      "yearly": {
+        "name": "Yıllık",
+        "description": "İleri düzey öğrenenler için harika.",
+        "features": [
+          "Sınırsız yapay zeka konuşmaları",
+          "Gelişmiş yapay zeka geri bildirimi",
+          "Tam kelime kütüphanesi",
+          "Kişiselleştirilmiş öğrenme yolu",
+          "İlerleme takibi ve analiz"
+        ]
+      }
+    }
+  },
+  "faq": {
+    "title": "SSS",
+    "subtitle": "Aradığınız cevabı bulamıyor musunuz?",
+    "contact": "support@english.now",
+    "items": {
+      "0": {
+        "question": "English Now İngilizce öğrenmeme nasıl yardımcı olur?",
+        "answer": "English Now, konuşma pratiği, kelime bilgisi geliştirme, dil bilgisi dersleri ve kişiselleştirilmiş geri bildirimleri birleştiren hepsi bir arada bir İngilizce öğrenme uygulamasıdır. Yapay zeka destekli sistemimiz, öğrenme tarzınıza uyum sağlar ve daha hızlı gelişmenize yardımcı olmak için gerçek zamanlı düzeltmeler ve öneriler sunar."
+      },
+      "1": {
+        "question": "English Now'u kullanmak için ödeme yapmam gerekiyor mu?",
+        "answer": "Hem ücretsiz hem de premium planlar sunuyoruz. Ücretsiz plan, sınırlı konuşma pratiği ve kelime egzersizleri gibi temel özellikleri içerir. Premium planımız, sınırsız pratik oturumları, gelişmiş yapay zeka geri bildirimi, kişiselleştirilmiş öğrenme yolları ve öncelikli destek sunar."
+      },
+      "2": {
+        "question": "Uygulama ile İngilizce konuşma pratiği yapabilir miyim?",
+        "answer": "Evet! English Now, yapay zeka öğretmenimizle gerçek zamanlı konuşmalar yapabileceğiniz konuşma pratiği özelliklerini içerir. Yapay zeka, telaffuzunuzu pratiğe dökmenize, hatalarınızı düzeltmenize ve çeşitli konularda doğal konuşmalar yapmanıza rehberlik eder."
+      },
+      "3": {
+        "question": "İlerlemem cihazlar arasında kaydediliyor mu?",
+        "answer": "Kesinlikle! İlerlemeniz, kelime bilginiz ve öğrenme geçmişiniz, hesabınızla oturum açtığınızda tüm cihazlarınız arasında otomatik olarak senkronize edilir. Telefonunuzda, tabletinizde veya bilgisayarınızda kesintisiz öğrenmeye devam edebilirsiniz."
+      },
+      "4": {
+        "question": "Bu diğer İngilizce öğrenme uygulamalarından nasıl farklı?",
+        "answer": "English Now, tek bir uygulamada birden fazla öğrenme yöntemini birleştirir - konuşma pratiği, kelime bilgisi, dil bilgisi ve kişiselleştirilmiş geri bildirim - hepsi gelişmiş yapay zeka ile desteklenir. Farklı uygulamalar arasında geçiş yapmak yerine, ihtiyaçlarınıza uyum sağlayan bir öğrenme deneyimi ile ihtiyacınız olan her şeyi tek bir yerde alırsınız."
+      },
+      "5": {
+        "question": "English Now'u çevrimdışı kullanabilir miyim?",
+        "answer": "Kaydedilen kelime bilginizi ve tamamlanan derslerinizi gözden geçirmek gibi bazı özellikler çevrimdışı olarak kullanılabilir. Ancak, konuşma pratiği ve yapay zeka geri bildirimi internet bağlantısı gerektirir. Gelecek güncellemelerde çevrimdışı yetenekleri genişletmek için çalışıyoruz."
+      },
+      "howDoesItHelp": {
+        "question": "English Now İngilizce öğrenmeme nasıl yardımcı olur?",
+        "answer": "English Now, konuşma pratiği, kelime dağarcığı geliştirme, dilbilgisi dersleri ve kişiselleştirilmiş geri bildirimleri bir araya getiren hepsi bir arada bir İngilizce öğrenme uygulamasıdır. Yapay zeka destekli sistemimiz, öğrenme tarzınıza uyum sağlar ve daha hızlı gelişmenize yardımcı olmak için gerçek zamanlı düzeltmeler ve öneriler sunar."
+      },
+      "doINeedToPay": {
+        "question": "English Now'u kullanmak için ödeme yapmam gerekiyor mu?",
+        "answer": "Hem ücretsiz hem de premium planlar sunuyoruz. Ücretsiz plan, sınırlı konuşma pratiği ve kelime dağarcığı alıştırmaları gibi temel özellikleri içerir. Premium planımız, sınırsız pratik oturumları, gelişmiş yapay zeka geri bildirimi, kişiselleştirilmiş öğrenme yolları ve öncelikli destek sunar."
+      },
+      "canIPracticeSpeaking": {
+        "question": "Uygulama ile İngilizce konuşma pratiği yapabilir miyim?",
+        "answer": "Evet! English Now, yapay zeka eğitmenimizle gerçek zamanlı konuşmalar yapabileceğiniz konuşma pratiği özellikleri içerir. Yapay zeka, telaffuz pratiği yapmanıza, hatalarınızı düzeltmenize ve çeşitli konularda doğal konuşmalar yapmanıza rehberlik eder."
+      },
+      "isProgressSaved": {
+        "question": "İlerlemen tüm cihazlarda kaydediliyor mu?",
+        "answer": "Kesinlikle! İlerlemeniz, kelime dağarcığınız ve öğrenme geçmişiniz, hesabınıza giriş yaptığınızda tüm cihazlarınızda otomatik olarak senkronize edilir. Telefonunuzda, tabletinizde veya bilgisayarınızda öğrenmeye sorunsuz bir şekilde devam edebilirsiniz."
+      },
+      "howIsDifferent": {
+        "question": "Bu, diğer İngilizce öğrenme uygulamalarından nasıl farklı?",
+        "answer": "English Now, konuşma pratiği, kelime dağarcığı, dilbilgisi ve kişiselleştirilmiş geri bildirim gibi birden fazla öğrenme yöntemini tek bir uygulamada birleştirir - hepsi gelişmiş yapay zeka ile desteklenir. Farklı uygulamalar arasında geçiş yapmak yerine, ihtiyacınız olan her şeyi tek bir yerde, ihtiyaçlarınıza uyum sağlayan bir öğrenme deneyimi ile elde edersiniz."
+      },
+      "canIUseOffline": {
+        "question": "English Now'u çevrimdışı kullanabilir miyim?",
+        "answer": "Bazı özellikler çevrimdışı olarak kullanılabilir, örneğin kaydedilmiş kelime dağarcığınızı ve tamamlanmış derslerinizi gözden geçirme. Ancak, konuşma pratiği ve yapay zeka geri bildirimi internet bağlantısı gerektirir. Gelecek güncellemelerde çevrimdışı yetenekleri genişletmek için çalışıyoruz."
+      }
+    }
   }
 }

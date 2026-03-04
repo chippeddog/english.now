@@ -7,7 +7,13 @@ import {
 	useTranslation,
 } from "@english.now/i18n";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { Headphones, Languages, LogOutIcon, Settings } from "lucide-react";
+import {
+	Headphones,
+	Languages,
+	LogOutIcon,
+	Menu,
+	Settings,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import Logo from "@/components/logo";
 import { authClient } from "@/lib/auth-client";
@@ -23,6 +29,7 @@ import {
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Skeleton } from "../ui/skeleton";
 import UpgradeDialog from "./upgrade-dialog";
 import VoicesDialog from "./voices-dialog";
@@ -84,8 +91,42 @@ export default function Navbar() {
 		>
 			<div className="container relative z-10 mx-auto max-w-5xl px-4">
 				<nav className="flex grid-cols-2 items-center justify-between py-5 md:grid-cols-5">
-					<div className="col-span-3 items-center gap-3 md:flex">
-						<Logo link="/home" />
+					<div className="col-span-3 flex items-center gap-2">
+						<Logo link="/home" />{" "}
+						<Popover>
+							<PopoverTrigger asChild>
+								<button
+									type="button"
+									className="flex size-9 items-center justify-center rounded-lg text-lime-900 transition-colors hover:bg-lime-100 hover:text-lime-800 md:hidden"
+									aria-label={t("nav.menu")}
+								>
+									<Menu className="size-5" />
+								</button>
+							</PopoverTrigger>
+							<PopoverContent
+								align="start"
+								className="w-48 p-2"
+								side="bottom"
+								sideOffset={8}
+							>
+								<nav className="flex flex-col gap-0.5">
+									{links.map((link) => (
+										<Link
+											key={link.to}
+											to={link.to}
+											className={cn(
+												"rounded-lg px-3 py-2 font-medium text-sm transition-colors",
+												location.pathname === link.to
+													? "bg-neutral-100 text-neutral-900"
+													: "text-neutral-900 hover:bg-neutral-100 hover:text-neutral-900",
+											)}
+										>
+											{link.label}
+										</Link>
+									))}
+								</nav>
+							</PopoverContent>
+						</Popover>
 						<div className="hidden gap-1.5 md:flex">
 							{links.map((link) => (
 								<Link

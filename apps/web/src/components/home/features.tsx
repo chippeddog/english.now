@@ -65,7 +65,7 @@ function PracticeSpeakingDemo() {
 
 				<div className="space-y-4 p-4 px-4 pb-0">
 					{/* AI Message */}
-					<div className="max-w-[80%] select-none">
+					<div className="max-w-full select-none md:max-w-[80%]">
 						<div
 							className="max-w-[90%] rounded-2xl rounded-tl-md bg-white px-3.5 py-2.5 text-sm"
 							style={{
@@ -107,8 +107,7 @@ function PracticeSpeakingDemo() {
 						</div>
 					</div>
 
-					{/* User Message */}
-					<div className="ml-auto max-w-[70%] select-none">
+					<div className="ml-auto max-w-[90%] select-none md:max-w-[70%]">
 						<div
 							className="rounded-2xl rounded-tr-md bg-radial from-[#EFFF9B] to-[#D8FF76] px-3.5 py-2.5 text-xs"
 							style={{
@@ -120,8 +119,7 @@ function PracticeSpeakingDemo() {
 						</div>
 					</div>
 
-					{/* AI Accuracy Response */}
-					<div className="max-w-[13%]">
+					<div className="max-w-[16%] select-none md:max-w-[13%]">
 						<div
 							className="rounded-2xl rounded-tl-md bg-white px-3.5 py-2.5 text-sm"
 							style={{

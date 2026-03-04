@@ -21,8 +21,10 @@ function RouteComponent() {
 	const { data: activityDates, isLoading: isActivityDatesLoading } = useQuery(
 		trpc.profile.getWeeklyActivity.queryOptions({ timezone }),
 	);
+	const { data: practiceTimeData } = useQuery(
+		trpc.profile.getDailyPracticeTime.queryOptions({ timezone }),
+	);
 	const firstName = session?.user.name?.split(" ")[0] || "Learner";
-
 	return (
 		<div className="container relative z-10 mx-auto max-w-5xl px-4 py-6 pt-8">
 			<div className="mb-8 flex flex-col gap-1">
@@ -46,7 +48,11 @@ function RouteComponent() {
 						isLoading={isActivityDatesLoading}
 					/>
 					<Lessons />
-					<DailyPracticeTime />
+					<DailyPracticeTime
+						practiceData={practiceTimeData ?? []}
+						dailyGoal={profile?.dailyGoal ?? 5}
+						timezone={timezone}
+					/>
 				</div>
 			</div>
 		</div>

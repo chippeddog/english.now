@@ -1,3 +1,4 @@
+import { useTranslation } from "@english.now/i18n";
 import { Link } from "@tanstack/react-router";
 import { ChevronDownIcon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
@@ -6,17 +7,17 @@ import { useState } from "react";
 const COLLAPSED_HEIGHT = 340;
 
 export const Letter = () => {
+	const { t } = useTranslation("home");
 	const [expanded, setExpanded] = useState(false);
 
 	return (
 		<div className="container mx-auto max-w-5xl pt-24">
 			<div className="mx-auto mb-10 max-w-xl text-center md:mb-14">
 				<h2 className="mb-4 font-bold font-lyon text-4xl tracking-tight md:text-5xl">
-					The story behind English.now
+					{t("letter.title")}
 				</h2>
 				<p className="text-balance text-center text-muted-foreground text-sm md:mx-auto md:max-w-boundary-sm md:text-lg">
-					I depend on English Now every day too, and I'm obsessed with making it
-					the best English learning app out there.
+					{t("letter.subtitle")}
 				</p>
 			</div>
 			<motion.div
@@ -41,7 +42,7 @@ export const Letter = () => {
 								onClick={() => setExpanded(true)}
 								className="flex items-center gap-1.5 rounded-full border bg-white px-4 py-2 font-medium text-sm shadow-sm transition-colors hover:bg-neutral-50 active:bg-neutral-100"
 							>
-								Read more
+								{t("letter.readMore")}
 								<ChevronDownIcon className="size-4" />
 							</button>
 						</motion.div>
@@ -78,44 +79,37 @@ export const Letter = () => {
 								/>
 							</svg>
 							<p className="mt-5 text-muted-foreground text-sm leading-relaxed md:mt-5 md:mb-8 md:text-base">
-								Hi, I'm Dmytro. <br />
-								<br />I grew up in Ukraine where learning English felt like an
-								impossible mountain to climb. Traditional classes were boring,
-								textbooks were outdated, and apps felt more like games than real
-								learning tools. <br />
+								{t("letter.greeting")} <br />
+								<br />
+								{t("letter.paragraph1")} <br />
 								<br />
 								That's when it hit me:{" "}
 								<span className="rounded-sm bg-[#D8FF76]/50 px-1 font-medium text-lime-700">
-									the best way to learn a language is by actually using it.
+									{t("letter.highlight1")}
 								</span>{" "}
-								Not by memorizing vocabulary lists or completing gamified
-								lessons that give you points but don't prepare you for
-								real-world conversations.
+								{t("letter.paragraph2")}
 								<br />
 								<br />
-								English.now is my answer to everything that frustrated me about
-								language learning. It's built on a simple belief:{" "}
+								{t("letter.paragraph3")}{" "}
 								<span className="rounded-sm bg-[#D8FF76]/50 px-1 font-medium text-lime-700">
-									{" "}
-									AI can be that patient friend.
+									{t("letter.highlight2")}
 								</span>{" "}
-								It never judges your mistakes, it's available 24/7, and it
-								adapts to exactly where you are in your learning journey.
+								{t("letter.paragraph4")}
 								<br />
 								<br />
 								It is completely{" "}
 								<Link className="text-lime-700 underline" to="/login">
-									free to start
+									{t("letter.freeToStart")}
 								</Link>
-								, and I'm committed to keeping it that way.
+								{t("letter.freeNote")}
 								<br />
 								<br />
-								Thank you for using English Now.
+								{t("letter.signOff")}
 							</p>
 							<div className="flex items-center gap-6">
 								<p className="flex flex-col gap-1 font-medium text-sm md:text-base">
 									<span className="flex items-center gap-2 font-medium">
-										Dmytro Tihunov{" "}
+										{t("letter.founder")}{" "}
 										<a
 											href="https://x.com/chippeddog"
 											target="_blank"
@@ -136,7 +130,7 @@ export const Letter = () => {
 										</a>
 									</span>
 									<span className="hidden text-muted-foreground text-sm md:inline">
-										Founder, English Now
+										{t("letter.founderTitle")}
 									</span>
 								</p>
 							</div>

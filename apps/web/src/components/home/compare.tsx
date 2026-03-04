@@ -1,54 +1,37 @@
+import { useTranslation } from "@english.now/i18n";
 import { Check, X } from "lucide-react";
 
-const comparisons = [
+const comparisonKeys = [
 	{
-		feature: "Cost per month (USD)",
-		us: "~$12",
-		them: "~$400+",
+		key: "costPerMonth" as const,
+		us: "usPrice" as const,
+		them: "themPrice" as const,
 	},
-	{
-		feature: "24/7 availability — learn any time, anywhere",
-		us: true,
-		them: false,
-	},
-	{
-		feature: "Personalized feedback, instantly",
-		us: true,
-		them: true,
-	},
-
-	{
-		feature: "Supports self-paced progression",
-		us: true,
-		them: false,
-	},
-	{
-		feature: "Tracks your progress and adapts daily",
-		us: true,
-		them: false,
-	},
-	{
-		feature: "No scheduling stress or cancellations",
-		us: true,
-		them: false,
-	},
-	{
-		feature: "Built-in advanced AI language models",
-		us: true,
-		them: false,
-	},
+	{ key: "availability" as const, us: true, them: false },
+	{ key: "personalizedFeedback" as const, us: true, them: true },
+	{ key: "selfPaced" as const, us: true, them: false },
+	{ key: "tracksProgress" as const, us: true, them: false },
+	{ key: "noScheduling" as const, us: true, them: false },
+	{ key: "builtInAI" as const, us: true, them: false },
 ];
+
 export function Compare() {
+	const { t } = useTranslation("home");
+	const comparisons = comparisonKeys.map((row) => ({
+		feature: t(`compare.comparisons.${row.key}`),
+		us: typeof row.us === "string" ? t(`compare.${row.us}`) : row.us,
+		them: typeof row.them === "string" ? t(`compare.${row.them}`) : row.them,
+	}));
+
 	return (
 		<div className="mx-auto mt-24 max-w-4xl">
 			<div className="mx-auto mb-10 max-w-xl text-center md:mb-14">
 				<h2 className="mb-4 font-bold font-lyon text-4xl tracking-tight md:text-5xl">
-					Private-tutor in your pocket for 50x cheaper than a real one
+					{t("compare.title")}
 				</h2>
 				<p className="text-balance text-center text-muted-foreground text-sm md:mx-auto md:max-w-boundary-sm md:text-lg">
-					High-quality learning doesn't have to be costly.{" "}
-					<br className="hidden md:block" />
-					No more waiting for a lesson.
+					{t("compare.subtitle")} <br className="hidden md:block" />
+					{t("compare.subtitleLine2")}
 				</p>
 			</div>
 			<div className="overflow-hidden">
@@ -66,7 +49,7 @@ export function Compare() {
 						</div>
 					</div>
 					<div className="text-center text-muted-foreground text-sm md:text-base">
-						Real Tutors
+						{t("compare.realTutors")}
 					</div>
 				</div>
 				<div className="flex flex-col gap-1">

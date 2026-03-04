@@ -1,12 +1,17 @@
 import { db, eq, userActivity, userProfile } from "@english.now/db";
 
-export async function recordActivity(userId: string, activityType: string) {
+export async function recordActivity(
+	userId: string,
+	activityType: string,
+	durationSeconds?: number,
+) {
 	const now = new Date();
 
 	await db.insert(userActivity).values({
 		id: crypto.randomUUID(),
 		userId,
 		activityType,
+		durationSeconds: durationSeconds ?? null,
 		completedAt: now,
 		activityAt: now,
 	});

@@ -35,5 +35,142 @@
   "start": {
     "title": "Doveva durare <br/> un weekend, non una vita.",
     "subtitle": "Prova gratuita di 7 giorni, nessuna carta di credito richiesta"
+  },
+  "compare": {
+    "title": "Tutor privato in tasca a 50 volte meno di uno reale",
+    "subtitle": "L'apprendimento di alta qualità non deve essere costoso. Non più attese per una lezione.",
+    "subtitleLine2": "Non più attese per una lezione.",
+    "realTutors": "Tutor Reali",
+    "comparisons": {
+      "costPerMonth": "Costo al mese (USD)",
+      "availability": "Disponibilità 24/7 — impara in qualsiasi momento, ovunque",
+      "personalizedFeedback": "Feedback personalizzato, istantaneamente",
+      "selfPaced": "Supporta la progressione autonoma",
+      "tracksProgress": "Traccia i tuoi progressi e si adatta quotidianamente",
+      "noScheduling": "Nessuno stress da pianificazione o cancellazioni",
+      "builtInAI": "Modelli di linguaggio AI avanzati integrati"
+    },
+    "usPrice": "~$12",
+    "themPrice": "~$400+"
+  },
+  "letter": {
+    "title": "La storia dietro English.now",
+    "subtitle": "Anch'io dipendo da English Now ogni giorno e sono ossessionato dal renderla la migliore app per imparare l'inglese.",
+    "readMore": "Leggi di più",
+    "greeting": "Ciao, sono Dmytro.",
+    "paragraph1": "Sono cresciuto in Ucraina, dove imparare l'inglese sembrava una montagna impossibile da scalare. Le lezioni tradizionali erano noiose, i libri di testo erano obsoleti e le app sembravano più giochi che veri strumenti di apprendimento.",
+    "highlight1": "il modo migliore per imparare una lingua è usarla realmente.",
+    "paragraph2": "Non memorizzando liste di vocaboli o completando lezioni gamificate che ti danno punti ma non ti preparano per conversazioni nel mondo reale.",
+    "paragraph3": "English.now è la mia risposta a tutto ciò che mi ha frustrato nell'apprendimento delle lingue. È costruito su una semplice convinzione:",
+    "highlight2": "L'AI può essere quell'amico paziente.",
+    "paragraph4": "Non giudica mai i tuoi errori, è disponibile 24/7 e si adatta esattamente a dove sei nel tuo percorso di apprendimento.",
+    "freeToStart": "gratuito per iniziare",
+    "freeNote": ", e sono impegnato a mantenerlo tale.",
+    "signOff": "Grazie per usare English Now.",
+    "founder": "Dmytro Tihunov",
+    "founderTitle": "Fondatore, English Now"
+  },
+  "pricing": {
+    "title": "Prezzi",
+    "subtitle": "Scegli il piano giusto per te.",
+    "save20": "Risparmia il 20%",
+    "mostPopular": "Più Popolare",
+    "whatsIncluded": "Cosa è incluso",
+    "startTrial": "Inizia la prova di 7 giorni",
+    "getStarted": "Inizia",
+    "duration": {
+      "forever": "per sempre",
+      "month": "mese",
+      "year": "anno"
+    },
+    "plans": {
+      "free": {
+        "name": "Gratuito",
+        "description": "Ottimo per principianti.",
+        "features": [
+          "1 conversazione AI al giorno",
+          "Lezioni di grammatica di base",
+          "Esercizi di vocabolario limitati",
+          "Tracciamento dei progressi"
+        ]
+      },
+      "monthly": {
+        "name": "Mensile",
+        "description": "Ottimo per studenti intermedi.",
+        "features": [
+          "Conversazioni AI illimitate",
+          "Feedback AI avanzato",
+          "Libreria completa di vocabolario",
+          "Percorso di apprendimento personalizzato",
+          "Tracciamento dei progressi e analisi"
+        ]
+      },
+      "yearly": {
+        "name": "Annuale",
+        "description": "Ottimo per studenti avanzati.",
+        "features": [
+          "Conversazioni AI illimitate",
+          "Feedback AI avanzato",
+          "Libreria completa di vocabolario",
+          "Percorso di apprendimento personalizzato",
+          "Tracciamento dei progressi e analisi"
+        ]
+      }
+    }
+  },
+  "faq": {
+    "title": "Domande Frequenti",
+    "subtitle": "Non riesci a trovare la risposta che cerchi?",
+    "contact": "support@english.now",
+    "items": {
+      "0": {
+        "question": "Come mi aiuta English Now a imparare l'inglese?",
+        "answer": "English Now è un'app all-in-one per l'apprendimento dell'inglese che combina pratica di conversazione, costruzione del vocabolario, lezioni di grammatica e feedback personalizzato. Il nostro sistema potenziato dall'AI si adatta al tuo stile di apprendimento e fornisce correzioni e suggerimenti in tempo reale per aiutarti a migliorare più velocemente."
+      },
+      "1": {
+        "question": "Devo pagare per usare English Now?",
+        "answer": "Offriamo sia piani gratuiti che premium. Il piano gratuito include funzionalità di base come pratica di conversazione limitata ed esercizi di vocabolario. Il nostro piano premium sblocca sessioni di pratica illimitate, feedback AI avanzato, percorsi di apprendimento personalizzati e supporto prioritario."
+      },
+      "2": {
+        "question": "Posso praticare l'inglese parlato con l'app?",
+        "answer": "Sì! English Now include funzionalità di pratica di conversazione dove puoi avere conversazioni in tempo reale con il nostro tutor AI. L'AI ti aiuterà a praticare la pronuncia, correggere i tuoi errori e guidarti attraverso conversazioni naturali su vari argomenti."
+      },
+      "3": {
+        "question": "I miei progressi sono salvati su tutti i dispositivi?",
+        "answer": "Assolutamente! I tuoi progressi, vocabolario e cronologia di apprendimento sono automaticamente sincronizzati su tutti i tuoi dispositivi quando accedi con il tuo account. Puoi continuare ad apprendere senza interruzioni sul tuo telefono, tablet o computer."
+      },
+      "4": {
+        "question": "In cosa è diverso questo da altre app per l'apprendimento dell'inglese?",
+        "answer": "English Now combina più metodi di apprendimento in un'unica app - pratica di conversazione, vocabolario, grammatica e feedback personalizzato - tutto potenziato da AI avanzata. Invece di passare tra diverse app, hai tutto ciò di cui hai bisogno in un unico posto, con un'esperienza di apprendimento che si adatta alle tue esigenze."
+      },
+      "5": {
+        "question": "Posso usare English Now offline?",
+        "answer": "Alcune funzionalità sono disponibili offline, come la revisione del vocabolario salvato e delle lezioni completate. Tuttavia, la pratica di conversazione e il feedback AI richiedono una connessione internet. Stiamo lavorando per espandere le capacità offline nei futuri aggiornamenti."
+      },
+      "howDoesItHelp": {
+        "question": "In che modo English Now mi aiuta a imparare l'inglese?",
+        "answer": "English Now è un'app per l'apprendimento dell'inglese tutto-in-uno che combina pratica di conversazione, costruzione del vocabolario, lezioni di grammatica e feedback personalizzato. Il nostro sistema basato su AI si adatta al tuo stile di apprendimento e fornisce correzioni e suggerimenti in tempo reale per aiutarti a migliorare più velocemente."
+      },
+      "doINeedToPay": {
+        "question": "Devo pagare per usare English Now?",
+        "answer": "Offriamo sia piani gratuiti che premium. Il piano gratuito include funzionalità di base come pratica di conversazione limitata ed esercizi di vocabolario. Il nostro piano premium sblocca sessioni di pratica illimitate, feedback avanzato dell'AI, percorsi di apprendimento personalizzati e supporto prioritario."
+      },
+      "canIPracticeSpeaking": {
+        "question": "Posso praticare l'inglese parlato con l'app?",
+        "answer": "Sì! English Now include funzionalità di pratica di conversazione dove puoi avere conversazioni in tempo reale con il nostro tutor AI. L'AI ti aiuterà a praticare la pronuncia, correggere i tuoi errori e guidarti attraverso conversazioni naturali su vari argomenti."
+      },
+      "isProgressSaved": {
+        "question": "I miei progressi sono salvati su tutti i dispositivi?",
+        "answer": "Assolutamente! I tuoi progressi, il vocabolario e la cronologia di apprendimento sono automaticamente sincronizzati su tutti i tuoi dispositivi quando accedi con il tuo account. Puoi continuare a imparare senza interruzioni sul tuo telefono, tablet o computer."
+      },
+      "howIsDifferent": {
+        "question": "In che modo questa app è diversa dalle altre app per l'apprendimento dell'inglese?",
+        "answer": "English Now combina diversi metodi di apprendimento in un'unica app - pratica di conversazione, vocabolario, grammatica e feedback personalizzato - tutto alimentato da un'AI avanzata. Invece di passare da un'app all'altra, hai tutto ciò di cui hai bisogno in un unico posto, con un'esperienza di apprendimento che si adatta alle tue esigenze."
+      },
+      "canIUseOffline": {
+        "question": "Posso usare English Now offline?",
+        "answer": "Alcune funzionalità sono disponibili offline, come la revisione del vocabolario salvato e delle lezioni completate. Tuttavia, la pratica di conversazione e il feedback dell'AI richiedono una connessione a internet. Stiamo lavorando per espandere le capacità offline nei futuri aggiornamenti."
+      }
+    }
   }
 }

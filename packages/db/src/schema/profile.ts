@@ -38,6 +38,7 @@ export const userActivity = pgTable("user_activity", {
 		.notNull()
 		.references(() => user.id, { onDelete: "cascade" }),
 	activityType: text("activity_type").notNull(),
+	durationSeconds: integer("duration_seconds"),
 	completedAt: timestamp("completed_at").notNull().defaultNow(),
 	activityAt: timestamp("activity_at").notNull().defaultNow(),
 });

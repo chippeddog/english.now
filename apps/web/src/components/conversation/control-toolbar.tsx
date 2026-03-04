@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+	BookOpen,
 	Check,
 	Lightbulb,
 	Loader,
@@ -47,6 +48,8 @@ type ControlToolbarProps = {
 	setSelectedDevice: (deviceId: string) => void;
 	autoTranslate: boolean;
 	onAutoTranslateChange: (enabled: boolean) => void;
+	vocabMode: boolean;
+	setVocabMode: (enabled: boolean) => void;
 };
 
 export function ControlToolbar({
@@ -68,6 +71,8 @@ export function ControlToolbar({
 	setSelectedDevice,
 	autoTranslate,
 	onAutoTranslateChange,
+	vocabMode,
+	setVocabMode,
 }: ControlToolbarProps) {
 	const trpc = useTRPC();
 	const queryClient = useQueryClient();
@@ -200,6 +205,27 @@ export function ControlToolbar({
 								</Button>
 							</TooltipTrigger>
 							<TooltipContent>Get a hint</TooltipContent>
+						</Tooltip>
+
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<Button
+									type="button"
+									variant="ghost"
+									className={cn(
+										"aspect-square h-full shrink-0 rounded-none",
+										vocabMode && "bg-lime-100 text-lime-700",
+									)}
+									onClick={() => setVocabMode(!vocabMode)}
+								>
+									<BookOpen className="size-5" />
+								</Button>
+							</TooltipTrigger>
+							<TooltipContent>
+								{vocabMode
+									? "Exit vocabulary mode"
+									: "Save words to vocabulary"}
+							</TooltipContent>
 						</Tooltip>
 
 						<Popover open={settingsOpen} onOpenChange={setSettingsOpen}>

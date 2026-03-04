@@ -69,8 +69,6 @@ export const pronunciationRouter = router({
 
 			const sessionId = crypto.randomUUID();
 
-			await recordActivity(userId, "pronunciation");
-
 			await db.insert(pronunciationSession).values({
 				id: sessionId,
 				userId,
@@ -125,7 +123,12 @@ export const pronunciationRouter = router({
 		}),
 
 	completeSession: protectedProcedure
-		.input(z.object({ sessionId: z.string() }))
+		.input(
+			z.object({
+				sessionId: z.string(),
+				durationSeconds: z.number().optional(),
+			}),
+		)
 		.mutation(async ({ ctx, input }) => {
 			const userId = ctx.session.user.id;
 
@@ -247,6 +250,10 @@ export const pronunciationRouter = router({
 					completedAt: new Date(),
 				})
 				.where(eq(pronunciationSession.id, input.sessionId));
+
+			recordActivity(userId, "pronunciation", input.durationSeconds).catch(
+				console.error,
+			);
 
 			return { summary, sessionId: input.sessionId };
 		}),

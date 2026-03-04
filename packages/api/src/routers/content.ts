@@ -1,3 +1,4 @@
+import type { ExerciseItem, LessonContent } from "@english.now/db";
 import {
 	and,
 	asc,
@@ -9,7 +10,6 @@ import {
 	unit,
 	userProfile,
 } from "@english.now/db";
-import type { ExerciseItem, LessonContent } from "@english.now/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure, router } from "../index";
@@ -62,10 +62,7 @@ export const contentRouter = router({
 					)
 				: [];
 
-		const lessonsByUnit = new Map<
-			string,
-			(typeof allLessonResults)[number]
-		>();
+		const lessonsByUnit = new Map<string, (typeof allLessonResults)[number]>();
 		for (let i = 0; i < unitIds.length; i++) {
 			const uid = unitIds[i];
 			if (uid) {
@@ -106,9 +103,7 @@ export const contentRouter = router({
 				.update(lesson)
 				.set({
 					status: input.status,
-					...(input.progress !== undefined
-						? { progress: input.progress }
-						: {}),
+					...(input.progress !== undefined ? { progress: input.progress } : {}),
 				})
 				.where(eq(lesson.id, input.lessonId));
 
@@ -129,9 +124,7 @@ export const contentRouter = router({
 						(l) => l.status === "completed",
 					).length;
 					const totalCount = unitLessons.length;
-					const unitProgress = Math.round(
-						(completedCount / totalCount) * 100,
-					);
+					const unitProgress = Math.round((completedCount / totalCount) * 100);
 
 					await db
 						.update(unit)
@@ -168,9 +161,7 @@ export const contentRouter = router({
 			if (existingAttempt) {
 				return {
 					attemptId: existingAttempt.id,
-					exercises: stripAnswers(
-						existingAttempt.exercises as ExerciseItem[],
-					),
+					exercises: stripAnswers(existingAttempt.exercises as ExerciseItem[]),
 					currentIndex: existingAttempt.currentIndex,
 					totalCount: existingAttempt.totalCount,
 					correctCount: existingAttempt.correctCount,
@@ -313,10 +304,7 @@ export const contentRouter = router({
 			const newCorrectCount = isCorrect
 				? attempt.correctCount + 1
 				: attempt.correctCount;
-			const newIndex = Math.min(
-				attempt.currentIndex + 1,
-				attempt.totalCount,
-			);
+			const newIndex = Math.min(attempt.currentIndex + 1, attempt.totalCount);
 
 			await db
 				.update(lessonAttempt)
@@ -335,7 +323,12 @@ export const contentRouter = router({
 		}),
 
 	completeLesson: protectedProcedure
-		.input(z.object({ attemptId: z.string() }))
+		.input(
+			z.object({
+				attemptId: z.string(),
+				durationSeconds: z.number().optional(),
+			}),
+		)
 		.mutation(async ({ ctx, input }) => {
 			const userId = ctx.session.user.id;
 
@@ -397,9 +390,7 @@ export const contentRouter = router({
 					.orderBy(asc(lesson.order));
 
 				const completedCount = unitLessons.filter(
-					(l) =>
-						l.status === "completed" ||
-						l.id === attempt.lessonId,
+					(l) => l.status === "completed" || l.id === attempt.lessonId,
 				).length;
 				const unitProgress = Math.round(
 					(completedCount / unitLessons.length) * 100,
@@ -415,9 +406,7 @@ export const contentRouter = router({
 
 				// Advance next lesson to "current"
 				const nextLesson = unitLessons.find(
-					(l) =>
-						l.order > completedLesson.order &&
-						l.status !== "completed",
+					(l) => l.order > completedLesson.order && l.status !== "completed",
 				);
 				if (nextLesson) {
 					await db
@@ -441,18 +430,11 @@ export const contentRouter = router({
 						const allUnits = await db
 							.select()
 							.from(unit)
-							.where(
-								eq(
-									unit.learningPathId,
-									currentUnit.learningPathId,
-								),
-							)
+							.where(eq(unit.learningPathId, currentUnit.learningPathId))
 							.orderBy(asc(unit.order));
 
 						const nextUnit = allUnits.find(
-							(u) =>
-								u.order > currentUnit.order &&
-								u.status === "locked",
+							(u) => u.order > currentUnit.order && u.status === "locked",
 						);
 
 						if (nextUnit) {
@@ -475,11 +457,7 @@ export const contentRouter = router({
 									.set({ status: "current" })
 									.where(eq(lesson.id, firstLesson.id));
 
-								for (
-									let i = 1;
-									i < nextUnitLessons.length;
-									i++
-								) {
+								for (let i = 1; i < nextUnitLessons.length; i++) {
 									const nextL = nextUnitLessons[i];
 									if (nextL) {
 										await db
@@ -494,9 +472,13 @@ export const contentRouter = router({
 				}
 			}
 
-			await recordActivity(userId, "lesson");
+			await recordActivity(userId, "lesson", input.durationSeconds);
 
-			return { score, correctCount: attempt.correctCount, totalCount: attempt.totalCount };
+			return {
+				score,
+				correctCount: attempt.correctCount,
+				totalCount: attempt.totalCount,
+			};
 		}),
 
 	getAttempt: protectedProcedure

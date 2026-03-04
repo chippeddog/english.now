@@ -137,8 +137,6 @@ The person you're talking to is learning English at a ${level} level.
 		createdAt: new Date(),
 	});
 
-	recordActivity(session.user.id, "conversation").catch(console.error);
-
 	// Generate TTS for the initial greeting
 	const greetingAudio = await generateTTSBase64(greeting, voiceModel);
 
@@ -525,7 +523,9 @@ conversation.post("/finish", requireAuth, async (c) => {
 	}
 
 	const body = await c.req.json();
-	const { sessionId } = z.object({ sessionId: z.string() }).parse(body);
+	const { sessionId, durationSeconds } = z
+		.object({ sessionId: z.string(), durationSeconds: z.number().optional() })
+		.parse(body);
 
 	const sessionResult = await db
 		.select()
@@ -559,6 +559,10 @@ conversation.post("/finish", requireAuth, async (c) => {
 		.where(eq(conversationMessage.sessionId, sessionId));
 
 	const userMessageCount = messages.filter((m) => m.role === "user").length;
+
+	recordActivity(session.user.id, "conversation", durationSeconds).catch(
+		console.error,
+	);
 
 	if (userMessageCount < 3) {
 		await db

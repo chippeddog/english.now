@@ -311,11 +311,13 @@ export default function ReadAloudMode({
 	paragraph,
 	initialAttempts,
 	onFinish,
+	getElapsedSeconds,
 }: {
 	sessionId: string;
 	paragraph: ParagraphItem;
 	initialAttempts?: { id: string; audioUrl: string; transcript: string }[];
 	onFinish: () => void;
+	getElapsedSeconds?: () => number;
 }) {
 	const trpc = useTRPC();
 	const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
@@ -378,13 +380,14 @@ export default function ReadAloudMode({
 	}
 
 	async function enqueueProcessing(sid: string): Promise<void> {
+		const durationSeconds = getElapsedSeconds?.();
 		const response = await fetch(
 			`${env.VITE_SERVER_URL}/api/pronunciation/assess-and-complete`,
 			{
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				credentials: "include",
-				body: JSON.stringify({ sessionId: sid }),
+				body: JSON.stringify({ sessionId: sid, durationSeconds }),
 			},
 		);
 

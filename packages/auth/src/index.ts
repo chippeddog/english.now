@@ -63,7 +63,7 @@ export const auth = betterAuth<BetterAuthOptions>({
 	},
 	socialProviders: {
 		google: {
-			disableSignUp: true,
+			// disableSignUp: true,
 			clientId: env.GOOGLE_CLIENT_ID,
 			clientSecret: env.GOOGLE_CLIENT_SECRET,
 		},
@@ -93,7 +93,6 @@ export const auth = betterAuth<BetterAuthOptions>({
 			},
 		},
 	},
-
 	advanced: {
 		defaultCookieAttributes: {
 			sameSite: "lax",
