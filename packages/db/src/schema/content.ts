@@ -1,24 +1,25 @@
+// ─── DEPRECATED ──────────────────────────────────────────────────────────────
+// These tables are replaced by the canonical curriculum schema in curriculum.ts.
+// Kept temporarily for backward compatibility during migration.
+// Remove after verifying all data has been migrated and no code references them.
+
 import { integer, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { user } from "./auth";
-
-// ─── Learning Path ────────────────────────────────────────────────────────────
 
 export const learningPath = pgTable("learning_path", {
 	id: text("id").primaryKey(),
 	userId: text("user_id")
 		.notNull()
 		.references(() => user.id, { onDelete: "cascade" }),
-	level: text("level").notNull(), // CEFR: A1, A2, B1, B2, C1, C2
+	level: text("level").notNull(),
 	goal: text("goal").notNull(),
 	focusAreas: jsonb("focus_areas").$type<string[]>().notNull(),
-	status: text("status").notNull().default("generating"), // generating | ready | failed
-	progress: integer("progress").notNull().default(0), // 0-100
+	status: text("status").notNull().default("generating"),
+	progress: integer("progress").notNull().default(0),
 	progressMessage: text("progress_message"),
 	generatedAt: timestamp("generated_at"),
 	createdAt: timestamp("created_at").notNull().defaultNow(),
 });
-
-// ─── Unit ─────────────────────────────────────────────────────────────────────
 
 export const unit = pgTable("unit", {
 	id: text("id").primaryKey(),
@@ -28,11 +29,9 @@ export const unit = pgTable("unit", {
 	title: text("title").notNull(),
 	description: text("description"),
 	order: integer("order").notNull(),
-	status: text("status").notNull().default("locked"), // locked | active | completed
-	progress: integer("progress").notNull().default(0), // 0-100
+	status: text("status").notNull().default("locked"),
+	progress: integer("progress").notNull().default(0),
 });
-
-// ─── Lesson ───────────────────────────────────────────────────────────────────
 
 export type ExerciseType = "lecture" | "practice" | "quiz" | "conversation";
 
@@ -62,14 +61,12 @@ export const lesson = pgTable("lesson", {
 		.references(() => unit.id, { onDelete: "cascade" }),
 	title: text("title").notNull(),
 	subtitle: text("subtitle"),
-	type: text("type").notNull(), // grammar | vocabulary | pronunciation | explanation | reading | listening | speaking | practice
+	type: text("type").notNull(),
 	order: integer("order").notNull(),
-	status: text("status").notNull().default("locked"), // locked | available | current | completed
-	progress: integer("progress").notNull().default(0), // 0-100
+	status: text("status").notNull().default("locked"),
+	progress: integer("progress").notNull().default(0),
 	content: jsonb("content").$type<LessonContent>(),
 });
-
-// ─── Type Exports ─────────────────────────────────────────────────────────────
 
 export type LearningPath = typeof learningPath.$inferSelect;
 export type NewLearningPath = typeof learningPath.$inferInsert;

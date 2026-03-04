@@ -1,13 +1,18 @@
-import type { ExerciseItem, LessonContent } from "@english.now/db";
+import type { CurriculumLessonContent, ExerciseItem } from "@english.now/db";
 import {
 	and,
 	asc,
+	course,
+	courseVersion,
+	curriculumLesson,
+	curriculumUnit,
 	db,
+	desc,
+	enrollment,
 	eq,
-	learningPath,
-	lesson,
+	inArray,
 	lessonAttempt,
-	unit,
+	lessonCompletion,
 	userProfile,
 } from "@english.now/db";
 import { TRPCError } from "@trpc/server";
@@ -16,66 +21,252 @@ import { protectedProcedure, router } from "../index";
 import { generateLessonExercises } from "../services/generate-lesson-exercises";
 import { recordActivity } from "../services/record-activity";
 
-export const contentRouter = router({
-	getGenerationStatus: protectedProcedure.query(async ({ ctx }) => {
-		const [path] = await db
-			.select({
-				id: learningPath.id,
-				status: learningPath.status,
-				progress: learningPath.progress,
-				progressMessage: learningPath.progressMessage,
-			})
-			.from(learningPath)
-			.where(eq(learningPath.userId, ctx.session.user.id))
-			.limit(1);
+// ─── Status Computation ─────────────────────────────────────────────────────
 
-		return path ?? null;
-	}),
+type LessonStatus = "completed" | "current" | "available" | "locked";
+type UnitStatus = "completed" | "active" | "locked";
 
-	getLearningPath: protectedProcedure.query(async ({ ctx }) => {
-		const [path] = await db
-			.select()
-			.from(learningPath)
-			.where(eq(learningPath.userId, ctx.session.user.id))
-			.limit(1);
+function computeStatuses(
+	units: {
+		id: string;
+		order: number;
+		lessons: { id: string; order: number }[];
+	}[],
+	completedLessonIds: Set<string>,
+) {
+	const sorted = [...units].sort((a, b) => a.order - b.order);
+	let foundActiveUnit = false;
 
-		if (!path) return null;
+	const result: {
+		unitId: string;
+		unitStatus: UnitStatus;
+		unitProgress: number;
+		lessons: { lessonId: string; status: LessonStatus }[];
+	}[] = [];
 
-		const units = await db
-			.select()
-			.from(unit)
-			.where(eq(unit.learningPathId, path.id))
-			.orderBy(asc(unit.order));
+	for (const u of sorted) {
+		const sortedLessons = [...u.lessons].sort((a, b) => a.order - b.order);
+		const completedCount = sortedLessons.filter((l) =>
+			completedLessonIds.has(l.id),
+		).length;
+		const allCompleted =
+			sortedLessons.length > 0 && completedCount === sortedLessons.length;
+		const unitProgress =
+			sortedLessons.length > 0
+				? Math.round((completedCount / sortedLessons.length) * 100)
+				: 0;
 
-		const unitIds = units.map((u) => u.id);
+		let unitStatus: UnitStatus;
+		if (allCompleted) {
+			unitStatus = "completed";
+		} else if (!foundActiveUnit) {
+			unitStatus = "active";
+			foundActiveUnit = true;
+		} else {
+			unitStatus = "locked";
+		}
 
-		const allLessonResults =
-			unitIds.length > 0
-				? await Promise.all(
-						unitIds.map((unitId) =>
-							db
-								.select()
-								.from(lesson)
-								.where(eq(lesson.unitId, unitId))
-								.orderBy(asc(lesson.order)),
-						),
-					)
-				: [];
+		let foundCurrentLesson = false;
+		const lessonStatuses: { lessonId: string; status: LessonStatus }[] = [];
 
-		const lessonsByUnit = new Map<string, (typeof allLessonResults)[number]>();
-		for (let i = 0; i < unitIds.length; i++) {
-			const uid = unitIds[i];
-			if (uid) {
-				lessonsByUnit.set(uid, allLessonResults[i] ?? []);
+		for (const l of sortedLessons) {
+			if (completedLessonIds.has(l.id)) {
+				lessonStatuses.push({ lessonId: l.id, status: "completed" });
+			} else if (unitStatus === "active" && !foundCurrentLesson) {
+				lessonStatuses.push({ lessonId: l.id, status: "current" });
+				foundCurrentLesson = true;
+			} else if (unitStatus === "active") {
+				lessonStatuses.push({ lessonId: l.id, status: "available" });
+			} else {
+				lessonStatuses.push({ lessonId: l.id, status: "locked" });
 			}
 		}
 
-		return {
-			...path,
-			units: units.map((u) => ({
-				...u,
-				lessons: lessonsByUnit.get(u.id) ?? [],
+		result.push({
+			unitId: u.id,
+			unitStatus,
+			unitProgress,
+			lessons: lessonStatuses,
+		});
+	}
+
+	return result;
+}
+
+// ─── Router ─────────────────────────────────────────────────────────────────
+
+export const contentRouter = router({
+	getEnrollment: protectedProcedure.query(async ({ ctx }) => {
+		const [e] = await db
+			.select({
+				id: enrollment.id,
+				status: enrollment.status,
+				courseVersionId: enrollment.courseVersionId,
+			})
+			.from(enrollment)
+			.where(eq(enrollment.userId, ctx.session.user.id))
+			.limit(1);
+
+		return e ?? null;
+	}),
+
+	enroll: protectedProcedure
+		.input(z.object({ level: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]) }))
+		.mutation(async ({ ctx, input }) => {
+			const userId = ctx.session.user.id;
+
+			const [existing] = await db
+				.select({ id: enrollment.id })
+				.from(enrollment)
+				.where(eq(enrollment.userId, userId))
+				.limit(1);
+
+			if (existing) {
+				return {
+					enrollmentId: existing.id,
+					status: "already_enrolled" as const,
+				};
+			}
+
+			const [cv] = await db
+				.select({ id: courseVersion.id })
+				.from(courseVersion)
+				.innerJoin(course, eq(course.id, courseVersion.courseId))
+				.where(
+					and(
+						eq(course.level, input.level),
+						eq(course.isActive, true),
+						eq(courseVersion.status, "published"),
+					),
+				)
+				.orderBy(desc(courseVersion.version))
+				.limit(1);
+
+			if (!cv) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: `No published course found for level ${input.level}`,
+				});
+			}
+
+			const enrollmentId = crypto.randomUUID();
+			await db.insert(enrollment).values({
+				id: enrollmentId,
+				userId,
+				courseVersionId: cv.id,
+				status: "active",
+			});
+
+			return { enrollmentId, status: "enrolled" as const };
+		}),
+
+	getCourse: protectedProcedure.query(async ({ ctx }) => {
+		const userId = ctx.session.user.id;
+
+		const [e] = await db
+			.select()
+			.from(enrollment)
+			.where(
+				and(eq(enrollment.userId, userId), eq(enrollment.status, "active")),
+			)
+			.limit(1);
+
+		if (!e) return null;
+
+		const [cv] = await db
+			.select()
+			.from(courseVersion)
+			.where(eq(courseVersion.id, e.courseVersionId))
+			.limit(1);
+
+		if (!cv) return null;
+
+		const [c] = await db
+			.select()
+			.from(course)
+			.where(eq(course.id, cv.courseId))
+			.limit(1);
+
+		if (!c) return null;
+
+		const units = await db
+			.select()
+			.from(curriculumUnit)
+			.where(eq(curriculumUnit.courseVersionId, cv.id))
+			.orderBy(asc(curriculumUnit.order));
+
+		const unitIds = units.map((u) => u.id);
+
+		const lessons =
+			unitIds.length > 0
+				? await db
+						.select()
+						.from(curriculumLesson)
+						.where(inArray(curriculumLesson.unitId, unitIds))
+						.orderBy(asc(curriculumLesson.unitId), asc(curriculumLesson.order))
+				: [];
+
+		const completions = await db
+			.select({ lessonId: lessonCompletion.lessonId })
+			.from(lessonCompletion)
+			.where(eq(lessonCompletion.enrollmentId, e.id));
+
+		const completedLessonIds = new Set(completions.map((c) => c.lessonId));
+
+		const lessonsByUnit = new Map<string, typeof lessons>();
+		for (const l of lessons) {
+			const existing = lessonsByUnit.get(l.unitId) ?? [];
+			existing.push(l);
+			lessonsByUnit.set(l.unitId, existing);
+		}
+
+		const unitsWithLessons = units.map((u) => ({
+			id: u.id,
+			order: u.order,
+			lessons: (lessonsByUnit.get(u.id) ?? []).map((l) => ({
+				id: l.id,
+				order: l.order,
 			})),
+		}));
+
+		const statuses = computeStatuses(unitsWithLessons, completedLessonIds);
+		const statusMap = new Map(statuses.map((s) => [s.unitId, s]));
+
+		const totalLessons = lessons.length;
+		const totalCompleted = completedLessonIds.size;
+		const overallProgress =
+			totalLessons > 0 ? Math.round((totalCompleted / totalLessons) * 100) : 0;
+
+		return {
+			enrollmentId: e.id,
+			level: c.level,
+			title: c.title,
+			progress: overallProgress,
+			units: units.map((u) => {
+				const s = statusMap.get(u.id);
+				const unitLessons = lessonsByUnit.get(u.id) ?? [];
+				const lessonStatusMap = new Map(
+					(s?.lessons ?? []).map((ls) => [ls.lessonId, ls.status]),
+				);
+
+				return {
+					id: u.id,
+					title: u.title,
+					description: u.description,
+					order: u.order,
+					status: s?.unitStatus ?? "locked",
+					progress: s?.unitProgress ?? 0,
+					lessons: unitLessons.map((l) => ({
+						id: l.id,
+						title: l.title,
+						subtitle: l.subtitle,
+						type: l.blockType,
+						status: lessonStatusMap.get(l.id) ?? "locked",
+						progress: lessonStatusMap.get(l.id) === "completed" ? 100 : 0,
+						content: l.content,
+					})),
+				};
+			}),
 		};
 	}),
 
@@ -84,67 +275,40 @@ export const contentRouter = router({
 		.query(async ({ input }) => {
 			const [l] = await db
 				.select()
-				.from(lesson)
-				.where(eq(lesson.id, input.lessonId))
+				.from(curriculumLesson)
+				.where(eq(curriculumLesson.id, input.lessonId))
 				.limit(1);
-			return l ?? null;
+
+			if (!l) return null;
+
+			return {
+				id: l.id,
+				title: l.title,
+				subtitle: l.subtitle,
+				type: l.blockType,
+				content: l.content,
+			};
 		}),
-
-	updateLessonStatus: protectedProcedure
-		.input(
-			z.object({
-				lessonId: z.string(),
-				status: z.enum(["locked", "available", "current", "completed"]),
-				progress: z.number().min(0).max(100).optional(),
-			}),
-		)
-		.mutation(async ({ input }) => {
-			await db
-				.update(lesson)
-				.set({
-					status: input.status,
-					...(input.progress !== undefined ? { progress: input.progress } : {}),
-				})
-				.where(eq(lesson.id, input.lessonId));
-
-			if (input.status === "completed") {
-				const [updatedLesson] = await db
-					.select({ unitId: lesson.unitId })
-					.from(lesson)
-					.where(eq(lesson.id, input.lessonId))
-					.limit(1);
-
-				if (updatedLesson) {
-					const unitLessons = await db
-						.select({ status: lesson.status })
-						.from(lesson)
-						.where(eq(lesson.unitId, updatedLesson.unitId));
-
-					const completedCount = unitLessons.filter(
-						(l) => l.status === "completed",
-					).length;
-					const totalCount = unitLessons.length;
-					const unitProgress = Math.round((completedCount / totalCount) * 100);
-
-					await db
-						.update(unit)
-						.set({
-							progress: unitProgress,
-							status: unitProgress === 100 ? "completed" : "active",
-						})
-						.where(eq(unit.id, updatedLesson.unitId));
-				}
-			}
-
-			return { success: true };
-		}),
-
-	// ─── Lesson Exercise Endpoints ───────────────────────────────────────────
 
 	startLesson: protectedProcedure
 		.input(z.object({ lessonId: z.string() }))
 		.mutation(async ({ ctx, input }) => {
 			const userId = ctx.session.user.id;
+
+			const [e] = await db
+				.select({ id: enrollment.id })
+				.from(enrollment)
+				.where(
+					and(eq(enrollment.userId, userId), eq(enrollment.status, "active")),
+				)
+				.limit(1);
+
+			if (!e) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "No active enrollment",
+				});
+			}
 
 			const [existingAttempt] = await db
 				.select()
@@ -170,8 +334,8 @@ export const contentRouter = router({
 
 			const [lessonRecord] = await db
 				.select()
-				.from(lesson)
-				.where(eq(lesson.id, input.lessonId))
+				.from(curriculumLesson)
+				.where(eq(curriculumLesson.id, input.lessonId))
 				.limit(1);
 
 			if (!lessonRecord) {
@@ -181,14 +345,7 @@ export const contentRouter = router({
 				});
 			}
 
-			if (lessonRecord.status === "locked") {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message: "Lesson is locked",
-				});
-			}
-
-			const content = lessonRecord.content as LessonContent | null;
+			const content = lessonRecord.content as CurriculumLessonContent | null;
 			if (!content) {
 				throw new TRPCError({
 					code: "BAD_REQUEST",
@@ -204,7 +361,7 @@ export const contentRouter = router({
 
 			const exercises = await generateLessonExercises(
 				lessonRecord.title,
-				lessonRecord.type,
+				lessonRecord.blockType,
 				content,
 				profile?.nativeLanguage ?? "uk",
 			);
@@ -212,6 +369,7 @@ export const contentRouter = router({
 			const attemptId = crypto.randomUUID();
 			await db.insert(lessonAttempt).values({
 				id: attemptId,
+				enrollmentId: e.id,
 				lessonId: input.lessonId,
 				userId,
 				exercises,
@@ -220,16 +378,6 @@ export const contentRouter = router({
 				correctCount: 0,
 				status: "active",
 			});
-
-			if (
-				lessonRecord.status !== "current" &&
-				lessonRecord.status !== "completed"
-			) {
-				await db
-					.update(lesson)
-					.set({ status: "current" })
-					.where(eq(lesson.id, input.lessonId));
-			}
 
 			return {
 				attemptId,
@@ -363,113 +511,25 @@ export const contentRouter = router({
 				})
 				.where(eq(lessonAttempt.id, input.attemptId));
 
-			await db
-				.update(lesson)
-				.set({ status: "completed", progress: 100 })
-				.where(eq(lesson.id, attempt.lessonId));
-
-			// Advance next lesson and update unit progress
-			const [completedLesson] = await db
-				.select({
-					unitId: lesson.unitId,
-					order: lesson.order,
-				})
-				.from(lesson)
-				.where(eq(lesson.id, attempt.lessonId))
+			// Insert lesson completion (idempotent via unique constraint)
+			const [existing] = await db
+				.select({ id: lessonCompletion.id })
+				.from(lessonCompletion)
+				.where(
+					and(
+						eq(lessonCompletion.enrollmentId, attempt.enrollmentId),
+						eq(lessonCompletion.lessonId, attempt.lessonId),
+					),
+				)
 				.limit(1);
 
-			if (completedLesson) {
-				const unitLessons = await db
-					.select({
-						id: lesson.id,
-						status: lesson.status,
-						order: lesson.order,
-					})
-					.from(lesson)
-					.where(eq(lesson.unitId, completedLesson.unitId))
-					.orderBy(asc(lesson.order));
-
-				const completedCount = unitLessons.filter(
-					(l) => l.status === "completed" || l.id === attempt.lessonId,
-				).length;
-				const unitProgress = Math.round(
-					(completedCount / unitLessons.length) * 100,
-				);
-
-				await db
-					.update(unit)
-					.set({
-						progress: unitProgress,
-						status: unitProgress === 100 ? "completed" : "active",
-					})
-					.where(eq(unit.id, completedLesson.unitId));
-
-				// Advance next lesson to "current"
-				const nextLesson = unitLessons.find(
-					(l) => l.order > completedLesson.order && l.status !== "completed",
-				);
-				if (nextLesson) {
-					await db
-						.update(lesson)
-						.set({ status: "current" })
-						.where(eq(lesson.id, nextLesson.id));
-				}
-
-				// If unit completed, unlock next unit
-				if (unitProgress === 100) {
-					const [currentUnit] = await db
-						.select({
-							learningPathId: unit.learningPathId,
-							order: unit.order,
-						})
-						.from(unit)
-						.where(eq(unit.id, completedLesson.unitId))
-						.limit(1);
-
-					if (currentUnit) {
-						const allUnits = await db
-							.select()
-							.from(unit)
-							.where(eq(unit.learningPathId, currentUnit.learningPathId))
-							.orderBy(asc(unit.order));
-
-						const nextUnit = allUnits.find(
-							(u) => u.order > currentUnit.order && u.status === "locked",
-						);
-
-						if (nextUnit) {
-							await db
-								.update(unit)
-								.set({ status: "active" })
-								.where(eq(unit.id, nextUnit.id));
-
-							// Unlock first lesson of next unit
-							const nextUnitLessons = await db
-								.select()
-								.from(lesson)
-								.where(eq(lesson.unitId, nextUnit.id))
-								.orderBy(asc(lesson.order));
-
-							const firstLesson = nextUnitLessons[0];
-							if (firstLesson) {
-								await db
-									.update(lesson)
-									.set({ status: "current" })
-									.where(eq(lesson.id, firstLesson.id));
-
-								for (let i = 1; i < nextUnitLessons.length; i++) {
-									const nextL = nextUnitLessons[i];
-									if (nextL) {
-										await db
-											.update(lesson)
-											.set({ status: "available" })
-											.where(eq(lesson.id, nextL.id));
-									}
-								}
-							}
-						}
-					}
-				}
+			if (!existing) {
+				await db.insert(lessonCompletion).values({
+					id: crypto.randomUUID(),
+					enrollmentId: attempt.enrollmentId,
+					lessonId: attempt.lessonId,
+					score,
+				});
 			}
 
 			await recordActivity(userId, "lesson", input.durationSeconds);

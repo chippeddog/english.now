@@ -1,9 +1,8 @@
 import { auth } from "@english.now/auth";
-import { db, eq, learningPath } from "@english.now/db";
+import { db, enrollment, eq } from "@english.now/db";
 import type { Context, Next } from "hono";
 import { Hono } from "hono";
-import { enqueueGenerateLearningPath } from "../jobs";
-import { getQueue } from "../utils/queue";
+import { enrollUser } from "../services/enroll-user";
 
 type Variables = {
 	session: Awaited<ReturnType<typeof auth.api.getSession>>;
@@ -27,7 +26,6 @@ const requireAuth = async (
 	return next();
 };
 
-// POST /api/content/generate — enqueue learning path generation
 content.post("/generate", requireAuth, async (c) => {
 	const session = c.get("session");
 	if (!session) {
@@ -38,26 +36,28 @@ content.post("/generate", requireAuth, async (c) => {
 
 	const [existing] = await db
 		.select()
-		.from(learningPath)
-		.where(eq(learningPath.userId, userId))
+		.from(enrollment)
+		.where(eq(enrollment.userId, userId))
 		.limit(1);
 
-	if (existing?.status === "ready") {
-		return c.json({ status: "already_exists", learningPathId: existing.id });
+	if (existing) {
+		return c.json({
+			status: "already_exists",
+			enrollmentId: existing.id,
+		});
 	}
 
-	if (existing?.status === "generating") {
-		return c.json({ status: "generating", learningPathId: existing.id });
+	try {
+		const { enrollmentId } = await enrollUser(userId);
+		return c.json({ status: "enrolled", enrollmentId });
+	} catch (error) {
+		return c.json(
+			{
+				error: error instanceof Error ? error.message : "Enrollment failed",
+			},
+			500,
+		);
 	}
-
-	if (existing?.status === "failed") {
-		await db.delete(learningPath).where(eq(learningPath.id, existing.id));
-	}
-
-	const boss = getQueue();
-	const jobId = await enqueueGenerateLearningPath(boss, { userId });
-
-	return c.json({ status: "queued", jobId });
 });
 
 export default content;

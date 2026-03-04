@@ -183,6 +183,13 @@
       "when": 1772627124217,
       "tag": "0025_mature_firedrake",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1772650865310,
+      "tag": "0026_chemical_the_hood",
+      "breakpoints": true
     }
   ]
 }

@@ -1,6 +1,6 @@
 import { integer, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { user } from "./auth";
-import { lesson } from "./content";
+import { curriculumLesson, enrollment } from "./curriculum";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -21,9 +21,12 @@ export interface ExerciseItem {
 
 export const lessonAttempt = pgTable("lesson_attempt", {
 	id: text("id").primaryKey(),
+	enrollmentId: text("enrollment_id")
+		.notNull()
+		.references(() => enrollment.id, { onDelete: "cascade" }),
 	lessonId: text("lesson_id")
 		.notNull()
-		.references(() => lesson.id, { onDelete: "cascade" }),
+		.references(() => curriculumLesson.id),
 	userId: text("user_id")
 		.notNull()
 		.references(() => user.id, { onDelete: "cascade" }),

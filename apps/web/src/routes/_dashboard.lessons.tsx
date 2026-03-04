@@ -8,12 +8,8 @@ import {
 	ChevronRight,
 	FileText,
 	GraduationCap,
-	Headphones,
-	Loader2,
 	Lock,
 	type LucideIcon,
-	MessageSquare,
-	Mic,
 	PenTool,
 	Play,
 	Volume2,
@@ -33,38 +29,36 @@ export const Route = createFileRoute("/_dashboard/lessons")({
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type LessonType =
-	| "grammar"
-	| "vocabulary"
-	| "pronunciation"
-	| "explanation"
-	| "reading"
-	| "listening"
-	| "speaking"
-	| "practice";
+	| "input"
+	| "teach"
+	| "practice"
+	| "review"
+	| "assessment";
 
 type LessonStatus = "completed" | "current" | "available" | "locked";
 
 type UnitStatus = "completed" | "active" | "locked";
 
-type ExerciseType = "lecture" | "practice" | "quiz" | "conversation";
-
-interface Word {
-	word: string;
-	translation: string;
-}
-
 interface GrammarPoint {
 	title: string;
 	description: string;
+	examples?: string[];
+}
+
+interface VocabularyItem {
+	word: string;
+	pos?: string;
+	definition?: string;
 }
 
 interface LessonDetail {
 	description: string;
-	wordCount: number;
-	grammarCount: number;
-	exercises: ExerciseType[];
 	grammarPoints: GrammarPoint[];
-	wordsToLearn: Word[];
+	vocabulary: VocabularyItem[];
+	exerciseHints?: {
+		types: string[];
+		count: number;
+	};
 }
 
 interface Lesson {
@@ -100,83 +94,35 @@ const lessonTypeConfig: Record<
 	LessonType,
 	{ label: string; icon: LucideIcon; color: string; bgColor: string }
 > = {
-	grammar: {
-		label: "Grammar",
-		icon: PenTool,
-		color: "text-neutral-600",
-		bgColor: "bg-neutral-100",
-	},
-	vocabulary: {
-		label: "Vocabulary",
-		icon: BookOpen,
-		color: "text-blue-600",
-		bgColor: "bg-blue-100",
-	},
-	pronunciation: {
-		label: "Pronunciation",
-		icon: Mic,
-		color: "text-rose-600",
-		bgColor: "bg-rose-100",
-	},
-	explanation: {
-		label: "Explanation",
-		icon: FileText,
-		color: "text-amber-600",
-		bgColor: "bg-amber-100",
-	},
-	reading: {
-		label: "Reading",
+	input: {
+		label: "Input",
 		icon: BookOpen,
 		color: "text-emerald-600",
 		bgColor: "bg-emerald-100",
 	},
-	listening: {
-		label: "Listening",
-		icon: Headphones,
-		color: "text-sky-600",
-		bgColor: "bg-sky-100",
-	},
-	speaking: {
-		label: "Speaking",
-		icon: MessageSquare,
-		color: "text-orange-600",
-		bgColor: "bg-orange-100",
+	teach: {
+		label: "Lesson",
+		icon: PenTool,
+		color: "text-blue-600",
+		bgColor: "bg-blue-100",
 	},
 	practice: {
 		label: "Practice",
 		icon: Play,
+		color: "text-orange-600",
+		bgColor: "bg-orange-100",
+	},
+	review: {
+		label: "Review",
+		icon: FileText,
 		color: "text-teal-600",
 		bgColor: "bg-teal-100",
 	},
-};
-
-const exerciseTypeConfig: Record<
-	ExerciseType,
-	{ label: string; color: string; bgColor: string; borderColor: string }
-> = {
-	lecture: {
-		label: "Lecture",
-		color: "text-emerald-700",
-		bgColor: "bg-emerald-50",
-		borderColor: "border-emerald-200",
-	},
-	practice: {
-		label: "Practice",
-		color: "text-orange-700",
-		bgColor: "bg-orange-50",
-		borderColor: "border-orange-200",
-	},
-	quiz: {
-		label: "Quiz",
-		color: "text-violet-700",
-		bgColor: "bg-violet-50",
-		borderColor: "border-violet-200",
-	},
-	conversation: {
-		label: "Conversation",
-		color: "text-blue-700",
-		bgColor: "bg-blue-50",
-		borderColor: "border-blue-200",
+	assessment: {
+		label: "Assessment",
+		icon: GraduationCap,
+		color: "text-violet-600",
+		bgColor: "bg-violet-100",
 	},
 };
 
@@ -591,58 +537,24 @@ function LessonDetailDialog({
 
 					{/* Counts */}
 					<div className="mt-3 flex items-center justify-center gap-2">
-						{detail.wordCount > 0 && (
+						{detail.vocabulary.length > 0 && (
 							<Badge
 								variant="outline"
 								className="border-sky-200 bg-sky-50 text-sky-700"
 							>
-								{detail.wordCount} Words
+								{detail.vocabulary.length} Words
 							</Badge>
 						)}
-						{detail.grammarCount > 0 && (
+						{detail.grammarPoints.length > 0 && (
 							<Badge
 								variant="outline"
 								className="border-violet-200 bg-violet-50 text-violet-700"
 							>
-								{detail.grammarCount} Grammar
+								{detail.grammarPoints.length} Grammar
 							</Badge>
 						)}
 					</div>
 				</div>
-
-				{/* Exercises */}
-				{detail.exercises.length > 0 && (
-					<div className="mt-4">
-						<h4 className="mb-2 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
-							Exercises
-						</h4>
-						<div className="flex flex-wrap gap-2">
-							{detail.exercises.map((ex) => {
-								const exConfig = exerciseTypeConfig[ex];
-								return (
-									<button
-										key={ex}
-										type="button"
-										className={cn(
-											"flex items-center gap-2 rounded-full border px-3 py-1.5 font-medium text-sm transition-colors hover:opacity-80",
-											exConfig.borderColor,
-											exConfig.bgColor,
-											exConfig.color,
-										)}
-									>
-										{ex === "lecture" && <GraduationCap className="size-4" />}
-										{ex === "practice" && <Play className="size-4" />}
-										{ex === "quiz" && <PenTool className="size-4" />}
-										{ex === "conversation" && (
-											<MessageSquare className="size-4" />
-										)}
-										{exConfig.label}
-									</button>
-								);
-							})}
-						</div>
-					</div>
-				)}
 
 				{/* Grammar Points */}
 				{detail.grammarPoints.length > 0 && (
@@ -671,14 +583,14 @@ function LessonDetailDialog({
 					</div>
 				)}
 
-				{/* Words to Learn */}
-				{detail.wordsToLearn.length > 0 && (
+				{/* Vocabulary */}
+				{detail.vocabulary.length > 0 && (
 					<div className="mt-4">
 						<h4 className="mb-2 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
 							Words to Practice
 						</h4>
 						<div className="grid grid-cols-2 gap-2">
-							{detail.wordsToLearn.map((w) => (
+							{detail.vocabulary.map((w) => (
 								<button
 									key={w.word}
 									type="button"
@@ -687,9 +599,11 @@ function LessonDetailDialog({
 									<Volume2 className="mt-0.5 size-4 shrink-0 text-sky-500" />
 									<div>
 										<p className="font-semibold text-sm">{w.word}</p>
-										<p className="text-muted-foreground text-xs">
-											{w.translation}
-										</p>
+										{w.definition && (
+											<p className="text-muted-foreground text-xs">
+												{w.definition}
+											</p>
+										)}
 									</div>
 								</button>
 							))}
@@ -732,17 +646,16 @@ function FooterMessage({ message }: { message: string }) {
 function RouteComponent() {
 	const trpc = useTRPC();
 	const navigate = useNavigate();
-	const { data: learningPathData, isLoading } = useQuery(
-		trpc.content.getLearningPath.queryOptions(),
+	const { data: courseData } = useQuery(
+		trpc.content.getCourse.queryOptions(),
 	);
 
 	const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
 	const [dialogOpen, setDialogOpen] = useState(false);
 
-	// Transform API data to match component interfaces
 	const units: Unit[] = useMemo(() => {
-		if (!learningPathData?.units) return [];
-		return learningPathData.units.map((u) => ({
+		if (!courseData?.units) return [];
+		return courseData.units.map((u) => ({
 			id: u.id,
 			title: u.title,
 			status: u.status as UnitStatus,
@@ -756,21 +669,18 @@ function RouteComponent() {
 				progress: l.progress,
 				detail: (l.content as LessonDetail) ?? {
 					description: "",
-					wordCount: 0,
-					grammarCount: 0,
-					exercises: [],
 					grammarPoints: [],
-					wordsToLearn: [],
+					vocabulary: [],
 				},
 			})),
 			unlockMessage:
 				u.status === "locked" ? "Complete previous units to unlock" : undefined,
 		}));
-	}, [learningPathData]);
+	}, [courseData]);
 
 	const levelInfo = useMemo(
-		() => getLevelInfo(learningPathData?.level ?? "B1", units),
-		[learningPathData?.level, units],
+		() => getLevelInfo(courseData?.level ?? "B1", units),
+		[courseData?.level, units],
 	);
 
 	// Completed units start collapsed by default
@@ -819,7 +729,7 @@ function RouteComponent() {
 	// 	);
 	// }
 
-	if (!learningPathData || units.length === 0) {
+	if (!courseData || units.length === 0) {
 		return (
 			<div className="flex min-h-[50vh] flex-col items-center justify-center gap-2">
 				<p className="text-muted-foreground">No lessons available yet.</p>

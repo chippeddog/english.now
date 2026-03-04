@@ -1,5 +1,5 @@
 import { createOpenAI } from "@ai-sdk/openai";
-import type { ExerciseItem, LessonContent } from "@english.now/db";
+import type { CurriculumLessonContent, ExerciseItem } from "@english.now/db";
 import { env } from "@english.now/env/server";
 import { generateText, Output } from "ai";
 import { z } from "zod";
@@ -21,29 +21,28 @@ const exercisesOutputSchema = z.object({
 export async function generateLessonExercises(
 	lessonTitle: string,
 	lessonType: string,
-	content: LessonContent,
+	content: CurriculumLessonContent,
 	nativeLanguage: string,
 ): Promise<ExerciseItem[]> {
 	const grammarContext =
 		content.grammarPoints.length > 0
-			? `Grammar points to test:\n${content.grammarPoints.map((g) => `- ${g.title}: ${g.description}`).join("\n")}`
+			? `Grammar points to test:\n${content.grammarPoints.map((g: { title: string; description: string }) => `- ${g.title}: ${g.description}`).join("\n")}`
 			: "";
 
 	const vocabContext =
-		content.wordsToLearn.length > 0
-			? `Vocabulary to test:\n${content.wordsToLearn.map((w) => `- ${w.word} (${w.translation})`).join("\n")}`
+		content.vocabulary.length > 0
+			? `Vocabulary to test:\n${content.vocabulary.map((w: { word: string; definition?: string }) => `- ${w.word}${w.definition ? ` (${w.definition})` : ""}`).join("\n")}`
 			: "";
 
-	const exerciseCount =
-		content.grammarPoints.length + content.wordsToLearn.length > 0
-			? Math.min(
-					10,
-					Math.max(
-						6,
-						content.grammarPoints.length * 2 + content.wordsToLearn.length,
-					),
-				)
-			: 8;
+	const exerciseCount = content.exerciseHints?.count
+		? Math.min(10, Math.max(6, content.exerciseHints.count))
+		: Math.min(
+				10,
+				Math.max(
+					6,
+					content.grammarPoints.length * 2 + content.vocabulary.length,
+				),
+			);
 
 	const systemPrompt = `You are an expert English teacher creating interactive exercises for a language learning app.
 
@@ -54,7 +53,6 @@ Rules:
 - For multiple_choice: provide exactly 4 options in the "options" array, one correct
 - For fill_in_the_blank: set "options" to an empty array [], and the prompt must contain exactly one "___" where the answer goes
 - Explanations should be concise (1-2 sentences) and educational, in English
-- All exercises must be appropriate for B1 (intermediate) English learners
 - Make exercises progressively harder
 - Avoid trivially obvious answers
 - For grammar exercises: test understanding of the rules, not just memorization

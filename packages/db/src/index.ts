@@ -4,12 +4,13 @@ import { drizzle } from "drizzle-orm/node-postgres";
 export const db = drizzle(env.DATABASE_URL);
 
 // Re-export drizzle-orm helpers
-export { and, asc, desc, eq, isNull, lt, or, sql } from "drizzle-orm";
+export { and, asc, desc, eq, inArray, isNull, lt, or, sql } from "drizzle-orm";
 
 // Export schemas
 export * from "./schema/auth";
 export * from "./schema/content";
 export * from "./schema/conversation";
+export * from "./schema/curriculum";
 export * from "./schema/daily-suggestion";
 export * from "./schema/issue-report";
 export * from "./schema/lesson-attempt";

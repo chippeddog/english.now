@@ -137,7 +137,7 @@ export default function TodaysActivities() {
 			setStartingId(null);
 		}
 	}
-
+	//add priority to activities
 	return (
 		<div
 			className="relative overflow-hidden rounded-3xl bg-white p-2.5"
