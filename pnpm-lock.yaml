@@ -531,6 +531,9 @@ importers:
       tsdown:
         specifier: 'catalog:'
         version: 0.15.10(typescript@5.8.3)
+      tsx:
+        specifier: ^4.19.2
+        version: 4.20.6
 
   packages/email:
     dependencies:
