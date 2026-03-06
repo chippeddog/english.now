@@ -1,3 +1,4 @@
+import { useMutation } from "@tanstack/react-query";
 import {
 	createFileRoute,
 	Outlet,
@@ -5,9 +6,11 @@ import {
 	useRouterState,
 } from "@tanstack/react-router";
 import { Loader } from "lucide-react";
+import { useEffect } from "react";
 import Navbar from "@/components/dashboard/navbar";
 import { getProfile } from "@/functions/get-profile";
 import { getUser } from "@/functions/get-user";
+import { useTRPC } from "@/utils/trpc";
 
 export const Route = createFileRoute("/_dashboard")({
 	beforeLoad: async ({ context }) => {
@@ -46,6 +49,17 @@ function DashboardPending() {
 }
 
 function DashboardLayout() {
+	const trpc = useTRPC();
+	const ensureTodayPlan = useMutation(
+		trpc.practice.ensureTodayPlan.mutationOptions({}),
+	);
+
+	useEffect(() => {
+		if (!ensureTodayPlan.isPending && !ensureTodayPlan.isSuccess) {
+			ensureTodayPlan.mutate();
+		}
+	}, [ensureTodayPlan.isPending, ensureTodayPlan.isSuccess]);
+
 	// const matches = useMatches();
 	// const isSettingsPage = matches.some(
 	// 	(match) => match.pathname === "/settings",

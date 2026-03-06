@@ -11,7 +11,7 @@ export const Letter = () => {
 	const [expanded, setExpanded] = useState(false);
 
 	return (
-		<div className="container mx-auto max-w-5xl pt-24">
+		<div className="container mx-auto max-w-5xl pt-16 md:pt-24">
 			<div className="mx-auto mb-10 max-w-xl text-center md:mb-14">
 				<h2 className="mb-4 font-bold font-lyon text-4xl tracking-tight md:text-5xl">
 					{t("letter.title")}

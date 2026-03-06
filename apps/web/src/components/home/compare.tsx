@@ -24,14 +24,13 @@ export function Compare() {
 	}));
 
 	return (
-		<div className="mx-auto mt-24 max-w-4xl">
+		<div className="mx-auto mt-16 max-w-4xl md:mt-24">
 			<div className="mx-auto mb-10 max-w-xl text-center md:mb-14">
 				<h2 className="mb-4 font-bold font-lyon text-4xl tracking-tight md:text-5xl">
 					{t("compare.title")}
 				</h2>
 				<p className="text-balance text-center text-muted-foreground text-sm md:mx-auto md:max-w-boundary-sm md:text-lg">
 					{t("compare.subtitle")} <br className="hidden md:block" />
-					{t("compare.subtitleLine2")}
 				</p>
 			</div>
 			<div className="overflow-hidden">

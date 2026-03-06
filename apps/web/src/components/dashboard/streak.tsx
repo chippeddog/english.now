@@ -106,7 +106,7 @@ export default function Streak({
 				</div>
 			</div>
 
-			<div className="rounded-[1.2rem] border border-border/50 p-3">
+			<div className="rounded-2xl border border-border/50 p-3">
 				<div className="flex items-center justify-between">
 					{WEEK_DAYS.map((day, index) => {
 						const isToday = index === todayIndex;

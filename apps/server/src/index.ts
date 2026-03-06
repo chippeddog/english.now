@@ -10,7 +10,7 @@ import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { requestId } from "hono/request-id";
 import { WebSocketServer } from "ws";
-import { registerAllWorkers } from "./jobs";
+import { enqueueGenerateDailyPracticePlan, registerAllWorkers } from "./jobs";
 import contentRoutes from "./routes/content";
 import conversationRoutes from "./routes/conversation";
 import paddleRoutes from "./routes/paddle";
@@ -50,7 +50,11 @@ app.use(
 	trpcServer({
 		router: appRouter,
 		createContext: (_opts, context) => {
-			return createContext({ context });
+			return createContext({
+				context,
+				enqueueDailyPracticePlan: (data) =>
+					enqueueGenerateDailyPracticePlan(boss, data),
+			});
 		},
 	}),
 );

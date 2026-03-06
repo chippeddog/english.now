@@ -36,7 +36,7 @@ export const auth = betterAuth<BetterAuthOptions>({
 	emailAndPassword: {
 		enabled: true,
 		requireEmailVerification: true,
-		disableSignUp: true,
+		// disableSignUp: true,
 		sendResetPassword: async ({ user, url }) => {
 			void sendEmail({
 				to: user.email,

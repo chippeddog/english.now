@@ -1,13 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
-	ArrowRight,
 	BookOpen,
 	Check,
 	ChevronDown,
 	ChevronRight,
 	FileText,
 	GraduationCap,
+	Loader,
 	Lock,
 	type LucideIcon,
 	PenTool,
@@ -356,7 +356,7 @@ function LessonStatusIcon({
 
 	if (status === "completed") {
 		return (
-			<div className="flex size-9 items-center justify-center rounded-full bg-lime-500 text-white">
+			<div className="flex size-8 items-center justify-center rounded-full border border-lime-400 bg-lime-200 text-lime-600">
 				<Check className="size-4" strokeWidth={2.5} />
 			</div>
 		);
@@ -364,7 +364,7 @@ function LessonStatusIcon({
 
 	if (status === "locked") {
 		return (
-			<div className="flex size-9 items-center justify-center rounded-full bg-neutral-100 text-neutral-300">
+			<div className="flex size-8 items-center justify-center rounded-full bg-neutral-100 text-neutral-300">
 				<Lock className="size-3.5" />
 			</div>
 		);
@@ -375,9 +375,7 @@ function LessonStatusIcon({
 		return (
 			<div
 				className={cn(
-					"flex size-9 items-center justify-center rounded-full",
-					config.bgColor,
-					config.color,
+					"flex size-8 items-center justify-center rounded-full border border-amber-400 bg-amber-200 text-amber-600",
 				)}
 			>
 				<Icon className="size-4" />
@@ -388,13 +386,13 @@ function LessonStatusIcon({
 	// available
 	const Icon = config.icon;
 	return (
-		<div className="flex size-9 items-center justify-center rounded-full bg-neutral-100 text-neutral-500">
+		<div className="flex size-8 items-center justify-center rounded-full border border-neutral-200 bg-neutral-100 text-neutral-400">
 			<Icon className="size-4" />
 		</div>
 	);
 }
 
-function LessonRow({
+function LessonRowContent({
 	lesson,
 	onSelect,
 }: {
@@ -412,15 +410,13 @@ function LessonRow({
 			onClick={() => !isLocked && onSelect(lesson)}
 			disabled={isLocked}
 			className={cn(
-				"group flex w-full items-center gap-3 rounded-2xl py-3 text-left transition-all",
-				isCurrent && "bg-white",
-				!isCurrent && !isLocked && "hover:bg-neutral-50",
+				"group flex h-full min-h-12 w-full items-center gap-3 rounded-2xl py-0 text-left transition-all",
+				// isCurrent && "bg-white",
+				// !isCurrent && !isLocked && "hover:bg-neutral-50",
 				isLocked && "cursor-default opacity-50",
 			)}
 		>
-			<LessonStatusIcon status={lesson.status} type={lesson.type} />
-
-			<div className="min-w-0 flex-1">
+			<div className="flex min-h-12 min-w-0 flex-1 flex-col justify-center py-1">
 				<div className="flex items-center gap-2">
 					<span
 						className={cn(
@@ -444,13 +440,12 @@ function LessonRow({
 
 			{isCurrent && (
 				<div className="flex items-center gap-1 font-semibold text-muted-foreground text-sm">
-					Next
-					<ChevronRight className="size-4" />
+					<ChevronRight className="size-5" />
 				</div>
 			)}
 
 			{isCompleted && (
-				<ChevronRight className="size-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+				<ChevronRight className="size-5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
 			)}
 
 			{isLocked && <Lock className="size-3.5 text-neutral-300" />}
@@ -511,42 +506,54 @@ function UnitCard({
 			}}
 		>
 			<div className="p-4">
-				{/* Unit Header */}
-				<button
-					type="button"
-					onClick={canCollapse ? onToggleCollapse : undefined}
-					className={cn(
-						"flex w-full items-center gap-3",
-						canCollapse && "cursor-pointer",
-						!isCollapsed && "mb-3",
-					)}
-				>
-					<UnitProgressCircle progress={unit.progress} status={unit.status} />
-					<div className="min-w-0 flex-1 text-left">
-						<h3 className="font-bold font-lyon text-lg">{unit.title}</h3>
-					</div>
-					{canCollapse && (
-						<ChevronDown
-							className={cn(
-								"size-5 text-muted-foreground transition-transform duration-200",
-								isCollapsed && "-rotate-90",
-							)}
+				<div className="relative flex flex-col gap-4">
+					{/* Vertical dashed line from circle down through lessons */}
+					{!isCollapsed && unit.lessons.length > 0 && (
+						<div
+							className="-translate-x-1/2 absolute top-12 bottom-0 left-6 w-px border-neutral-200 border-l border-dashed"
+							aria-hidden="true"
 						/>
 					)}
-				</button>
-
-				{/* Lessons List */}
-				{!isCollapsed && (
-					<div className="flex flex-col gap-0.5">
-						{unit.lessons.map((lesson) => (
-							<LessonRow
-								key={lesson.id}
-								lesson={lesson}
-								onSelect={onSelectLesson}
+					{/* Row 1: unit header — circle and title in one row so they align */}
+					<div className="flex h-12 items-center gap-3">
+						<div className="relative z-10 flex w-12 shrink-0 justify-center">
+							<UnitProgressCircle
+								progress={unit.progress}
+								status={unit.status}
 							/>
-						))}
+						</div>
+						<button
+							type="button"
+							onClick={canCollapse ? onToggleCollapse : undefined}
+							className={cn(
+								"flex min-w-0 flex-1 items-center gap-3 text-left",
+								canCollapse && "cursor-pointer",
+							)}
+						>
+							<h3 className="font-bold font-lyon text-lg">{unit.title}</h3>
+							{canCollapse && (
+								<ChevronDown
+									className={cn(
+										"size-5 shrink-0 text-muted-foreground transition-transform duration-200",
+										isCollapsed && "-rotate-90",
+									)}
+								/>
+							)}
+						</button>
 					</div>
-				)}
+					{/* Lesson rows: icon and content in same row so they stay centered */}
+					{!isCollapsed &&
+						unit.lessons.map((lesson) => (
+							<div key={lesson.id} className="flex h-12 items-center gap-3">
+								<div className="relative z-10 flex w-12 shrink-0 justify-center">
+									<LessonStatusIcon status={lesson.status} type={lesson.type} />
+								</div>
+								<div className="min-h-0 min-w-0 flex-1">
+									<LessonRowContent lesson={lesson} onSelect={onSelectLesson} />
+								</div>
+							</div>
+						))}
+				</div>
 			</div>
 		</div>
 	);
@@ -727,7 +734,9 @@ function FooterMessage({ message }: { message: string }) {
 function RouteComponent() {
 	const trpc = useTRPC();
 	const navigate = useNavigate();
-	const { data: courseData } = useQuery(trpc.content.getCourse.queryOptions());
+	const { data: courseData, isLoading } = useQuery(
+		trpc.content.getCourse.queryOptions(),
+	);
 
 	const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
 	const [dialogOpen, setDialogOpen] = useState(false);
@@ -803,13 +812,13 @@ function RouteComponent() {
 		});
 	};
 
-	// if (isLoading) {
-	// 	return (
-	// 		<div className="flex min-h-[50vh] items-center justify-center">
-	// 			<Loader2 className="size-8 animate-spin text-muted-foreground" />
-	// 		</div>
-	// 	);
-	// }
+	if (isLoading) {
+		return (
+			<div className="flex min-h-[50vh] items-center justify-center">
+				<Loader className="size-5 animate-spin text-muted-foreground" />
+			</div>
+		);
+	}
 
 	if (!courseData || units.length === 0) {
 		return (

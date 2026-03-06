@@ -1,6 +1,6 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { Loader2, MicIcon, RefreshCwIcon } from "lucide-react";
+import { Loader2, MicIcon, PlusIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -16,10 +16,22 @@ import { useTRPC } from "@/utils/trpc";
 type ParagraphPreview = {
 	text: string;
 	topic: string;
-	cefrLevel: string;
+	cefrLevel: "A1" | "A2" | "B1" | "B2" | "C1";
 	wordCount: number;
 	focusAreas: string[];
 	tips: string;
+};
+
+type PronunciationActivity = {
+	id: string;
+	title: string;
+	description: string;
+	type: "pronunciation";
+	typeLabel: string;
+	completedAt: string | null;
+	payload: {
+		paragraph: ParagraphPreview;
+	};
 };
 
 function SkeletonText() {
@@ -44,26 +56,78 @@ function DialogTopicsPronunciation({
 }) {
 	const trpc = useTRPC();
 	const navigate = useNavigate();
+	const queryClient = useQueryClient();
 	const { t } = useTranslation("app");
-	const [preview, setPreview] = useState<ParagraphPreview | null>(null);
+	const [selectedId, setSelectedId] = useState<string | null>(null);
 
-	const generatePreview = useMutation(
-		trpc.pronunciation.generatePreview.mutationOptions({
-			onSuccess: (data) => {
-				setPreview(data.paragraph);
+	const { data: planData, isLoading: isPlanLoading } = useQuery({
+		...trpc.practice.getTodayPlan.queryOptions(),
+		enabled: open,
+	});
+
+	const ensurePlan = useMutation(
+		trpc.practice.ensureTodayPlan.mutationOptions({
+			onSuccess: () => {
+				queryClient.invalidateQueries({
+					queryKey: trpc.practice.getTodayPlan.queryKey(),
+				});
 			},
 		}),
 	);
 
+	const markDone = useMutation(
+		trpc.practice.markActivityDone.mutationOptions({
+			onSuccess: () => {
+				queryClient.invalidateQueries({
+					queryKey: trpc.practice.getTodayPlan.queryKey(),
+				});
+				queryClient.invalidateQueries({
+					queryKey: trpc.practice.getHomeTodayPlan.queryKey(),
+				});
+			},
+		}),
+	);
+
+	const activities = (
+		(planData?.activities ?? []) as Array<
+			PronunciationActivity | { type: string }
+		>
+	).filter(
+		(activity): activity is PronunciationActivity =>
+			activity.type === "pronunciation",
+	);
+
 	useEffect(() => {
-		if (open && !preview && !generatePreview.isPending) {
-			generatePreview.mutate();
+		if (
+			open &&
+			(planData?.status === "missing" || planData?.status === "failed") &&
+			!ensurePlan.isPending
+		) {
+			ensurePlan.mutate();
 		}
-	}, [open]);
+	}, [open, planData?.status, ensurePlan.isPending]);
+
+	useEffect(() => {
+		if (!selectedId && activities.length > 0) {
+			setSelectedId(activities[0]?.id ?? null);
+		}
+	}, [selectedId, activities]);
+
+	const selectedActivity =
+		activities.find((activity) => activity.id === selectedId) ??
+		activities[0] ??
+		null;
+	const preview = selectedActivity?.payload.paragraph ?? null;
 
 	const startSession = useMutation(
 		trpc.pronunciation.startSession.mutationOptions({
 			onSuccess: (data) => {
+				if (selectedActivity) {
+					markDone.mutate({
+						activityId: selectedActivity.id,
+						sessionId: data.sessionId,
+					});
+				}
 				navigate({
 					to: "/pronunciation/$sessionId",
 					params: { sessionId: data.sessionId },
@@ -77,11 +141,18 @@ function DialogTopicsPronunciation({
 		startSession.mutate({ paragraph: preview });
 	};
 
-	const handleRefresh = () => {
-		generatePreview.mutate();
+	const handleEnsurePlan = () => {
+		if (!ensurePlan.isPending) {
+			ensurePlan.mutate();
+		}
 	};
 
-	const isGenerating = generatePreview.isPending;
+	const isGenerating =
+		isPlanLoading ||
+		ensurePlan.isPending ||
+		planData?.status === "missing" ||
+		planData?.status === "queued" ||
+		planData?.status === "generating";
 
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
@@ -106,11 +177,11 @@ function DialogTopicsPronunciation({
 							<h3 className="font-semibold text-sm italic">Read Aloud</h3>
 							<button
 								type="button"
-								onClick={handleRefresh}
+								onClick={handleEnsurePlan}
 								disabled={isGenerating}
 								className="relative flex size-6 shrink-0 cursor-pointer items-center justify-center gap-1.5 overflow-hidden whitespace-nowrap rounded-lg bg-linear-to-t from-[#202020] to-[#2F2F2F] font-base text-white shadow-[inset_0_1px_4px_0_rgba(255,255,255,0.4)] outline-none backdrop-blur transition-all hover:opacity-90 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-40 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:from-[rgb(192,192,192)] dark:to-[rgb(255,255,255)] dark:shadow-[inset_0_1px_4px_0_rgba(128,128,128,0.2)] dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none"
 							>
-								<RefreshCwIcon
+								<PlusIcon
 									className={cn("size-3.5", isGenerating && "animate-spin")}
 								/>
 							</button>
@@ -119,6 +190,23 @@ function DialogTopicsPronunciation({
 							<SkeletonText />
 						) : preview ? (
 							<div className={cn("pt-3", isGenerating && "opacity-50")}>
+								<div className="mb-3 flex flex-wrap gap-2">
+									{activities.map((activity) => (
+										<button
+											key={activity.id}
+											type="button"
+											onClick={() => setSelectedId(activity.id)}
+											className={cn(
+												"rounded-full border px-2.5 py-1 text-xs transition",
+												selectedActivity?.id === activity.id
+													? "border-lime-500 bg-lime-100 text-lime-800"
+													: "border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50",
+											)}
+										>
+											{activity.title}
+										</button>
+									))}
+								</div>
 								<p className="text-sm leading-relaxed">{preview.text}</p>
 								<div className="mt-3 flex items-center gap-2">
 									<span className="rounded-md bg-lime-100 px-1.5 py-0.5 font-medium text-lime-700 text-xs">
@@ -129,7 +217,12 @@ function DialogTopicsPronunciation({
 									</span>
 								</div>
 							</div>
-						) : null}
+						) : (
+							<p className="pt-3 text-muted-foreground text-sm">
+								{planData?.error ??
+									"We’re still preparing your pronunciation activities."}
+							</p>
+						)}
 					</div>
 				</div>
 

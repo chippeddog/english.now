@@ -29,10 +29,12 @@ export default function PracticeSession({
 	cards,
 	onClose,
 	onRestart,
+	onComplete,
 }: {
 	cards: FlashcardItem[];
 	onClose: () => void;
 	onRestart: () => void;
+	onComplete?: () => void;
 }) {
 	const trpc = useTRPC();
 	const queryClient = useQueryClient();
@@ -109,6 +111,7 @@ export default function PracticeSession({
 
 			if (currentIndex + 1 >= cards.length) {
 				setPhase("results");
+				onComplete?.();
 				recordPracticeTime.mutate({
 					activityType: "vocabulary",
 					durationSeconds: getElapsedSeconds(),
@@ -131,6 +134,7 @@ export default function PracticeSession({
 			trpc,
 			updateWordMastery,
 			updatePhraseMastery,
+			onComplete,
 		],
 	);
 

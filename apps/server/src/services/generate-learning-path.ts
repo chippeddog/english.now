@@ -249,8 +249,6 @@ async function translateLessonVocabulary(
 	}
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
 function getNativeLanguageName(code: string): string {
 	const languages: Record<string, string> = {
 		uk: "Ukrainian",

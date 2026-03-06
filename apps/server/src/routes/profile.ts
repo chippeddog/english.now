@@ -1,6 +1,12 @@
+import { getDayKey } from "@english.now/api/services/daily-practice-plan";
 import { auth } from "@english.now/auth";
 import { db, eq, userProfile } from "@english.now/db";
 import { Hono } from "hono";
+import {
+	enqueueGenerateDailyPracticePlan,
+	enqueueGenerateLearningPath,
+} from "../jobs";
+import { getQueue } from "../utils/queue";
 
 const profile = new Hono();
 
@@ -38,6 +44,19 @@ profile.post("/onboarding", async (c) => {
 			updatedAt: new Date(),
 		})
 		.where(eq(userProfile.userId, session.user.id));
+
+	const userTimezone = timezone || "UTC";
+	const boss = getQueue();
+
+	await Promise.all([
+		enqueueGenerateLearningPath(boss, {
+			userId: session.user.id,
+		}),
+		enqueueGenerateDailyPracticePlan(boss, {
+			userId: session.user.id,
+			dayKey: getDayKey(new Date(), userTimezone),
+		}),
+	]);
 
 	return c.json({ success: true });
 });

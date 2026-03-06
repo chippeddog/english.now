@@ -1,247 +1,61 @@
-import { createOpenAI } from "@ai-sdk/openai";
-import type {
-	DailyActivityItem,
-	PronunciationSessionSummary,
-} from "@english.now/db";
+import type { PronunciationSessionSummary } from "@english.now/db";
 import {
 	and,
 	conversationSession,
-	dailySuggestion,
+	dailyPracticePlan,
 	db,
 	desc,
 	eq,
 	isNull,
 	lt,
 	pronunciationSession,
-	userProfile,
 } from "@english.now/db";
-import { env } from "@english.now/env/server";
-import { generateText, Output } from "ai";
 import { z } from "zod";
 import { protectedProcedure, router } from "../index";
+import {
+	ensureTodayPracticePlan,
+	getHomeActivities,
+	getTodayPracticePlanRecord,
+} from "../services/daily-practice-plan";
 import { recordActivity } from "../services/record-activity";
 
-const openai = createOpenAI({ apiKey: env.OPENAI_API_KEY });
-
-const dailyActivitiesSchema = z.object({
-	activities: z.array(
-		z.object({
-			id: z.string().describe("kebab-case unique ID, e.g. 'describe-morning'"),
-			emoji: z.string().describe("Single emoji representing the activity"),
-			title: z
-				.string()
-				.describe("Short, engaging title (3-6 words). Action-oriented."),
-			description: z
-				.string()
-				.describe("One sentence describing what the learner will practice"),
-			duration: z
-				.number()
-				.describe(
-					"Estimated minutes (1-5 for pronunciation, 3-8 for conversation)",
-				),
-			type: z.enum(["pronunciation", "conversation"]).describe("Activity type"),
-			typeLabel: z
-				.string()
-				.describe("Human-readable label: 'Read Aloud' or 'Conversation'"),
-			metadata: z.object({
-				scenario: z
-					.string()
-					.describe(
-						"For conversation: kebab-case scenario ID. Empty string for pronunciation.",
-					),
-				scenarioName: z
-					.string()
-					.describe(
-						"For conversation: display name of scenario. Empty string for pronunciation.",
-					),
-				scenarioDescription: z
-					.string()
-					.describe(
-						"For conversation: one-line description. Empty string for pronunciation.",
-					),
-				aiRole: z
-					.string()
-					.describe(
-						"For conversation: role the AI plays. Empty string for pronunciation.",
-					),
-				cefrLevel: z
-					.string()
-					.describe(
-						"For pronunciation: CEFR level (A1-C1). Empty string for conversation.",
-					),
-			}),
-		}),
-	),
-});
-
-function profileLevelToCefr(level: string | null | undefined): string {
-	switch (level) {
-		case "beginner":
-			return "A1";
-		case "elementary":
-			return "A2";
-		case "intermediate":
-			return "B1";
-		case "upper-intermediate":
-			return "B2";
-		case "advanced":
-			return "C1";
-		default:
-			return "A2";
-	}
-}
-
-async function generateDailyActivities(profile: {
-	level: string | null;
-	interests: string[] | null;
-	focusAreas: string[] | null;
-	goal: string | null;
-	nativeLanguage: string | null;
-}): Promise<DailyActivityItem[]> {
-	const level = profile.level || "beginner";
-	const cefrLevel = profileLevelToCefr(level);
-	const interests = profile.interests?.length
-		? profile.interests.join(", ")
-		: "general topics";
-	const focusAreas = profile.focusAreas?.length
-		? profile.focusAreas.join(", ")
-		: "general English";
-	const goal = profile.goal || "improve English skills";
-	const nativeLanguage = profile.nativeLanguage || "unknown";
-
-	const { output } = await generateText({
-		model: openai("gpt-4o-mini"),
-		output: Output.object({ schema: dailyActivitiesSchema }),
-		system: `You are an expert English tutor creating a personalized daily practice plan.
-
-Generate exactly 9 activities: 3 pronunciation (Read Aloud) and 6 conversation activities.
-
-Learner profile:
-- English level: ${level} (CEFR: ${cefrLevel})
-- Interests: ${interests}
-- Focus areas: ${focusAreas}
-- Learning goal: ${goal}
-- Native language: ${nativeLanguage}
-
-Rules:
-- Create activities that feel personalized to this specific learner
-- Pronunciation activities should have typeLabel "Read Aloud" and include cefrLevel "${cefrLevel}" in metadata
-- Conversation activities should include scenario (kebab-case), scenarioName, scenarioDescription, and aiRole in metadata
-- Alternate types: pronunciation, conversation, pronunciation, conversation, pronunciation, conversation
-- Titles should be catchy and action-oriented (e.g. "Order at a Café", "Describe Your Dream Job")
-- Each activity should be unique and varied — mix topics that match their interests with practical scenarios
-- Durations: pronunciation 1-4 min, conversation 3-7 min
-- Emojis should be relevant and distinct for each activity
-- For pronunciation activities: set scenario, scenarioName, scenarioDescription, aiRole to empty string ""
-- For conversation activities: set cefrLevel to empty string ""`,
-		prompt: `Generate 6 personalized daily practice activities for this ${level}-level English learner interested in ${interests}.`,
-		temperature: 0.9,
-	});
-
-	if (!output) throw new Error("Failed to generate daily activities");
-
-	return output.activities.map((a) => ({
-		...a,
-		metadata: {
-			scenario: a.metadata.scenario || undefined,
-			scenarioName: a.metadata.scenarioName || undefined,
-			scenarioDescription: a.metadata.scenarioDescription || undefined,
-			aiRole: a.metadata.aiRole || undefined,
-			cefrLevel: a.metadata.cefrLevel || undefined,
-		},
-		completedAt: null,
-		sessionId: null,
-	}));
-}
-
 export const practiceRouter = router({
-	getDailySuggestions: protectedProcedure.query(async ({ ctx }) => {
-		const userId = ctx.session.user.id;
-
-		const [profile] = await db
-			.select()
-			.from(userProfile)
-			.where(eq(userProfile.userId, userId))
-			.limit(1);
-
-		const userTz = profile?.timezone || "UTC";
-
-		const [existing] = await db
-			.select()
-			.from(dailySuggestion)
-			.where(eq(dailySuggestion.userId, userId))
-			.limit(1);
-
-		if (existing) {
-			const formatter = new Intl.DateTimeFormat("en-CA", {
-				timeZone: userTz,
-				year: "numeric",
-				month: "2-digit",
-				day: "2-digit",
-			});
-			const todayInUserTz = formatter.format(new Date());
-			const generatedDateInUserTz = formatter.format(existing.generatedAt);
-
-			if (todayInUserTz === generatedDateInUserTz) {
-				return {
-					activities: existing.activities,
-					generatedAt: existing.generatedAt,
-					isStale: false,
-				};
-			}
+	ensureTodayPlan: protectedProcedure.mutation(async ({ ctx }) => {
+		if (!ctx.enqueueDailyPracticePlan) {
+			throw new Error("Daily practice queue is not configured");
 		}
 
+		const { plan, wasEnqueued } = await ensureTodayPracticePlan(
+			ctx.session.user.id,
+			ctx.enqueueDailyPracticePlan,
+		);
+
 		return {
-			activities: existing?.activities ?? null,
-			generatedAt: existing?.generatedAt ?? null,
-			isStale: true,
+			status: plan.status,
+			generatedAt: plan.generatedAt,
+			wasEnqueued,
 		};
 	}),
 
-	regenerateDailySuggestions: protectedProcedure.mutation(async ({ ctx }) => {
-		const userId = ctx.session.user.id;
-
-		const [profile] = await db
-			.select()
-			.from(userProfile)
-			.where(eq(userProfile.userId, userId))
-			.limit(1);
-
-		const activities = await generateDailyActivities({
-			level: profile?.level ?? null,
-			interests: profile?.interests ?? null,
-			focusAreas: profile?.focusAreas ?? null,
-			goal: profile?.goal ?? null,
-			nativeLanguage: profile?.nativeLanguage ?? null,
-		});
-
-		const [existing] = await db
-			.select()
-			.from(dailySuggestion)
-			.where(eq(dailySuggestion.userId, userId))
-			.limit(1);
-
-		if (existing) {
-			await db
-				.update(dailySuggestion)
-				.set({
-					activities,
-					generatedAt: new Date(),
-				})
-				.where(eq(dailySuggestion.userId, userId));
-		} else {
-			await db.insert(dailySuggestion).values({
-				id: crypto.randomUUID(),
-				userId,
-				activities,
-				generatedAt: new Date(),
-			});
-		}
+	getTodayPlan: protectedProcedure.query(async ({ ctx }) => {
+		const { plan } = await getTodayPracticePlanRecord(ctx.session.user.id);
 
 		return {
-			activities,
-			generatedAt: new Date(),
-			isStale: false,
+			status: plan?.status ?? "missing",
+			activities: plan?.activities ?? [],
+			generatedAt: plan?.generatedAt ?? null,
+			error: plan?.error ?? null,
+		};
+	}),
+
+	getHomeTodayPlan: protectedProcedure.query(async ({ ctx }) => {
+		const { plan } = await getTodayPracticePlanRecord(ctx.session.user.id);
+
+		return {
+			status: plan?.status ?? "missing",
+			activities: plan ? getHomeActivities(plan) : [],
+			generatedAt: plan?.generatedAt ?? null,
+			error: plan?.error ?? null,
 		};
 	}),
 
@@ -254,16 +68,11 @@ export const practiceRouter = router({
 		)
 		.mutation(async ({ ctx, input }) => {
 			const userId = ctx.session.user.id;
+			const { plan } = await getTodayPracticePlanRecord(userId);
 
-			const [existing] = await db
-				.select()
-				.from(dailySuggestion)
-				.where(eq(dailySuggestion.userId, userId))
-				.limit(1);
+			if (!plan) throw new Error("No daily practice plan found");
 
-			if (!existing) throw new Error("No daily suggestions found");
-
-			const updated = existing.activities.map((a) =>
+			const updated = plan.activities.map((a) =>
 				a.id === input.activityId
 					? {
 							...a,
@@ -274,9 +83,9 @@ export const practiceRouter = router({
 			);
 
 			await db
-				.update(dailySuggestion)
-				.set({ activities: updated })
-				.where(eq(dailySuggestion.userId, userId));
+				.update(dailyPracticePlan)
+				.set({ activities: updated, updatedAt: new Date() })
+				.where(eq(dailyPracticePlan.id, plan.id));
 
 			return { success: true };
 		}),

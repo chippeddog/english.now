@@ -6,10 +6,11 @@ const JOB_NAME = "cleanup-rate-limits";
 
 export async function registerCleanupRateLimitsJob(boss: PgBoss) {
 	await boss.createQueue(JOB_NAME);
-	await boss.schedule(JOB_NAME, "*/10 * * * *", {});
+
+	await boss.schedule(JOB_NAME, "0 0 * * *", {});
 
 	boss.work(JOB_NAME, async () => {
-		const tenMinutesAgo = sql`now() - interval '10 minutes'`;
+		const tenMinutesAgo = sql`now() - interval '24 hours'`;
 
 		const deleted = await db
 			.delete(rateLimits)

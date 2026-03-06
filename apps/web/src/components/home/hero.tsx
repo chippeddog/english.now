@@ -19,8 +19,8 @@ export default function Hero() {
 	return (
 		<section className="relative pt-10 md:pt-16">
 			<DialogDemo open={open} setOpen={setOpen} />
-			<div className="relative mx-auto flex flex-col lg:flex-row lg:items-center">
-				<div className="mb-6 flex flex-1 flex-col items-start gap-6 md:mb-0">
+			<div className="relative mx-auto flex flex-col md:flex-row md:items-center">
+				<div className="mb-16 flex flex-1 flex-col items-start gap-6 sm:mb-6 md:mb-0">
 					<h1
 						className={cn(
 							"font-bold font-lyon text-5xl text-neutral-900 tracking-tight sm:text-5xl lg:text-6xl dark:text-white",
@@ -35,7 +35,7 @@ export default function Hero() {
 						</Trans>
 					</h1>
 
-					<p className="max-w-md text-muted-foreground leading-relaxed md:text-lg">
+					<p className="max-w-md text-base text-muted-foreground leading-relaxed lg:text-lg">
 						{t("hero.subtitle")}
 					</p>
 
@@ -63,7 +63,7 @@ export default function Hero() {
 						</Button>
 					</div>
 
-					<div className="flex items-center gap-4 pt-4 text-muted-foreground text-sm">
+					<div className="hidden items-center gap-4 pt-4 text-muted-foreground text-sm sm:flex">
 						<span className="flex items-center gap-1.5">
 							<span className="-space-x-1 flex">
 								{avatarLetters.map(({ id, letter }) => (
@@ -91,7 +91,7 @@ export default function Hero() {
 					/>
 
 					<div
-						className="absolute bottom-0 left-6 z-20 flex h-[55%] w-[200px] select-none flex-col overflow-hidden rounded-t-3xl border border-[#C6F64D] border-b-0 p-4 shadow-xl md:relative md:w-[240px] lg:absolute"
+						className="absolute bottom-0 left-6 z-20 flex h-[45%] w-[200px] select-none flex-col overflow-hidden rounded-t-3xl border border-[#C6F64D] border-b-0 p-4 shadow-xl sm:relative sm:h-[55%] md:absolute md:w-[240px]"
 						style={{
 							background:
 								"linear-gradient(45deg, white 70%, rgba(255,255,255,0.8) 100%)",

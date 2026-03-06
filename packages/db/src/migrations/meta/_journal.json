@@ -197,6 +197,13 @@
       "when": 1772692447610,
       "tag": "0027_complex_zaran",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1772819718763,
+      "tag": "0028_careless_lady_mastermind",
+      "breakpoints": true
     }
   ]
 }

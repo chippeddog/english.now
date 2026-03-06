@@ -1,8 +1,7 @@
-import { env } from "@english.now/env/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { Loader2, MessageCircleIcon, PlusIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,18 +13,21 @@ import {
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/utils/trpc";
 
-type TopicItem = {
+type ConversationActivity = {
 	id: string;
-	name: string;
-	icon: string;
+	title: string;
+	emoji: string;
 	description: string;
-};
-type RoleplayItem = {
-	id: string;
-	name: string;
-	icon: string;
-	description: string;
-	aiRole: string;
+	type: "conversation";
+	typeLabel: string;
+	completedAt: string | null;
+	payload: {
+		scenario: string;
+		scenarioName: string;
+		scenarioDescription: string;
+		aiRole?: string;
+		scenarioType: "topic" | "roleplay";
+	};
 };
 
 function SkeletonCard() {
@@ -46,123 +48,106 @@ function DialogTopics({
 	const queryClient = useQueryClient();
 
 	const [selectedScenario, setSelectedScenario] = useState<string>("");
-	const [selectedMeta, setSelectedMeta] = useState<{
-		name: string;
-		description?: string;
-		aiRole?: string;
-		scenarioType?: "topic" | "roleplay";
-	} | null>(null);
+	const [selectedActivity, setSelectedActivity] =
+		useState<ConversationActivity | null>(null);
 
-	// Fetch personalized suggestions
-	const { data: suggestionsData, isLoading: isSuggestionsLoading } = useQuery({
-		...trpc.conversation.getSuggestions.queryOptions(),
+	const { data: planData, isLoading: isPlanLoading } = useQuery({
+		...trpc.practice.getTodayPlan.queryOptions(),
 		enabled: open,
 	});
 
-	// Regenerate suggestions mutation
-	const regenerateMutation = useMutation(
-		trpc.conversation.regenerateSuggestions.mutationOptions({
+	const ensurePlan = useMutation(
+		trpc.practice.ensureTodayPlan.mutationOptions({
 			onSuccess: () => {
 				queryClient.invalidateQueries({
-					queryKey: trpc.conversation.getSuggestions.queryKey(),
+					queryKey: trpc.practice.getTodayPlan.queryKey(),
 				});
 			},
 		}),
 	);
 
-	// Auto-regenerate when suggestions are stale
-	useEffect(() => {
-		if (
-			suggestionsData?.isStale &&
-			!regenerateMutation.isPending &&
-			!regenerateMutation.isSuccess
-		) {
-			regenerateMutation.mutate();
+	const markDone = useMutation(
+		trpc.practice.markActivityDone.mutationOptions({
+			onSuccess: () => {
+				queryClient.invalidateQueries({
+					queryKey: trpc.practice.getTodayPlan.queryKey(),
+				});
+				queryClient.invalidateQueries({
+					queryKey: trpc.practice.getHomeTodayPlan.queryKey(),
+				});
+			},
+		}),
+	);
+
+	const startConversation = useMutation(
+		trpc.conversation.start.mutationOptions({
+			onSuccess: (data) => {
+				if (selectedActivity) {
+					markDone.mutate({
+						activityId: selectedActivity.id,
+						sessionId: data.sessionId,
+					});
+				}
+
+				setOpen(false);
+				navigate({
+					to: "/conversation/$sessionId",
+					params: { sessionId: data.sessionId },
+				});
+			},
+		}),
+	);
+
+	const conversationActivities = (
+		(planData?.activities ?? []) as Array<
+			ConversationActivity | { type: string }
+		>
+	).filter(
+		(activity): activity is ConversationActivity =>
+			activity.type === "conversation",
+	);
+
+	const topics = conversationActivities.filter(
+		(activity) => activity.payload.scenarioType === "topic",
+	);
+	const roleplays = conversationActivities.filter(
+		(activity) => activity.payload.scenarioType === "roleplay",
+	);
+	const hasContent = topics.length > 0 || roleplays.length > 0;
+	const isGenerating =
+		isPlanLoading ||
+		ensurePlan.isPending ||
+		planData?.status === "missing" ||
+		planData?.status === "queued" ||
+		planData?.status === "generating";
+
+	const handleEnsurePlan = () => {
+		if (!ensurePlan.isPending) {
+			ensurePlan.mutate();
 		}
-	}, [
-		suggestionsData?.isStale,
-		regenerateMutation.isPending,
-		regenerateMutation.isSuccess,
-	]);
-
-	const isGenerating = regenerateMutation.isPending || isSuggestionsLoading;
-
-	const topics: TopicItem[] = regenerateMutation.isSuccess
-		? (regenerateMutation.data?.topics ?? [])
-		: (suggestionsData?.topics ?? []);
-
-	const roleplays: RoleplayItem[] = regenerateMutation.isSuccess
-		? (regenerateMutation.data?.roleplays ?? [])
-		: (suggestionsData?.roleplays ?? []);
-
-	const hasContent = topics.length > 0 && roleplays.length > 0;
-
-	// Start conversation with selected scenario
-	const startConversation = useMutation({
-		mutationFn: async (input: {
-			scenario: string;
-			scenarioName?: string;
-			scenarioDescription?: string;
-			aiRole?: string;
-			scenarioType?: "topic" | "roleplay";
-		}) => {
-			const response = await fetch(
-				`${env.VITE_SERVER_URL}/api/conversation/start`,
-				{
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					credentials: "include",
-					body: JSON.stringify(input),
-				},
-			);
-			if (!response.ok) throw new Error("Failed to start conversation");
-			return response.json() as Promise<{ sessionId: string }>;
-		},
-		onSuccess: (data) => {
-			setOpen(false);
-			navigate({
-				to: "/conversation/$sessionId",
-				params: { sessionId: data.sessionId },
-			});
-		},
-	});
+	};
 
 	const handleStartConversation = () => {
-		if (selectedScenario) {
+		if (selectedActivity) {
 			startConversation.mutate({
-				scenario: selectedScenario,
-				scenarioName: selectedMeta?.name,
-				scenarioDescription: selectedMeta?.description,
-				aiRole: selectedMeta?.aiRole,
-				scenarioType: selectedMeta?.scenarioType,
+				scenario: selectedActivity.payload.scenario,
+				scenarioName: selectedActivity.payload.scenarioName,
+				scenarioDescription: selectedActivity.payload.scenarioDescription,
+				aiRole: selectedActivity.payload.aiRole,
+				scenarioType: selectedActivity.payload.scenarioType,
 			});
 		}
 	};
 
-	const handleSelectTopic = (topic: TopicItem) => {
-		setSelectedScenario(topic.id);
-		setSelectedMeta({
-			name: topic.name,
-			description: topic.description,
-			scenarioType: "topic",
-		});
+	const handleSelectTopic = (activity: ConversationActivity) => {
+		setSelectedScenario(activity.id);
+		setSelectedActivity(activity);
 	};
 
-	const handleSelectRoleplay = (roleplay: RoleplayItem) => {
-		setSelectedScenario(roleplay.id);
-		setSelectedMeta({
-			name: roleplay.name,
-			description: roleplay.description,
-			aiRole: roleplay.aiRole,
-			scenarioType: "roleplay",
-		});
+	const handleSelectRoleplay = (activity: ConversationActivity) => {
+		setSelectedScenario(activity.id);
+		setSelectedActivity(activity);
 	};
-
-	// const handleRefresh = () => {
-	// 	setSelectedScenario("");
-	// 	setSelectedMeta(null);
-	// 	regenerateMutation.mutate();
-	// };
 
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
@@ -172,7 +157,7 @@ function DialogTopics({
 						What would you like to talk about?
 					</h1>
 					<p className="text-muted-foreground text-sm">
-						Personalized topics refreshed daily just for you
+						Pre-generated daily topics and roleplays for today
 					</p>
 				</div>
 
@@ -180,20 +165,12 @@ function DialogTopics({
 					<h2 className="font-semibold text-sm italic">Topics</h2>
 					<button
 						type="button"
+						onClick={handleEnsurePlan}
+						disabled={ensurePlan.isPending}
 						className="relative flex size-6 shrink-0 cursor-pointer items-center justify-center gap-1.5 overflow-hidden whitespace-nowrap rounded-lg bg-linear-to-t from-[#202020] to-[#2F2F2F] font-base text-white shadow-[inset_0_1px_4px_0_rgba(255,255,255,0.4)] outline-none backdrop-blur transition-all hover:opacity-90 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-40 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:from-[rgb(192,192,192)] dark:to-[rgb(255,255,255)] dark:shadow-[inset_0_1px_4px_0_rgba(128,128,128,0.2)] dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none"
 					>
 						<PlusIcon className="size-4" />
 					</button>
-					{/* <button
-						type="button"
-						onClick={handleRefresh}
-						disabled={isGenerating}
-						className="relative flex size-6 shrink-0 cursor-pointer items-center justify-center gap-1.5 overflow-hidden whitespace-nowrap rounded-lg bg-linear-to-t from-[#202020] to-[#2F2F2F] font-base text-white shadow-[inset_0_1px_4px_0_rgba(255,255,255,0.4)] outline-none backdrop-blur transition-all hover:opacity-90 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-40 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:from-[rgb(192,192,192)] dark:to-[rgb(255,255,255)] dark:shadow-[inset_0_1px_4px_0_rgba(128,128,128,0.2)] dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none"
-					>
-						<RefreshCwIcon
-							className={cn("size-3.5", isGenerating && "animate-spin")}
-						/>
-					</button> */}
 				</div>
 				<div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
 					{isGenerating && !hasContent ? (
@@ -205,6 +182,11 @@ function DialogTopics({
 							<SkeletonCard />
 							<SkeletonCard />
 						</>
+					) : !hasContent ? (
+						<p className="col-span-full text-center text-muted-foreground text-sm">
+							{planData?.error ??
+								"Your conversation activities are being prepared."}
+						</p>
 					) : (
 						topics.map((topic) => (
 							<button
@@ -218,9 +200,9 @@ function DialogTopics({
 										: "border-transparent bg-neutral-50",
 								)}
 							>
-								<span className="sm:text-xl">{topic.icon}</span>
+								<span className="sm:text-xl">{topic.emoji}</span>
 								<span className="font-medium text-xs sm:text-sm">
-									{topic.name}
+									{topic.title}
 								</span>
 							</button>
 						))
@@ -231,6 +213,8 @@ function DialogTopics({
 					<h2 className="font-semibold text-sm italic">Role-plays</h2>
 					<button
 						type="button"
+						onClick={handleEnsurePlan}
+						disabled={ensurePlan.isPending}
 						className="relative flex size-6 shrink-0 cursor-pointer items-center justify-center gap-1.5 overflow-hidden whitespace-nowrap rounded-lg bg-linear-to-t from-[#202020] to-[#2F2F2F] font-base text-white shadow-[inset_0_1px_4px_0_rgba(255,255,255,0.4)] outline-none backdrop-blur transition-all hover:opacity-90 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-40 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:from-[rgb(192,192,192)] dark:to-[rgb(255,255,255)] dark:shadow-[inset_0_1px_4px_0_rgba(128,128,128,0.2)] dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none"
 					>
 						<PlusIcon className="size-4" />
@@ -244,6 +228,10 @@ function DialogTopics({
 							<SkeletonCard />
 							<SkeletonCard />
 						</>
+					) : roleplays.length === 0 ? (
+						<p className="col-span-full text-center text-muted-foreground text-sm">
+							No roleplays available yet.
+						</p>
 					) : (
 						roleplays.map((roleplay) => (
 							<button
@@ -257,9 +245,9 @@ function DialogTopics({
 										: "border-transparent bg-neutral-50",
 								)}
 							>
-								<span className="sm:text-xl">{roleplay.icon}</span>
+								<span className="sm:text-xl">{roleplay.emoji}</span>
 								<span className="font-medium text-xs sm:text-sm">
-									{roleplay.name}
+									{roleplay.title}
 								</span>
 							</button>
 						))

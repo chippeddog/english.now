@@ -19,10 +19,10 @@ export default function FAQ() {
 	const { t } = useTranslation("home");
 
 	return (
-		<div className="group mx-auto my-20 md:my-32">
+		<div className="group mx-auto my-16 md:my-32">
 			<div className="flex flex-col gap-4 md:flex-row">
 				<div className="md:w-1/4">
-					<div className="mb-14 text-center">
+					<div className="mb-10 text-center md:mb-14">
 						<h2 className="mb-4 text-center font-bold font-lyon text-4xl tracking-tight md:text-left md:text-5xl">
 							{t("faq.title")}
 						</h2>

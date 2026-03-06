@@ -59,7 +59,7 @@ export function Pricing() {
 								{t(`pricing.plans.${_plan.key}.name`)}
 							</span>
 							{_plan.duration === "year" && (
-								<span className="rounded-md bg-radial from-[#EFFF9B] to-[#D8FF76] px-2 py-3 font-semibold text-lime-900 text-sm normal-case tracking-normal md:py-[0.250rem] md:text-xs">
+								<span className="rounded-md bg-radial from-[#EFFF9B] to-[#D8FF76] px-1 py-1 font-semibold text-lime-900 text-xs normal-case tracking-normal md:py-[0.250rem]">
 									{t("pricing.save20")}
 								</span>
 							)}
@@ -136,7 +136,7 @@ export function Pricing() {
 	const renderPlans = () => (
 		<>
 			{/* Desktop */}
-			<div className="relative hidden w-full flex-row items-center justify-between gap-3 md:flex">
+			<div className="relative hidden w-full flex-row items-end justify-between gap-3 md:flex">
 				{_plans.map((_plan) => (
 					<div className="w-full" key={_plan.key}>
 						{_plan.isPopular ? (
@@ -161,9 +161,9 @@ export function Pricing() {
 					}}
 					setApi={setCarouselApi}
 				>
-					<CarouselContent className="-ml-4">
+					<CarouselContent className="items-end pb-4">
 						{_plans.map((_plan) => (
-							<CarouselItem key={_plan.key} className="basis-[80%] pl-4">
+							<CarouselItem key={_plan.key} className="basis-[80%] pr-4 pl-4">
 								{_plan.isPopular
 									? renderPopularWrapper(renderPlanCard(_plan))
 									: renderPlanCard(_plan)}
@@ -213,8 +213,8 @@ export function Pricing() {
 		});
 	}
 	return (
-		<div className="mx-auto mt-24">
-			<div className="mb-14 text-center">
+		<div className="mx-auto mt-16 md:mt-24">
+			<div className="mb-10 text-center md:mb-14">
 				<h2 className="mb-4 font-bold font-lyon text-4xl tracking-tight md:text-5xl">
 					{t("pricing.title")}
 				</h2>

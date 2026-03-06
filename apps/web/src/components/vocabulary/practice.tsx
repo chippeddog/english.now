@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BookOpen, Mic, Sparkles } from "lucide-react";
 import { useState } from "react";
 import {
@@ -13,142 +13,85 @@ import {
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/utils/trpc";
 import { Button } from "../ui/button";
-import { Checkbox } from "../ui/checkbox";
 import PracticeSession, { type FlashcardItem } from "./practice-session";
 
-type PracticeContent = "words" | "phrases";
-
-const MASTERY_PRIORITY: Record<string, number> = {
-	new: 0,
-	learning: 1,
-	reviewing: 2,
-	mastered: 3,
+type VocabularyActivity = {
+	id: string;
+	title: string;
+	description: string;
+	duration: number;
+	type: "vocabulary";
+	typeLabel: string;
+	completedAt: string | null;
+	payload: {
+		cards: FlashcardItem[];
+		focus: Array<"words" | "phrases">;
+	};
 };
-
-function shuffle<T>(arr: T[]): T[] {
-	const copy = [...arr];
-	for (let i = copy.length - 1; i > 0; i--) {
-		const j = Math.floor(Math.random() * (i + 1));
-		const tmp = copy[i];
-		copy[i] = copy[j] as T;
-		copy[j] = tmp as T;
-	}
-	return copy;
-}
-
-const ITEM_COUNTS = [5, 10, 15, 20] as const;
 
 export default function Practice() {
 	const trpc = useTRPC();
+	const queryClient = useQueryClient();
 
-	const { data: words } = useQuery(
-		trpc.vocabulary.getWords.queryOptions({ limit: 200 }),
+	const { data: planData, isLoading } = useQuery(
+		trpc.practice.getTodayPlan.queryOptions(),
 	);
-	const { data: phrases } = useQuery(
-		trpc.vocabulary.getPhrases.queryOptions({ limit: 100 }),
+	const ensurePlan = useMutation(
+		trpc.practice.ensureTodayPlan.mutationOptions({
+			onSuccess: () => {
+				queryClient.invalidateQueries({
+					queryKey: trpc.practice.getTodayPlan.queryKey(),
+				});
+			},
+		}),
+	);
+	const markDone = useMutation(
+		trpc.practice.markActivityDone.mutationOptions({
+			onSuccess: () => {
+				queryClient.invalidateQueries({
+					queryKey: trpc.practice.getTodayPlan.queryKey(),
+				});
+				queryClient.invalidateQueries({
+					queryKey: trpc.practice.getHomeTodayPlan.queryKey(),
+				});
+			},
+		}),
 	);
 
 	const [setupOpen, setSetupOpen] = useState(false);
-	const [selectedContent, setSelectedContent] = useState<PracticeContent[]>([
-		"words",
-	]);
-	const [itemCount, setItemCount] = useState<number>(10);
-
-	const [sessionCards, setSessionCards] = useState<FlashcardItem[] | null>(
-		null,
-	);
-
-	const wordCount = words?.filter((w) => w.mastery !== "mastered").length ?? 0;
-	const phraseCount =
-		phrases?.filter((p) => p.mastery !== "mastered").length ?? 0;
-
-	const toggleContent = (id: PracticeContent) => {
-		setSelectedContent((prev) =>
-			prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id],
-		);
-	};
-
-	const buildCards = (): FlashcardItem[] => {
-		const items: FlashcardItem[] = [];
-
-		if (selectedContent.includes("words") && words) {
-			for (const w of words) {
-				items.push({
-					id: w.userWordId,
-					type: "word",
-					prompt: w.translation ?? w.definition,
-					answer: w.lemma,
-					ipa: w.ipa,
-					audioUrl: w.audioUrl,
-					detail: w.exampleSentence,
-					level: w.level,
-					currentMastery: w.mastery,
-				});
-			}
-		}
-
-		if (selectedContent.includes("phrases") && phrases) {
-			for (const p of phrases) {
-				items.push({
-					id: p.userPhraseId,
-					type: "phrase",
-					prompt: p.translation ?? p.meaning,
-					answer: p.text,
-					ipa: p.ipa,
-					audioUrl: p.audioUrl,
-					detail: p.exampleUsage,
-					level: p.level,
-					currentMastery: p.mastery,
-				});
-			}
-		}
-
-		items.sort(
-			(a, b) =>
-				(MASTERY_PRIORITY[a.currentMastery] ?? 4) -
-				(MASTERY_PRIORITY[b.currentMastery] ?? 4),
-		);
-
-		return shuffle(items.slice(0, itemCount));
-	};
+	const [selectedActivity, setSelectedActivity] =
+		useState<VocabularyActivity | null>(null);
+	const [sessionActivity, setSessionActivity] =
+		useState<VocabularyActivity | null>(null);
+	const [sessionKey, setSessionKey] = useState(0);
 
 	const handleStart = () => {
-		const cards = buildCards();
-		if (cards.length === 0) return;
+		if (!selectedActivity) return;
 		setSetupOpen(false);
-		setSessionCards(cards);
+		setSessionActivity(selectedActivity);
+		setSessionKey((key) => key + 1);
 	};
 
 	const handleSessionClose = () => {
-		setSessionCards(null);
+		setSessionActivity(null);
 	};
 
 	const handleRestart = () => {
-		const cards = buildCards();
-		if (cards.length === 0) return;
-		setSessionCards(null);
-		requestAnimationFrame(() => setSessionCards(cards));
+		if (!sessionActivity) return;
+		setSessionActivity(null);
+		requestAnimationFrame(() => {
+			setSessionActivity(sessionActivity);
+			setSessionKey((key) => key + 1);
+		});
 	};
 
-	const canStart =
-		selectedContent.length > 0 &&
-		((selectedContent.includes("words") && wordCount > 0) ||
-			(selectedContent.includes("phrases") && phraseCount > 0));
-
-	const contentOptions = [
-		{
-			id: "words" as PracticeContent,
-			label: "Words",
-			icon: <BookOpen className="size-4" />,
-			count: wordCount,
-		},
-		{
-			id: "phrases" as PracticeContent,
-			label: "Phrases",
-			icon: <Sparkles className="size-4" />,
-			count: phraseCount,
-		},
-	];
+	const vocabularyActivities = (
+		(planData?.activities ?? []) as Array<VocabularyActivity | { type: string }>
+	).filter(
+		(activity): activity is VocabularyActivity =>
+			activity.type === "vocabulary",
+	);
+	const canStart = Boolean(selectedActivity);
 
 	return (
 		<>
@@ -170,68 +113,74 @@ export default function Practice() {
 							Quick Practice
 						</DialogTitle>
 						<DialogDescription className="text-neutral-500">
-							Flash through your vocabulary
+							Choose from today&apos;s prepared vocabulary sets
 						</DialogDescription>
 					</DialogHeader>
 
-					<div className="space-y-5 pb-2">
-						<div className="space-y-3">
-							<h3 className="font-semibold text-neutral-700 text-sm uppercase tracking-wide">
-								What to practice
-							</h3>
-							<div className="flex gap-2">
-								{contentOptions.map((option) => (
-									<button
-										key={option.id}
-										type="button"
-										onClick={() => toggleContent(option.id)}
-										className={cn(
-											"flex flex-1 cursor-pointer items-center gap-3 rounded-xl border p-3 transition-all",
-											selectedContent.includes(option.id)
-												? "border-lime-400 bg-lime-50"
-												: "border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50",
-										)}
-									>
-										<Checkbox
-											checked={selectedContent.includes(option.id)}
-											onCheckedChange={() => toggleContent(option.id)}
-											tabIndex={-1}
-											className="pointer-events-none data-[state=checked]:border-lime-500 data-[state=checked]:bg-lime-500"
-										/>
-										<span className="flex items-center gap-2 text-neutral-700">
-											{option.icon}
-											{option.label}
-										</span>
-										<span className="ml-auto font-medium text-neutral-400 text-xs">
-											{option.count}
-										</span>
-									</button>
-								))}
+					<div className="space-y-3 pb-2">
+						{isLoading ||
+						planData?.status === "missing" ||
+						planData?.status === "queued" ||
+						planData?.status === "generating" ? (
+							<div className="rounded-xl border border-neutral-200 border-dashed bg-neutral-50 p-4 text-center text-muted-foreground text-sm">
+								We&apos;re preparing today&apos;s vocabulary sets.
 							</div>
-						</div>
-
-						<div className="space-y-3">
-							<h3 className="font-semibold text-neutral-700 text-sm uppercase tracking-wide">
-								How many
-							</h3>
-							<div className="flex gap-2">
-								{ITEM_COUNTS.map((n) => (
-									<button
-										key={n}
+						) : vocabularyActivities.length === 0 ? (
+							<div className="rounded-xl border border-neutral-200 border-dashed bg-neutral-50 p-4 text-center text-muted-foreground text-sm">
+								{planData?.error ?? "No vocabulary set is ready yet."}
+								<div className="mt-3">
+									<Button
 										type="button"
-										onClick={() => setItemCount(n)}
-										className={cn(
-											"flex flex-1 items-center justify-center rounded-xl border px-3 py-2.5 font-medium text-sm transition-all",
-											itemCount === n
-												? "border-lime-400 bg-lime-50 text-lime-700"
-												: "border-neutral-200 text-neutral-600 hover:border-neutral-300 hover:bg-neutral-50",
-										)}
+										variant="outline"
+										className="rounded-xl"
+										disabled={ensurePlan.isPending}
+										onClick={() => ensurePlan.mutate()}
 									>
-										{n}
-									</button>
-								))}
+										{ensurePlan.isPending
+											? "Preparing..."
+											: "Prepare today’s plan"}
+									</Button>
+								</div>
 							</div>
-						</div>
+						) : (
+							vocabularyActivities.map((activity) => (
+								<button
+									key={activity.id}
+									type="button"
+									onClick={() => setSelectedActivity(activity)}
+									className={cn(
+										"flex w-full cursor-pointer items-start gap-3 rounded-xl border p-3 text-left transition-all",
+										selectedActivity?.id === activity.id
+											? "border-lime-400 bg-lime-50"
+											: "border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50",
+									)}
+								>
+									<div className="flex size-9 items-center justify-center rounded-xl bg-lime-100 text-lime-700">
+										{activity.payload.focus.includes("words") &&
+										activity.payload.focus.includes("phrases") ? (
+											<Mic className="size-4" />
+										) : activity.payload.focus.includes("words") ? (
+											<BookOpen className="size-4" />
+										) : (
+											<Sparkles className="size-4" />
+										)}
+									</div>
+									<div className="min-w-0 flex-1">
+										<div className="flex items-center justify-between gap-2">
+											<span className="font-medium text-neutral-900 text-sm">
+												{activity.title}
+											</span>
+											<span className="shrink-0 text-neutral-400 text-xs">
+												{activity.payload.cards.length} cards
+											</span>
+										</div>
+										<p className="mt-1 text-muted-foreground text-sm">
+											{activity.description}
+										</p>
+									</div>
+								</button>
+							))
+						)}
 					</div>
 
 					<DialogFooter>
@@ -253,11 +202,18 @@ export default function Practice() {
 				</DialogContent>
 			</Dialog>
 
-			{sessionCards && (
+			{sessionActivity && (
 				<PracticeSession
-					cards={sessionCards}
+					key={sessionKey}
+					cards={sessionActivity.payload.cards}
 					onClose={handleSessionClose}
 					onRestart={handleRestart}
+					onComplete={() => {
+						markDone.mutate({
+							activityId: sessionActivity.id,
+							sessionId: `vocabulary:${sessionActivity.id}`,
+						});
+					}}
 				/>
 			)}
 		</>
