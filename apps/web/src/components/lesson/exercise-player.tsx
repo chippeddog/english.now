@@ -1,20 +1,18 @@
+import type { ExerciseItem } from "@/types/lesson";
 import { ArrowRight } from "lucide-react";
 import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import Categorization from "./exercises/categorization";
+import Dictation from "./exercises/dictation";
+import ErrorIdentification from "./exercises/error-identification";
+import ReorderWords from "./exercises/reorder-words";
+import SentenceBuilding from "./exercises/sentence-building";
+import SentenceCorrection from "./exercises/sentence-correction";
+import TrueFalse from "./exercises/true-false";
+import WordMatching from "./exercises/word-matching";
 import FillInTheBlank from "./fill-in-the-blank";
 import MultipleChoice from "./multiple-choice";
-
-type Exercise = {
-	id: string;
-	type: "multiple_choice" | "fill_in_the_blank";
-	prompt: string;
-	options?: string[];
-	correctAnswer: string;
-	explanation: string;
-	userAnswer?: string;
-	isCorrect?: boolean;
-};
 
 type AnswerResult = {
 	isCorrect: boolean;
@@ -23,13 +21,31 @@ type AnswerResult = {
 };
 
 interface ExercisePlayerProps {
-	exercise: Exercise;
+	exercise: ExerciseItem;
 	currentIndex: number;
 	totalCount: number;
 	correctCount: number;
 	onAnswer: (exerciseId: string, answer: string) => Promise<AnswerResult>;
 	onNext: () => void;
 }
+
+const EXERCISE_TYPE_LABELS: Record<string, { label: string; color: string }> = {
+	multiple_choice: { label: "Choose the correct answer", color: "bg-violet-100 text-violet-700" },
+	fill_in_the_blank: { label: "Fill in the blank", color: "bg-sky-100 text-sky-700" },
+	sentence_correction: { label: "Correct the sentence", color: "bg-amber-100 text-amber-700" },
+	sentence_transformation: { label: "Transform the sentence", color: "bg-amber-100 text-amber-700" },
+	reorder_words: { label: "Reorder the words", color: "bg-indigo-100 text-indigo-700" },
+	error_identification: { label: "Find the error", color: "bg-amber-100 text-amber-700" },
+	word_matching: { label: "Match the pairs", color: "bg-sky-100 text-sky-700" },
+	synonym_antonym: { label: "Synonyms & Antonyms", color: "bg-sky-100 text-sky-700" },
+	categorization: { label: "Sort into categories", color: "bg-teal-100 text-teal-700" },
+	true_false: { label: "True or False", color: "bg-emerald-100 text-emerald-700" },
+	comprehension: { label: "Comprehension", color: "bg-emerald-100 text-emerald-700" },
+	dictation: { label: "Listen and type", color: "bg-amber-100 text-amber-700" },
+	dialogue_completion: { label: "Complete the dialogue", color: "bg-rose-100 text-rose-700" },
+	sentence_building: { label: "Build a sentence", color: "bg-indigo-100 text-indigo-700" },
+	error_correction: { label: "Correct the error", color: "bg-amber-100 text-amber-700" },
+};
 
 export default function ExercisePlayer({
 	exercise,
@@ -63,6 +79,19 @@ export default function ExercisePlayer({
 		onNext();
 	}, [onNext]);
 
+	const typeConfig = EXERCISE_TYPE_LABELS[exercise.type] ?? {
+		label: exercise.type,
+		color: "bg-neutral-100 text-neutral-700",
+	};
+
+	const exerciseResult = result
+		? {
+				isCorrect: result.isCorrect,
+				correctAnswer: result.correctAnswer,
+				explanation: result.explanation,
+			}
+		: undefined;
+
 	return (
 		<div className="container mx-auto max-w-2xl px-4 py-8">
 			{/* Progress bar */}
@@ -70,9 +99,16 @@ export default function ExercisePlayer({
 				<span className="font-medium text-muted-foreground text-sm">
 					{currentIndex + 1} / {totalCount}
 				</span>
-				<span className="font-medium text-muted-foreground text-sm">
-					{correctCount} correct
-				</span>
+				<div className="flex items-center gap-3">
+					{exercise.phase === "guided" && (
+						<span className="rounded-full bg-blue-50 px-2 py-0.5 text-blue-600 text-xs">
+							Guided
+						</span>
+					)}
+					<span className="font-medium text-muted-foreground text-sm">
+						{correctCount} correct
+					</span>
+				</div>
 			</div>
 			<div className="mb-8 h-2 w-full overflow-hidden rounded-full bg-neutral-100">
 				<div
@@ -86,36 +122,15 @@ export default function ExercisePlayer({
 				<span
 					className={cn(
 						"inline-block rounded-full px-3 py-1 font-medium text-xs",
-						exercise.type === "multiple_choice"
-							? "bg-violet-100 text-violet-700"
-							: "bg-sky-100 text-sky-700",
+						typeConfig.color,
 					)}
 				>
-					{exercise.type === "multiple_choice"
-						? "Choose the correct answer"
-						: "Fill in the blank"}
+					{exercise.instruction ?? typeConfig.label}
 				</span>
 			</div>
 
 			{/* Exercise content */}
-			{exercise.type === "multiple_choice" && exercise.options ? (
-				<MultipleChoice
-					key={exercise.id}
-					prompt={exercise.prompt}
-					options={exercise.options}
-					onSubmit={handleAnswer}
-					disabled={submitting}
-					result={result ?? undefined}
-				/>
-			) : (
-				<FillInTheBlank
-					key={exercise.id}
-					prompt={exercise.prompt}
-					onSubmit={handleAnswer}
-					disabled={submitting}
-					result={result ?? undefined}
-				/>
-			)}
+			{renderExercise(exercise, handleAnswer, submitting, exerciseResult)}
 
 			{/* Continue button */}
 			{result && (
@@ -131,4 +146,159 @@ export default function ExercisePlayer({
 			)}
 		</div>
 	);
+}
+
+function renderExercise(
+	exercise: ExerciseItem,
+	onSubmit: (answer: string) => void,
+	disabled: boolean,
+	result?: { isCorrect: boolean; correctAnswer: string; explanation: string },
+) {
+	const hint = exercise.phase === "guided" ? exercise.hint : undefined;
+	const resultWithCorrect = result
+		? { ...result, correctAnswer: result.correctAnswer as string | string[] }
+		: undefined;
+
+	switch (exercise.type) {
+		case "multiple_choice":
+		case "comprehension":
+		case "synonym_antonym":
+		case "dialogue_completion":
+			return (
+				<MultipleChoice
+					key={exercise.id}
+					prompt={exercise.prompt}
+					options={exercise.options ?? []}
+					onSubmit={onSubmit}
+					disabled={disabled}
+					result={result}
+				/>
+			);
+
+		case "fill_in_the_blank":
+		case "sentence_transformation":
+			return (
+				<FillInTheBlank
+					key={exercise.id}
+					prompt={exercise.prompt}
+					onSubmit={onSubmit}
+					disabled={disabled}
+					result={result}
+				/>
+			);
+
+		case "reorder_words":
+			return (
+				<ReorderWords
+					key={exercise.id}
+					prompt={exercise.prompt}
+					items={exercise.items ?? []}
+					onSubmit={onSubmit}
+					disabled={disabled}
+					hint={hint}
+					result={resultWithCorrect}
+				/>
+			);
+
+		case "sentence_correction":
+		case "error_correction":
+			return (
+				<SentenceCorrection
+					key={exercise.id}
+					prompt={exercise.prompt}
+					onSubmit={onSubmit}
+					disabled={disabled}
+					hint={hint}
+					result={resultWithCorrect}
+				/>
+			);
+
+		case "word_matching":
+			return (
+				<WordMatching
+					key={exercise.id}
+					prompt={exercise.prompt}
+					pairs={exercise.pairs ?? []}
+					onSubmit={onSubmit}
+					disabled={disabled}
+					hint={hint}
+					result={resultWithCorrect}
+				/>
+			);
+
+		case "true_false":
+			return (
+				<TrueFalse
+					key={exercise.id}
+					prompt={exercise.prompt}
+					onSubmit={onSubmit}
+					disabled={disabled}
+					hint={hint}
+					result={resultWithCorrect}
+				/>
+			);
+
+		case "dictation":
+			return (
+				<Dictation
+					key={exercise.id}
+					prompt={exercise.prompt}
+					onSubmit={onSubmit}
+					disabled={disabled}
+					hint={hint}
+					result={resultWithCorrect}
+				/>
+			);
+
+		case "error_identification":
+			return (
+				<ErrorIdentification
+					key={exercise.id}
+					prompt={exercise.prompt}
+					options={exercise.options ?? []}
+					onSubmit={onSubmit}
+					disabled={disabled}
+					hint={hint}
+					result={resultWithCorrect}
+				/>
+			);
+
+		case "sentence_building":
+			return (
+				<SentenceBuilding
+					key={exercise.id}
+					prompt={exercise.prompt}
+					items={exercise.items}
+					onSubmit={onSubmit}
+					disabled={disabled}
+					hint={hint}
+					result={resultWithCorrect}
+				/>
+			);
+
+		case "categorization":
+			return (
+				<Categorization
+					key={exercise.id}
+					prompt={exercise.prompt}
+					categories={exercise.categories ?? []}
+					items={exercise.items ?? []}
+					onSubmit={onSubmit}
+					disabled={disabled}
+					hint={hint}
+					result={resultWithCorrect}
+				/>
+			);
+
+		default:
+			return (
+				<FillInTheBlank
+					key={exercise.id}
+					prompt={exercise.prompt}
+					onSubmit={onSubmit}
+					disabled={disabled}
+					result={result}
+				/>
+			);
+	}
 }

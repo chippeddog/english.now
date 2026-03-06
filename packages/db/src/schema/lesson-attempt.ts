@@ -2,22 +2,50 @@ import { integer, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { user } from "./auth";
 import { curriculumLesson, enrollment } from "./curriculum";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+export type LessonExerciseType =
+	// Universal
+	| "multiple_choice"
+	| "fill_in_the_blank"
+	// Grammar
+	| "sentence_correction"
+	| "sentence_transformation"
+	| "reorder_words"
+	| "error_identification"
+	// Vocabulary
+	| "word_matching"
+	| "synonym_antonym"
+	| "categorization"
+	// Reading / Listening
+	| "true_false"
+	| "comprehension"
+	// Listening
+	| "dictation"
+	// Speaking
+	| "dialogue_completion"
+	// Writing
+	| "sentence_building"
+	| "error_correction";
 
-export type LessonExerciseType = "multiple_choice" | "fill_in_the_blank";
+export type ExercisePhase = "guided" | "free";
+export type ExerciseDifficulty = "easy" | "medium" | "hard";
 
 export interface ExerciseItem {
 	id: string;
 	type: LessonExerciseType;
+	phase: ExercisePhase;
 	prompt: string;
+	instruction?: string;
 	options?: string[];
-	correctAnswer: string;
+	pairs?: { left: string; right: string }[];
+	items?: string[];
+	categories?: { name: string; items: string[] }[];
+	correctAnswer: string | string[];
 	explanation: string;
-	userAnswer?: string;
+	hint?: string;
+	difficulty: ExerciseDifficulty;
+	userAnswer?: string | string[];
 	isCorrect?: boolean;
 }
-
-// ─── Lesson Attempt ──────────────────────────────────────────────────────────
 
 export const lessonAttempt = pgTable("lesson_attempt", {
 	id: text("id").primaryKey(),
@@ -39,8 +67,6 @@ export const lessonAttempt = pgTable("lesson_attempt", {
 	createdAt: timestamp("created_at").notNull().defaultNow(),
 	completedAt: timestamp("completed_at"),
 });
-
-// ─── Type Exports ─────────────────────────────────────────────────────────────
 
 export type LessonAttempt = typeof lessonAttempt.$inferSelect;
 export type NewLessonAttempt = typeof lessonAttempt.$inferInsert;

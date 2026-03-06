@@ -146,7 +146,7 @@ export default function TodaysActivities() {
 					"0 0 0 1px rgba(0,0,0,.05),0 10px 10px -5px rgba(0,0,0,.04),0 20px 25px -5px rgba(0,0,0,.04),0 20px 32px -12px rgba(0,0,0,.04)",
 			}}
 		>
-			<div className="mt-1 mb-3 flex items-center justify-between gap-2 pr-2 pl-2 font-medium">
+			<div className="mb-2.5 flex items-center justify-between gap-2 pl-1.5 font-medium">
 				<div className="flex w-full items-center justify-between gap-2">
 					<div className="flex w-full items-center justify-between gap-2">
 						<h1 className="font-bold font-lyon text-xl">Today's Practice</h1>
@@ -158,7 +158,17 @@ export default function TodaysActivities() {
 					</div>
 				</div>
 			</div>
-
+			{/* <div>
+				<div className="grid grid-cols-2 gap-3">
+					<div className="group relative flex min-h-20 flex-col justify-between overflow-hidden rounded-2xl border p-4 text-left transition-all">
+						<span className="font-medium text-sm">Priority</span>
+					</div>
+					<div className="group relative flex min-h-20 flex-col justify-between overflow-hidden rounded-2xl border p-4 text-left transition-all">
+						<span className="font-medium text-sm">Priority</span>
+					</div>
+				</div>
+			</div>
+			<hr className="my-5 border-border/50 border-dashed" /> */}
 			<div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
 				{isGenerating
 					? ["s1", "s2", "s3", "s4", "s5", "s6"].map((key) => (
@@ -241,9 +251,7 @@ export default function TodaysActivities() {
 										)} */}
 										{isStarting ? (
 											<LoaderIcon className="size-4 animate-spin text-muted-foreground" />
-										) : isDone ? (
-											<></>
-										) : (
+										) : isDone ? null : (
 											<ArrowRightIcon
 												className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5"
 												strokeWidth={2}

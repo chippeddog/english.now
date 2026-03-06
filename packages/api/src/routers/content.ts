@@ -261,6 +261,7 @@ export const contentRouter = router({
 						title: l.title,
 						subtitle: l.subtitle,
 						type: l.blockType,
+						lessonType: l.lessonType ?? blockTypeToLessonType(l.blockType),
 						status: lessonStatusMap.get(l.id) ?? "locked",
 						progress: lessonStatusMap.get(l.id) === "completed" ? 100 : 0,
 						content: l.content,
@@ -286,6 +287,7 @@ export const contentRouter = router({
 				title: l.title,
 				subtitle: l.subtitle,
 				type: l.blockType,
+				lessonType: l.lessonType ?? blockTypeToLessonType(l.blockType),
 				content: l.content,
 			};
 		}),
@@ -359,9 +361,13 @@ export const contentRouter = router({
 				.where(eq(userProfile.userId, userId))
 				.limit(1);
 
+			const effectiveLessonType =
+				lessonRecord.lessonType ??
+				blockTypeToLessonType(lessonRecord.blockType);
+
 			const exercises = await generateLessonExercises(
 				lessonRecord.title,
-				lessonRecord.blockType,
+				effectiveLessonType,
 				content,
 				profile?.nativeLanguage ?? "uk",
 			);
@@ -435,16 +441,21 @@ export const contentRouter = router({
 			}
 
 			if (exercise.userAnswer !== undefined) {
+				const prevCorrectStr = Array.isArray(exercise.correctAnswer)
+					? (exercise.correctAnswer[0] ?? "")
+					: exercise.correctAnswer;
 				return {
 					isCorrect: exercise.isCorrect ?? false,
-					correctAnswer: exercise.correctAnswer,
+					correctAnswer: prevCorrectStr,
 					explanation: exercise.explanation,
 				};
 			}
 
+			const correctStr = Array.isArray(exercise.correctAnswer)
+				? (exercise.correctAnswer[0] ?? "")
+				: exercise.correctAnswer;
 			const isCorrect =
-				input.answer.trim().toLowerCase() ===
-				exercise.correctAnswer.trim().toLowerCase();
+				input.answer.trim().toLowerCase() === correctStr.trim().toLowerCase();
 
 			exercise.userAnswer = input.answer;
 			exercise.isCorrect = isCorrect;
@@ -465,7 +476,7 @@ export const contentRouter = router({
 
 			return {
 				isCorrect,
-				correctAnswer: exercise.correctAnswer,
+				correctAnswer: correctStr,
 				explanation: exercise.explanation,
 			};
 		}),
@@ -575,6 +586,17 @@ function stripAnswers(exercises: ExerciseItem[]): ExerciseItem[] {
 		correctAnswer: ex.userAnswer !== undefined ? ex.correctAnswer : "",
 		explanation: ex.userAnswer !== undefined ? ex.explanation : "",
 	}));
+}
+
+function blockTypeToLessonType(blockType: string): string {
+	const map: Record<string, string> = {
+		teach: "grammar",
+		input: "reading",
+		practice: "vocabulary",
+		review: "grammar",
+		assessment: "grammar",
+	};
+	return map[blockType] ?? "grammar";
 }
 
 export type ContentRouter = typeof contentRouter;

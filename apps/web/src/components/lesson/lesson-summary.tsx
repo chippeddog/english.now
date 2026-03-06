@@ -1,23 +1,13 @@
 import { ArrowLeft, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-
-type Exercise = {
-	id: string;
-	type: "multiple_choice" | "fill_in_the_blank";
-	prompt: string;
-	options?: string[];
-	correctAnswer: string;
-	explanation: string;
-	userAnswer?: string;
-	isCorrect?: boolean;
-};
+import type { ExerciseItem } from "@/types/lesson";
 
 interface LessonSummaryProps {
 	score: number;
 	correctCount: number;
 	totalCount: number;
-	exercises: Exercise[];
+	exercises: ExerciseItem[];
 	onBack: () => void;
 }
 
@@ -104,56 +94,65 @@ export default function LessonSummary({
 					Review
 				</h3>
 				<div className="flex flex-col gap-2">
-					{exercises.map((ex, i) => (
-						<div
-							key={ex.id}
-							className={cn(
-								"flex items-start gap-3 rounded-2xl border p-4",
-								ex.isCorrect
-									? "border-lime-200 bg-lime-50/50"
-									: "border-red-200 bg-red-50/50",
-							)}
-						>
+					{exercises.map((ex, i) => {
+						const displayAnswer = Array.isArray(ex.correctAnswer)
+							? ex.correctAnswer.join(", ")
+							: ex.correctAnswer;
+						const displayUserAnswer = Array.isArray(ex.userAnswer)
+							? ex.userAnswer.join(", ")
+							: ex.userAnswer;
+
+						return (
 							<div
+								key={ex.id}
 								className={cn(
-									"mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full",
+									"flex items-start gap-3 rounded-2xl border p-4",
 									ex.isCorrect
-										? "bg-lime-500 text-white"
-										: "bg-red-400 text-white",
+										? "border-lime-200 bg-lime-50/50"
+										: "border-red-200 bg-red-50/50",
 								)}
 							>
-								{ex.isCorrect ? (
-									<Check className="size-3.5" strokeWidth={3} />
-								) : (
-									<X className="size-3.5" strokeWidth={3} />
-								)}
-							</div>
-							<div className="min-w-0 flex-1">
-								<p className="text-sm">
-									<span className="font-medium text-muted-foreground">
-										{i + 1}.
-									</span>{" "}
-									{ex.prompt.replace("___", "[...]")}
-								</p>
-								{ex.userAnswer && !ex.isCorrect && (
-									<p className="mt-1 text-red-600 text-xs">
-										Your answer:{" "}
-										<span className="font-medium">
-											{ex.userAnswer}
-										</span>
+								<div
+									className={cn(
+										"mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full",
+										ex.isCorrect
+											? "bg-lime-500 text-white"
+											: "bg-red-400 text-white",
+									)}
+								>
+									{ex.isCorrect ? (
+										<Check className="size-3.5" strokeWidth={3} />
+									) : (
+										<X className="size-3.5" strokeWidth={3} />
+									)}
+								</div>
+								<div className="min-w-0 flex-1">
+									<p className="text-sm">
+										<span className="font-medium text-muted-foreground">
+											{i + 1}.
+										</span>{" "}
+										{ex.prompt.replace("___", "[...]")}
 									</p>
-								)}
-								{!ex.isCorrect && (
-									<p className="mt-0.5 text-lime-700 text-xs">
-										Correct:{" "}
-										<span className="font-medium">
-											{ex.correctAnswer}
-										</span>
-									</p>
-								)}
+									{displayUserAnswer && !ex.isCorrect && (
+										<p className="mt-1 text-red-600 text-xs">
+											Your answer:{" "}
+											<span className="font-medium">
+												{displayUserAnswer}
+											</span>
+										</p>
+									)}
+									{!ex.isCorrect && (
+										<p className="mt-0.5 text-lime-700 text-xs">
+											Correct:{" "}
+											<span className="font-medium">
+												{displayAnswer}
+											</span>
+										</p>
+									)}
+								</div>
 							</div>
-						</div>
-					))}
+						);
+					})}
 				</div>
 			</div>
 

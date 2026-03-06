@@ -29,6 +29,13 @@ export const Route = createFileRoute("/_dashboard/lessons")({
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type LessonType =
+	| "grammar"
+	| "vocabulary"
+	| "reading"
+	| "listening"
+	| "speaking"
+	| "writing"
+	// Legacy block types for backward compatibility
 	| "input"
 	| "teach"
 	| "practice"
@@ -53,8 +60,12 @@ interface VocabularyItem {
 
 interface LessonDetail {
 	description: string;
-	grammarPoints: GrammarPoint[];
-	vocabulary: VocabularyItem[];
+	type?: string;
+	objectives?: string[];
+	grammarPoints?: GrammarPoint[];
+	vocabulary?: VocabularyItem[];
+	rules?: GrammarPoint[];
+	words?: VocabularyItem[];
 	exerciseHints?: {
 		types: string[];
 		count: number;
@@ -91,9 +102,46 @@ interface LevelInfo {
 // ─── Config ──────────────────────────────────────────────────────────────────
 
 const lessonTypeConfig: Record<
-	LessonType,
+	string,
 	{ label: string; icon: LucideIcon; color: string; bgColor: string }
 > = {
+	grammar: {
+		label: "Grammar",
+		icon: PenTool,
+		color: "text-violet-600",
+		bgColor: "bg-violet-100",
+	},
+	vocabulary: {
+		label: "Vocabulary",
+		icon: BookOpen,
+		color: "text-sky-600",
+		bgColor: "bg-sky-100",
+	},
+	reading: {
+		label: "Reading",
+		icon: FileText,
+		color: "text-emerald-600",
+		bgColor: "bg-emerald-100",
+	},
+	listening: {
+		label: "Listening",
+		icon: Volume2,
+		color: "text-amber-600",
+		bgColor: "bg-amber-100",
+	},
+	speaking: {
+		label: "Speaking",
+		icon: Play,
+		color: "text-rose-600",
+		bgColor: "bg-rose-100",
+	},
+	writing: {
+		label: "Writing",
+		icon: GraduationCap,
+		color: "text-indigo-600",
+		bgColor: "bg-indigo-100",
+	},
+	// Legacy block types
 	input: {
 		label: "Input",
 		icon: BookOpen,
@@ -159,8 +207,6 @@ function getLevelInfo(level: string, units: Unit[]): LevelInfo {
 	};
 }
 
-// ─── Components ──────────────────────────────────────────────────────────────
-
 function LevelHeader({ level }: { level: LevelInfo }) {
 	return (
 		<div
@@ -172,9 +218,9 @@ function LevelHeader({ level }: { level: LevelInfo }) {
 		>
 			<div className="p-4">
 				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-4">
+					<div className="flex w-full flex-col gap-2">
 						{/* Circular progress */}
-						<div className="relative flex size-14 items-center justify-center">
+						{/* <div className="relative flex size-14 items-center justify-center">
 							<svg className="size-14" viewBox="0 0 56 56" aria-hidden="true">
 								<title>Level progress</title>
 								<circle
@@ -202,8 +248,8 @@ function LevelHeader({ level }: { level: LevelInfo }) {
 							<span className="absolute font-bold text-sm">
 								{level.percentage}%
 							</span>
-						</div>
-						<div>
+						</div> */}
+						<div className="mb-2 flex flex-col gap-1">
 							<h2 className="font-bold font-lyon text-xl">{level.label}</h2>
 							<p className="text-muted-foreground text-sm">
 								Reach {level.nextPercentage}% to get{" "}
@@ -212,10 +258,19 @@ function LevelHeader({ level }: { level: LevelInfo }) {
 								</span>
 							</p>
 						</div>
+						<div className="h-2 w-full overflow-hidden rounded-full bg-neutral-100">
+							<div
+								className="h-full w-[2%] rounded-full bg-neutral-800"
+								style={{ width: `${level.percentage}%` }}
+							/>
+						</div>
+						<div className="mb-1 flex items-baseline gap-1">
+							<span className="font-bold text-3xl">0</span>
+							<span className="text-muted-foreground text-sm">
+								/ {level.nextPercentage} min
+							</span>
+						</div>
 					</div>
-					<Button variant="outline" size="icon" className="rounded-full">
-						<ArrowRight className="size-4" />
-					</Button>
 				</div>
 			</div>
 		</div>
@@ -249,8 +304,8 @@ function UnitProgressCircle({
 	}
 
 	return (
-		<div className="relative flex size-11 items-center justify-center">
-			<svg className="size-11" viewBox="0 0 44 44" aria-hidden="true">
+		<div className="relative flex size-12 items-center justify-center">
+			<svg className="size-12" viewBox="0 0 44 44" aria-hidden="true">
 				<title>Unit progress</title>
 				<circle
 					cx="22"
@@ -357,8 +412,8 @@ function LessonRow({
 			onClick={() => !isLocked && onSelect(lesson)}
 			disabled={isLocked}
 			className={cn(
-				"group flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-all",
-				isCurrent && "border border-border/50 bg-white",
+				"group flex w-full items-center gap-3 rounded-2xl py-3 text-left transition-all",
+				isCurrent && "bg-white",
 				!isCurrent && !isLocked && "hover:bg-neutral-50",
 				isLocked && "cursor-default opacity-50",
 			)}
@@ -449,10 +504,11 @@ function UnitCard({
 
 	return (
 		<div
-			className={cn(
-				"overflow-hidden rounded-3xl border border-border/50",
-				isCompleted ? "bg-neutral-50" : "bg-neutral-50",
-			)}
+			className={cn("overflow-hidden rounded-3xl bg-white")}
+			style={{
+				boxShadow:
+					"0 0 0 1px rgba(0,0,0,.05),0 10px 10px -5px rgba(0,0,0,.04),0 20px 25px -5px rgba(0,0,0,.04),0 20px 32px -12px rgba(0,0,0,.04)",
+			}}
 		>
 			<div className="p-4">
 				{/* Unit Header */}
@@ -510,6 +566,8 @@ function LessonDetailDialog({
 	if (!lesson) return null;
 
 	const detail = lesson.detail;
+	const grammarPoints = detail.grammarPoints ?? detail.rules ?? [];
+	const vocabulary = detail.vocabulary ?? detail.words ?? [];
 
 	return (
 		<Dialog open={open} onOpenChange={(o) => !o && onClose()}>
@@ -535,35 +593,60 @@ function LessonDetailDialog({
 						{lesson.subtitle}
 					</p>
 
-					{/* Counts */}
+					{/* Counts & type */}
 					<div className="mt-3 flex items-center justify-center gap-2">
-						{detail.vocabulary.length > 0 && (
+						{lessonTypeConfig[lesson.type] && (
+							<Badge
+								variant="outline"
+								className="border-neutral-200 bg-neutral-50 text-neutral-600"
+							>
+								{lessonTypeConfig[lesson.type]?.label}
+							</Badge>
+						)}
+						{vocabulary.length > 0 && (
 							<Badge
 								variant="outline"
 								className="border-sky-200 bg-sky-50 text-sky-700"
 							>
-								{detail.vocabulary.length} Words
+								{vocabulary.length} Words
 							</Badge>
 						)}
-						{detail.grammarPoints.length > 0 && (
+						{grammarPoints.length > 0 && (
 							<Badge
 								variant="outline"
 								className="border-violet-200 bg-violet-50 text-violet-700"
 							>
-								{detail.grammarPoints.length} Grammar
+								{grammarPoints.length} Grammar
 							</Badge>
 						)}
 					</div>
 				</div>
 
+				{/* Objectives */}
+				{detail.objectives && detail.objectives.length > 0 && (
+					<div className="mt-4">
+						<h4 className="mb-2 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+							You'll Learn
+						</h4>
+						<ul className="flex flex-col gap-1.5">
+							{detail.objectives.map((obj) => (
+								<li key={obj} className="flex items-start gap-2 text-sm">
+									<span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-blue-400" />
+									{obj}
+								</li>
+							))}
+						</ul>
+					</div>
+				)}
+
 				{/* Grammar Points */}
-				{detail.grammarPoints.length > 0 && (
+				{grammarPoints.length > 0 && (
 					<div className="mt-4">
 						<h4 className="mb-2 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
 							Grammar to Practice
 						</h4>
 						<div className="flex flex-col gap-2">
-							{detail.grammarPoints.map((point) => (
+							{grammarPoints.map((point) => (
 								<div
 									key={point.title}
 									className="flex items-start gap-3 rounded-xl border border-neutral-100 bg-neutral-50 p-3"
@@ -584,13 +667,13 @@ function LessonDetailDialog({
 				)}
 
 				{/* Vocabulary */}
-				{detail.vocabulary.length > 0 && (
+				{vocabulary.length > 0 && (
 					<div className="mt-4">
 						<h4 className="mb-2 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
 							Words to Practice
 						</h4>
 						<div className="grid grid-cols-2 gap-2">
-							{detail.vocabulary.map((w) => (
+							{vocabulary.map((w) => (
 								<button
 									key={w.word}
 									type="button"
@@ -641,14 +724,10 @@ function FooterMessage({ message }: { message: string }) {
 	);
 }
 
-// ─── Main Page ───────────────────────────────────────────────────────────────
-
 function RouteComponent() {
 	const trpc = useTRPC();
 	const navigate = useNavigate();
-	const { data: courseData } = useQuery(
-		trpc.content.getCourse.queryOptions(),
-	);
+	const { data: courseData } = useQuery(trpc.content.getCourse.queryOptions());
 
 	const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
 	const [dialogOpen, setDialogOpen] = useState(false);
@@ -660,19 +739,22 @@ function RouteComponent() {
 			title: u.title,
 			status: u.status as UnitStatus,
 			progress: u.progress,
-			lessons: u.lessons.map((l) => ({
-				id: l.id,
-				title: l.title,
-				subtitle: l.subtitle ?? "",
-				type: l.type as LessonType,
-				status: l.status as LessonStatus,
-				progress: l.progress,
-				detail: (l.content as LessonDetail) ?? {
-					description: "",
-					grammarPoints: [],
-					vocabulary: [],
-				},
-			})),
+			lessons: u.lessons.map((l) => {
+				const apiLesson = l as typeof l & { lessonType?: string };
+				return {
+					id: l.id,
+					title: l.title,
+					subtitle: l.subtitle ?? "",
+					type: (apiLesson.lessonType ?? l.type) as LessonType,
+					status: l.status as LessonStatus,
+					progress: l.progress,
+					detail: (l.content as LessonDetail) ?? {
+						description: "",
+						grammarPoints: [],
+						vocabulary: [],
+					},
+				};
+			}),
 			unlockMessage:
 				u.status === "locked" ? "Complete previous units to unlock" : undefined,
 		}));
@@ -743,15 +825,13 @@ function RouteComponent() {
 	return (
 		<div className="min-h-screen">
 			<div className="container relative z-10 mx-auto max-w-5xl px-4 py-6 pt-8">
-				<div className="mb-6 flex flex-col gap-1">
+				<div className="mb-6 flex items-center gap-1">
 					<h1 className="font-bold font-lyon text-3xl tracking-tight md:text-3xl">
 						Lessons
 					</h1>
 				</div>
-
-				<div className="grid gap-5 lg:grid-cols-3">
-					<div className="space-y-4 lg:col-span-2">
-						<LevelHeader level={levelInfo} />
+				<div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+					<div className="order-2 space-y-4 lg:order-first lg:col-span-2">
 						{units.map((u) => (
 							<UnitCard
 								key={u.id}
@@ -764,39 +844,21 @@ function RouteComponent() {
 						<FooterMessage message="Finish these lessons to receive new material." />
 					</div>
 
-					<div className="space-y-4">
-						<div
-							className="overflow-hidden rounded-3xl bg-white p-5"
-							style={{
-								boxShadow:
-									"0 0 0 1px rgba(0,0,0,.05),0 10px 10px -5px rgba(0,0,0,.04),0 20px 25px -5px rgba(0,0,0,.04),0 20px 32px -12px rgba(0,0,0,.04)",
-							}}
-						>
-							<h3 className="mb-1 font-bold font-lyon text-lg">Module 1</h3>
-							<p className="mb-3 text-muted-foreground text-sm">
-								You talked 0 minutes. Speak 30 more minutes to complete module.
-							</p>
-
-							<div className="mb-1 flex items-baseline gap-1">
-								<span className="font-bold text-3xl">0</span>
-								<span className="text-muted-foreground text-sm">/ 30 min</span>
-							</div>
-							<div className="mb-4 h-2 w-full overflow-hidden rounded-full bg-neutral-100">
-								<div className="h-full w-[2%] rounded-full bg-neutral-800" />
-							</div>
-						</div>
+					<div>
+						<LevelHeader level={levelInfo} />
 					</div>
 				</div>
 			</div>
-
-			{/* Lesson Detail Dialog */}
 			<LessonDetailDialog
 				lesson={selectedLesson}
 				open={dialogOpen}
 				onClose={handleCloseDialog}
 				onStart={(lesson) => {
 					handleCloseDialog();
-					navigate({ to: "/lesson/$lessonId", params: { lessonId: lesson.id } });
+					navigate({
+						to: "/lesson/$lessonId",
+						params: { lessonId: lesson.id },
+					});
 				}}
 			/>
 		</div>

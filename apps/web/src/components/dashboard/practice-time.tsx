@@ -121,7 +121,7 @@ export default function DailyPracticeTime({
 				<div className="font-bold font-lyon text-xl">Daily Practice</div>
 			</div>
 
-			<div className="w-full rounded-xl border border-border/50 p-2.5">
+			<div className="w-full rounded-xl border border-border/50 p-2.5 pt-0">
 				<ChartContainer
 					config={chartConfig}
 					className="aspect-auto h-[138px] w-full self-stretch"
@@ -162,7 +162,7 @@ export default function DailyPracticeTime({
 							}
 							cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }}
 						/>
-						<ReferenceLine
+						{/* <ReferenceLine
 							y={committedSeconds}
 							stroke="#FF8904"
 							strokeDasharray="4 4"
@@ -174,11 +174,11 @@ export default function DailyPracticeTime({
 								fontSize: 12,
 								fontWeight: 500,
 							}}
-						/>
+						/> */}
 						<Bar
 							dataKey="seconds"
-							fill="#262626"
-							stroke="#262626"
+							fill="#FAFAFA"
+							stroke="#E5E5E5"
 							strokeWidth={1}
 							radius={[4, 4, 0, 0]}
 							maxBarSize={32}

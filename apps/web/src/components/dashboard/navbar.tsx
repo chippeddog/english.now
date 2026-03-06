@@ -13,6 +13,7 @@ import {
 	LogOutIcon,
 	Menu,
 	Settings,
+	X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import Logo from "@/components/logo";
@@ -38,6 +39,7 @@ export default function Navbar() {
 	const { t } = useTranslation("app");
 	const [upgradeOpen, setUpgradeOpen] = useState(false);
 	const [voicesOpen, setVoicesOpen] = useState(false);
+	const [menuOpen, setMenuOpen] = useState(false);
 	const [isScrolled, setIsScrolled] = useState(false);
 	const [language, setLanguage] = useState<SupportedLanguage>(
 		getCurrentLanguage(),
@@ -91,16 +93,20 @@ export default function Navbar() {
 		>
 			<div className="container relative z-10 mx-auto max-w-5xl px-4">
 				<nav className="flex grid-cols-2 items-center justify-between py-5 md:grid-cols-5">
-					<div className="col-span-3 flex items-center gap-2">
+					<div className="col-span-3 flex items-center gap-3">
 						<Logo link="/home" />{" "}
-						<Popover>
+						<Popover open={menuOpen} onOpenChange={setMenuOpen}>
 							<PopoverTrigger asChild>
 								<button
 									type="button"
-									className="flex size-9 items-center justify-center rounded-lg text-lime-900 transition-colors hover:bg-lime-100 hover:text-lime-800 md:hidden"
-									aria-label={t("nav.menu")}
+									className="flex size-9 items-center justify-center rounded-lg transition-colors md:hidden"
+									aria-label={menuOpen ? t("nav.close") : t("nav.menu")}
 								>
-									<Menu className="size-5" />
+									{menuOpen ? (
+										<X className="size-5" />
+									) : (
+										<Menu className="size-5" />
+									)}
 								</button>
 							</PopoverTrigger>
 							<PopoverContent

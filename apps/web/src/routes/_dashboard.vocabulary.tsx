@@ -44,21 +44,18 @@ function VocabularyPage() {
 	return (
 		<div>
 			<div className="container relative z-10 mx-auto max-w-5xl px-4 py-6 pt-8">
-				<div className="mb-6 flex flex-col items-center md:flex-row md:items-center md:justify-between">
-					<div className="flex items-center">
-						<div>
-							<h1 className="font-bold font-lyon text-2.5xl text-neutral-950 tracking-tight md:text-3xl">
-								Vocabulary
-							</h1>
-						</div>
-					</div>
+				<div className="mb-6 flex items-center gap-1">
+					<h1 className="font-bold font-lyon text-3xl tracking-tight md:text-3xl">
+						Vocabulary
+					</h1>
 				</div>
+
 				<Tabs
 					value={activeView}
 					onValueChange={(v) => handleTabChange(v as Tab)}
 					className="space-y-5"
 				>
-					<div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+					<div className="flex flex-row items-center justify-between gap-4">
 						<div className="flex items-center gap-0.5 rounded-2xl border border-border/50 bg-muted/50 p-0.5">
 							<button
 								type="button"

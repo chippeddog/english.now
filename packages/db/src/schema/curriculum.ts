@@ -11,8 +11,6 @@ import {
 } from "drizzle-orm/pg-core";
 import { user } from "./auth";
 
-// ─── Enums ──────────────────────────────────────────────────────────────────
-
 export const cefrLevel = pgEnum("cefr_level", [
 	"A1",
 	"A2",
@@ -39,42 +37,121 @@ export const lessonBlockType = pgEnum("lesson_block_type", [
 	"assessment",
 ]);
 
+export const lessonType = pgEnum("lesson_type", [
+	"grammar",
+	"vocabulary",
+	"reading",
+	"listening",
+	"speaking",
+	"writing",
+]);
+
 export const enrollmentStatus = pgEnum("enrollment_status", [
 	"active",
 	"completed",
 	"paused",
 ]);
 
-// ─── Content Types ──────────────────────────────────────────────────────────
+// ─── Lesson Type Values ──────────────────────────────────────────────────────
 
-export interface CurriculumLessonContent {
+export type LessonTypeValue =
+	| "grammar"
+	| "vocabulary"
+	| "reading"
+	| "listening"
+	| "speaking"
+	| "writing";
+
+// ─── Type-Specific Lesson Content ────────────────────────────────────────────
+
+export interface VocabularyItem {
+	word: string;
+	pos?: string;
+	definition?: string;
+	pronunciation?: string;
+	examples?: string[];
+	collocations?: string[];
+	synonyms?: string[];
+	antonyms?: string[];
+}
+
+interface BaseLessonContent {
 	description: string;
-	grammarPoints: {
+	objectives: string[];
+}
+
+export interface GrammarLessonContent extends BaseLessonContent {
+	type: "grammar";
+	rules: {
 		title: string;
-		description: string;
-		examples?: string[];
+		explanation: string;
+		formula?: string;
+		examples: { sentence: string; highlight: string; note?: string }[];
+		commonMistakes?: { wrong: string; correct: string; why: string }[];
 	}[];
-	vocabulary: {
-		word: string;
-		pos?: string;
-		definition?: string;
-	}[];
-	exerciseHints: {
-		types: (
-			| "multiple_choice"
-			| "fill_in_the_blank"
-			| "reorder"
-			| "dictation"
-		)[];
-		count: number;
-	};
+	vocabulary: VocabularyItem[];
+}
+
+export interface VocabularyLessonContent extends BaseLessonContent {
+	type: "vocabulary";
+	words: VocabularyItem[];
+	thematicGroup?: string;
+}
+
+export interface ReadingLessonContent extends BaseLessonContent {
+	type: "reading";
+	passage: { title: string; text: string; source?: string };
+	glossary: { word: string; definition: string }[];
+	comprehensionFocus: string;
+}
+
+export interface ListeningLessonContent extends BaseLessonContent {
+	type: "listening";
+	audioScript: string;
+	listeningFocus: string;
+	preTasks?: string[];
+}
+
+export interface SpeakingLessonContent extends BaseLessonContent {
+	type: "speaking";
+	dialogueExamples: { speaker: string; text: string }[];
+	usefulPhrases: { phrase: string; usage: string }[];
+	pronunciationFocus?: { sound: string; examples: string[] }[];
+}
+
+export interface WritingLessonContent extends BaseLessonContent {
+	type: "writing";
+	writingType: string;
+	modelText: string;
+	structureGuide: { section: string; description: string }[];
+	usefulExpressions: string[];
+}
+
+export type CurriculumLessonContent =
+	| GrammarLessonContent
+	| VocabularyLessonContent
+	| ReadingLessonContent
+	| ListeningLessonContent
+	| SpeakingLessonContent
+	| WritingLessonContent;
+
+// ─── Course Blueprint ────────────────────────────────────────────────────────
+
+export interface LessonTypeMix {
+	grammar?: number;
+	vocabulary?: number;
+	reading?: number;
+	listening?: number;
+	speaking?: number;
+	writing?: number;
 }
 
 export interface CourseBlueprint {
 	level: "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
 	units: number;
 	lessonsPerUnit: number;
-	blockMix: {
+	lessonTypeMix: LessonTypeMix;
+	blockMix?: {
 		input?: number;
 		teach?: number;
 		practice?: number;
@@ -99,8 +176,6 @@ export interface UnitTags {
 	register?: "neutral" | "formal" | "informal";
 }
 
-// ─── Course ─────────────────────────────────────────────────────────────────
-
 export const course = pgTable(
 	"course",
 	{
@@ -120,8 +195,6 @@ export const course = pgTable(
 		activeIdx: index("course_active_idx").on(t.isActive),
 	}),
 );
-
-// ─── Course Version ─────────────────────────────────────────────────────────
 
 export const courseVersion = pgTable(
 	"course_version",
@@ -153,8 +226,6 @@ export const courseVersion = pgTable(
 	}),
 );
 
-// ─── Curriculum Unit ────────────────────────────────────────────────────────
-
 export const curriculumUnit = pgTable(
 	"curriculum_unit",
 	{
@@ -183,8 +254,6 @@ export const curriculumUnit = pgTable(
 	}),
 );
 
-// ─── Curriculum Lesson ──────────────────────────────────────────────────────
-
 export const curriculumLesson = pgTable(
 	"curriculum_lesson",
 	{
@@ -197,6 +266,7 @@ export const curriculumLesson = pgTable(
 		title: text("title").notNull(),
 		subtitle: text("subtitle"),
 		blockType: lessonBlockType("block_type").notNull(),
+		lessonType: lessonType("lesson_type"),
 		content: jsonb("content").$type<CurriculumLessonContent>(),
 		estimatedMinutes: integer("estimated_minutes"),
 		createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -213,8 +283,6 @@ export const curriculumLesson = pgTable(
 		),
 	}),
 );
-
-// ─── Enrollment (per-user, replaces learning_path) ──────────────────────────
 
 export const enrollment = pgTable(
 	"enrollment",
@@ -239,8 +307,6 @@ export const enrollment = pgTable(
 	}),
 );
 
-// ─── Lesson Completion (written only when user finishes a lesson) ───────────
-
 export const lessonCompletion = pgTable(
 	"lesson_completion",
 	{
@@ -260,8 +326,6 @@ export const lessonCompletion = pgTable(
 		).on(t.enrollmentId, t.lessonId),
 	}),
 );
-
-// ─── Type Exports ───────────────────────────────────────────────────────────
 
 export type Course = typeof course.$inferSelect;
 export type NewCourse = typeof course.$inferInsert;

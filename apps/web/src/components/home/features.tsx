@@ -5,6 +5,7 @@ import {
 	ArrowUpRightIcon,
 	Bookmark,
 	CheckIcon,
+	CircleDot,
 	ClockIcon,
 	Flag,
 	KeyboardIcon,
@@ -365,7 +366,7 @@ function VocabularyDemo() {
 
 	return (
 		<div
-			className="flex w-full flex-col gap-2.5 rounded-t-2xl bg-white p-4"
+			className="flex w-full select-none flex-col gap-2.5 rounded-t-2xl bg-white p-4"
 			style={{
 				boxShadow:
 					"0 0 0 1px rgba(0,0,0,.05),0 10px 10px -5px rgba(0,0,0,.04),0 20px 25px -5px rgba(0,0,0,.04),0 20px 32px -12px rgba(0,0,0,.04)",
@@ -378,31 +379,29 @@ function VocabularyDemo() {
 			{words.map((item) => (
 				<div
 					key={item.word}
-					className="rounded-xl border border-neutral-100 bg-white p-3.5"
+					className="flex items-center gap-2 rounded-xl border border-neutral-100 bg-white p-3.5"
 				>
-					<div className="mb-1 flex items-center justify-between">
-						<div className="flex items-baseline gap-2">
-							<span className="font-bold text-neutral-800 text-xs">
-								{item.word}
-							</span>
-							<span className="text-[11px] text-neutral-400">
-								{item.phonetic}
-							</span>
+					<button
+						type="button"
+						className={cn(
+							"flex size-8 shrink-0 items-center justify-center rounded-lg text-primary transition-colors hover:bg-neutral-100",
+						)}
+					>
+						<Volume2 className="size-4" />
+					</button>
+					<div>
+						<div className="mb-1 flex items-center justify-between">
+							<div className="flex items-baseline gap-2">
+								<span className="font-bold text-neutral-800 text-xs">
+									{item.word}
+								</span>
+								<span className="text-[11px] text-neutral-400">
+									{item.phonetic}
+								</span>
+							</div>
 						</div>
+						<p className="mb-1 text-neutral-600 text-xs">{item.example}</p>
 					</div>
-					<p className="mb-1 text-neutral-600 text-xs">{item.definition}</p>
-					<div className="flex items-center gap-1.5">
-						<div className="h-1 w-12 overflow-hidden rounded-full bg-neutral-100">
-							<div
-								className="h-full rounded-full bg-lime-500"
-								style={{ width: `${item.mastery}%` }}
-							/>
-						</div>
-						<span className="text-[10px] text-neutral-400">
-							{item.mastery}%
-						</span>
-					</div>
-					{/* <p className="text-[11px] text-neutral-400 italic">{item.example}</p> */}
 				</div>
 			))}
 		</div>
@@ -432,39 +431,17 @@ function PersonalizedLessonsDemo() {
 			progress: 0,
 			status: "locked" as const,
 		},
-		{
-			id: 5,
-			title: "Negotiation Skills",
-			level: "Advanced",
-			progress: 0,
-			status: "locked" as const,
-		},
+		// {
+		// 	id: 5,
+		// 	title: "Business Email Writing",
+		// 	level: "Intermediate",
+		// 	progress: 0,
+		// 	status: "locked" as const,
+		// },
 	];
 
 	return (
-		<div className="relative flex h-full w-full gap-4">
-			<div className="flex flex-col gap-2.5">
-				<div
-					className="relative hidden w-[180px] rounded-2xl bg-white p-4 pt-3 md:block"
-					style={{
-						boxShadow:
-							"0 0 0 1px rgba(0,0,0,.05),0 10px 10px -5px rgba(0,0,0,.04),0 20px 25px -5px rgba(0,0,0,.04),0 20px 32px -12px rgba(0,0,0,.04)",
-					}}
-				>
-					<h3 className="mb-3 font-semibold text-sm">Module 1</h3>
-					<p className="mb-3 text-muted-foreground text-xs">
-						You talked 0 minutes. Speak 30 more minutes to complete module.
-					</p>
-
-					<div className="mb-1 flex items-baseline gap-1">
-						<span className="font-bold text-3xl">0</span>
-						<span className="text-muted-foreground text-sm">/ 30 min</span>
-					</div>
-					<div className="mb-4 h-2 w-full overflow-hidden rounded-full bg-neutral-100">
-						<div className="h-full w-[2%] rounded-full bg-neutral-800" />
-					</div>
-				</div>
-			</div>
+		<div className="relative flex h-full w-full select-none gap-4">
 			<div className="flex flex-1 flex-col gap-3">
 				<div
 					className="overflow-hidden rounded-2xl bg-white"
@@ -473,13 +450,14 @@ function PersonalizedLessonsDemo() {
 							"0 0 0 1px rgba(0,0,0,.05),0 10px 10px -5px rgba(0,0,0,.04),0 20px 25px -5px rgba(0,0,0,.04),0 20px 32px -12px rgba(0,0,0,.04)",
 					}}
 				>
-					<div className="p-2">
-						<div className="flex items-center justify-between">
-							<div className="flex items-center gap-4">
+					<div className="p-4 pt-3">
+						<div className="flex items-start gap-0">
+							{/* Left track: circle + dashed line + lesson icons */}
+							<div className="relative flex w-9.5 shrink-0 flex-col items-center gap-4">
 								{/* Circular progress */}
-								<div className="relative flex size-10 items-center justify-center">
+								<div className="relative flex size-9.5 items-center justify-center">
 									<svg
-										className="size-10"
+										className="size-9.5"
 										viewBox="0 0 56 56"
 										aria-hidden="true"
 									>
@@ -508,100 +486,121 @@ function PersonalizedLessonsDemo() {
 									</svg>
 									<span className="absolute font-bold text-[10px]">50%</span>
 								</div>
+								{/* Vertical dashed line from circle down through lessons */}
+								<div
+									className="-translate-x-1/2 absolute top-9.5 bottom-0 left-1/2 w-px border-neutral-200 border-l border-dashed"
+									aria-hidden="true"
+								/>
+								{/* Lesson icons stacked on the line */}
+								{lessons.map((lesson) => (
+									<div
+										key={lesson.id}
+										className="relative z-10 flex size-9.5 shrink-0 items-center justify-center"
+									>
+										<div
+											className={cn(
+												"flex size-6 items-center justify-center rounded-full border",
+												lesson.status === "completed"
+													? "border-lime-400 bg-lime-200 text-lime-600"
+													: lesson.status === "current"
+														? "border border-amber-400 bg-amber-200 text-amber-600"
+														: "bg-neutral-100 text-neutral-400",
+											)}
+										>
+											{lesson.status === "completed" ? (
+												<CheckIcon className="size-3.5 stroke-[2.5]" />
+											) : lesson.status === "current" ? (
+												<ClockIcon className="size-3.5" />
+											) : (
+												<Lock className="size-3" />
+											)}
+										</div>
+									</div>
+								))}
+							</div>
+							<div className="flex min-w-0 flex-1 flex-col pl-3">
 								<div>
-									<h2 className="font-semibold text-sm">Beginner</h2>
+									<h2 className="font-semibold text-sm">
+										Greetings and Introductions
+									</h2>
 									<p className="text-muted-foreground text-xs">
 										Reach 50% to get{" "}
 										<span className="font-semibold text-foreground">A2</span>
 									</p>
 								</div>
+								<div className="mt-4 flex flex-col gap-4">
+									{lessons.map((lesson) => (
+										<div
+											key={lesson.id}
+											className={cn(
+												"flex h-9.5 items-center gap-2",
+												lesson.status === "current"
+													? "border-neutral-100 bg-white"
+													: lesson.status === "completed"
+														? "border-neutral-100 bg-white/70"
+														: "border-neutral-100 bg-neutral-50/50 opacity-60",
+											)}
+										>
+											<span
+												className={cn(
+													"font-medium text-xs",
+													lesson.status === "locked"
+														? "text-neutral-400"
+														: "text-neutral-800",
+												)}
+											>
+												{lesson.title}
+											</span>
+										</div>
+									))}
+								</div>
 							</div>
-							<Button
-								variant="outline"
-								size="icon"
-								className="size-6 rounded-full"
-							>
-								<ArrowRight className="size-4" />
-							</Button>
 						</div>
 					</div>
 				</div>
-
-				<div className="flex w-full flex-col gap-2 px-4">
-					<div className="flex flex-col">
-						{lessons.map((lesson, i) => (
-							<div key={lesson.id} className="flex items-stretch gap-3">
-								<div className="flex w-6 flex-col items-center">
-									<div
-										className={cn(
-											"relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full font-bold text-[10px]",
-											lesson.status === "completed" &&
-												"border border-lime-400 bg-lime-200 text-lime-600",
-											lesson.status === "current" &&
-												"border border-amber-400 bg-amber-200 text-amber-600",
-											lesson.status === "locked" &&
-												"bg-neutral-100 text-neutral-400",
-										)}
-									>
-										{lesson.status === "completed" ? (
-											<CheckIcon className="size-3" strokeWidth={2.5} />
-										) : lesson.status === "current" ? (
-											<ClockIcon className="size-3" strokeWidth={2.5} />
-										) : lesson.status === "locked" ? (
-											<Lock className="size-3" strokeWidth={2.5} />
-										) : null}
-									</div>
-									{i < lessons.length - 1 && (
-										<div
-											className={cn(
-												"min-h-3 w-0.5 flex-1",
-												lesson.status === "completed"
-													? "bg-lime-200"
-													: "bg-neutral-200",
-											)}
-										/>
-									)}
-								</div>
-
-								{/* Lesson card */}
-								<div
-									className={cn(
-										"mb-2 flex-1 rounded-xl border p-3",
-										lesson.status === "current"
-											? "border-neutral-100 bg-white"
-											: lesson.status === "completed"
-												? "border-neutral-100 bg-white/70"
-												: "border-neutral-100 bg-neutral-50/50 opacity-60",
-									)}
-								>
-									<div className="flex items-center justify-between">
-										<span
-											className={cn(
-												"font-medium text-xs",
-												lesson.status === "locked"
-													? "text-neutral-400"
-													: "text-neutral-800",
-											)}
-										>
-											{lesson.title}
-										</span>
-									</div>
-									{lesson.status === "current" && (
-										<div className="mt-2 flex items-center gap-2">
-											<div className="h-1 flex-1 overflow-hidden rounded-full bg-neutral-100">
-												<div
-													className="h-full rounded-full bg-amber-400"
-													style={{ width: `${lesson.progress}%` }}
-												/>
-											</div>
-											<span className="text-[10px] text-neutral-400">
-												{lesson.progress}%
-											</span>
-										</div>
-									)}
-								</div>
+				<div
+					className="overflow-hidden rounded-2xl bg-neutral-50"
+					style={{
+						boxShadow:
+							"rgba(162, 166, 171, 0.15) 0px 0px 0px 0px inset, rgba(162, 166, 171, 0.15) 0px 0px 6px 2px inset",
+					}}
+				>
+					<div className="flex items-center justify-between p-4 py-3">
+						<div className="flex items-center gap-3">
+							<div className="flex size-8 items-center justify-center rounded-full bg-neutral-100 text-neutral-400">
+								<Lock className="size-3" />
 							</div>
-						))}
+							<div className="flex flex-col gap-1">
+								<h3 className="font-bold font-lyon text-muted-foreground text-sm">
+									General English
+								</h3>
+								<p className="text-muted-foreground text-xs">
+									Complete previous units to unlock
+								</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div className="flex flex-col gap-2.5">
+				<div
+					className="relative hidden w-[180px] rounded-2xl bg-white p-4 pt-3 md:block"
+					style={{
+						boxShadow:
+							"0 0 0 1px rgba(0,0,0,.05),0 10px 10px -5px rgba(0,0,0,.04),0 20px 25px -5px rgba(0,0,0,.04),0 20px 32px -12px rgba(0,0,0,.04)",
+					}}
+				>
+					<h3 className="mb-1 font-semibold text-sm">Beginner A1</h3>
+					<p className="text-muted-foreground text-xs">
+						Reach 50% to get{" "}
+						<span className="font-semibold text-foreground">A2</span>
+					</p>
+					<div className="mt-3 mb-1 flex items-baseline gap-1">
+						<span className="font-bold text-xl">4</span>
+						<span className="text-muted-foreground text-xs">/ 94 lessons</span>
+					</div>
+					<div className="mb-1 h-1.5 w-full overflow-hidden rounded-full bg-neutral-100">
+						<div className="h-full w-[2%] rounded-full bg-neutral-800" />
 					</div>
 				</div>
 			</div>

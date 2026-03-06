@@ -1,0 +1,2 @@
+CREATE TYPE "public"."lesson_type" AS ENUM('grammar', 'vocabulary', 'reading', 'listening', 'speaking', 'writing');--> statement-breakpoint
+ALTER TABLE "curriculum_lesson" ADD COLUMN "lesson_type" "lesson_type";
