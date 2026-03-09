@@ -15,11 +15,13 @@ export const Route = createFileRoute("/_public/blog/$slug")({
 function RouteComponent() {
 	const post = Route.useLoaderData();
 	return (
-		<article>
-			<header>
-				<h1>{post.title}</h1>
-				<p>{post.summary}</p>
-			</header>
-		</article>
+		<div className="container relative mx-auto max-w-5xl px-4 py-16">
+			<article>
+				<header>
+					<h1>{post.title}</h1>
+					<p>{post.summary}</p>
+				</header>
+			</article>
+		</div>
 	);
 }

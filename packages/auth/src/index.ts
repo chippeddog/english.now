@@ -68,7 +68,7 @@ export const auth = betterAuth<BetterAuthOptions>({
 			clientSecret: env.GOOGLE_CLIENT_SECRET,
 		},
 		apple: {
-			disableSignUp: true,
+			// disableSignUp: true,
 			clientId: env.APPLE_CLIENT_ID ?? "",
 			clientSecret: env.APPLE_CLIENT_SECRET ?? "",
 		},

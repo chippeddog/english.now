@@ -355,13 +355,6 @@ function VocabularyDemo() {
 			example: '"Smartphones are now ubiquitous."',
 			mastery: 30,
 		},
-		{
-			word: "Ubiquitous",
-			phonetic: "/juːˈbɪkwɪtəs/",
-			definition: "Present, appearing, or found everywhere",
-			example: '"Smartphones are now ubiquitous."',
-			mastery: 30,
-		},
 	];
 
 	return (

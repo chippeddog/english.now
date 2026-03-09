@@ -121,6 +121,23 @@ const PRACTICE_SKELETON_KEYS = [
 	"practice-9",
 ] as const;
 
+function PreparingOverlay({ variant }: { variant: "home" | "practice" }) {
+	return (
+		<div className="absolute inset-0 z-10 flex items-center justify-center rounded-[inherit] bg-white/45 p-6 backdrop-blur-sm">
+			<div className="max-w-xs rounded-2xl border border-white/70 bg-white/85 px-4 py-3 text-center shadow-sm">
+				<p className="font-medium text-neutral-900 text-sm">
+					Preparing your daily practice
+				</p>
+				<p className="mt-1 text-muted-foreground text-xs leading-relaxed">
+					{variant === "home"
+						? "Your personalized activities will appear here in a few seconds."
+						: "We’re generating today’s shared activities for your dashboard."}
+				</p>
+			</div>
+		</div>
+	);
+}
+
 export default function DailyPracticeActivities({
 	variant,
 }: {
@@ -139,7 +156,19 @@ export default function DailyPracticeActivities({
 			? trpc.practice.getHomeTodayPlan.queryOptions()
 			: trpc.practice.getTodayPlan.queryOptions();
 
-	const { data, isLoading } = useQuery(queryOptions);
+	const { data, isLoading } = useQuery({
+		...queryOptions,
+		refetchInterval: (query) => {
+			const status = (query.state.data as { status?: string } | undefined)
+				?.status;
+
+			return status === "missing" ||
+				status === "queued" ||
+				status === "generating"
+				? 3000
+				: false;
+		},
+	});
 
 	const ensurePlan = useMutation(
 		trpc.practice.ensureTodayPlan.mutationOptions({
@@ -187,12 +216,12 @@ export default function DailyPracticeActivities({
 	const activities = (data?.activities ?? []) as DailyPracticeActivity[];
 	const completedCount =
 		activities.filter((activity) => activity.completedAt !== null).length ?? 0;
-	const isGenerating =
-		isLoading ||
-		ensurePlan.isPending ||
-		data?.status === "missing" ||
-		data?.status === "queued" ||
-		data?.status === "generating";
+	const isPreparingPlan =
+		!isLoading &&
+		(ensurePlan.isPending ||
+			data?.status === "missing" ||
+			data?.status === "queued" ||
+			data?.status === "generating");
 
 	async function handleStart(activity: DailyPracticeActivity) {
 		if (activity.completedAt || startingId) return;
@@ -288,7 +317,7 @@ export default function DailyPracticeActivities({
 					)}
 				</div>
 
-				{isGenerating && activities.length === 0 ? (
+				{isLoading && activities.length === 0 ? (
 					<div
 						className={cn(
 							"grid gap-3",
@@ -303,6 +332,25 @@ export default function DailyPracticeActivities({
 						).map((key) => (
 							<ActivitySkeleton key={key} compact={variant === "home"} />
 						))}
+					</div>
+				) : isPreparingPlan && activities.length === 0 ? (
+					<div className="relative">
+						<div
+							className={cn(
+								"grid gap-3 transition duration-300",
+								variant === "home"
+									? "grid-cols-2 blur-[2px] sm:grid-cols-3"
+									: "grid-cols-1 md:grid-cols-2 xl:grid-cols-3",
+							)}
+						>
+							{(variant === "home"
+								? HOME_SKELETON_KEYS
+								: PRACTICE_SKELETON_KEYS
+							).map((key) => (
+								<ActivitySkeleton key={key} compact={variant === "home"} />
+							))}
+						</div>
+						<PreparingOverlay variant={variant} />
 					</div>
 				) : activities.length === 0 ? (
 					<div className="rounded-2xl border border-border/60 border-dashed bg-neutral-50 px-4 py-6 text-center">

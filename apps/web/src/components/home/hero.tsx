@@ -104,7 +104,7 @@ export default function Hero() {
 							</span>
 						</div>
 
-						<p className="text-neutral-900 text-sm">
+						<div className="text-neutral-900 text-sm">
 							<span className="font-medium text-xs">Here's your feedback:</span>
 							<div className="mt-3 flex flex-col divide-neutral-200">
 								<div className="relative h-[48px]">
@@ -125,7 +125,7 @@ export default function Hero() {
 									</span>
 								</div>
 							</div>
-						</p>
+						</div>
 					</div>
 
 					<div className="absolute top-6 right-6 bottom-6 z-10 ml-auto h-full w-[320px] max-w-sm select-none overflow-hidden rounded-3xl border border-[#C6F64D] bg-white shadow-xl md:relative md:w-[370px] lg:absolute lg:top-8 lg:right-6">
