@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { CheckIcon, Zap } from "lucide-react";
 import { useState } from "react";
@@ -5,6 +6,7 @@ import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { openCheckout } from "@/lib/paddle";
 import { cn } from "@/lib/utils";
+import { useTRPC } from "@/utils/trpc";
 import Loader from "../loader";
 import { Button } from "../ui/button";
 import {
@@ -30,9 +32,13 @@ export default function UpgradeDialog({
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 }) {
+	const trpc = useTRPC();
 	const [isLoading, setIsLoading] = useState(false);
 	const [plan, setPlan] = useState<"monthly" | "yearly">("monthly");
 	const { data: session } = authClient.useSession();
+	const { data: profile, isPending } = useQuery(
+		trpc.profile.get.queryOptions(),
+	);
 
 	const features = [
 		"Unlimited AI conversations",
@@ -41,6 +47,10 @@ export default function UpgradeDialog({
 		"Personalized learning path",
 		"Progress tracking and analytics",
 	];
+
+	if (isPending) return null;
+	if (profile?.subscription?.isPro) return null;
+
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogTrigger asChild>
@@ -156,9 +166,10 @@ export default function UpgradeDialog({
 								email: session.user.email,
 								onSuccess: (data) => {
 									console.log(data);
-									setIsLoading(false);
 									toast.success("Subscription successful");
 								},
+							}).finally(() => {
+								setIsLoading(false);
 							});
 						}}
 					>

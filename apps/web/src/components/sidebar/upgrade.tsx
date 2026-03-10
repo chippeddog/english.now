@@ -1,14 +1,15 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { Check, Loader2, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { openCheckout } from "@/lib/paddle";
+import { useTRPC } from "@/utils/trpc";
 import { Button } from "../ui/button";
 import {
 	Dialog,
-	DialogClose,
 	DialogContent,
 	DialogDescription,
 	DialogHeader,
@@ -23,13 +24,22 @@ const PADDLE_PRICE_IDS = {
 } as const;
 
 export default function Upgrade() {
+	const trpc = useTRPC();
 	const [isAnnual, setIsAnnual] = useState(false);
+	const [isOpen, setIsOpen] = useState(false);
 	const { data: session } = authClient.useSession();
 	const [isLoading, setIsLoading] = useState(false);
+	const { data: profile, isPending } = useQuery(
+		trpc.profile.get.queryOptions(),
+	);
+
+	if (isPending) return null;
+	if (profile?.subscription?.isPro) return null;
+
 	return (
 		<div className="w-full">
 			<div className="">
-				<Dialog>
+				<Dialog open={isOpen} onOpenChange={setIsOpen}>
 					<DialogTrigger asChild>
 						<button
 							type="button"
@@ -83,7 +93,7 @@ export default function Upgrade() {
 						</DialogHeader>
 						<button
 							type="button"
-							onClick={() => DialogClose.close()}
+							onClick={() => setIsOpen(false)}
 							className="absolute top-4 right-4 flex size-8 items-center justify-center rounded-full bg-neutral-100 text-neutral-500 transition-colors hover:bg-neutral-200"
 						>
 							<X className="size-4" />

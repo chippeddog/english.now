@@ -11,14 +11,60 @@ import {
 import { z } from "zod";
 import { protectedProcedure, router } from "../index";
 
+type SubscriptionRecord = typeof subscription.$inferSelect;
+
+function getSubscriptionSummary(sub: SubscriptionRecord | null) {
+	const status = sub?.status ?? null;
+	const isPro = status === "active" || status === "trialing";
+
+	return {
+		status,
+		isPro,
+		plan: isPro ? "pro" : "free",
+		currentPeriodEnd: sub?.currentPeriodEnd ?? null,
+		canceledAt: sub?.canceledAt ?? null,
+	};
+}
+
+async function getCurrentSubscription(userId: string) {
+	const [sub] = await db
+		.select()
+		.from(subscription)
+		.where(eq(subscription.userId, userId))
+		.orderBy(
+			sql`CASE
+				WHEN ${subscription.status} = 'active' THEN 0
+				WHEN ${subscription.status} = 'trialing' THEN 1
+				WHEN ${subscription.status} = 'paused' THEN 2
+				WHEN ${subscription.status} = 'past_due' THEN 3
+				WHEN ${subscription.status} = 'canceled' THEN 4
+				ELSE 5
+			END`,
+			desc(subscription.createdAt),
+		)
+		.limit(1);
+
+	return sub ?? null;
+}
+
 export const profileRouter = router({
 	get: protectedProcedure.query(async ({ ctx }) => {
-		const [profile] = await db
-			.select()
-			.from(userProfile)
-			.where(eq(userProfile.userId, ctx.session.user.id))
-			.limit(1);
-		return profile ?? null;
+		const [profile, sub] = await Promise.all([
+			db
+				.select()
+				.from(userProfile)
+				.where(eq(userProfile.userId, ctx.session.user.id))
+				.limit(1)
+				.then(([result]) => result ?? null),
+			getCurrentSubscription(ctx.session.user.id),
+		]);
+
+		if (!profile) return null;
+
+		return {
+			...profile,
+			subscription: getSubscriptionSummary(sub),
+		};
 	}),
 	getStreakData: protectedProcedure.query(async ({ ctx }) => {
 		const [profile] = await db
@@ -77,13 +123,7 @@ export const profileRouter = router({
 			return rows.map((r) => ({ date: r.date, seconds: Number(r.seconds) }));
 		}),
 	getSubscription: protectedProcedure.query(async ({ ctx }) => {
-		const [sub] = await db
-			.select()
-			.from(subscription)
-			.where(eq(subscription.userId, ctx.session.user.id))
-			.orderBy(desc(subscription.createdAt))
-			.limit(1);
-		return sub ?? null;
+		return getCurrentSubscription(ctx.session.user.id);
 	}),
 	saveOnboarding: protectedProcedure
 		.input(
