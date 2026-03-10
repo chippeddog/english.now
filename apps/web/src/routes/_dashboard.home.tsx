@@ -21,8 +21,11 @@ function RouteComponent() {
 	const { data: activityDates, isLoading: isActivityDatesLoading } = useQuery(
 		trpc.profile.getWeeklyActivity.queryOptions({ timezone }),
 	);
-	const { data: practiceTimeData } = useQuery(
+	const { data: practiceTimeData, isLoading: isPracticeTimeLoading } = useQuery(
 		trpc.profile.getDailyPracticeTime.queryOptions({ timezone }),
+	);
+	const { data: courseData, isLoading: isCourseLoading } = useQuery(
+		trpc.content.getCourse.queryOptions(),
 	);
 	const firstName = session?.user.name?.split(" ")[0] || "Learner";
 	return (
@@ -35,11 +38,11 @@ function RouteComponent() {
 				</div>
 				<p className="text-muted-foreground">{t("home.subtitle")}</p>
 			</div>
-			<div className="grid gap-5 lg:grid-cols-3">
-				<div className="space-y-6 lg:col-span-2">
+			<div className="flex flex-col gap-5 sm:flex-row">
+				<div className="w-full space-y-6 sm:w-2/3">
 					<TodaysActivities />
 				</div>
-				<div className="space-y-5">
+				<div className="w-full space-y-5 sm:w-1/3">
 					<Streak
 						currentStreak={profile?.currentStreak ?? 0}
 						longestStreak={profile?.longestStreak ?? 0}
@@ -47,11 +50,15 @@ function RouteComponent() {
 						activityDates={activityDates ?? []}
 						isLoading={isActivityDatesLoading}
 					/>
-					<Lessons />
+					<Lessons
+						courseData={courseData ?? null}
+						isLoading={isCourseLoading}
+					/>
 					<DailyPracticeTime
 						practiceData={practiceTimeData ?? []}
 						dailyGoal={profile?.dailyGoal ?? 5}
 						timezone={timezone}
+						isLoading={isPracticeTimeLoading}
 					/>
 				</div>
 			</div>

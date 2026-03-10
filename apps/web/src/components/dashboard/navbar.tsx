@@ -161,9 +161,9 @@ export default function Navbar() {
 										) : (
 											<div className="relative flex items-center gap-2">
 												{!session.user.image ? (
-													<div className="relative flex size-8.5 shrink-0 items-center justify-center space-x-0 overflow-hidden rounded-full border border-neutral-200 font-bold text-neutral-400 uppercase">
-														<span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-neutral-100 shadow-borders-base">
-															<span className="txt-compact-small-plus pointer-events-none flex aspect-square size-6 select-none items-center justify-center rounded-full bg-ui-bg-component-hover object-cover object-center text-ui-fg-subtle">
+													<div className="relative flex size-8.5 shrink-0 items-center justify-center space-x-0 overflow-hidden rounded-full border border-neutral-200 font-semibold text-neutral-400 uppercase">
+														<span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-neutral-100">
+															<span className="pointer-events-none flex aspect-square size-6 select-none items-center justify-center rounded-full object-cover object-center italic">
 																{session.user.name?.charAt(0) ?? "?"}
 															</span>
 														</span>

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { ArrowRightIcon, CheckIcon, LoaderIcon } from "lucide-react";
+import { CheckIcon, ChevronRightIcon, LoaderIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -75,12 +75,19 @@ type DailyPracticeActivity =
 	| PronunciationActivity
 	| VocabularyActivity;
 
-function ActivitySkeleton({ compact = false }: { compact?: boolean }) {
+function ActivitySkeleton({
+	compact = false,
+	className,
+}: {
+	compact?: boolean;
+	className?: string;
+}) {
 	return (
 		<div
 			className={cn(
 				"flex flex-col justify-between rounded-2xl border border-border/50 bg-white p-4",
 				compact ? "min-h-48" : "min-h-44",
+				className,
 			)}
 		>
 			<div>
@@ -121,18 +128,19 @@ const PRACTICE_SKELETON_KEYS = [
 	"practice-9",
 ] as const;
 
-function PreparingOverlay({ variant }: { variant: "home" | "practice" }) {
+function PreparingOverlay() {
 	return (
-		<div className="absolute inset-0 z-10 flex items-center justify-center rounded-[inherit] bg-white/45 p-6 backdrop-blur-sm">
-			<div className="max-w-xs rounded-2xl border border-white/70 bg-white/85 px-4 py-3 text-center shadow-sm">
-				<p className="font-medium text-neutral-900 text-sm">
-					Preparing your daily practice
-				</p>
-				<p className="mt-1 text-muted-foreground text-xs leading-relaxed">
+		<div className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl border border-border/50 bg-white/10 p-6 backdrop-blur-xs">
+			<div className="max-w-xs rounded-2xl bg-neutral-200/50 px-4 py-3 text-center backdrop-blur-sm">
+				<div className="flex animate-pulse items-center gap-2 font-medium text-neutral-500 text-sm">
+					<LoaderIcon className="size-4 animate-spin text-muted-foreground" />
+					<span>Preparing your daily practice</span>
+				</div>
+				{/* <p className="mt-1 text-muted-foreground text-xs leading-relaxed">
 					{variant === "home"
 						? "Your personalized activities will appear here in a few seconds."
 						: "We’re generating today’s shared activities for your dashboard."}
-				</p>
+				</p> */}
 			</div>
 		</div>
 	);
@@ -289,6 +297,10 @@ export default function DailyPracticeActivities({
 		data?.status === "failed"
 			? data.error || "We could not prepare today’s practice yet."
 			: "We’re preparing today’s practice for you.";
+	const homeCarouselClasses =
+		"-mx-2.5 flex gap-3 overflow-x-auto px-2.5 pb-1 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 sm:pb-0 [&::-webkit-scrollbar]:hidden";
+	const homeCarouselItemClasses =
+		"w-[72vw] max-w-56 shrink-0 sm:w-auto sm:max-w-none sm:shrink";
 
 	return (
 		<>
@@ -320,37 +332,49 @@ export default function DailyPracticeActivities({
 				{isLoading && activities.length === 0 ? (
 					<div
 						className={cn(
-							"grid gap-3",
+							"gap-3",
 							variant === "home"
-								? "grid-cols-2 sm:grid-cols-3"
-								: "grid-cols-1 md:grid-cols-2 xl:grid-cols-3",
+								? homeCarouselClasses
+								: "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3",
 						)}
 					>
 						{(variant === "home"
 							? HOME_SKELETON_KEYS
 							: PRACTICE_SKELETON_KEYS
 						).map((key) => (
-							<ActivitySkeleton key={key} compact={variant === "home"} />
+							<ActivitySkeleton
+								key={key}
+								compact={variant === "home"}
+								className={
+									variant === "home" ? homeCarouselItemClasses : undefined
+								}
+							/>
 						))}
 					</div>
 				) : isPreparingPlan && activities.length === 0 ? (
 					<div className="relative">
 						<div
 							className={cn(
-								"grid gap-3 transition duration-300",
+								"gap-3 transition duration-300",
 								variant === "home"
-									? "grid-cols-2 blur-[2px] sm:grid-cols-3"
-									: "grid-cols-1 md:grid-cols-2 xl:grid-cols-3",
+									? `${homeCarouselClasses} blur-[2px]`
+									: "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3",
 							)}
 						>
 							{(variant === "home"
 								? HOME_SKELETON_KEYS
 								: PRACTICE_SKELETON_KEYS
 							).map((key) => (
-								<ActivitySkeleton key={key} compact={variant === "home"} />
+								<ActivitySkeleton
+									key={key}
+									compact={variant === "home"}
+									className={
+										variant === "home" ? homeCarouselItemClasses : undefined
+									}
+								/>
 							))}
 						</div>
-						<PreparingOverlay variant={variant} />
+						<PreparingOverlay />
 					</div>
 				) : activities.length === 0 ? (
 					<div className="rounded-2xl border border-border/60 border-dashed bg-neutral-50 px-4 py-6 text-center">
@@ -368,10 +392,10 @@ export default function DailyPracticeActivities({
 				) : (
 					<div
 						className={cn(
-							"grid gap-3",
+							"gap-3",
 							variant === "home"
-								? "grid-cols-2 sm:grid-cols-3"
-								: "grid-cols-1 md:grid-cols-2 xl:grid-cols-3",
+								? homeCarouselClasses
+								: "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3",
 						)}
 					>
 						{activities.map((activity) => {
@@ -386,6 +410,7 @@ export default function DailyPracticeActivities({
 									onClick={() => handleStart(activity)}
 									className={cn(
 										"group relative flex min-h-44 flex-col justify-between overflow-hidden rounded-2xl border p-4 text-left transition-all",
+										variant === "home" && homeCarouselItemClasses,
 										isDone
 											? "border-lime-200 bg-lime-50/50"
 											: "hover:-translate-y-0.5 cursor-pointer border-border/50 bg-white hover:bg-neutral-50",
@@ -444,7 +469,7 @@ export default function DailyPracticeActivities({
 										{isStarting ? (
 											<LoaderIcon className="size-4 animate-spin text-muted-foreground" />
 										) : isDone ? null : (
-											<ArrowRightIcon
+											<ChevronRightIcon
 												className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5"
 												strokeWidth={2}
 											/>

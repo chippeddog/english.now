@@ -48,6 +48,11 @@ export const env = createEnv({
 		NODE_ENV: z
 			.enum(["development", "production", "test"])
 			.default("development"),
+
+		// Monitoring
+		SENTRY_DSN: z.url().optional(),
+		SENTRY_ENVIRONMENT: z.string().optional(),
+		SENTRY_RELEASE: z.string().optional(),
 	},
 	runtimeEnv: process.env,
 	emptyStringAsUndefined: true,

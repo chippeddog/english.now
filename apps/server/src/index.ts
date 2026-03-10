@@ -1,10 +1,12 @@
 import "dotenv/config";
+import "./instrument";
 import { createContext } from "@english.now/api/context";
 import { appRouter } from "@english.now/api/routers/index";
 import { auth } from "@english.now/auth";
 import { env } from "@english.now/env/server";
 import { serve } from "@hono/node-server";
 import { trpcServer } from "@hono/trpc-server";
+import * as Sentry from "@sentry/node";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
@@ -21,6 +23,13 @@ import { handleDeepgramProxy } from "./services/deepgram-stream";
 import { getQueue } from "./utils/queue";
 
 const app = new Hono();
+let isShuttingDown = false;
+
+async function flushSentry() {
+	await Sentry.flush(2_000).catch((error) => {
+		console.error("[sentry] flush failed", error);
+	});
+}
 
 /**
  * Middleware
@@ -83,11 +92,19 @@ app.get("/", (c) => {
 
 const boss = getQueue();
 
-boss.start().then(async () => {
-	console.log("[pg-boss] started");
-	await registerAllWorkers(boss);
-	console.log("[pg-boss] workers registered");
-});
+void boss
+	.start()
+	.then(async () => {
+		console.log("[pg-boss] started");
+		await registerAllWorkers(boss);
+		console.log("[pg-boss] workers registered");
+	})
+	.catch(async (error) => {
+		Sentry.captureException(error);
+		console.error("[pg-boss] failed to start", error);
+		await flushSentry();
+		process.exit(1);
+	});
 
 const server = serve(
 	{
@@ -111,12 +128,29 @@ server.on("upgrade", (request, socket, head) => {
 	}
 });
 
-async function shutdown() {
-	console.log("Shutting down...");
-	await boss.stop({ graceful: true, timeout: 30_000 });
+async function shutdown(signal: NodeJS.Signals) {
+	if (isShuttingDown) {
+		return;
+	}
+
+	isShuttingDown = true;
+	console.log(`Received ${signal}, shutting down...`);
+
+	try {
+		await boss.stop({ graceful: true, timeout: 30_000 });
+	} catch (error) {
+		Sentry.captureException(error);
+		console.error("[pg-boss] failed to stop", error);
+	}
+
 	server.close();
+	await flushSentry();
 	process.exit(0);
 }
 
-process.on("SIGINT", shutdown);
-process.on("SIGTERM", shutdown);
+process.on("SIGINT", () => {
+	void shutdown("SIGINT");
+});
+process.on("SIGTERM", () => {
+	void shutdown("SIGTERM");
+});
