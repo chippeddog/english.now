@@ -1,4 +1,5 @@
 import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { markDailyPracticeActivityCompleted } from "@english.now/api/services/daily-practice-plan";
 import { recordActivity } from "@english.now/api/services/record-activity";
 import { auth } from "@english.now/auth";
 import {
@@ -570,6 +571,12 @@ conversation.post("/finish", requireAuth, async (c) => {
 			.set({ status: "completed", updatedAt: new Date() })
 			.where(eq(conversationSession.id, sessionId));
 
+		try {
+			await markDailyPracticeActivityCompleted(session.user.id, { sessionId });
+		} catch (error) {
+			console.error("Failed to complete daily conversation activity:", error);
+		}
+
 		return c.json({
 			canGenerateFeedback: false,
 			userMessageCount,
@@ -580,6 +587,12 @@ conversation.post("/finish", requireAuth, async (c) => {
 		.update(conversationSession)
 		.set({ status: "completed", updatedAt: new Date() })
 		.where(eq(conversationSession.id, sessionId));
+
+	try {
+		await markDailyPracticeActivityCompleted(session.user.id, { sessionId });
+	} catch (error) {
+		console.error("Failed to complete daily conversation activity:", error);
+	}
 
 	const feedbackId = crypto.randomUUID();
 	await db.insert(conversationFeedback).values({

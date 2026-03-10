@@ -1,4 +1,5 @@
 import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { markDailyPracticeActivityCompleted } from "@english.now/api/services/daily-practice-plan";
 import { recordActivity } from "@english.now/api/services/record-activity";
 import { auth } from "@english.now/auth";
 import {
@@ -161,6 +162,12 @@ pronunciation.post("/assess-and-complete", requireAuth, async (c) => {
 		.update(pronunciationSession)
 		.set({ status: "assessing" })
 		.where(eq(pronunciationSession.id, sessionId));
+
+	try {
+		await markDailyPracticeActivityCompleted(session.user.id, { sessionId });
+	} catch (error) {
+		console.error("Failed to complete daily pronunciation activity:", error);
+	}
 
 	recordActivity(session.user.id, "pronunciation", durationSeconds).catch(
 		console.error,

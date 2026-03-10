@@ -28,6 +28,7 @@ type ConversationActivity = {
 	duration: number;
 	type: "conversation";
 	typeLabel: string;
+	startedAt: string | null;
 	completedAt: string | null;
 	sessionId: string | null;
 	payload: {
@@ -47,6 +48,7 @@ type PronunciationActivity = {
 	duration: number;
 	type: "pronunciation";
 	typeLabel: string;
+	startedAt: string | null;
 	completedAt: string | null;
 	sessionId: string | null;
 	payload: {
@@ -62,6 +64,7 @@ type VocabularyActivity = {
 	duration: number;
 	type: "vocabulary";
 	typeLabel: string;
+	startedAt: string | null;
 	completedAt: string | null;
 	sessionId: string | null;
 	payload: {
@@ -191,6 +194,19 @@ export default function DailyPracticeActivities({
 		}),
 	);
 
+	const startActivity = useMutation(
+		trpc.practice.startActivity.mutationOptions({
+			onSuccess: () => {
+				queryClient.invalidateQueries({
+					queryKey: trpc.practice.getTodayPlan.queryKey(),
+				});
+				queryClient.invalidateQueries({
+					queryKey: trpc.practice.getHomeTodayPlan.queryKey(),
+				});
+			},
+		}),
+	);
+
 	const markDone = useMutation(
 		trpc.practice.markActivityDone.mutationOptions({
 			onSuccess: () => {
@@ -238,6 +254,15 @@ export default function DailyPracticeActivities({
 
 		try {
 			if (activity.type === "conversation") {
+				if (activity.sessionId) {
+					navigate({
+						to: "/conversation/$sessionId",
+						params: { sessionId: activity.sessionId },
+					});
+
+					return;
+				}
+
 				const result = await startConversation.mutateAsync({
 					scenario: activity.payload.scenario,
 					scenarioName: activity.payload.scenarioName,
@@ -246,7 +271,7 @@ export default function DailyPracticeActivities({
 					scenarioType: activity.payload.scenarioType,
 				});
 
-				markDone.mutate({
+				await startActivity.mutateAsync({
 					activityId: activity.id,
 					sessionId: result.sessionId,
 				});
@@ -260,11 +285,20 @@ export default function DailyPracticeActivities({
 			}
 
 			if (activity.type === "pronunciation") {
+				if (activity.sessionId) {
+					navigate({
+						to: "/pronunciation/$sessionId",
+						params: { sessionId: activity.sessionId },
+					});
+
+					return;
+				}
+
 				const result = await startPronunciation.mutateAsync({
 					paragraph: activity.payload.paragraph,
 				});
 
-				markDone.mutate({
+				await startActivity.mutateAsync({
 					activityId: activity.id,
 					sessionId: result.sessionId,
 				});
@@ -275,6 +309,13 @@ export default function DailyPracticeActivities({
 				});
 
 				return;
+			}
+
+			if (!activity.startedAt && !activity.sessionId) {
+				await startActivity.mutateAsync({
+					activityId: activity.id,
+					sessionId: `vocabulary:${activity.id}`,
+				});
 			}
 
 			setVocabularySessionKey((key) => key + 1);
@@ -399,41 +440,52 @@ export default function DailyPracticeActivities({
 						)}
 					>
 						{activities.map((activity) => {
-							const isDone = activity.completedAt !== null;
+							const isCompleted = activity.completedAt !== null;
+							const isStarted =
+								!isCompleted &&
+								(activity.startedAt !== null || activity.sessionId !== null);
 							const isStarting = startingId === activity.id;
 
 							return (
 								<button
 									key={activity.id}
 									type="button"
-									disabled={isDone || isStarting}
+									disabled={isCompleted || isStarting}
 									onClick={() => handleStart(activity)}
 									className={cn(
 										"group relative flex min-h-44 flex-col justify-between overflow-hidden rounded-2xl border p-4 text-left transition-all",
 										variant === "home" && homeCarouselItemClasses,
-										isDone
+										isCompleted
 											? "border-lime-200 bg-lime-50/50"
-											: "hover:-translate-y-0.5 cursor-pointer border-border/50 bg-white hover:bg-neutral-50",
+											: isStarted
+												? "hover:-translate-y-0.5 cursor-pointer border-sky-200 bg-sky-50/50 hover:bg-sky-50"
+												: "hover:-translate-y-0.5 cursor-pointer border-border/50 bg-white hover:bg-neutral-50",
 										isStarting && "pointer-events-none opacity-70",
 									)}
 								>
-									{isDone && (
+									{isCompleted ? (
 										<div className="absolute top-4 right-4 flex size-6 items-center justify-center rounded-full bg-lime-500">
 											<CheckIcon
 												className="size-3.5 text-white"
 												strokeWidth={3}
 											/>
 										</div>
-									)}
+									) : isStarted ? (
+										<div className="absolute top-4 right-4 rounded-full border border-sky-200 bg-sky-100 px-2 py-1 font-medium text-[11px] text-sky-700">
+											Started
+										</div>
+									) : null}
 
 									<div>
 										<Badge
 											variant="outline"
 											className={cn(
 												"mb-4 rounded-lg px-2 py-0.5 font-normal text-xs italic",
-												isDone
+												isCompleted
 													? "border-lime-200 bg-lime-50 text-lime-700"
-													: "border-neutral-200",
+													: isStarted
+														? "border-sky-200 bg-sky-50 text-sky-700"
+														: "border-neutral-200",
 											)}
 										>
 											{activity.duration}{" "}
@@ -445,7 +497,8 @@ export default function DailyPracticeActivities({
 										<h3
 											className={cn(
 												"mb-1 font-semibold text-sm leading-snug",
-												isDone && "text-lime-900",
+												isCompleted && "text-lime-900",
+												isStarted && "text-sky-900",
 											)}
 										>
 											{activity.title}
@@ -459,16 +512,22 @@ export default function DailyPracticeActivities({
 										<span
 											className={cn(
 												"flex items-center gap-1 whitespace-nowrap rounded-xl border px-2.5 py-1.5 font-medium text-xs italic transition",
-												isDone
+												isCompleted
 													? "border-lime-200 bg-lime-50 text-lime-700"
-													: "border-neutral-200 text-neutral-700 hover:brightness-95",
+													: isStarted
+														? "border-sky-200 bg-sky-50 text-sky-700"
+														: "border-neutral-200 text-neutral-700 hover:brightness-95",
 											)}
 										>
 											{activity.typeLabel}
 										</span>
 										{isStarting ? (
 											<LoaderIcon className="size-4 animate-spin text-muted-foreground" />
-										) : isDone ? null : (
+										) : isCompleted ? null : isStarted ? (
+											<span className="font-medium text-sky-700 text-xs italic">
+												Continue
+											</span>
+										) : (
 											<ChevronRightIcon
 												className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5"
 												strokeWidth={2}

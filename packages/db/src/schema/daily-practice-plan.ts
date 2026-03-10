@@ -27,6 +27,7 @@ type DailyPracticeActivityBase = {
 	description: string;
 	duration: number;
 	typeLabel: string;
+	startedAt: string | null;
 	completedAt: string | null;
 	sessionId: string | null;
 };

@@ -2,7 +2,6 @@ import type { PronunciationSessionSummary } from "@english.now/db";
 import {
 	and,
 	conversationSession,
-	dailyPracticePlan,
 	db,
 	desc,
 	eq,
@@ -15,6 +14,8 @@ import { protectedProcedure, router } from "../index";
 import {
 	ensureTodayPracticePlan,
 	getHomeActivities,
+	markDailyPracticeActivityCompleted,
+	markDailyPracticeActivityStarted,
 	getTodayPracticePlanRecord,
 } from "../services/daily-practice-plan";
 import { recordActivity } from "../services/record-activity";
@@ -59,6 +60,26 @@ export const practiceRouter = router({
 		};
 	}),
 
+	startActivity: protectedProcedure
+		.input(
+			z.object({
+				activityId: z.string(),
+				sessionId: z.string(),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const success = await markDailyPracticeActivityStarted(
+				ctx.session.user.id,
+				input,
+			);
+
+			if (!success) {
+				throw new Error("Activity not found");
+			}
+
+			return { success: true };
+		}),
+
 	markActivityDone: protectedProcedure
 		.input(
 			z.object({
@@ -67,25 +88,14 @@ export const practiceRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
-			const userId = ctx.session.user.id;
-			const { plan } = await getTodayPracticePlanRecord(userId);
-
-			if (!plan) throw new Error("No daily practice plan found");
-
-			const updated = plan.activities.map((a) =>
-				a.id === input.activityId
-					? {
-							...a,
-							completedAt: new Date().toISOString(),
-							sessionId: input.sessionId,
-						}
-					: a,
+			const success = await markDailyPracticeActivityCompleted(
+				ctx.session.user.id,
+				input,
 			);
 
-			await db
-				.update(dailyPracticePlan)
-				.set({ activities: updated, updatedAt: new Date() })
-				.where(eq(dailyPracticePlan.id, plan.id));
+			if (!success) {
+				throw new Error("Activity not found");
+			}
 
 			return { success: true };
 		}),

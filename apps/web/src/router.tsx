@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/tanstackstart-react";
 import { createRouter as createTanStackRouter } from "@tanstack/react-router";
 import Loader from "@/components/loader";
 import "./index.css";
@@ -87,6 +88,14 @@ export const getRouter = () => {
 			</QueryClientProvider>
 		),
 	});
+	if (!router.isServer && env.VITE_SENTRY_DSN && !Sentry.isEnabled()) {
+		Sentry.init({
+			dsn: env.VITE_SENTRY_DSN,
+			environment: import.meta.env.DEV ? "development" : "production",
+			sendDefaultPii: true,
+			enableLogs: true,
+		});
+	}
 	return router;
 };
 

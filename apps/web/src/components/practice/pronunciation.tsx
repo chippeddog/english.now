@@ -75,8 +75,8 @@ function DialogTopicsPronunciation({
 		}),
 	);
 
-	const markDone = useMutation(
-		trpc.practice.markActivityDone.mutationOptions({
+	const startActivity = useMutation(
+		trpc.practice.startActivity.mutationOptions({
 			onSuccess: () => {
 				queryClient.invalidateQueries({
 					queryKey: trpc.practice.getTodayPlan.queryKey(),
@@ -123,7 +123,7 @@ function DialogTopicsPronunciation({
 		trpc.pronunciation.startSession.mutationOptions({
 			onSuccess: (data) => {
 				if (selectedActivity) {
-					markDone.mutate({
+					startActivity.mutate({
 						activityId: selectedActivity.id,
 						sessionId: data.sessionId,
 					});

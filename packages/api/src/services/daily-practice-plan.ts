@@ -150,6 +150,84 @@ export function getHomeActivities(
 		.filter((activity) => selectedIds.has(activity.id));
 }
 
+async function updateTodayPracticeActivity(
+	userId: string,
+	matcher: (activity: DailyPracticeActivity) => boolean,
+	updater: (
+		activity: DailyPracticeActivity,
+		nowIso: string,
+	) => DailyPracticeActivity,
+) {
+	const { plan } = await getTodayPracticePlanRecord(userId);
+
+	if (!plan) {
+		return false;
+	}
+
+	let didUpdate = false;
+	const now = new Date();
+	const nowIso = now.toISOString();
+	const activities = plan.activities.map((activity) => {
+		if (!matcher(activity)) {
+			return activity;
+		}
+
+		didUpdate = true;
+		return updater(activity, nowIso);
+	});
+
+	if (!didUpdate) {
+		return false;
+	}
+
+	await db
+		.update(dailyPracticePlan)
+		.set({ activities, updatedAt: now })
+		.where(eq(dailyPracticePlan.id, plan.id));
+
+	return true;
+}
+
+export async function markDailyPracticeActivityStarted(
+	userId: string,
+	input: {
+		activityId: string;
+		sessionId: string;
+	},
+) {
+	return updateTodayPracticeActivity(
+		userId,
+		(activity) => activity.id === input.activityId,
+		(activity, nowIso) => ({
+			...activity,
+			startedAt: activity.startedAt ?? nowIso,
+			sessionId: input.sessionId,
+		}),
+	);
+}
+
+export async function markDailyPracticeActivityCompleted(
+	userId: string,
+	input: {
+		sessionId: string;
+		activityId?: string;
+	},
+) {
+	return updateTodayPracticeActivity(
+		userId,
+		(activity) =>
+			input.activityId
+				? activity.id === input.activityId
+				: activity.sessionId === input.sessionId,
+		(activity, nowIso) => ({
+			...activity,
+			startedAt: activity.startedAt ?? nowIso,
+			completedAt: nowIso,
+			sessionId: input.sessionId,
+		}),
+	);
+}
+
 function createConversationActivities(
 	topics: NonNullable<
 		Awaited<ReturnType<typeof generateSuggestions>>["topics"]
@@ -167,6 +245,7 @@ function createConversationActivities(
 			duration: 4,
 			type: "conversation" as const,
 			typeLabel: "Conversation",
+			startedAt: null,
 			completedAt: null,
 			sessionId: null,
 			payload: {
@@ -184,6 +263,7 @@ function createConversationActivities(
 			duration: 5,
 			type: "conversation" as const,
 			typeLabel: "Roleplay",
+			startedAt: null,
 			completedAt: null,
 			sessionId: null,
 			payload: {
@@ -215,6 +295,7 @@ async function createPronunciationActivities(
 		duration: 3,
 		type: "pronunciation" as const,
 		typeLabel: "Read Aloud",
+		startedAt: null,
 		completedAt: null,
 		sessionId: null,
 		payload: {
@@ -327,6 +408,7 @@ async function createVocabularyActivities(
 			duration: getDurationFromCardCount(cards.length),
 			type: "vocabulary",
 			typeLabel: "Vocabulary",
+			startedAt: null,
 			completedAt: null,
 			sessionId: null,
 			payload: {
@@ -348,6 +430,7 @@ async function createVocabularyActivities(
 			duration: getDurationFromCardCount(cards.length),
 			type: "vocabulary",
 			typeLabel: "Vocabulary",
+			startedAt: null,
 			completedAt: null,
 			sessionId: null,
 			payload: {
@@ -372,6 +455,7 @@ async function createVocabularyActivities(
 				duration: getDurationFromCardCount(mixedCards.length),
 				type: "vocabulary",
 				typeLabel: "Vocabulary",
+				startedAt: null,
 				completedAt: null,
 				sessionId: null,
 				payload: {
@@ -419,6 +503,10 @@ export async function ensureTodayPracticePlan(
 			.where(eq(dailyPracticePlan.id, plan.id))
 			.returning();
 
+		if (!updatedPlan) {
+			throw new Error("Failed to re-queue daily practice plan");
+		}
+
 		await enqueueJob({ userId, dayKey });
 
 		return {
@@ -444,6 +532,10 @@ export async function ensureTodayPracticePlan(
 			updatedAt: now,
 		})
 		.returning();
+
+	if (!createdPlan) {
+		throw new Error("Failed to create daily practice plan");
+	}
 
 	await enqueueJob({ userId, dayKey });
 
@@ -472,25 +564,31 @@ export async function generateDailyPracticePlanForUser(
 		)
 		.limit(1);
 
-	const basePlan =
-		existingPlan ??
-		(
-			await db
-				.insert(dailyPracticePlan)
-				.values({
-					id: crypto.randomUUID(),
-					userId,
-					dayKey,
-					timezone,
-					status: "queued",
-					activities: [],
-					homeSelection: [],
-					enqueuedAt: new Date(),
-					createdAt: new Date(),
-					updatedAt: new Date(),
-				})
-				.returning()
-		)[0];
+	let basePlan = existingPlan;
+
+	if (!basePlan) {
+		const [createdPlan] = await db
+			.insert(dailyPracticePlan)
+			.values({
+				id: crypto.randomUUID(),
+				userId,
+				dayKey,
+				timezone,
+				status: "queued",
+				activities: [],
+				homeSelection: [],
+				enqueuedAt: new Date(),
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			})
+			.returning();
+
+		if (!createdPlan) {
+			throw new Error("Failed to create daily practice plan");
+		}
+
+		basePlan = createdPlan;
+	}
 
 	await db
 		.update(dailyPracticePlan)
@@ -541,6 +639,10 @@ export async function generateDailyPracticePlanForUser(
 			.where(eq(dailyPracticePlan.id, basePlan.id))
 			.returning();
 
+		if (!updatedPlan) {
+			throw new Error("Failed to save daily practice plan");
+		}
+
 		const existingConversationSuggestion = await db
 			.select({ id: conversationSuggestion.id })
 			.from(conversationSuggestion)
@@ -579,7 +681,7 @@ export async function generateDailyPracticePlanForUser(
 			.returning();
 
 		throw new Error(
-			failedPlan.error ?? "Failed to generate daily practice plan",
+			failedPlan?.error ?? "Failed to generate daily practice plan",
 		);
 	}
 }

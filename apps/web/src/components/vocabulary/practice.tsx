@@ -23,6 +23,7 @@ type VocabularyActivity = {
 	type: "vocabulary";
 	typeLabel: string;
 	completedAt: string | null;
+	sessionId: string | null;
 	payload: {
 		cards: FlashcardItem[];
 		focus: Array<"words" | "phrases">;
@@ -41,6 +42,18 @@ export default function Practice() {
 			onSuccess: () => {
 				queryClient.invalidateQueries({
 					queryKey: trpc.practice.getTodayPlan.queryKey(),
+				});
+			},
+		}),
+	);
+	const startActivity = useMutation(
+		trpc.practice.startActivity.mutationOptions({
+			onSuccess: () => {
+				queryClient.invalidateQueries({
+					queryKey: trpc.practice.getTodayPlan.queryKey(),
+				});
+				queryClient.invalidateQueries({
+					queryKey: trpc.practice.getHomeTodayPlan.queryKey(),
 				});
 			},
 		}),
@@ -67,6 +80,14 @@ export default function Practice() {
 
 	const handleStart = () => {
 		if (!selectedActivity) return;
+
+		if (!selectedActivity.completedAt && !selectedActivity.sessionId) {
+			startActivity.mutate({
+				activityId: selectedActivity.id,
+				sessionId: `vocabulary:${selectedActivity.id}`,
+			});
+		}
+
 		setSetupOpen(false);
 		setSessionActivity(selectedActivity);
 		setSessionKey((key) => key + 1);

@@ -14,6 +14,28 @@
         "VITE_PADDLE_PRICE_YEARLY": "pri_01kh1nxwx4xjmzas0fgwkvjb1k"
     },
     "observability": {
-        "enabled": true
+        "enabled": true,
+        "traces": {
+            "enabled": true,
+            "destinations": [
+                "english-now-sentry-traces"
+            ],
+            // traces sample rate of 5%
+            "head_sampling_rate": 0.05,
+            // (optional) set to false to only export traces to your
+            // destination without persisting them in the Cloudflare dashboard
+            "persist": false
+        },
+        "logs": {
+            "enabled": true,
+            "destinations": [
+                "english-now-sentry-logs"
+            ],
+            // logs sample rate of 60%
+            "head_sampling_rate": 0.6,
+            // (optional) set to false to only export logs to your
+            // destination without persisting them in the Cloudflare dashboard
+            "persist": false
+        }
     }
 }
