@@ -7,7 +7,7 @@ import {
 } from "@tanstack/react-router";
 import { Loader } from "lucide-react";
 import { useEffect } from "react";
-import Navbar from "@/components/dashboard/navbar";
+import Navbar from "@/components/app/navbar";
 import { getProfile } from "@/functions/get-profile";
 import { getUser } from "@/functions/get-user";
 import { useTRPC } from "@/utils/trpc";

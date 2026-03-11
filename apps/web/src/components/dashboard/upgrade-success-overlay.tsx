@@ -1,7 +1,9 @@
 "use client";
 
+import confetti from "canvas-confetti";
 import { CheckCircle2, Sparkles } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import { useEffect } from "react";
 import { Button } from "../ui/button";
 
 const CONFETTI_COLORS = [
@@ -13,15 +15,6 @@ const CONFETTI_COLORS = [
 	"#FACC15",
 ] as const;
 
-const CONFETTI_PIECES = Array.from({ length: 24 }, (_, index) => ({
-	id: index,
-	left: `${(index * 97) % 100}%`,
-	delay: (index % 8) * 0.12,
-	duration: 2.4 + (index % 5) * 0.18,
-	rotate: index % 2 === 0 ? 180 : -180,
-	color: CONFETTI_COLORS[index % CONFETTI_COLORS.length],
-}));
-
 export default function UpgradeSuccessOverlay({
 	open,
 	onClose,
@@ -29,6 +22,34 @@ export default function UpgradeSuccessOverlay({
 	open: boolean;
 	onClose: () => void;
 }) {
+	useEffect(() => {
+		if (!open) return;
+
+		const durationMs = 1800;
+		const animationEnd = Date.now() + durationMs;
+
+		const runBurst = () => {
+			confetti({
+				particleCount: 3,
+				startVelocity: 30,
+				spread: 360,
+				ticks: 70,
+				scalar: 0.9,
+				colors: [...CONFETTI_COLORS],
+				origin: {
+					x: Math.random(),
+					y: Math.random() * 0.3,
+				},
+			});
+
+			if (Date.now() < animationEnd) {
+				window.requestAnimationFrame(runBurst);
+			}
+		};
+
+		runBurst();
+	}, [open]);
+
 	return (
 		<AnimatePresence>
 			{open ? (
@@ -38,31 +59,6 @@ export default function UpgradeSuccessOverlay({
 					animate={{ opacity: 1 }}
 					exit={{ opacity: 0 }}
 				>
-					<div className="pointer-events-none absolute inset-0 overflow-hidden">
-						{CONFETTI_PIECES.map((piece) => (
-							<motion.span
-								key={piece.id}
-								className="absolute top-[-10%] h-3 w-2 rounded-full"
-								style={{
-									left: piece.left,
-									backgroundColor: piece.color,
-								}}
-								initial={{ opacity: 0, y: -40, rotate: 0, scale: 0.8 }}
-								animate={{
-									opacity: [0, 1, 1, 0],
-									y: ["0vh", "25vh", "55vh", "90vh"],
-									rotate: [0, piece.rotate, piece.rotate * 2],
-									x: [0, piece.id % 2 === 0 ? 18 : -18, 0],
-								}}
-								transition={{
-									duration: piece.duration,
-									delay: piece.delay,
-									ease: "easeOut",
-								}}
-							/>
-						))}
-					</div>
-
 					<motion.div
 						className="relative w-full max-w-md overflow-hidden rounded-4xl border border-lime-200 bg-white p-8 text-center shadow-2xl"
 						initial={{ opacity: 0, y: 24, scale: 0.96 }}

@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
-import { db, eq, subscription } from "@english.now/db";
+import { auth } from "@english.now/auth";
+import { db, desc, eq, sql, subscription } from "@english.now/db";
 import { env } from "@english.now/env/server";
 import {
 	Environment,
@@ -18,6 +19,63 @@ const paddle = new Paddle(env.PADDLE_API_KEY, {
 });
 
 const paddleRoutes = new Hono();
+
+async function getCurrentSubscription(userId: string) {
+	const [sub] = await db
+		.select()
+		.from(subscription)
+		.where(eq(subscription.userId, userId))
+		.orderBy(
+			sql`CASE
+				WHEN ${subscription.status} = 'active' THEN 0
+				WHEN ${subscription.status} = 'trialing' THEN 1
+				WHEN ${subscription.status} = 'paused' THEN 2
+				WHEN ${subscription.status} = 'past_due' THEN 3
+				WHEN ${subscription.status} = 'canceled' THEN 4
+				ELSE 5
+			END`,
+			desc(subscription.createdAt),
+		)
+		.limit(1);
+
+	return sub ?? null;
+}
+
+paddleRoutes.post("/customer-portal", async (c) => {
+	const session = await auth.api.getSession({
+		headers: c.req.raw.headers,
+	});
+
+	if (!session?.user?.id) {
+		return c.json({ error: "Unauthorized" }, 401);
+	}
+
+	const currentSubscription = await getCurrentSubscription(session.user.id);
+	const customerId = currentSubscription?.paddleCustomerId;
+
+	if (!customerId) {
+		return c.json({ error: "No Paddle customer found" }, 404);
+	}
+
+	try {
+		const portalSession = await paddle.customerPortalSessions.create(
+			customerId,
+			currentSubscription?.paddleSubscriptionId
+				? [currentSubscription.paddleSubscriptionId]
+				: [],
+		);
+
+		return c.json({
+			url: portalSession.urls.general.overview,
+		});
+	} catch (error) {
+		console.error(
+			"[Paddle Portal] Failed to create customer portal session:",
+			error,
+		);
+		return c.json({ error: "Failed to create customer portal session" }, 500);
+	}
+});
 
 /**
  * Paddle Webhook Handler

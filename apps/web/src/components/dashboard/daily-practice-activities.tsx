@@ -1,6 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { CheckIcon, ChevronRightIcon, LoaderIcon } from "lucide-react";
+import {
+	CheckIcon,
+	ChevronRightIcon,
+	ClockIcon,
+	LoaderIcon,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -139,11 +144,6 @@ function PreparingOverlay() {
 					<LoaderIcon className="size-4 animate-spin text-muted-foreground" />
 					<span>Preparing your daily practice</span>
 				</div>
-				{/* <p className="mt-1 text-muted-foreground text-xs leading-relaxed">
-					{variant === "home"
-						? "Your personalized activities will appear here in a few seconds."
-						: "We’re generating today’s shared activities for your dashboard."}
-				</p> */}
 			</div>
 		</div>
 	);
@@ -339,9 +339,9 @@ export default function DailyPracticeActivities({
 			? data.error || "We could not prepare today’s practice yet."
 			: "We’re preparing today’s practice for you.";
 	const homeCarouselClasses =
-		"-mx-2.5 flex gap-3 overflow-x-auto px-2.5 pb-1 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 sm:pb-0 [&::-webkit-scrollbar]:hidden";
+		"-mx-2.5 flex gap-3 overflow-x-auto px-2.5 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 sm:pb-0 [&::-webkit-scrollbar]:hidden";
 	const homeCarouselItemClasses =
-		"w-[72vw] max-w-56 shrink-0 sm:w-auto sm:max-w-none sm:shrink";
+		"w-[64vw] max-w-50 shrink-0 sm:w-auto sm:max-w-none sm:shrink";
 
 	return (
 		<>
@@ -365,7 +365,7 @@ export default function DailyPracticeActivities({
 					</div>
 					{activities.length > 0 && (
 						<div className="font-normal text-muted-foreground text-sm">
-							{completedCount}/{activities.length} done
+							{completedCount}/{activities.length}
 						</div>
 					)}
 				</div>
@@ -458,21 +458,18 @@ export default function DailyPracticeActivities({
 										isCompleted
 											? "border-lime-200 bg-lime-50/50"
 											: isStarted
-												? "hover:-translate-y-0.5 cursor-pointer border-sky-200 bg-sky-50/50 hover:bg-sky-50"
+												? "hover:-translate-y-0.5 cursor-pointer border-amber-200 bg-amber-50/50 hover:bg-amber-50"
 												: "hover:-translate-y-0.5 cursor-pointer border-border/50 bg-white hover:bg-neutral-50",
 										isStarting && "pointer-events-none opacity-70",
 									)}
 								>
 									{isCompleted ? (
-										<div className="absolute top-4 right-4 flex size-6 items-center justify-center rounded-full bg-lime-500">
-											<CheckIcon
-												className="size-3.5 text-white"
-												strokeWidth={3}
-											/>
+										<div className="absolute top-4 right-4 flex size-6 items-center justify-center rounded-full border border-lime-400 bg-lime-200 text-lime-600">
+											<CheckIcon className="size-3.5" strokeWidth={3} />
 										</div>
 									) : isStarted ? (
-										<div className="absolute top-4 right-4 rounded-full border border-sky-200 bg-sky-100 px-2 py-1 font-medium text-[11px] text-sky-700">
-											Started
+										<div className="absolute top-4 right-4 flex size-6 items-center justify-center rounded-full border border-amber-400 bg-amber-200 text-amber-600">
+											<ClockIcon className="size-3.5" />
 										</div>
 									) : null}
 
@@ -484,7 +481,7 @@ export default function DailyPracticeActivities({
 												isCompleted
 													? "border-lime-200 bg-lime-50 text-lime-700"
 													: isStarted
-														? "border-sky-200 bg-sky-50 text-sky-700"
+														? "border-amber-200 bg-amber-50 text-amber-700"
 														: "border-neutral-200",
 											)}
 										>
@@ -498,7 +495,7 @@ export default function DailyPracticeActivities({
 											className={cn(
 												"mb-1 font-semibold text-sm leading-snug",
 												isCompleted && "text-lime-900",
-												isStarted && "text-sky-900",
+												isStarted && "text-amber-900",
 											)}
 										>
 											{activity.title}
@@ -515,7 +512,7 @@ export default function DailyPracticeActivities({
 												isCompleted
 													? "border-lime-200 bg-lime-50 text-lime-700"
 													: isStarted
-														? "border-sky-200 bg-sky-50 text-sky-700"
+														? "border-amber-200 bg-amber-50 text-amber-700"
 														: "border-neutral-200 text-neutral-700 hover:brightness-95",
 											)}
 										>
@@ -523,11 +520,10 @@ export default function DailyPracticeActivities({
 										</span>
 										{isStarting ? (
 											<LoaderIcon className="size-4 animate-spin text-muted-foreground" />
-										) : isCompleted ? null : isStarted ? (
-											<span className="font-medium text-sky-700 text-xs italic">
-												Continue
-											</span>
-										) : (
+										) : isCompleted ? null : isStarted ? // <span className="font-medium text-amber-700 text-xs italic">
+										// 	Continue
+										// </span>
+										null : (
 											<ChevronRightIcon
 												className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5"
 												strokeWidth={2}

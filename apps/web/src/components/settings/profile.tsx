@@ -24,7 +24,6 @@ export const Profile = () => {
 	const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 	const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
-
 	// Delete account state
 	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 	const [deleteConfirmation, setDeleteConfirmation] = useState("");

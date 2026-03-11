@@ -1,21 +1,46 @@
+import { env } from "@english.now/env/client";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { authClient } from "@/lib/auth-client";
-import { openCheckout } from "@/lib/paddle";
 import { useTRPC } from "@/utils/trpc";
-
-const PADDLE_PRICE_IDS = {
-	monthly: import.meta.env.VITE_PADDLE_PRICE_MONTHLY ?? "",
-	yearly: import.meta.env.VITE_PADDLE_PRICE_YEARLY ?? "",
-} as const;
 
 export const Billing = () => {
 	const trpc = useTRPC();
-	const { data: session } = authClient.useSession();
 	const { data: subscriptionData } = useQuery(
 		trpc.profile.getSubscription.queryOptions(),
 	);
+	const [isOpeningPortal, setIsOpeningPortal] = useState(false);
+	const handleOpenCustomerPortal = async () => {
+		setIsOpeningPortal(true);
+		try {
+			const response = await fetch(
+				`${env.VITE_SERVER_URL}/api/paddle/customer-portal`,
+				{
+					method: "POST",
+					credentials: "include",
+				},
+			);
+			const data = (await response.json()) as { error?: string; url?: string };
+
+			if (!response.ok || !data.url) {
+				throw new Error(
+					data.error ?? "Failed to create a customer portal session",
+				);
+			}
+
+			window.open(data.url, "_blank");
+		} catch (error) {
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "Failed to open the customer portal",
+			);
+		} finally {
+			setIsOpeningPortal(false);
+		}
+	};
 
 	return (
 		<div className="space-y-6">
@@ -100,17 +125,19 @@ export const Billing = () => {
 			{subscriptionData && subscriptionData.status !== "canceled" && (
 				<div>
 					<p className="text-muted-foreground text-sm">
-						To manage your subscription, update payment details, or cancel,
-						visit your{" "}
-						<a
-							href="https://customer-portal.paddle.com"
-							target="_blank"
-							rel="noopener noreferrer"
-							className="font-medium text-lime-700 underline hover:text-lime-800"
+						To manage your subscription, update payment details, or cancel, open
+						your{" "}
+						<Button
+							type="button"
+							variant="link"
+							onClick={() => void handleOpenCustomerPortal()}
+							disabled={isOpeningPortal}
+							className="h-auto p-0 font-medium text-lime-700 hover:text-lime-800"
 						>
-							Paddle customer portal
-						</a>
-						.
+							{isOpeningPortal
+								? "Paddle customer portal..."
+								: "Paddle customer portal"}
+						</Button>
 					</p>
 				</div>
 			)}

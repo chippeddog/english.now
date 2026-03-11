@@ -6,19 +6,19 @@ import {
 	supportedLanguages,
 	useTranslation,
 } from "@english.now/i18n";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import {
-	Headphones,
-	Languages,
-	LogOutIcon,
-	Menu,
-	Settings,
-	X,
-} from "lucide-react";
+import { Headphones, Languages, LogOutIcon, Settings } from "lucide-react";
 import { useEffect, useState } from "react";
+import MobileMenu from "@/components/app/navbar/mobile-menu";
+import Streak from "@/components/app/navbar/streak";
+import UpgradeDialog from "@/components/dashboard/upgrade-dialog";
+import VoicesDialog from "@/components/dashboard/voices-dialog";
 import Logo from "@/components/logo";
+import { Skeleton } from "@/components/ui/skeleton";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
+import { useTRPC } from "@/utils/trpc";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -30,16 +30,13 @@ import {
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { Skeleton } from "../ui/skeleton";
-import UpgradeDialog from "./upgrade-dialog";
-import VoicesDialog from "./voices-dialog";
 
 export default function Navbar() {
 	const { t } = useTranslation("app");
+	const trpc = useTRPC();
 	const [upgradeOpen, setUpgradeOpen] = useState(false);
 	const [voicesOpen, setVoicesOpen] = useState(false);
-	const [menuOpen, setMenuOpen] = useState(false);
+
 	const [isScrolled, setIsScrolled] = useState(false);
 	const [language, setLanguage] = useState<SupportedLanguage>(
 		getCurrentLanguage(),
@@ -48,6 +45,14 @@ export default function Navbar() {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const { data: session, isPending } = authClient.useSession();
+	const { data: profile, isPending: isProfilePending } = useQuery(
+		trpc.profile.get.queryOptions(),
+	);
+	const timezone =
+		profile?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+	const { data: practiceTimeData, isLoading: isPracticeTimeLoading } = useQuery(
+		trpc.profile.getDailyPracticeTime.queryOptions({ timezone }),
+	);
 
 	useEffect(() => {
 		const handleLanguageChanged = (lng: string) => {
@@ -80,7 +85,6 @@ export default function Navbar() {
 		const handleScroll = () => {
 			setIsScrolled(window.scrollY > 0);
 		};
-
 		window.addEventListener("scroll", handleScroll);
 		return () => window.removeEventListener("scroll", handleScroll);
 	}, []);
@@ -94,45 +98,8 @@ export default function Navbar() {
 			<div className="container relative z-10 mx-auto max-w-5xl px-4">
 				<nav className="flex grid-cols-2 items-center justify-between py-5 md:grid-cols-5">
 					<div className="col-span-3 flex items-center gap-3">
-						<Logo link="/home" />{" "}
-						<Popover open={menuOpen} onOpenChange={setMenuOpen}>
-							<PopoverTrigger asChild>
-								<button
-									type="button"
-									className="flex size-9 items-center justify-center rounded-lg transition-colors md:hidden"
-									aria-label={menuOpen ? t("nav.close") : t("nav.menu")}
-								>
-									{menuOpen ? (
-										<X className="size-5" />
-									) : (
-										<Menu className="size-5" />
-									)}
-								</button>
-							</PopoverTrigger>
-							<PopoverContent
-								align="start"
-								className="w-48 p-2"
-								side="bottom"
-								sideOffset={8}
-							>
-								<nav className="flex flex-col gap-0.5">
-									{links.map((link) => (
-										<Link
-											key={link.to}
-											to={link.to}
-											className={cn(
-												"rounded-lg px-3 py-2 font-medium text-sm transition-colors",
-												location.pathname === link.to
-													? "bg-neutral-100 text-neutral-900"
-													: "text-neutral-900 hover:bg-neutral-100 hover:text-neutral-900",
-											)}
-										>
-											{link.label}
-										</Link>
-									))}
-								</nav>
-							</PopoverContent>
-						</Popover>
+						<Logo link="/home" />
+						<MobileMenu links={links} />
 						<div className="hidden gap-1.5 md:flex">
 							{links.map((link) => (
 								<Link
@@ -150,6 +117,13 @@ export default function Navbar() {
 					</div>
 
 					<div className="relative flex items-center justify-end gap-3">
+						<Streak
+							currentStreak={profile?.currentStreak ?? 0}
+							longestStreak={profile?.longestStreak ?? 0}
+							timezone={profile?.timezone ?? null}
+							activityDates={practiceTimeData?.map((time) => time.date) ?? []}
+							isLoading={isPracticeTimeLoading}
+						/>
 						<UpgradeDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} />
 						<VoicesDialog open={voicesOpen} onOpenChange={setVoicesOpen} />
 						<DropdownMenu>
@@ -157,7 +131,7 @@ export default function Navbar() {
 								<div className="flex w-full cursor-pointer flex-col items-start transition-opacity hover:opacity-80">
 									<div className="flex flex-row items-center gap-2">
 										{isPending || !session ? (
-											<Skeleton className="size-8.5 rounded-full" />
+											<Skeleton className="size-9 rounded-full" />
 										) : (
 											<div className="relative flex items-center gap-2">
 												{!session.user.image ? (
@@ -167,29 +141,27 @@ export default function Navbar() {
 																{session.user.name?.charAt(0) ?? "?"}
 															</span>
 														</span>
-														{/* <svg
-															className="absolute bottom-[-5px] h-full w-full object-contain"
-															width="147"
-															height="182"
-															viewBox="0 0 147 182"
-															fill="currentColor"
-															stroke="currentColor"
-															strokeWidth={2.5}
-															xmlns="http://www.w3.org/2000/svg"
-															aria-hidden="true"
-														>
-															<path
-																d="M67.334 5.42313C63.3714 11.1355 58.8324 16.7032 48.0974 28.7064C35.129 43.2404 29.7975 51.9897 28.2125 61.0282L27.3479 65.9452L25.4747 62.2575C24.466 60.1605 21.7282 56.5451 19.3507 54.1589C14.3074 48.8804 14.7397 48.5912 9.91253 60.0882C-1.25475 86.6977 -3.12797 114.97 5.01333 135.361C14.3794 158.861 33.1837 174.697 59.1927 181.06C61.6422 181.638 67.334 182 73.9623 182C83.4004 181.928 85.6339 181.711 91.974 179.975C119.496 172.383 139.669 151.269 145.793 123.575C147.018 117.79 147.162 115.187 146.874 104.269C146.297 85.2515 142.767 70.8621 134.121 53.2189C129.871 44.3973 120.649 29.791 115.894 24.3679L113.444 21.5479L110.274 23.6448C105.015 27.1156 98.8905 33.768 96.8012 38.2511L94.8559 42.445L94.4236 37.7449C93.8472 32.2495 92.9827 29.6464 89.6685 23.7171C87.363 19.6679 80.3745 10.557 73.8182 3.18157L71.0804 4.05312e-06L67.334 5.42313ZM43.0541 115.187C50.7632 119.67 57.0312 123.503 57.0312 123.792C57.0312 124.081 56.0946 125.6 54.9419 127.19C52.4202 130.733 48.8899 132.469 44.2789 132.469C37.8667 132.397 33.0396 129.07 29.5093 122.056C27.3479 117.79 26.6995 107.161 28.6447 107.161C28.9329 107.161 35.4172 110.776 43.0541 115.187ZM119.568 111.789C120.288 125.889 107.968 136.518 97.0173 131.312C94.7118 130.227 90.1728 125.238 90.1728 123.792C90.1728 123.069 117.839 107.161 118.631 107.378C119.064 107.522 119.424 109.475 119.568 111.789Z"
-																fill="transparent"
-															/>
-														</svg> */}
 													</div>
 												) : (
-													<img
-														src={session.user.image ?? undefined}
-														alt={session.user.name ?? ""}
-														className="size-8.5 rounded-full"
-													/>
+													<div
+														className={cn(
+															"relative flex size-9 shrink-0 items-center justify-center space-x-0 rounded-full border uppercase",
+															profile?.subscription.isPro
+																? "border-black"
+																: "border-neutral-200",
+														)}
+													>
+														{profile?.subscription.isPro && (
+															<span className="-bottom-1 absolute mx-auto rounded-full border border-black bg-linear-to-t from-[#202020] to-[#2F2F2F] px-1 font-semibold text-[9px] text-sm text-white italic">
+																PRO
+															</span>
+														)}
+														<img
+															src={session.user.image ?? undefined}
+															alt={session.user.name ?? ""}
+															className="size-8 rounded-full"
+														/>
+													</div>
 												)}
 											</div>
 										)}

@@ -11,7 +11,8 @@ import UpgradeSuccessOverlay from "../components/dashboard/upgrade-success-overl
 
 export const Route = createFileRoute("/_dashboard/home")({
 	validateSearch: (search: Record<string, unknown>): { paddle?: boolean } => ({
-		paddle: search.paddle === "true" ? true : undefined,
+		paddle:
+			search.paddle === true || search.paddle === "true" ? true : undefined,
 	}),
 	component: RouteComponent,
 });

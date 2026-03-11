@@ -2,6 +2,7 @@ import { Trans, useTranslation } from "@english.now/i18n";
 import { FlameIcon, InfoIcon } from "lucide-react";
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
+import { getTodayIndex, getWeekDates } from "@/utils/date";
 import { Skeleton } from "../ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
@@ -13,46 +14,25 @@ interface StreakProps {
 	isLoading: boolean;
 }
 
-const WEEK_DAYS = [
-	{ key: "mon", label: "M" },
-	{ key: "tue", label: "T" },
-	{ key: "wed", label: "W" },
-	{ key: "thu", label: "T" },
-	{ key: "fri", label: "F" },
-	{ key: "sat", label: "S" },
-	{ key: "sun", label: "S" },
+const WEEK_DAY_KEYS = [
+	"mon",
+	"tue",
+	"wed",
+	"thu",
+	"fri",
+	"sat",
+	"sun",
 ] as const;
 
-const DAY_NAME_TO_INDEX: Record<string, number> = {
-	Mon: 0,
-	Tue: 1,
-	Wed: 2,
-	Thu: 3,
-	Fri: 4,
-	Sat: 5,
-	Sun: 6,
-};
-
-function getTodayIndex(timezone: string): number {
-	const dayName = new Date().toLocaleDateString("en-US", {
-		timeZone: timezone,
-		weekday: "short",
-	});
-	return DAY_NAME_TO_INDEX[dayName] ?? 0;
-}
-
-function getWeekDates(timezone: string): string[] {
-	const now = new Date();
-	const todayIndex = getTodayIndex(timezone);
-	const dates: string[] = [];
-
-	for (let i = 0; i < 7; i++) {
-		const d = new Date(now);
-		d.setDate(d.getDate() - todayIndex + i);
-		dates.push(d.toLocaleDateString("en-CA", { timeZone: timezone }));
-	}
-	return dates;
-}
+const WEEKDAY_REFERENCE_DATES = [
+	new Date("2024-01-01T12:00:00Z"),
+	new Date("2024-01-02T12:00:00Z"),
+	new Date("2024-01-03T12:00:00Z"),
+	new Date("2024-01-04T12:00:00Z"),
+	new Date("2024-01-05T12:00:00Z"),
+	new Date("2024-01-06T12:00:00Z"),
+	new Date("2024-01-07T12:00:00Z"),
+] as const;
 
 export default function Streak({
 	currentStreak,
@@ -61,21 +41,29 @@ export default function Streak({
 	activityDates = [],
 	isLoading,
 }: StreakProps) {
-	const { t } = useTranslation("app");
+	const { i18n, t } = useTranslation("app");
 	const resolvedTimezone =
 		timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
 	const todayIndex = getTodayIndex(resolvedTimezone);
 	const streak = currentStreak ?? 0;
+	const weekdayLabels = useMemo(() => {
+		const formatter = new Intl.DateTimeFormat(
+			i18n.resolvedLanguage || i18n.language || "en",
+			{
+				weekday: "narrow",
+			},
+		);
+
+		return WEEKDAY_REFERENCE_DATES.map((date) => formatter.format(date));
+	}, [i18n.language, i18n.resolvedLanguage]);
 	const completedDays = useMemo(() => {
 		const weekDates = getWeekDates(resolvedTimezone);
 		const activeSet = new Set(activityDates);
-		return WEEK_DAYS.filter((_, i) => activeSet.has(weekDates[i])).map(
-			(d) => d.key,
-		);
+		return WEEK_DAY_KEYS.filter((_, i) => activeSet.has(weekDates[i]));
 	}, [activityDates, resolvedTimezone]);
 	return (
 		<div
-			className="overflow-hidden rounded-3xl bg-white p-2.5"
+			className="hidden overflow-hidden rounded-3xl bg-white p-2.5 md:block"
 			style={{
 				boxShadow:
 					"0 0 0 1px rgba(0,0,0,.05),0 10px 10px -5px rgba(0,0,0,.04),0 20px 25px -5px rgba(0,0,0,.04),0 20px 32px -12px rgba(0,0,0,.04)",
@@ -108,14 +96,14 @@ export default function Streak({
 
 			<div className="rounded-2xl border border-border/50 p-3">
 				<div className="flex items-center justify-between">
-					{WEEK_DAYS.map((day, index) => {
+					{WEEK_DAY_KEYS.map((dayKey, index) => {
 						const isToday = index === todayIndex;
-						const isCompleted = completedDays.includes(day.key);
+						const isCompleted = completedDays.includes(dayKey);
 
 						return (
-							<div key={day.key} className="flex flex-col items-center gap-2">
+							<div key={dayKey} className="flex flex-col items-center gap-2">
 								<span className="font-medium text-neutral-500 text-xs">
-									{day.label}
+									{weekdayLabels[index]}
 								</span>
 
 								{isLoading ? (
