@@ -77,13 +77,13 @@ export default function Streak({
 					type="button"
 					className="flex h-[32px] items-center justify-center px-1 py-2 md:hidden"
 				>
-					<div className="flex items-center" style={{ opacity: 1 }}>
+					<div className="flex items-center gap-0.5">
 						<svg
 							aria-hidden="true"
 							focusable="false"
 							data-prefix="far"
 							data-icon="fire"
-							className="svg-inline--fa fa-fire h-[17px] w-[17px] text-orange-500"
+							className="h-[17px] w-[17px] text-orange-500"
 							role="img"
 							xmlns="http://www.w3.org/2000/svg"
 							viewBox="0 0 448 512"

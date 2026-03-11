@@ -170,7 +170,7 @@ function LessonIcon({ lesson }: { lesson: DashboardLesson }) {
 
 	if (lesson.status === "completed") {
 		return (
-			<div className="flex size-8.5 items-center justify-center rounded-full border border-lime-400 bg-lime-200 text-lime-600">
+			<div className="flex size-7.5 items-center justify-center rounded-full border border-lime-400 bg-lime-200 text-lime-600">
 				<CheckIcon className="size-4" strokeWidth={2.5} />
 			</div>
 		);
@@ -178,7 +178,7 @@ function LessonIcon({ lesson }: { lesson: DashboardLesson }) {
 
 	if (lesson.status === "locked") {
 		return (
-			<div className="flex size-8.5 items-center justify-center rounded-full bg-neutral-100 text-neutral-300">
+			<div className="flex size-7.5 items-center justify-center rounded-full bg-neutral-100 text-neutral-300">
 				<Lock className="size-3.5" />
 			</div>
 		);
@@ -188,7 +188,7 @@ function LessonIcon({ lesson }: { lesson: DashboardLesson }) {
 	return (
 		<div
 			className={cn(
-				"flex size-8.5 items-center justify-center rounded-full",
+				"flex size-7.5 items-center justify-center rounded-full",
 				lesson.status === "current"
 					? "border border-amber-400 bg-amber-200 text-amber-600"
 					: "border border-neutral-200 bg-neutral-100 text-neutral-400",
@@ -315,13 +315,14 @@ export default function Lessons({
 
 	return (
 		<div
-			className="overflow-hidden rounded-3xl bg-white p-2.5"
+			className="relative overflow-hidden rounded-3xl bg-white p-2.5"
 			style={{
 				boxShadow:
 					"0 0 0 1px rgba(0,0,0,.05),0 10px 10px -5px rgba(0,0,0,.04),0 20px 25px -5px rgba(0,0,0,.04),0 20px 32px -12px rgba(0,0,0,.04)",
 			}}
 		>
-			<div className="mb-3 flex items-center justify-between gap-2 pl-1.5">
+			<div className="-bottom-3 absolute right-0 left-0 z-20 h-24 w-full bg-linear-to-t from-white to-transparent" />
+			<div className="mb-2 flex items-center justify-between gap-2 pl-1.5">
 				<div className="font-bold font-lyon text-xl">Lessons</div>
 			</div>
 
@@ -339,9 +340,9 @@ export default function Lessons({
 					</p>
 				</div>
 			) : (
-				<div className="relative flex flex-col gap-4 p-1">
+				<div className="relative flex flex-col gap-4">
 					<div
-						className="-translate-x-1/2 absolute top-12 bottom-5 left-7 w-px border-neutral-200 border-l border-dashed"
+						className="-translate-x-1/2 absolute top-12 bottom-5 left-6 h-full w-px border-neutral-200 border-l border-dashed"
 						aria-hidden="true"
 					/>
 

@@ -152,7 +152,7 @@ export default function Navbar() {
 														)}
 													>
 														{profile?.subscription.isPro && (
-															<span className="-bottom-1 absolute mx-auto rounded-full border border-black bg-linear-to-t from-[#202020] to-[#2F2F2F] px-1 font-semibold text-[9px] text-sm text-white italic">
+															<span className="-bottom-0.5 absolute mx-auto rounded-full border border-black bg-linear-to-t from-[#202020] to-[#2F2F2F] px-1 font-semibold text-[9px] text-sm text-white italic">
 																PRO
 															</span>
 														)}

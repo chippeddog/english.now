@@ -79,11 +79,11 @@ function RouteComponent() {
 					</div>
 					<p className="text-muted-foreground">{t("home.subtitle")}</p>
 				</div>
-				<div className="flex flex-col gap-5 sm:flex-row">
+				<div className="flex flex-col gap-5 sm:flex-row sm:items-stretch">
 					<div className="w-full space-y-6 sm:w-2/3">
 						<TodaysActivities />
 					</div>
-					<div className="w-full space-y-5 sm:w-1/3">
+					<div className="flex w-full flex-col space-y-5 sm:min-h-0 sm:w-1/3">
 						<Streak
 							currentStreak={profile?.currentStreak ?? 0}
 							longestStreak={profile?.longestStreak ?? 0}
@@ -91,10 +91,12 @@ function RouteComponent() {
 							activityDates={activityDates ?? []}
 							isLoading={isActivityDatesLoading}
 						/>
-						<Lessons
-							courseData={courseData ?? null}
-							isLoading={isCourseLoading}
-						/>
+						<div className="sm:flex sm:min-h-0 sm:flex-1 sm:flex-col">
+							<Lessons
+								courseData={courseData ?? null}
+								isLoading={isCourseLoading}
+							/>
+						</div>
 						<DailyPracticeTime
 							practiceData={practiceTimeData ?? []}
 							dailyGoal={profile?.dailyGoal ?? 5}

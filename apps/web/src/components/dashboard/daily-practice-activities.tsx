@@ -339,9 +339,9 @@ export default function DailyPracticeActivities({
 			? data.error || "We could not prepare today’s practice yet."
 			: "We’re preparing today’s practice for you.";
 	const homeCarouselClasses =
-		"-mx-2.5 flex gap-3 overflow-x-auto px-2.5 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 sm:pb-0 [&::-webkit-scrollbar]:hidden";
+		"-mx-2.5 flex gap-3 overflow-x-auto px-2.5 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-3 sm:items-stretch sm:overflow-visible sm:px-0 sm:pb-0 [&::-webkit-scrollbar]:hidden";
 	const homeCarouselItemClasses =
-		"w-[64vw] max-w-50 shrink-0 sm:w-auto sm:max-w-none sm:shrink";
+		"w-[64vw] max-w-50 shrink-0 sm:h-full sm:w-auto sm:max-w-none sm:shrink";
 
 	return (
 		<>

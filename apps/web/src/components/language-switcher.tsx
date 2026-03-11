@@ -6,10 +6,9 @@ import {
 	supportedLanguages,
 	useTranslation,
 } from "@english.now/i18n";
-import { Check, ChevronDown, Search } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
 	Popover,
 	PopoverContent,
@@ -70,11 +69,11 @@ export function LanguageSwitcher({ className }: { className?: string }) {
 		<Popover open={open} onOpenChange={setOpen}>
 			<PopoverTrigger asChild>
 				<Button
-					variant="outline"
+					variant="ghost"
 					size="sm"
 					aria-expanded={open}
 					className={cn(
-						"flex h-9 items-center gap-[4px] rounded-lg px-2.5 shadow-none",
+						"flex h-9 items-center gap-[4px] px-2.5 shadow-none",
 						className,
 					)}
 				>

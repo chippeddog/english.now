@@ -6,7 +6,7 @@ export const Route = createFileRoute("/_public/terms")({
 
 function RouteComponent() {
 	return (
-		<div className="container relative mx-auto max-w-3xl px-4 py-8">
+		<div className="container relative mx-auto max-w-4xl px-4 py-16 pb-24">
 			<article className="prose prose-neutral dark:prose-invert max-w-none">
 				<header className="mb-12 text-center">
 					<h1 className="mb-4 font-bold font-lyon text-3xl tracking-tight md:text-4xl">
@@ -175,7 +175,7 @@ function RouteComponent() {
 					</ul>
 				</section>
 
-				<section className="mb-10">
+				<section>
 					<h2 className="mb-4 font-semibold text-2xl">Contact Us</h2>
 					<p className="mb-4 text-muted-foreground leading-relaxed">
 						If you have any questions about these Terms of Service, please
@@ -203,13 +203,6 @@ function RouteComponent() {
 							</a>
 						</li>
 					</ul>
-				</section>
-
-				<section className="mt-12 rounded-lg border bg-muted/50 p-6">
-					<p className="text-center text-muted-foreground text-sm">
-						By using English.now, you acknowledge that you have read,
-						understood, and agree to be bound by these Terms of Service.
-					</p>
 				</section>
 			</article>
 		</div>
