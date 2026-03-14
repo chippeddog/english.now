@@ -13,13 +13,21 @@ import {
 	pronunciationSession,
 	userProfile,
 } from "@english.now/db";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure, rateLimitedProcedure, router } from "../index";
 import { profileLevelToCefr } from "../lib/cefr";
+import { generateParagraph } from "../services/generate-paragraph";
 import {
-	generateParagraph,
-	paragraphSchema,
-} from "../services/generate-paragraph";
+	getTodayPracticePlanRecord,
+	markDailyPracticeActivityStarted,
+} from "../services/daily-practice-plan";
+import {
+	getPronunciationAccessSummary,
+	getPronunciationAttemptAccessSummary,
+	getReportAccessSummary,
+} from "../services/feature-gating";
+import { recordDailyFeatureUsage } from "../services/feature-usage";
 import { recordActivity } from "../services/record-activity";
 
 export const pronunciationRouter = router({
@@ -44,28 +52,52 @@ export const pronunciationRouter = router({
 	startSession: rateLimitedProcedure(5, 60_000)
 		.input(
 			z.object({
-				paragraph: paragraphSchema
-					.extend({
-						cefrLevel: z.enum(["A1", "A2", "B1", "B2", "C1"]),
-						wordCount: z.number(),
-					})
-					.optional(),
+				activityId: z.string(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
 			const userId = ctx.session.user.id;
 
-			const [profile] = await db
-				.select()
-				.from(userProfile)
-				.where(eq(userProfile.userId, userId))
-				.limit(1);
+			const [profile, { plan }] = await Promise.all([
+				db
+					.select()
+					.from(userProfile)
+					.where(eq(userProfile.userId, userId))
+					.limit(1),
+				getTodayPracticePlanRecord(userId),
+			]);
 
-			const level = profileLevelToCefr(profile?.level);
+			if (!plan || plan.status !== "ready") {
+				throw new TRPCError({
+					code: "PRECONDITION_FAILED",
+					message: "TODAY_PLAN_NOT_READY",
+				});
+			}
 
-			const paragraph =
-				input.paragraph ??
-				(await generateParagraph(level, profile?.interests ?? undefined));
+			const activity = plan.activities.find(
+				(item) =>
+					item.id === input.activityId && item.type === "pronunciation",
+			);
+
+			if (!activity || activity.type !== "pronunciation") {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "PRACTICE_ACTIVITY_NOT_FOUND",
+				});
+			}
+
+			const access = await getPronunciationAccessSummary(userId);
+
+			if (!access.isPro && !access.hasAccess) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "FREE_DAILY_LIMIT_REACHED",
+					cause: access,
+				});
+			}
+
+			const level = profileLevelToCefr(profile[0]?.level);
+			const paragraph = activity.payload.paragraph;
 
 			const sessionId = crypto.randomUUID();
 
@@ -77,6 +109,27 @@ export const pronunciationRouter = router({
 				paragraph,
 				items: [paragraph],
 				status: "active",
+			});
+
+			const markedStarted = await markDailyPracticeActivityStarted(userId, {
+				activityId: activity.id,
+				sessionId,
+			});
+
+			if (!markedStarted) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "PRACTICE_ACTIVITY_NOT_FOUND",
+				});
+			}
+
+			await recordDailyFeatureUsage({
+				userId,
+				feature: "pronunciation_session",
+				resourceId: sessionId,
+				metadata: {
+					activityId: activity.id,
+				},
 			});
 
 			return { sessionId, paragraph, level };
@@ -106,6 +159,23 @@ export const pronunciationRouter = router({
 				.limit(1);
 
 			if (!session) throw new Error("Session not found");
+
+			const existingAttempts = await db
+				.select({ id: pronunciationAttempt.id })
+				.from(pronunciationAttempt)
+				.where(eq(pronunciationAttempt.sessionId, input.sessionId));
+			const attemptAccess = await getPronunciationAttemptAccessSummary(
+				userId,
+				existingAttempts.length,
+			);
+
+			if (!attemptAccess.isPro && attemptAccess.reachedLimit) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "FREE_ATTEMPT_LIMIT_REACHED",
+					cause: attemptAccess,
+				});
+			}
 
 			const attemptId = crypto.randomUUID();
 
@@ -314,8 +384,25 @@ export const pronunciationRouter = router({
 				.select()
 				.from(pronunciationAttempt)
 				.where(eq(pronunciationAttempt.sessionId, input.sessionId));
+			const reportAccess = await getReportAccessSummary(userId);
+			const attemptAccess = await getPronunciationAttemptAccessSummary(
+				userId,
+				attempts.length,
+			);
 
-			return { ...session, attempts };
+			return {
+				...session,
+				attempts:
+					reportAccess.locked && session.status === "completed" ? [] : attempts,
+				summary:
+					reportAccess.locked && session.summary
+						? maskPronunciationSummary(
+								session.summary as PronunciationSessionSummary,
+							)
+						: session.summary,
+				reportAccess,
+				attemptAccess,
+			};
 		}),
 
 	getFeedback: protectedProcedure
@@ -339,9 +426,12 @@ export const pronunciationRouter = router({
 
 			if (!session) throw new Error("Session not found");
 
+			const reportAccess = await getReportAccessSummary(userId);
+
 			return {
-				feedback: session.feedback,
+				feedback: reportAccess.locked ? null : session.feedback,
 				status: session.feedbackStatus,
+				reportAccess,
 			};
 		}),
 
@@ -358,8 +448,7 @@ export const pronunciationRouter = router({
 				.select({
 					id: pronunciationSession.id,
 					mode: pronunciationSession.mode,
-					difficulty: pronunciationSession.difficulty,
-					cefrLevel: pronunciationSession.cefrLevel,
+					level: pronunciationSession.level,
 					status: pronunciationSession.status,
 					summary: pronunciationSession.summary,
 					feedbackStatus: pronunciationSession.feedbackStatus,
@@ -379,3 +468,20 @@ export const pronunciationRouter = router({
 			return sessions;
 		}),
 });
+
+function maskPronunciationSummary(
+	summary: PronunciationSessionSummary,
+): PronunciationSessionSummary {
+	return {
+		averageScore: summary.averageScore,
+		averageAccuracy: summary.averageScore,
+		averageFluency: summary.averageScore,
+		averageProsody: summary.averageScore,
+		averageCompleteness: summary.averageScore,
+		totalAttempts: summary.totalAttempts,
+		bestScore: summary.averageScore,
+		worstScore: summary.averageScore,
+		weakWords: [],
+		weakPhonemes: [],
+	};
+}

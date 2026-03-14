@@ -14,10 +14,12 @@ import { protectedProcedure, router } from "../index";
 import {
 	ensureTodayPracticePlan,
 	getHomeActivities,
+	getTodayPracticePlanRecord,
 	markDailyPracticeActivityCompleted,
 	markDailyPracticeActivityStarted,
-	getTodayPracticePlanRecord,
 } from "../services/daily-practice-plan";
+import { getPracticeAccessSummary } from "../services/feature-gating";
+import { recordDailyFeatureUsage } from "../services/feature-usage";
 import { recordActivity } from "../services/record-activity";
 
 export const practiceRouter = router({
@@ -40,23 +42,27 @@ export const practiceRouter = router({
 
 	getTodayPlan: protectedProcedure.query(async ({ ctx }) => {
 		const { plan } = await getTodayPracticePlanRecord(ctx.session.user.id);
+		const access = await getPracticeAccessSummary(ctx.session.user.id);
 
 		return {
 			status: plan?.status ?? "missing",
 			activities: plan?.activities ?? [],
 			generatedAt: plan?.generatedAt ?? null,
 			error: plan?.error ?? null,
+			access,
 		};
 	}),
 
 	getHomeTodayPlan: protectedProcedure.query(async ({ ctx }) => {
 		const { plan } = await getTodayPracticePlanRecord(ctx.session.user.id);
+		const access = await getPracticeAccessSummary(ctx.session.user.id);
 
 		return {
 			status: plan?.status ?? "missing",
 			activities: plan ? getHomeActivities(plan) : [],
 			generatedAt: plan?.generatedAt ?? null,
 			error: plan?.error ?? null,
+			access,
 		};
 	}),
 
@@ -88,6 +94,10 @@ export const practiceRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
+			const { plan } = await getTodayPracticePlanRecord(ctx.session.user.id);
+			const activity = plan?.activities.find(
+				(item) => item.id === input.activityId,
+			);
 			const success = await markDailyPracticeActivityCompleted(
 				ctx.session.user.id,
 				input,
@@ -95,6 +105,22 @@ export const practiceRouter = router({
 
 			if (!success) {
 				throw new Error("Activity not found");
+			}
+
+			if (
+				activity?.type === "vocabulary" &&
+				!activity.completedAt &&
+				activity.payload.cards.length > 0
+			) {
+				await recordDailyFeatureUsage({
+					userId: ctx.session.user.id,
+					feature: "vocabulary_review",
+					resourceId: activity.id,
+					count: activity.payload.cards.length,
+					metadata: {
+						focus: activity.payload.focus,
+					},
+				});
 			}
 
 			return { success: true };

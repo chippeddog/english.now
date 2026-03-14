@@ -7,11 +7,21 @@ import {
 	userProfile,
 } from "@english.now/db";
 import { env } from "@english.now/env/server";
+import { TRPCError } from "@trpc/server";
 import { generateText, Output } from "ai";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure, rateLimitedProcedure, router } from "../index";
 import { generateSuggestions } from "../services/generate-suggestions";
+import {
+	getConversationAccessSummary,
+	getConversationReplyAccessSummary,
+} from "../services/feature-gating";
+import { recordDailyFeatureUsage } from "../services/feature-usage";
+import {
+	getTodayPracticePlanRecord,
+	markDailyPracticeActivityStarted,
+} from "../services/daily-practice-plan";
 
 const openai = createOpenAI({ apiKey: env.OPENAI_API_KEY });
 
@@ -119,30 +129,55 @@ export const conversationRouter = router({
 	start: protectedProcedure
 		.input(
 			z.object({
-				scenario: z.string(),
-				scenarioName: z.string().optional(),
-				scenarioDescription: z.string().optional(),
-				aiRole: z.string().optional(),
-				scenarioType: z.enum(["topic", "roleplay"]).optional(),
+				activityId: z.string(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
 			const sessionId = crypto.randomUUID();
+			const userId = ctx.session.user.id;
 
-			const profile = await db
-				.select()
-				.from(userProfile)
-				.where(eq(userProfile.userId, ctx.session.user.id))
-				.limit(1);
+			const [profile, { plan }] = await Promise.all([
+				db
+					.select()
+					.from(userProfile)
+					.where(eq(userProfile.userId, userId))
+					.limit(1),
+				getTodayPracticePlanRecord(userId),
+			]);
+
+			if (!plan || plan.status !== "ready") {
+				throw new TRPCError({
+					code: "PRECONDITION_FAILED",
+					message: "TODAY_PLAN_NOT_READY",
+				});
+			}
+
+			const activity = plan.activities.find(
+				(item) =>
+					item.id === input.activityId && item.type === "conversation",
+			);
+
+			if (!activity || activity.type !== "conversation") {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "PRACTICE_ACTIVITY_NOT_FOUND",
+				});
+			}
+
+			const access = await getConversationAccessSummary(userId);
+
+			if (!access.isPro && !access.hasAccess) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "FREE_DAILY_LIMIT_REACHED",
+					cause: access,
+				});
+			}
 
 			const level = profile[0]?.level ?? "beginner";
-
-			const scenarioName =
-				input.scenarioName ?? input.scenario.replace(/-/g, " ");
-			const scenarioDescription =
-				input.scenarioDescription ??
-				`Practice English through a ${scenarioName} conversation`;
-			const aiRole = input.aiRole ?? "conversation partner";
+			const scenarioName = activity.payload.scenarioName;
+			const scenarioDescription = activity.payload.scenarioDescription;
+			const aiRole = activity.payload.aiRole ?? "conversation partner";
 			const goals = [
 				`Practice ${scenarioName}-related vocabulary`,
 				"Build conversational confidence",
@@ -159,14 +194,14 @@ The person you're talking to is learning English at a ${level} level.
 
 			const newSession = {
 				id: sessionId,
-				userId: ctx.session.user.id,
-				scenario: input.scenarioName ?? "",
+				userId,
+				scenario: scenarioName,
 				level: level,
 				context: {
 					systemPrompt,
 					scenarioDescription,
 					goals,
-					scenarioType: input.scenarioType,
+					scenarioType: activity.payload.scenarioType,
 					aiRole,
 				},
 				status: "active",
@@ -185,10 +220,32 @@ The person you're talking to is learning English at a ${level} level.
 				createdAt: new Date(),
 			});
 
+			const markedStarted = await markDailyPracticeActivityStarted(userId, {
+				activityId: activity.id,
+				sessionId,
+			});
+
+			if (!markedStarted) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "PRACTICE_ACTIVITY_NOT_FOUND",
+				});
+			}
+
+			await recordDailyFeatureUsage({
+				userId,
+				feature: "conversation_session",
+				resourceId: sessionId,
+				metadata: {
+					activityId: activity.id,
+					scenario: activity.payload.scenario,
+				},
+			});
+
 			return {
 				sessionId,
 				scenario: {
-					id: input.scenario,
+					id: activity.payload.scenario,
 					name: scenarioName,
 					description: scenarioDescription,
 					goals,
@@ -221,10 +278,18 @@ The person you're talking to is learning English at a ${level} level.
 				.from(conversationMessage)
 				.where(eq(conversationMessage.sessionId, input.sessionId))
 				.orderBy(conversationMessage.createdAt);
+			const assistantReplies = messages.filter(
+				(message) => message.role === "assistant",
+			).length;
+			const replyAccess = await getConversationReplyAccessSummary(
+				ctx.session.user.id,
+				assistantReplies,
+			);
 
 			return {
 				session: session[0],
 				messages,
+				replyAccess,
 			};
 		}),
 
@@ -259,13 +324,6 @@ The person you're talking to is learning English at a ${level} level.
 				metadata: { transcribedFrom: input.inputType },
 				createdAt: new Date(),
 			});
-
-			// Get conversation history for context
-			const _history = await db
-				.select()
-				.from(conversationMessage)
-				.where(eq(conversationMessage.sessionId, input.sessionId))
-				.orderBy(conversationMessage.createdAt);
 
 			// This returns a placeholder - actual AI response will be streamed via REST endpoint
 			return {

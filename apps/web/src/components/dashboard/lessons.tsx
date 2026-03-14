@@ -25,6 +25,7 @@ interface DashboardLesson {
 	type: string;
 	lessonType?: string | null;
 	status: LessonStatus;
+	lockReason?: string | null;
 }
 
 interface DashboardUnit {
@@ -32,6 +33,7 @@ interface DashboardUnit {
 	title: string;
 	status: UnitStatus;
 	progress: number;
+	unlockMessage?: string;
 	lessons: DashboardLesson[];
 }
 
@@ -293,18 +295,33 @@ function SummaryRow({
 					{title.slice(0, 30)}
 					{title.length > 30 && "..."}
 				</p>
-				{/* <p
+				<p
 					className={cn(
 						"text-xs leading-4",
 						muted ? "text-neutral-400" : "text-muted-foreground",
 					)}
 				>
 					{subtitle}
-				</p> */}
+				</p>
 			</div>
 			{action}
 		</div>
 	);
+}
+
+function getLessonLockLabel(
+	lockReason: string | null | undefined,
+	fallback: string,
+) {
+	if (lockReason === "free_unit_locked") {
+		return "Upgrade to unlock";
+	}
+
+	if (lockReason === "daily_new_lesson_limit") {
+		return "New lesson available tomorrow";
+	}
+
+	return fallback;
 }
 
 export default function Lessons({
@@ -366,15 +383,24 @@ export default function Lessons({
 						</div>
 						<SummaryRow
 							title={summary.currentLesson.title}
-							subtitle={summary.currentLesson.subtitle || "Current lesson"}
+							subtitle={
+								summary.currentLesson.status === "locked"
+									? getLessonLockLabel(
+											summary.currentLesson.lockReason,
+											"Locked",
+										)
+									: (summary.currentLesson.subtitle || "Current lesson")
+							}
 							action={
-								<Link
-									className="text-muted-foreground"
-									to="/lesson/$lessonId"
-									params={{ lessonId: summary.currentLesson.id }}
-								>
-									<ChevronRight className="size-4" />
-								</Link>
+								summary.currentLesson.status !== "locked" ? (
+									<Link
+										className="text-muted-foreground"
+										to="/lesson/$lessonId"
+										params={{ lessonId: summary.currentLesson.id }}
+									>
+										<ChevronRight className="size-4" />
+									</Link>
+								) : null
 							}
 						/>
 					</div>
@@ -396,9 +422,14 @@ export default function Lessons({
 								}
 								subtitle={
 									summary.nextStep.kind === "lesson"
-										? summary.nextStep.lesson.subtitle || "Next lesson"
+										? summary.nextStep.lesson.status === "locked"
+											? getLessonLockLabel(
+													summary.nextStep.lesson.lockReason,
+													"Next lesson",
+												)
+											: (summary.nextStep.lesson.subtitle || "Next lesson")
 										: summary.nextStep.unit.status === "locked"
-											? "Next unit"
+											? (summary.nextStep.unit.unlockMessage || "Next unit")
 											: "Continue to the next unit"
 								}
 								muted={

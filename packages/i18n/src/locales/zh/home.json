@@ -116,6 +116,38 @@
           "进度跟踪和分析"
         ]
       }
+    },
+    "pageTitle": "哪个计划适合您？",
+    "pageSubtitle": "所有计划均包括访问我们的AI驱动学习工具。",
+    "faqSection": {
+      "title": "常见问题",
+      "subtitle": "关于我们的定价和计划，您需要了解的一切。",
+      "items": {
+        "switchPlans": {
+          "question": "我可以在计划之间切换吗？",
+          "answer": "可以！您可以随时升级或降级您的计划。升级时，您将支付按比例计算的差额。降级时，新费率将在下一个计费周期生效。"
+        },
+        "freeTrial": {
+          "question": "Pro 计划有免费试用吗？",
+          "answer": "当然！我们为 Pro 计划提供7天的免费试用。不需要信用卡即可开始。您可以探索所有 Pro 功能，并决定它是否适合您。"
+        },
+        "paymentMethods": {
+          "question": "您接受哪些付款方式？",
+          "answer": "我们接受所有主要信用卡（Visa、MasterCard、American Express）、PayPal 和 Apple Pay。对于团队计划，我们还提供基于发票的账单。"
+        },
+        "studentDiscounts": {
+          "question": "您提供学生折扣吗？",
+          "answer": "目前我们不提供学生折扣，但我们正在努力。敬请期待！"
+        },
+        "cancelAnytime": {
+          "question": "我可以随时取消订阅吗？",
+          "answer": "是的，您可以随时取消订阅。您的访问权限将持续到当前计费周期结束。没有任何问题，也没有隐藏费用。"
+        },
+        "progressSaved": {
+          "question": "如果我取消，学习进度会保存吗？",
+          "answer": "您的进度始终会被保存，即使您取消或切换到免费计划。您可以在决定回来时从中断的地方继续。"
+        }
+      }
     }
   },
   "faq": {

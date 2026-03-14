@@ -14,6 +14,7 @@ import {
 	TrendingUp,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useUpgradeDialog } from "@/components/dashboard/upgrade-dialog";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatRelativeDate } from "@/utils/date";
@@ -21,6 +22,7 @@ import { formatRelativeDate } from "@/utils/date";
 type FeedbackResponse =
 	inferRouterOutputs<AppRouter>["feedback"]["getFeedback"];
 type FeedbackData = FeedbackResponse["feedback"];
+type ReportAccess = FeedbackResponse["reportAccess"];
 
 type GenerationStep = {
 	id: string;
@@ -263,17 +265,21 @@ export default function ReviewView({
 	feedback,
 	messages,
 	session,
+	reportAccess,
 }: {
 	feedback: FeedbackData;
 	messages: FeedbackResponse["messages"];
 	session: FeedbackResponse["session"];
+	reportAccess: ReportAccess;
 }) {
+	const { openDialog: openUpgradeDialog } = useUpgradeDialog();
 	const scores = [
 		{ label: "Grammar", score: feedback.grammarScore },
 		{ label: "Vocabulary", score: feedback.vocabularyScore },
 		{ label: "Fluency", score: feedback.fluencyScore },
 		{ label: "Pronunciation", score: feedback.pronunciationScore },
 	].filter((s) => s.score != null) as { label: string; score: number }[];
+	const isPreviewLocked = reportAccess.locked && reportAccess.preview;
 
 	return (
 		<div className="min-h-dvh bg-neutral-50">
@@ -287,13 +293,18 @@ export default function ReviewView({
 							</Button>
 						</Link>
 						<div>
-							<h1 className="font-semibold text-xl">{session.scenario}</h1>
+							<h1 className="font-semibold text-xl">{session?.scenario}</h1>
 							<p className="text-muted-foreground text-sm">
-								{formatRelativeDate(new Date(session.createdAt))}
+								{formatRelativeDate(new Date(session?.createdAt ?? new Date()))}
 							</p>
 						</div>
 					</div>
 					<div className="flex items-center gap-2">
+						{isPreviewLocked && (
+							<span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 font-medium text-[11px] text-amber-700 uppercase tracking-wide">
+								Preview
+							</span>
+						)}
 						<Button variant="outline" className="gap-2 rounded-xl">
 							<Share2 className="size-4" />
 							Share
@@ -372,6 +383,22 @@ export default function ReviewView({
 							</div>
 						)}
 
+						{isPreviewLocked && (
+							<div className="rounded-xl border border-amber-200 bg-amber-50 p-5">
+								<h2 className="mb-2 font-semibold text-amber-800 text-sm">
+									Unlock Full Feedback
+								</h2>
+								<p className="text-amber-700 text-sm leading-relaxed">
+									Upgrade to see detailed skill scores, full correction
+									explanations, strengths, improvements, and vocabulary
+									suggestions for this session.
+								</p>
+								<Button className="mt-4 rounded-xl" onClick={openUpgradeDialog}>
+									Unlock Full Report
+								</Button>
+							</div>
+						)}
+
 						{/* Strengths & Improvements */}
 						<div className="grid gap-3 sm:grid-cols-2">
 							{feedback.strengths && feedback.strengths.length > 0 && (
@@ -433,9 +460,11 @@ export default function ReviewView({
 												<p className="font-medium text-green-700">
 													{correction.corrected}
 												</p>
-												<p className="text-muted-foreground text-xs">
-													{correction.explanation}
-												</p>
+												{correction.explanation && (
+													<p className="text-muted-foreground text-xs">
+														{correction.explanation}
+													</p>
+												)}
 											</div>
 										</div>
 									))}

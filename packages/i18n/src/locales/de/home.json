@@ -116,6 +116,38 @@
           "Fortschrittsverfolgung und Analysen"
         ]
       }
+    },
+    "pageTitle": "Welcher Plan ist der richtige für Sie?",
+    "pageSubtitle": "Alle Pläne beinhalten den Zugang zu unseren KI-gestützten Lernwerkzeugen.",
+    "faqSection": {
+      "title": "FAQs",
+      "subtitle": "Alles, was Sie über unsere Preise und Pläne wissen müssen.",
+      "items": {
+        "switchPlans": {
+          "question": "Kann ich zwischen den Plänen wechseln?",
+          "answer": "Ja! Sie können Ihren Plan jederzeit upgraden oder downgraden. Beim Upgrade wird Ihnen die anteilige Differenz berechnet. Beim Downgrade gilt der neue Tarif ab Ihrem nächsten Abrechnungszyklus."
+        },
+        "freeTrial": {
+          "question": "Gibt es eine kostenlose Testversion für Pro?",
+          "answer": "Absolut! Wir bieten eine 7-tägige kostenlose Testversion für unseren Pro-Plan an. Keine Kreditkarte erforderlich, um zu starten. Sie können alle Pro-Funktionen erkunden und entscheiden, ob es das Richtige für Sie ist."
+        },
+        "paymentMethods": {
+          "question": "Welche Zahlungsmethoden akzeptieren Sie?",
+          "answer": "Wir akzeptieren alle gängigen Kreditkarten (Visa, MasterCard, American Express), PayPal und Apple Pay. Für Team-Pläne bieten wir auch eine rechnungsbasierte Abrechnung an."
+        },
+        "studentDiscounts": {
+          "question": "Bieten Sie Studentenrabatte an?",
+          "answer": "Nein, derzeit bieten wir keine Studentenrabatte an. Aber wir arbeiten daran. Bleiben Sie dran!"
+        },
+        "cancelAnytime": {
+          "question": "Kann ich mein Abonnement jederzeit kündigen?",
+          "answer": "Ja, Sie können Ihr Abonnement jederzeit kündigen. Ihr Zugang bleibt bis zum Ende Ihres aktuellen Abrechnungszeitraums bestehen. Keine Fragen, keine versteckten Gebühren."
+        },
+        "progressSaved": {
+          "question": "Wird mein Lernfortschritt gespeichert, wenn ich kündige?",
+          "answer": "Ihr Fortschritt wird immer gespeichert, auch wenn Sie kündigen oder zum kostenlosen Plan wechseln. Sie können dort weitermachen, wo Sie aufgehört haben, wann immer Sie sich entscheiden zurückzukommen."
+        }
+      }
     }
   },
   "faq": {

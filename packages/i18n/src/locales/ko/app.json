@@ -7,7 +7,9 @@
     "settings": "설정",
     "preferences": "환경 설정",
     "voices": "음성",
-    "signOut": "로그아웃"
+    "signOut": "로그아웃",
+    "menu": "메뉴 열기",
+    "close": "메뉴 닫기"
   },
   "home": {
     "welcomeBack": "다시 오신 것을 환영합니다, {{firstName}}",
@@ -84,7 +86,8 @@
       "feedback": "고급 AI 피드백",
       "vocabulary": "전체 어휘 라이브러리",
       "learningPath": "개인화된 학습 경로",
-      "analytics": "진행 추적 및 분석"
+      "analytics": "진행 추적 및 분석",
+      "lessons": "전체 강의 접근"
     },
     "yearly": "연간",
     "monthly": "월간",

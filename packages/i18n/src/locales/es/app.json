@@ -7,7 +7,9 @@
     "settings": "Configuración",
     "preferences": "Preferencias",
     "voices": "Voces",
-    "signOut": "Cerrar sesión"
+    "signOut": "Cerrar sesión",
+    "menu": "Abrir menú",
+    "close": "Cerrar menú"
   },
   "home": {
     "welcomeBack": "Bienvenido de nuevo, {{firstName}}",
@@ -84,7 +86,8 @@
       "feedback": "Retroalimentación avanzada de IA",
       "vocabulary": "Biblioteca completa de vocabulario",
       "learningPath": "Ruta de aprendizaje personalizada",
-      "analytics": "Seguimiento del progreso y análisis"
+      "analytics": "Seguimiento del progreso y análisis",
+      "lessons": "Acceso completo a las lecciones"
     },
     "yearly": "Anual",
     "monthly": "Mensual",

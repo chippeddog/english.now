@@ -57,6 +57,7 @@ function FeedbackPage() {
 		<ReviewView
 			feedback={data.feedback}
 			messages={data.messages}
+			reportAccess={data.reportAccess}
 			session={data.session}
 		/>
 	);

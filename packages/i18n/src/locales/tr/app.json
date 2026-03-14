@@ -7,7 +7,9 @@
     "settings": "Ayarlar",
     "preferences": "Tercihler",
     "voices": "Sesler",
-    "signOut": "Çıkış Yap"
+    "signOut": "Çıkış Yap",
+    "menu": "Menüyü aç",
+    "close": "Menüyü kapat"
   },
   "home": {
     "welcomeBack": "Tekrar hoş geldiniz, {{firstName}}",
@@ -84,7 +86,8 @@
       "feedback": "Gelişmiş AI geri bildirimi",
       "vocabulary": "Tam kelime kütüphanesi",
       "learningPath": "Kişiselleştirilmiş öğrenme yolu",
-      "analytics": "İlerleme takibi ve analizler"
+      "analytics": "İlerleme takibi ve analizler",
+      "lessons": "Tam ders erişimi"
     },
     "yearly": "Yıllık",
     "monthly": "Aylık",

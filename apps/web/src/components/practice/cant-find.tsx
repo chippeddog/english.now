@@ -31,7 +31,7 @@ export default function CantFind() {
 					/>
 				</svg>
 				<div className="flex flex-col">
-					<div className="flex items-center font-medium text-neutral-900 text-sm transition-all duration-300 group-hover:text-lime-700">
+					<div className="flex items-center font-medium text-neutral-900 text-sm transition-all duration-300">
 						{t("practice.cantFind")}
 					</div>
 				</div>

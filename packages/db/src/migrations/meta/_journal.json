@@ -204,6 +204,13 @@
       "when": 1772819718763,
       "tag": "0028_careless_lady_mastermind",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1773392003177,
+      "tag": "0029_glorious_tyger_tiger",
+      "breakpoints": true
     }
   ]
 }

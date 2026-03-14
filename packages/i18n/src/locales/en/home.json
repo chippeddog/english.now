@@ -56,6 +56,8 @@
   "pricing": {
     "title": "Pricing",
     "subtitle": "Choose the plan that's right for you.",
+    "pageTitle": "Which plan is right for you?",
+    "pageSubtitle": "All plans include access to our AI-powered learning tools.",
     "save20": "Save 20%",
     "mostPopular": "Most Popular",
     "whatsIncluded": "What's included",
@@ -66,37 +68,68 @@
       "month": "month",
       "year": "year"
     },
+    "faqSection": {
+      "title": "FAQs",
+      "subtitle": "Everything you need to know about our pricing and plans.",
+      "items": {
+        "switchPlans": {
+          "question": "Can I switch between plans?",
+          "answer": "Yes! You can upgrade or downgrade your plan at any time. When upgrading, you'll be charged the prorated difference. When downgrading, the new rate applies at your next billing cycle."
+        },
+        "freeTrial": {
+          "question": "Is there a free trial for Pro?",
+          "answer": "Absolutely! We offer a 7-day free trial for our Pro plan. No credit card required to start. You can explore all Pro features and decide if it's right for you."
+        },
+        "paymentMethods": {
+          "question": "What payment methods do you accept?",
+          "answer": "We accept all major credit cards (Visa, MasterCard, American Express), PayPal, and Apple Pay. For Team plans, we also offer invoice-based billing."
+        },
+        "studentDiscounts": {
+          "question": "Do you offer student discounts?",
+          "answer": "No, currently we don't offer student discounts. But we're working on it. Stay tuned!"
+        },
+        "cancelAnytime": {
+          "question": "Can I cancel my subscription anytime?",
+          "answer": "Yes, you can cancel your subscription at any time. Your access will continue until the end of your current billing period. No questions asked, no hidden fees."
+        },
+        "progressSaved": {
+          "question": "Is my learning progress saved if I cancel?",
+          "answer": "Your progress is always saved, even if you cancel or switch to the free plan. You can pick up where you left off whenever you decide to come back."
+        }
+      }
+    },
     "plans": {
       "free": {
         "name": "Free",
         "description": "Great for beginners.",
         "features": [
-          "1 AI conversations per day",
-          "Basic grammar lessons",
-          "Limited vocabulary exercises",
-          "Progress tracking"
+          "First unit free + 1 lesson per day",
+          "1 AI conversation per day",
+          "1 pronunciation session per day",
+          "10 vocab adds + 15 review cards per day",
+          "Basic feedback preview"
         ]
       },
       "monthly": {
         "name": "Monthly",
         "description": "Great for intermediate learners.",
         "features": [
-          "Unlimited AI conversations",
-          "Advanced AI feedback",
-          "Full vocabulary library",
-          "Personalized learning path",
-          "Progress tracking and analytics"
+          "Unlimited AI conversations and pronunciation",
+          "Full lesson access",
+          "Full AI feedback and corrections",
+          "Unlimited vocabulary practice and saves",
+          "Personalized learning path"
         ]
       },
       "yearly": {
         "name": "Yearly",
         "description": "Great for advanced learners.",
         "features": [
-          "Unlimited AI conversations",
-          "Advanced AI feedback",
-          "Full vocabulary library",
-          "Personalized learning path",
-          "Progress tracking and analytics"
+          "Unlimited AI conversations and pronunciation",
+          "Full lesson access",
+          "Full AI feedback and corrections",
+          "Unlimited vocabulary practice and saves",
+          "Personalized learning path"
         ]
       }
     }
@@ -112,7 +145,7 @@
       },
       "doINeedToPay": {
         "question": "Do I need to pay to use English Now?",
-        "answer": "We offer both free and premium plans. The free plan includes basic features like limited conversation practice and vocabulary exercises. Our premium plan unlocks unlimited practice sessions, advanced AI feedback, personalized learning paths, and priority support."
+        "answer": "We offer both free and premium plans. The free plan includes the first lesson unit, one new lesson per day, one AI conversation per day, one pronunciation session per day, and limited daily vocabulary practice. Our premium plan unlocks unlimited practice, full lesson access, detailed AI feedback, and personalized learning paths."
       },
       "canIPracticeSpeaking": {
         "question": "Can I practice speaking English with the app?",

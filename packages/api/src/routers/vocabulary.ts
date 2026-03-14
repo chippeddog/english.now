@@ -13,6 +13,8 @@ import {
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure, router } from "../index";
+import { getVocabularyAccessSummary } from "../services/feature-gating";
+import { recordDailyFeatureUsage } from "../services/feature-usage";
 import {
 	ensurePhraseTranslation,
 	ensureWordTranslation,
@@ -32,6 +34,10 @@ async function getUserLanguage(userId: string): Promise<string> {
 }
 
 export const vocabularyRouter = router({
+	getAccess: protectedProcedure.query(async ({ ctx }) => {
+		return getVocabularyAccessSummary(ctx.session.user.id);
+	}),
+
 	getWords: protectedProcedure
 		.input(
 			z.object({
@@ -106,6 +112,17 @@ export const vocabularyRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
+			const userId = ctx.session.user.id;
+			const access = await getVocabularyAccessSummary(userId);
+
+			if (!access.isPro && !access.adds.hasAccess) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "FREE_VOCAB_ADD_LIMIT_REACHED",
+					cause: access,
+				});
+			}
+
 			const isEnglish = await validateEnglishWord(input.word);
 			if (!isEnglish) {
 				throw new TRPCError({
@@ -114,14 +131,13 @@ export const vocabularyRouter = router({
 				});
 			}
 
-			const userId = ctx.session.user.id;
 			const language = await getUserLanguage(userId);
 
 			const wordId = await getOrCreateWord(input.word);
 			await ensureWordTranslation(wordId, language);
 
 			const id = crypto.randomUUID();
-			await db
+			const inserted = await db
 				.insert(userWord)
 				.values({
 					id,
@@ -130,7 +146,20 @@ export const vocabularyRouter = router({
 					mastery: "new",
 					source: input.source,
 				})
-				.onConflictDoNothing();
+				.onConflictDoNothing()
+				.returning({ id: userWord.id });
+
+			if (inserted[0]) {
+				await recordDailyFeatureUsage({
+					userId,
+					feature: "vocabulary_add",
+					resourceId: `word:${wordId}`,
+					metadata: {
+						wordId,
+						source: input.source,
+					},
+				});
+			}
 
 			return { id, wordId };
 		}),
@@ -233,6 +262,17 @@ export const vocabularyRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
+			const userId = ctx.session.user.id;
+			const access = await getVocabularyAccessSummary(userId);
+
+			if (!access.isPro && !access.adds.hasAccess) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "FREE_VOCAB_ADD_LIMIT_REACHED",
+					cause: access,
+				});
+			}
+
 			const isEnglish = await validateEnglishPhrase(input.phrase);
 			if (!isEnglish) {
 				throw new TRPCError({
@@ -241,14 +281,13 @@ export const vocabularyRouter = router({
 				});
 			}
 
-			const userId = ctx.session.user.id;
 			const language = await getUserLanguage(userId);
 
 			const phraseId = await getOrCreatePhrase(input.phrase);
 			await ensurePhraseTranslation(phraseId, language);
 
 			const id = crypto.randomUUID();
-			await db
+			const inserted = await db
 				.insert(userPhrase)
 				.values({
 					id,
@@ -257,7 +296,20 @@ export const vocabularyRouter = router({
 					mastery: "new",
 					source: input.source,
 				})
-				.onConflictDoNothing();
+				.onConflictDoNothing()
+				.returning({ id: userPhrase.id });
+
+			if (inserted[0]) {
+				await recordDailyFeatureUsage({
+					userId,
+					feature: "vocabulary_add",
+					resourceId: `phrase:${phraseId}`,
+					metadata: {
+						phraseId,
+						source: input.source,
+					},
+				});
+			}
 
 			return { id, phraseId };
 		}),

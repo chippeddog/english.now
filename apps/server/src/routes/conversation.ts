@@ -1,5 +1,17 @@
 import { PutObjectCommand } from "@aws-sdk/client-s3";
-import { markDailyPracticeActivityCompleted } from "@english.now/api/services/daily-practice-plan";
+import {
+	getTodayPracticePlanRecord,
+	markDailyPracticeActivityCompleted,
+	markDailyPracticeActivityStarted,
+} from "@english.now/api/services/daily-practice-plan";
+import {
+	FREE_CONVERSATION_MAX_AI_REPLIES,
+} from "@english.now/api/services/feature-limit-config";
+import {
+	getConversationAccessSummary,
+	getConversationReplyAccessSummary,
+} from "@english.now/api/services/feature-gating";
+import { recordDailyFeatureUsage } from "@english.now/api/services/feature-usage";
 import { recordActivity } from "@english.now/api/services/record-activity";
 import { auth } from "@english.now/auth";
 import {
@@ -74,16 +86,39 @@ conversation.post("/start", requireAuth, async (c) => {
 	}
 	const body = await c.req.json();
 
-	const { scenario, scenarioName, scenarioDescription, aiRole, scenarioType } =
+	const { activityId } =
 		z
 			.object({
-				scenario: z.string(),
-				scenarioName: z.string().optional(),
-				scenarioDescription: z.string().optional(),
-				aiRole: z.string().optional(),
-				scenarioType: z.enum(["topic", "roleplay"]).optional(),
+				activityId: z.string(),
 			})
 			.parse(body);
+
+	const { plan } = await getTodayPracticePlanRecord(session.user.id);
+
+	if (!plan || plan.status !== "ready") {
+		return c.json({ error: "Today's practice plan is not ready" }, 412);
+	}
+
+	const activity = plan.activities.find(
+		(item) => item.id === activityId && item.type === "conversation",
+	);
+
+	if (!activity || activity.type !== "conversation") {
+		return c.json({ error: "Practice activity not found" }, 404);
+	}
+
+	const access = await getConversationAccessSummary(session.user.id);
+
+	if (!access.isPro && !access.hasAccess) {
+		return c.json(
+			{
+				error: "FREE_DAILY_LIMIT_REACHED",
+				reason: access.reason,
+				usedPracticeSessionId: access.latestResourceId,
+			},
+			403,
+		);
+	}
 
 	const sessionId = crypto.randomUUID();
 
@@ -97,11 +132,9 @@ conversation.post("/start", requireAuth, async (c) => {
 	const voiceModel = profile[0]?.voiceModel ?? "aura-2-thalia-en";
 	console.log("voiceModel", voiceModel);
 
-	const finalName = scenarioName ?? scenario.replace(/-/g, " ");
-	const finalDescription =
-		scenarioDescription ??
-		`Practice English through a ${finalName} conversation`;
-	const role = aiRole ?? "conversation partner";
+	const finalName = activity.payload.scenarioName;
+	const finalDescription = activity.payload.scenarioDescription;
+	const role = activity.payload.aiRole ?? "conversation partner";
 	const finalSystemPrompt = `You are a ${role} in a ${finalName} scenario. ${finalDescription}.
 The person you're talking to is learning English at a ${level} level.
 - Keep your language appropriate for their level
@@ -114,13 +147,13 @@ The person you're talking to is learning English at a ${level} level.
 	await db.insert(conversationSession).values({
 		id: sessionId,
 		userId: session.user.id,
-		scenario: scenarioName ?? scenario,
+		scenario: finalName,
 		level,
 		context: {
 			systemPrompt: finalSystemPrompt,
 			scenarioDescription: finalDescription,
 			goals: [],
-			scenarioType,
+			scenarioType: activity.payload.scenarioType,
 			aiRole: role,
 		},
 		status: "active",
@@ -138,13 +171,28 @@ The person you're talking to is learning English at a ${level} level.
 		createdAt: new Date(),
 	});
 
+	await markDailyPracticeActivityStarted(session.user.id, {
+		activityId: activity.id,
+		sessionId,
+	});
+
+	await recordDailyFeatureUsage({
+		userId: session.user.id,
+		feature: "conversation_session",
+		resourceId: sessionId,
+		metadata: {
+			activityId: activity.id,
+			scenario: activity.payload.scenario,
+		},
+	});
+
 	// Generate TTS for the initial greeting
 	const greetingAudio = await generateTTSBase64(greeting, voiceModel);
 
 	return c.json({
 		sessionId,
 		scenario: {
-			id: scenario,
+			id: activity.payload.scenario,
 			name: finalName,
 			description: finalDescription,
 		},
@@ -181,6 +229,31 @@ conversation.post(
 		const sessionData = conversationSessionResult[0];
 		if (!sessionData || sessionData.userId !== session.user.id) {
 			return c.json({ error: "Session not found" }, 404);
+		}
+
+		const existingMessages = await db
+			.select({
+				role: conversationMessage.role,
+			})
+			.from(conversationMessage)
+			.where(eq(conversationMessage.sessionId, input.sessionId));
+		const assistantReplies = existingMessages.filter(
+			(message) => message.role === "assistant",
+		).length;
+		const replyAccess = await getConversationReplyAccessSummary(
+			session.user.id,
+			assistantReplies,
+		);
+
+		if (!replyAccess.isPro && replyAccess.reachedLimit) {
+			return c.json(
+				{
+					error: "FREE_REPLY_LIMIT_REACHED",
+					limit: FREE_CONVERSATION_MAX_AI_REPLIES,
+					used: assistantReplies,
+				},
+				403,
+			);
 		}
 
 		// Save user message

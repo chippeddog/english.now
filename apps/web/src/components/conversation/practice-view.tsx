@@ -3,6 +3,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { Languages, Loader, Loader2, PauseIcon, PlayIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useUpgradeDialog } from "@/components/dashboard/upgrade-dialog";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -31,10 +32,13 @@ type Message = {
 	audio?: string;
 };
 
+type VocabularyMode = "off" | "word" | "phrase";
+
 export default function PracticeView({ sessionId }: { sessionId: string }) {
 	const trpc = useTRPC();
 	const navigate = useNavigate();
 	const { getElapsedSeconds } = usePracticeTimer();
+	const { openDialog } = useUpgradeDialog();
 	const [messages, setMessages] = useState<Message[]>([]);
 	const [translations, setTranslations] = useState<Record<string, string>>({});
 	const [showHint, setShowHint] = useState(false);
@@ -44,7 +48,7 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 	const [showFinishDialog, setShowFinishDialog] = useState(false);
 	const [isFinishing, setIsFinishing] = useState(false);
 	const [generatingTTS, setGeneratingTTS] = useState<Set<string>>(new Set());
-	const [vocabMode, setVocabMode] = useState(false);
+	const [vocabMode, setVocabMode] = useState<VocabularyMode>("off");
 	const [autoTranslate, setAutoTranslate] = useState(() => {
 		return localStorage.getItem("conversation:autoTranslate") === "true";
 	});
@@ -73,6 +77,15 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 	const voice = profile?.voiceModel ?? "aura-2-asteria-en";
 	const { audioRef, isPlaying, playAudio, setIsPlaying } =
 		useAudioPlayback(voice);
+	const replyAccess = data?.replyAccess as
+		| {
+				isPro: boolean;
+				used: number;
+				limit: number | null;
+				remaining: number | null;
+				reachedLimit: boolean;
+		  }
+		| undefined;
 	const userMessageCount = messages.filter((m) => m.role === "user").length;
 	const canGetFeedback = userMessageCount >= 3;
 
@@ -240,7 +253,16 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 					},
 				);
 
-				if (!response.ok) throw new Error("Failed to send message");
+				if (!response.ok) {
+					const errorData = (await response.json().catch(() => null)) as {
+						error?: string;
+					} | null;
+					if (errorData?.error === "FREE_REPLY_LIMIT_REACHED") {
+						openDialog();
+						throw new Error("FREE_REPLY_LIMIT_REACHED");
+					}
+					throw new Error("Failed to send message");
+				}
 
 				const reader = response.body?.getReader();
 				const decoder = new TextDecoder();
@@ -299,7 +321,11 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 						msg.id === aiMessageId
 							? {
 									...msg,
-									content: "Sorry, I couldn't respond. Please try again.",
+									content:
+										error instanceof Error &&
+										error.message === "FREE_REPLY_LIMIT_REACHED"
+											? "You've reached the free conversation cap for today. Upgrade to keep chatting."
+											: "Sorry, I couldn't respond. Please try again.",
 									isStreaming: false,
 								}
 							: msg,
@@ -307,7 +333,7 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 				);
 			}
 		},
-		[sessionId, playAudio],
+		[sessionId, playAudio, openDialog],
 	);
 
 	const generateTTS = useCallback(
@@ -415,27 +441,12 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 		<>
 			{/* Messages */}
 			<div className="flex-1 space-y-4 overflow-y-auto px-1 py-4">
-				{data?.session.context?.scenarioDescription && (
-					<div className="mx-auto flex max-w-xl flex-col items-start gap-2 rounded-xl border border-neutral-200 border-dashed p-3">
-						<div className="flex items-center gap-1 text-neutral-800 text-xs italic">
-							{/* <InfoIcon className="size-3 shrink-0" /> */}
-							Instructions:
-						</div>
-						<p className="text-neutral-600 text-xs leading-relaxed">
-							{data.session.context.scenarioType === "roleplay" &&
-							data.session.context.aiRole ? (
-								<>
-									<span className="font-medium text-neutral-800">
-										Your partner is playing as {data.session.context.aiRole}.
-									</span>{" "}
-									{data.session.context.scenarioDescription}
-								</>
-							) : (
-								data.session.context.scenarioDescription
-							)}
-						</p>
+				{replyAccess && !replyAccess.isPro && replyAccess.limit ? (
+					<div className="mx-auto max-w-xl rounded-xl border border-neutral-200 border-dashed bg-white px-3 py-2 text-muted-foreground text-xs">
+						{replyAccess.used} / {replyAccess.limit} AI replies used in this
+						session.
 					</div>
-				)}
+				) : null}
 				{messages.map((message) => (
 					<div
 						key={message.id}

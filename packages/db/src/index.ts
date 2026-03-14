@@ -13,6 +13,7 @@ export * from "./schema/conversation";
 export * from "./schema/curriculum";
 export * from "./schema/daily-practice-plan";
 export * from "./schema/daily-suggestion";
+export * from "./schema/feature-usage";
 export * from "./schema/issue-report";
 export * from "./schema/lesson-attempt";
 export * from "./schema/profile";

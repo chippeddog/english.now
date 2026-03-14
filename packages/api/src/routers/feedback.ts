@@ -8,6 +8,7 @@ import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure, router } from "../index";
+import { getReportAccessSummary } from "../services/feature-gating";
 
 export const feedbackRouter = router({
 	getFeedback: protectedProcedure
@@ -45,10 +46,33 @@ export const feedbackRouter = router({
 				.where(eq(conversationMessage.sessionId, input.sessionId))
 				.orderBy(conversationMessage.createdAt);
 
+			const reportAccess = await getReportAccessSummary(ctx.session.user.id);
+			const fullFeedback = feedback[0];
+			const maskedFeedback =
+				reportAccess.locked && fullFeedback.status === "completed"
+					? {
+							...fullFeedback,
+							grammarScore: null,
+							vocabularyScore: null,
+							fluencyScore: null,
+							pronunciationScore: null,
+							strengths: null,
+							improvements: null,
+							corrections: (fullFeedback.corrections ?? [])
+								.slice(0, 2)
+								.map((correction) => ({
+									...correction,
+									explanation: null,
+								})),
+							vocabularySuggestions: null,
+						}
+					: fullFeedback;
+
 			return {
-				feedback: feedback[0],
+				feedback: maskedFeedback,
 				session: session[0] ?? null,
 				messages,
+				reportAccess,
 			};
 		}),
 });

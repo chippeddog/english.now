@@ -1,8 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { Loader2, MicIcon, PlusIcon } from "lucide-react";
+import { Loader, MicIcon, RefreshCwIcon } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useUpgradeDialog } from "@/components/dashboard/upgrade-dialog";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -10,6 +12,11 @@ import {
 	DialogContent,
 	DialogFooter,
 } from "@/components/ui/dialog";
+import {
+	getActivityGateState,
+	getPracticeTypeGateState,
+	isFreePracticeLimitError,
+} from "@/lib/feature-gating";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/utils/trpc";
 
@@ -28,7 +35,9 @@ type PronunciationActivity = {
 	description: string;
 	type: "pronunciation";
 	typeLabel: string;
+	startedAt: string | null;
 	completedAt: string | null;
+	sessionId: string | null;
 	payload: {
 		paragraph: ParagraphPreview;
 	};
@@ -50,9 +59,11 @@ function SkeletonText() {
 function DialogTopicsPronunciation({
 	open,
 	setOpen,
+	onUpgradeClick,
 }: {
 	open: boolean;
 	setOpen: (open: boolean) => void;
+	onUpgradeClick: () => void;
 }) {
 	const trpc = useTRPC();
 	const navigate = useNavigate();
@@ -70,19 +81,6 @@ function DialogTopicsPronunciation({
 			onSuccess: () => {
 				queryClient.invalidateQueries({
 					queryKey: trpc.practice.getTodayPlan.queryKey(),
-				});
-			},
-		}),
-	);
-
-	const startActivity = useMutation(
-		trpc.practice.startActivity.mutationOptions({
-			onSuccess: () => {
-				queryClient.invalidateQueries({
-					queryKey: trpc.practice.getTodayPlan.queryKey(),
-				});
-				queryClient.invalidateQueries({
-					queryKey: trpc.practice.getHomeTodayPlan.queryKey(),
 				});
 			},
 		}),
@@ -108,7 +106,17 @@ function DialogTopicsPronunciation({
 	}, [open, planData?.status, ensurePlan.isPending]);
 
 	useEffect(() => {
-		if (!selectedId && activities.length > 0) {
+		if (activities.length === 0) {
+			if (selectedId) {
+				setSelectedId(null);
+			}
+			return;
+		}
+
+		if (
+			!selectedId ||
+			!activities.some((activity) => activity.id === selectedId)
+		) {
 			setSelectedId(activities[0]?.id ?? null);
 		}
 	}, [selectedId, activities]);
@@ -118,16 +126,17 @@ function DialogTopicsPronunciation({
 		activities[0] ??
 		null;
 	const preview = selectedActivity?.payload.paragraph ?? null;
+	const access = planData?.access ?? null;
 
 	const startSession = useMutation(
 		trpc.pronunciation.startSession.mutationOptions({
 			onSuccess: (data) => {
-				if (selectedActivity) {
-					startActivity.mutate({
-						activityId: selectedActivity.id,
-						sessionId: data.sessionId,
-					});
-				}
+				queryClient.invalidateQueries({
+					queryKey: trpc.practice.getTodayPlan.queryKey(),
+				});
+				queryClient.invalidateQueries({
+					queryKey: trpc.practice.getHomeTodayPlan.queryKey(),
+				});
 				navigate({
 					to: "/pronunciation/$sessionId",
 					params: { sessionId: data.sessionId },
@@ -136,9 +145,35 @@ function DialogTopicsPronunciation({
 		}),
 	);
 
-	const handleStart = () => {
-		if (!preview) return;
-		startSession.mutate({ paragraph: preview });
+	const handleStart = async () => {
+		if (!selectedActivity) return;
+
+		const gateState = getActivityGateState(access, selectedActivity);
+
+		if (gateState === "locked") {
+			onUpgradeClick();
+			return;
+		}
+
+		if (gateState === "resume" && selectedActivity.sessionId) {
+			setOpen(false);
+			navigate({
+				to: "/pronunciation/$sessionId",
+				params: { sessionId: selectedActivity.sessionId },
+			});
+			return;
+		}
+
+		try {
+			await startSession.mutateAsync({ activityId: selectedActivity.id });
+		} catch (error) {
+			if (isFreePracticeLimitError(error)) {
+				onUpgradeClick();
+				return;
+			}
+
+			throw error;
+		}
 	};
 
 	const handleEnsurePlan = () => {
@@ -147,17 +182,38 @@ function DialogTopicsPronunciation({
 		}
 	};
 
+	const handleNextPreview = () => {
+		if (activities.length > 1) {
+			const currentIndex = activities.findIndex(
+				(activity) => activity.id === selectedActivity?.id,
+			);
+			const nextActivity =
+				activities[(currentIndex + 1 + activities.length) % activities.length];
+
+			if (nextActivity) {
+				setSelectedId(nextActivity.id);
+				return;
+			}
+		}
+
+		handleEnsurePlan();
+	};
+
 	const isGenerating =
 		isPlanLoading ||
 		ensurePlan.isPending ||
 		planData?.status === "missing" ||
 		planData?.status === "queued" ||
 		planData?.status === "generating";
+	const previewKey =
+		selectedActivity?.id ??
+		preview?.text ??
+		(isGenerating ? "loading" : "empty");
 
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogContent showCloseButton={false}>
-				<div className="mb-3 flex flex-col gap-2 text-center">
+				<div className="mb-6 flex flex-col gap-2 text-center">
 					<h1 className="font-bold font-lyon text-3xl tracking-tight">
 						{t("practice.pronunciation")}
 					</h1>
@@ -165,67 +221,72 @@ function DialogTopicsPronunciation({
 						{t("practice.selectMode")}
 					</p>
 				</div>
-				<div className="relative overflow-hidden border-neutral-200 border-b border-dashed p-4 pt-0.5 pb-0">
-					<div
-						className="min-h-48 rounded-t-2xl border-neutral-200 border-b-0 p-4"
-						style={{
-							boxShadow:
-								"0 0 0 1px rgba(0,0,0,.05),0 10px 10px -5px rgba(0,0,0,.04),0 20px 25px -5px rgba(0,0,0,.04),0 20px 32px -12px rgba(0,0,0,.04)",
-						}}
-					>
-						<div className="flex items-center justify-between">
-							<h3 className="font-semibold text-sm italic">Read Aloud</h3>
-							<button
-								type="button"
-								onClick={handleEnsurePlan}
-								disabled={isGenerating}
-								className="relative flex size-6 shrink-0 cursor-pointer items-center justify-center gap-1.5 overflow-hidden whitespace-nowrap rounded-lg bg-linear-to-t from-[#202020] to-[#2F2F2F] font-base text-white shadow-[inset_0_1px_4px_0_rgba(255,255,255,0.4)] outline-none backdrop-blur transition-all hover:opacity-90 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-40 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:from-[rgb(192,192,192)] dark:to-[rgb(255,255,255)] dark:shadow-[inset_0_1px_4px_0_rgba(128,128,128,0.2)] dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none"
+				<div className="relative">
+					<div className="-top-4.5 absolute right-0 left-0 mx-auto h-[200px] w-[80%] rounded-t-2xl bg-white shadow ring-1 ring-black/5" />
+					<div className="-top-2 absolute right-0 left-0 mx-auto h-[200px] w-[87%] rounded-t-2xl bg-white shadow ring-1 ring-black/5" />
+					<div className="relative z-10 overflow-hidden border-neutral-200 border-b border-dashed p-4 pt-0.5 pb-0">
+						<AnimatePresence initial={false} mode="popLayout">
+							<motion.div
+								key={previewKey}
+								initial={{ x: 36, rotate: 2, opacity: 0, scale: 0.98 }}
+								animate={{ x: 0, rotate: 0, opacity: 1, scale: 1 }}
+								exit={{ x: -36, rotate: -2, opacity: 0, scale: 0.97 }}
+								transition={{
+									type: "spring",
+									stiffness: 280,
+									damping: 26,
+									mass: 0.9,
+								}}
+								className="relative min-h-48 rounded-t-2xl border-neutral-200 border-b-0 bg-white p-4 shadow"
+								style={{
+									boxShadow:
+										"0 0 0 1px rgba(0,0,0,.05),0 10px 10px -5px rgba(0,0,0,.04),0 20px 25px -5px rgba(0,0,0,.04),0 20px 32px -12px rgba(0,0,0,.04)",
+								}}
 							>
-								<PlusIcon
-									className={cn("size-3.5", isGenerating && "animate-spin")}
-								/>
-							</button>
-						</div>
-						{isGenerating && !preview ? (
-							<SkeletonText />
-						) : preview ? (
-							<div className={cn("pt-3", isGenerating && "opacity-50")}>
-								<div className="mb-3 flex flex-wrap gap-2">
-									{activities.map((activity) => (
-										<button
-											key={activity.id}
-											type="button"
-											onClick={() => setSelectedId(activity.id)}
-											className={cn(
-												"rounded-full border px-2.5 py-1 text-xs transition",
-												selectedActivity?.id === activity.id
-													? "border-lime-500 bg-lime-100 text-lime-800"
-													: "border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50",
-											)}
-										>
-											{activity.title}
-										</button>
-									))}
+								<button
+									type="button"
+									onClick={handleNextPreview}
+									disabled={isGenerating}
+									aria-label={
+										activities.length > 1
+											? "Show next pronunciation text"
+											: "Generate another pronunciation text"
+									}
+									className="absolute top-4 right-4 z-10 flex size-6 shrink-0 cursor-pointer items-center justify-center gap-1.5 overflow-hidden whitespace-nowrap rounded-lg bg-linear-to-t from-[#202020] to-[#2F2F2F] font-base text-white shadow-[inset_0_1px_4px_0_rgba(255,255,255,0.4)] outline-none backdrop-blur transition-all hover:opacity-90 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-40 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:from-[rgb(192,192,192)] dark:to-[rgb(255,255,255)] dark:shadow-[inset_0_1px_4px_0_rgba(128,128,128,0.2)] dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none"
+								>
+									<RefreshCwIcon
+										className={cn("size-3.5", isGenerating && "animate-spin")}
+									/>
+								</button>
+								<div className="pt-1">
+									<h3 className="font-semibold text-sm italic">
+										{preview ? preview.topic : "Read Aloud"}
+									</h3>
+									{isGenerating && !preview ? (
+										<SkeletonText />
+									) : preview ? (
+										<div className={cn("pt-4", isGenerating && "opacity-50")}>
+											<p className="text-sm leading-relaxed">{preview.text}</p>
+											{/* <div className="mt-3 flex items-center gap-2">
+											<span className="rounded-md bg-lime-100 px-1.5 py-0.5 font-medium text-lime-700 text-xs">
+												{preview.cefrLevel}
+											</span>
+											<span className="text-muted-foreground text-xs">
+												{preview.topic}
+											</span>
+										</div> */}
+										</div>
+									) : (
+										<p className="pt-3 text-muted-foreground text-sm">
+											{planData?.error ??
+												"We’re still preparing your pronunciation activities."}
+										</p>
+									)}
 								</div>
-								<p className="text-sm leading-relaxed">{preview.text}</p>
-								<div className="mt-3 flex items-center gap-2">
-									<span className="rounded-md bg-lime-100 px-1.5 py-0.5 font-medium text-lime-700 text-xs">
-										{preview.cefrLevel}
-									</span>
-									<span className="text-muted-foreground text-xs">
-										{preview.topic}
-									</span>
-								</div>
-							</div>
-						) : (
-							<p className="pt-3 text-muted-foreground text-sm">
-								{planData?.error ??
-									"We’re still preparing your pronunciation activities."}
-							</p>
-						)}
+							</motion.div>
+						</AnimatePresence>
 					</div>
 				</div>
-
 				<DialogFooter>
 					<DialogClose asChild>
 						<Button
@@ -241,9 +302,12 @@ function DialogTopicsPronunciation({
 						className="relative flex shrink-0 cursor-pointer items-center justify-center gap-1.5 overflow-hidden whitespace-nowrap rounded-xl bg-linear-to-t from-[#202020] to-[#2F2F2F] font-base text-white italic shadow-[inset_0_1px_4px_0_rgba(255,255,255,0.4)] outline-none backdrop-blur transition-all hover:opacity-90 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-40 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:from-[rgb(192,192,192)] dark:to-[rgb(255,255,255)] dark:shadow-[inset_0_1px_4px_0_rgba(128,128,128,0.2)] dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none"
 					>
 						{startSession.isPending && (
-							<Loader2 className="size-5 animate-spin" />
+							<Loader className="size-4 animate-spin" />
 						)}
-						Start Practice
+						{selectedActivity &&
+						getActivityGateState(access, selectedActivity) === "resume"
+							? "Resume Practice"
+							: "Start Practice"}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
@@ -254,6 +318,37 @@ function DialogTopicsPronunciation({
 export default function Pronunciation() {
 	const { t } = useTranslation("app");
 	const [dialogOpen, setDialogOpen] = useState(false);
+	const navigate = useNavigate();
+	const trpc = useTRPC();
+	const { openDialog: openUpgradeDialog } = useUpgradeDialog();
+	const { data: planData } = useQuery(trpc.practice.getTodayPlan.queryOptions());
+	const gateState = getPracticeTypeGateState(
+		planData?.access ?? null,
+		"pronunciation",
+	);
+	const resumeSessionId =
+		gateState === "resume" &&
+		planData?.access?.usedPracticeType === "pronunciation"
+			? planData.access.usedPracticeSessionId
+			: null;
+
+	const handleCardClick = () => {
+		if (gateState === "locked") {
+			openUpgradeDialog();
+			return;
+		}
+
+		if (gateState === "resume" && resumeSessionId) {
+			navigate({
+				to: "/pronunciation/$sessionId",
+				params: { sessionId: resumeSessionId },
+			});
+			return;
+		}
+
+		setDialogOpen(true);
+	};
+
 	return (
 		<div
 			className="overflow-hidden rounded-[1.2rem] bg-white"
@@ -262,9 +357,13 @@ export default function Pronunciation() {
 					"0 0 0 1px rgba(0,0,0,.05),0 10px 10px -5px rgba(0,0,0,.04),0 20px 25px -5px rgba(0,0,0,.04),0 20px 32px -12px rgba(0,0,0,.04)",
 			}}
 		>
-			<DialogTopicsPronunciation open={dialogOpen} setOpen={setDialogOpen} />
+			<DialogTopicsPronunciation
+				open={dialogOpen}
+				setOpen={setDialogOpen}
+				onUpgradeClick={openUpgradeDialog}
+			/>
 			<button
-				onClick={() => setDialogOpen(true)}
+				onClick={handleCardClick}
 				type="button"
 				className="group flex w-full cursor-pointer items-center justify-between p-3.5 transition-colors duration-300 hover:bg-neutral-100"
 			>
@@ -277,7 +376,11 @@ export default function Pronunciation() {
 							{t("practice.pronunciation")}
 						</h2>
 						<p className="text-muted-foreground text-sm">
-							{t("practice.practiceYourPronunciation")}
+							{gateState === "locked"
+								? "Daily free AI practice used. Upgrade to unlock more."
+								: gateState === "resume"
+									? "Resume your pronunciation session from today."
+									: t("practice.practiceYourPronunciation")}
 						</p>
 					</div>
 				</div>

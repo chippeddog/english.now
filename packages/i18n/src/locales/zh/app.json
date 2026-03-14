@@ -7,7 +7,9 @@
     "settings": "设置",
     "preferences": "偏好",
     "voices": "语音",
-    "signOut": "退出"
+    "signOut": "退出",
+    "menu": "打开菜单",
+    "close": "关闭菜单"
   },
   "home": {
     "welcomeBack": "欢迎回来，{{firstName}}",
@@ -84,7 +86,8 @@
       "feedback": "高级AI反馈",
       "vocabulary": "完整词汇库",
       "learningPath": "个性化学习路径",
-      "analytics": "进度跟踪和分析"
+      "analytics": "进度跟踪和分析",
+      "lessons": "完整课程访问"
     },
     "yearly": "年付",
     "monthly": "月付",

@@ -14,6 +14,7 @@ import {
 import { useEffect, useState } from "react";
 import { OverallScore, ScoreBreakdown } from "@/components/pronunciation/score";
 import WeakPhonemesSection from "@/components/pronunciation/weak-phonemes";
+import { useUpgradeDialog } from "@/components/dashboard/upgrade-dialog";
 import { Button } from "@/components/ui/button";
 import {
 	Popover,
@@ -389,6 +390,7 @@ export default function SessionReview({
 	attempts?: AttemptForReview[];
 }) {
 	const trpc = useTRPC();
+	const { openDialog: openUpgradeDialog } = useUpgradeDialog();
 
 	const {
 		data: feedbackData,
@@ -431,9 +433,12 @@ export default function SessionReview({
 
 	const feedback = feedbackData?.feedback as PronunciationFeedback | null;
 	const feedbackStatus = feedbackData?.status;
+	const reportAccess = feedbackData?.reportAccess;
+	const isPreviewLocked = reportAccess?.locked && reportAccess.preview;
 
 	return (
-		<div className="grid grid-cols-5 gap-4 space-y-6">
+		<>
+			<div className="grid grid-cols-5 gap-4 space-y-6">
 			{/* {summary.paragraph && (
 				<div className="rounded-2xl border bg-card p-8">
 					<p className="text-foreground leading-relaxed">{summary.paragraph}</p>
@@ -442,14 +447,17 @@ export default function SessionReview({
 			{/* Transcript Feedback */}
 			{paragraphText && (
 				<div className="col-span-3">
-					<TranscriptFeedback
-						paragraphText={paragraphText}
-						attempts={attempts}
-					/>
+					{!isPreviewLocked ? (
+						<TranscriptFeedback
+							paragraphText={paragraphText}
+							attempts={attempts}
+						/>
+					) : null}
 					<div className="rounded-2xl border bg-card p-8">
 						<OverallScore score={summary.averageScore} />
 
-						{(summary.averageAccuracy > 0 ||
+						{!isPreviewLocked &&
+							(summary.averageAccuracy > 0 ||
 							summary.averageFluency > 0 ||
 							summary.averageProsody > 0 ||
 							summary.averageCompleteness > 0) && (
@@ -464,34 +472,50 @@ export default function SessionReview({
 						)}
 
 						<div className="mt-6 grid grid-cols-3 gap-4 border-t pt-6">
-							<div className="text-center">
-								<p className="font-bold text-2xl text-green-600">
-									{summary.bestScore}%
-								</p>
-								<p className="text-muted-foreground text-sm">Best Score</p>
-							</div>
+							{!isPreviewLocked ? (
+								<div className="text-center">
+									<p className="font-bold text-2xl text-green-600">
+										{summary.bestScore}%
+									</p>
+									<p className="text-muted-foreground text-sm">Best Score</p>
+								</div>
+							) : (
+								<div className="text-center">
+									<p className="font-bold text-2xl text-primary">
+										{summary.averageScore}%
+									</p>
+									<p className="text-muted-foreground text-sm">Overall Score</p>
+								</div>
+							)}
 							<div className="text-center">
 								<p className="font-bold text-2xl">{summary.totalAttempts}</p>
 								<p className="text-muted-foreground text-sm">Attempts</p>
 							</div>
-							<div className="text-center">
-								<p className="font-bold text-2xl text-red-500">
-									{summary.worstScore}%
-								</p>
-								<p className="text-muted-foreground text-sm">Lowest</p>
-							</div>
+							{!isPreviewLocked ? (
+								<div className="text-center">
+									<p className="font-bold text-2xl text-red-500">
+										{summary.worstScore}%
+									</p>
+									<p className="text-muted-foreground text-sm">Lowest</p>
+								</div>
+							) : (
+								<div className="text-center">
+									<p className="font-bold text-2xl">{summary.totalAttempts}</p>
+									<p className="text-muted-foreground text-sm">Recorded Takes</p>
+								</div>
+							)}
 						</div>
 					</div>
 				</div>
 			)}
 			<div className="col-span-2">
 				{/* Weak Phonemes */}
-				{summary.weakPhonemes?.length > 0 && (
+				{!isPreviewLocked && summary.weakPhonemes?.length > 0 && (
 					<WeakPhonemesSection phonemes={summary.weakPhonemes} />
 				)}
 
 				{/* Weak Words */}
-				{summary.weakWords?.length > 0 && (
+				{!isPreviewLocked && summary.weakWords?.length > 0 && (
 					<div className="rounded-2xl border border-red-200 bg-red-50 p-6 dark:border-red-800 dark:bg-red-900/20">
 						<h3 className="mb-3 font-semibold text-lg text-red-700 dark:text-red-300">
 							Words to Practice
@@ -514,6 +538,11 @@ export default function SessionReview({
 					<div className="flex items-center gap-2">
 						<Sparkles className="size-5 text-primary" />
 						<h3 className="font-semibold text-lg">AI Coach Feedback</h3>
+						{isPreviewLocked && (
+							<span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 font-medium text-[11px] text-amber-700 uppercase tracking-wide">
+								Preview
+							</span>
+						)}
 					</div>
 
 					{(feedbackStatus === "pending" ||
@@ -535,6 +564,25 @@ export default function SessionReview({
 							</p>
 							<Button variant="outline" size="sm" onClick={() => refetch()}>
 								Retry
+							</Button>
+						</div>
+					)}
+
+					{feedbackStatus === "completed" && isPreviewLocked && (
+						<div className="rounded-2xl border border-amber-200 bg-amber-50 p-6">
+							<h4 className="font-semibold text-amber-800">
+								Unlock Your AI Coach
+							</h4>
+							<p className="mt-2 text-amber-700 text-sm leading-relaxed">
+								Upgrade to see detailed mistake patterns, personalized mini
+								exercises, weak-area analysis, and practice word sets for this
+								session.
+							</p>
+							<Button
+								className="mt-4 rounded-xl"
+								onClick={openUpgradeDialog}
+							>
+								Unlock Full Feedback
 							</Button>
 						</div>
 					)}
@@ -726,6 +774,7 @@ export default function SessionReview({
 					)}
 				</div>
 			</div>
-		</div>
+			</div>
+		</>
 	);
 }

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	BookOpen,
 	Check,
+	Circle,
 	Lightbulb,
 	Loader,
 	Mic,
@@ -13,6 +14,14 @@ import {
 } from "lucide-react";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuLabel,
+	DropdownMenuRadioGroup,
+	DropdownMenuRadioItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
 	Popover,
 	PopoverContent,
@@ -48,8 +57,8 @@ type ControlToolbarProps = {
 	setSelectedDevice: (deviceId: string) => void;
 	autoTranslate: boolean;
 	onAutoTranslateChange: (enabled: boolean) => void;
-	vocabMode: boolean;
-	setVocabMode: (enabled: boolean) => void;
+	vocabMode: "off" | "word" | "phrase";
+	setVocabMode: (mode: "off" | "word" | "phrase") => void;
 };
 
 export function ControlToolbar({
@@ -90,6 +99,12 @@ export function ControlToolbar({
 	const currentVoice = profile?.voiceModel ?? "aura-2-asteria-en";
 	const [playingVoiceId, setPlayingVoiceId] = useState<string | null>(null);
 	const previewAudioRef = useRef<HTMLAudioElement | null>(null);
+	const vocabModeLabel =
+		vocabMode === "word"
+			? "Word mode"
+			: vocabMode === "phrase"
+				? "Phrase mode"
+				: "Vocabulary mode";
 
 	const previewVoice = (voiceId: string) => {
 		if (playingVoiceId === voiceId) return;
@@ -207,26 +222,49 @@ export function ControlToolbar({
 							<TooltipContent>Get a hint</TooltipContent>
 						</Tooltip>
 
-						<Tooltip>
-							<TooltipTrigger asChild>
-								<Button
-									type="button"
-									variant="ghost"
-									className={cn(
-										"aspect-square h-full shrink-0 rounded-none",
-										vocabMode && "bg-lime-100 text-lime-700",
-									)}
-									onClick={() => setVocabMode(!vocabMode)}
+						<DropdownMenu>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<DropdownMenuTrigger asChild>
+										<Button
+											type="button"
+											variant="ghost"
+											className={cn(
+												"aspect-square h-full shrink-0 rounded-none",
+												vocabMode !== "off" && "bg-lime-100 text-lime-700",
+											)}
+										>
+											<div className="relative">
+												<BookOpen className="size-5" />
+												{vocabMode === "phrase" ? (
+													<Circle className="-right-1 -top-1 absolute size-2.5 fill-current" />
+												) : null}
+											</div>
+										</Button>
+									</DropdownMenuTrigger>
+								</TooltipTrigger>
+								<TooltipContent>{vocabModeLabel}</TooltipContent>
+							</Tooltip>
+							<DropdownMenuContent side="top" align="center" className="w-56">
+								<DropdownMenuLabel>Vocabulary mode</DropdownMenuLabel>
+								<DropdownMenuRadioGroup
+									value={vocabMode}
+									onValueChange={(value) =>
+										setVocabMode(value as "off" | "word" | "phrase")
+									}
 								>
-									<BookOpen className="size-5" />
-								</Button>
-							</TooltipTrigger>
-							<TooltipContent>
-								{vocabMode
-									? "Exit vocabulary mode"
-									: "Save words to vocabulary"}
-							</TooltipContent>
-						</Tooltip>
+									<DropdownMenuRadioItem value="off">
+										Off
+									</DropdownMenuRadioItem>
+									<DropdownMenuRadioItem value="word">
+										Word mode
+									</DropdownMenuRadioItem>
+									<DropdownMenuRadioItem value="phrase">
+										Phrase mode
+									</DropdownMenuRadioItem>
+								</DropdownMenuRadioGroup>
+							</DropdownMenuContent>
+						</DropdownMenu>
 
 						<Popover open={settingsOpen} onOpenChange={setSettingsOpen}>
 							<Tooltip>

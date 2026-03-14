@@ -116,6 +116,38 @@
           "Rastreamento de progresso e análises"
         ]
       }
+    },
+    "pageTitle": "Qual plano é ideal para você?",
+    "pageSubtitle": "Todos os planos incluem acesso às nossas ferramentas de aprendizado com IA.",
+    "faqSection": {
+      "title": "Perguntas Frequentes",
+      "subtitle": "Tudo o que você precisa saber sobre nossos preços e planos.",
+      "items": {
+        "switchPlans": {
+          "question": "Posso mudar de plano?",
+          "answer": "Sim! Você pode fazer upgrade ou downgrade do seu plano a qualquer momento. Ao fazer upgrade, você será cobrado pela diferença proporcional. Ao fazer downgrade, a nova tarifa será aplicada no seu próximo ciclo de faturamento."
+        },
+        "freeTrial": {
+          "question": "Existe um teste gratuito para o Pro?",
+          "answer": "Com certeza! Oferecemos um teste gratuito de 7 dias para o nosso plano Pro. Não é necessário cartão de crédito para começar. Você pode explorar todos os recursos do Pro e decidir se é adequado para você."
+        },
+        "paymentMethods": {
+          "question": "Quais métodos de pagamento vocês aceitam?",
+          "answer": "Aceitamos todos os principais cartões de crédito (Visa, MasterCard, American Express), PayPal e Apple Pay. Para planos de equipe, também oferecemos faturamento baseado em fatura."
+        },
+        "studentDiscounts": {
+          "question": "Vocês oferecem descontos para estudantes?",
+          "answer": "Não, atualmente não oferecemos descontos para estudantes. Mas estamos trabalhando nisso. Fique atento!"
+        },
+        "cancelAnytime": {
+          "question": "Posso cancelar minha assinatura a qualquer momento?",
+          "answer": "Sim, você pode cancelar sua assinatura a qualquer momento. Seu acesso continuará até o final do seu período de faturamento atual. Sem perguntas, sem taxas ocultas."
+        },
+        "progressSaved": {
+          "question": "Meu progresso de aprendizado é salvo se eu cancelar?",
+          "answer": "Seu progresso é sempre salvo, mesmo se você cancelar ou mudar para o plano gratuito. Você pode retomar de onde parou sempre que decidir voltar."
+        }
+      }
     }
   },
   "faq": {

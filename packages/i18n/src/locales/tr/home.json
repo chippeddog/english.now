@@ -116,6 +116,38 @@
           "İlerleme takibi ve analiz"
         ]
       }
+    },
+    "pageTitle": "Hangi plan sizin için uygun?",
+    "pageSubtitle": "Tüm planlar, yapay zeka destekli öğrenme araçlarımıza erişimi içerir.",
+    "faqSection": {
+      "title": "SSS",
+      "subtitle": "Fiyatlandırmamız ve planlarımız hakkında bilmeniz gereken her şey.",
+      "items": {
+        "switchPlans": {
+          "question": "Planlar arasında geçiş yapabilir miyim?",
+          "answer": "Evet! Planınızı istediğiniz zaman yükseltebilir veya düşürebilirsiniz. Yükseltme yaparken, fark ücretlendirilir. Düşürme yaparken, yeni oran bir sonraki fatura döneminizde geçerli olur."
+        },
+        "freeTrial": {
+          "question": "Pro için ücretsiz deneme var mı?",
+          "answer": "Kesinlikle! Pro planımız için 7 günlük ücretsiz deneme sunuyoruz. Başlamak için kredi kartı gerekmez. Tüm Pro özelliklerini keşfedebilir ve sizin için uygun olup olmadığına karar verebilirsiniz."
+        },
+        "paymentMethods": {
+          "question": "Hangi ödeme yöntemlerini kabul ediyorsunuz?",
+          "answer": "Tüm büyük kredi kartlarını (Visa, MasterCard, American Express), PayPal ve Apple Pay'i kabul ediyoruz. Takım planları için ayrıca fatura bazlı ödeme de sunuyoruz."
+        },
+        "studentDiscounts": {
+          "question": "Öğrenci indirimi sunuyor musunuz?",
+          "answer": "Hayır, şu anda öğrenci indirimi sunmuyoruz. Ancak üzerinde çalışıyoruz. Takipte kalın!"
+        },
+        "cancelAnytime": {
+          "question": "Aboneliğimi istediğim zaman iptal edebilir miyim?",
+          "answer": "Evet, aboneliğinizi istediğiniz zaman iptal edebilirsiniz. Erişiminiz mevcut fatura dönemi sonuna kadar devam eder. Sorulacak soru yok, gizli ücret yok."
+        },
+        "progressSaved": {
+          "question": "İptal edersem öğrenme ilerlemem kaydedilir mi?",
+          "answer": "İlerlemeniz her zaman kaydedilir, iptal etseniz veya ücretsiz plana geçseniz bile. Geri dönmeye karar verdiğinizde kaldığınız yerden devam edebilirsiniz."
+        }
+      }
     }
   },
   "faq": {

@@ -15,6 +15,7 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import type { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
+import { UpgradeDialogProvider } from "@/components/dashboard/upgrade-dialog";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { getLanguageCookie } from "@/functions/get-language";
@@ -116,8 +117,10 @@ function RootDocument() {
 			</head>
 			<body>
 				<ThemeProvider>
-					<Outlet />
-					<Toaster richColors />
+					<UpgradeDialogProvider>
+						<Outlet />
+						<Toaster richColors />
+					</UpgradeDialogProvider>
 				</ThemeProvider>
 				<TanStackRouterDevtools position="top-right" />
 				<ReactQueryDevtools position="bottom" buttonPosition="bottom-right" />

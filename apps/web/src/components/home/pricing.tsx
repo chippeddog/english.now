@@ -172,7 +172,7 @@ export function Pricing() {
 					</CarouselContent>
 				</Carousel>
 
-				<div className="mt-4 flex justify-center gap-1.5">
+				{/* <div className="mt-4 flex justify-center gap-1.5">
 					{_plans.map((_, index) => (
 						<button
 							key={_plans[index].key}
@@ -187,7 +187,7 @@ export function Pricing() {
 							)}
 						/>
 					))}
-				</div>
+				</div> */}
 			</div>
 		</>
 	);

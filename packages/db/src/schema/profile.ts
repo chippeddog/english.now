@@ -5,7 +5,6 @@ import {
 	pgTable,
 	text,
 	timestamp,
-	vector,
 } from "drizzle-orm/pg-core";
 import { user } from "./auth";
 

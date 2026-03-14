@@ -7,7 +7,9 @@
     "settings": "Impostazioni",
     "preferences": "Preferenze",
     "voices": "Voci",
-    "signOut": "Esci"
+    "signOut": "Esci",
+    "menu": "Apri menu",
+    "close": "Chiudi menu"
   },
   "home": {
     "welcomeBack": "Bentornato, {{firstName}}",
@@ -84,7 +86,8 @@
       "feedback": "Feedback AI avanzato",
       "vocabulary": "Libreria completa di vocabolario",
       "learningPath": "Percorso di apprendimento personalizzato",
-      "analytics": "Monitoraggio del progresso e analisi"
+      "analytics": "Monitoraggio del progresso e analisi",
+      "lessons": "Accesso completo alle lezioni"
     },
     "yearly": "Annuale",
     "monthly": "Mensile",

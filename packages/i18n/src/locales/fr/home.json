@@ -116,6 +116,38 @@
           "Suivi de progression et analyses"
         ]
       }
+    },
+    "pageTitle": "Quel plan est fait pour vous ?",
+    "pageSubtitle": "Tous les plans incluent l'accès à nos outils d'apprentissage alimentés par l'IA.",
+    "faqSection": {
+      "title": "FAQs",
+      "subtitle": "Tout ce que vous devez savoir sur nos tarifs et plans.",
+      "items": {
+        "switchPlans": {
+          "question": "Puis-je changer de plan ?",
+          "answer": "Oui ! Vous pouvez passer à un plan supérieur ou inférieur à tout moment. Lors de la mise à niveau, vous serez facturé pour la différence au prorata. Lors de la rétrogradation, le nouveau tarif s'applique à votre prochain cycle de facturation."
+        },
+        "freeTrial": {
+          "question": "Y a-t-il un essai gratuit pour Pro ?",
+          "answer": "Absolument ! Nous offrons un essai gratuit de 7 jours pour notre plan Pro. Aucune carte de crédit n'est requise pour commencer. Vous pouvez explorer toutes les fonctionnalités Pro et décider si cela vous convient."
+        },
+        "paymentMethods": {
+          "question": "Quels modes de paiement acceptez-vous ?",
+          "answer": "Nous acceptons toutes les principales cartes de crédit (Visa, MasterCard, American Express), PayPal et Apple Pay. Pour les plans Équipe, nous proposons également la facturation par facture."
+        },
+        "studentDiscounts": {
+          "question": "Offrez-vous des réductions pour les étudiants ?",
+          "answer": "Non, actuellement nous n'offrons pas de réductions pour les étudiants. Mais nous y travaillons. Restez à l'écoute !"
+        },
+        "cancelAnytime": {
+          "question": "Puis-je annuler mon abonnement à tout moment ?",
+          "answer": "Oui, vous pouvez annuler votre abonnement à tout moment. Votre accès se poursuivra jusqu'à la fin de votre période de facturation en cours. Pas de questions posées, pas de frais cachés."
+        },
+        "progressSaved": {
+          "question": "Mon progrès d'apprentissage est-il sauvegardé si j'annule ?",
+          "answer": "Votre progression est toujours sauvegardée, même si vous annulez ou passez au plan gratuit. Vous pouvez reprendre là où vous vous êtes arrêté dès que vous décidez de revenir."
+        }
+      }
     }
   },
   "faq": {

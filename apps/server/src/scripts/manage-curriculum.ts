@@ -1,18 +1,18 @@
-import dotenv from "dotenv";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import dotenv from "dotenv";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
-import { and, asc, desc, eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/node-postgres";
 import {
 	course,
 	courseVersion,
 	curriculumLesson,
 	curriculumUnit,
 } from "@english.now/db/schema/curriculum";
+import { and, asc, desc, eq } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/node-postgres";
 
 const db = drizzle(process.env.DATABASE_URL!);
 

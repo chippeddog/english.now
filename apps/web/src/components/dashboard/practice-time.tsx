@@ -290,7 +290,7 @@ export default function DailyPracticeTime({
 					"0 0 0 1px rgba(0,0,0,.05),0 10px 10px -5px rgba(0,0,0,.04),0 20px 25px -5px rgba(0,0,0,.04),0 20px 32px -12px rgba(0,0,0,.04)",
 			}}
 		>
-			<div className="mt-1 mb-2 flex flex-col pl-1.5">
+			<div className="mt-1 mb-2.5 flex flex-col pl-1.5">
 				<div className="font-bold font-lyon text-xl">
 					{t("practiceTime.title")}
 				</div>

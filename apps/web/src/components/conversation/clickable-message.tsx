@@ -1,10 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { WordPopover } from "./word-popover";
 
 type ClickableMessageProps = {
 	content: string;
-	vocabMode: boolean;
+	vocabMode: "off" | "word" | "phrase";
 	disabled?: boolean;
 };
 
@@ -38,10 +38,24 @@ export default function ClickableMessage({
 	disabled,
 }: ClickableMessageProps) {
 	const [selectedWord, setSelectedWord] = useState<string | null>(null);
+	const [selectedPhraseKeys, setSelectedPhraseKeys] = useState<string[]>([]);
 	const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 	const tokens = useMemo(() => tokenize(content), [content]);
+	const selectedPhrase = useMemo(() => {
+		if (selectedPhraseKeys.length === 0) return "";
+		return tokens
+			.filter((token) => token.word && selectedPhraseKeys.includes(token.key))
+			.map((token) => token.word)
+			.join(" ");
+	}, [selectedPhraseKeys, tokens]);
 
-	if (!vocabMode) {
+	useEffect(() => {
+		setSelectedWord(null);
+		setSelectedPhraseKeys([]);
+		setAnchorEl(null);
+	}, [content, vocabMode]);
+
+	if (vocabMode === "off") {
 		return <>{content}</>;
 	}
 
@@ -57,18 +71,35 @@ export default function ClickableMessage({
 						<button
 							key={token.key}
 							type="button"
+							data-vocab-token="true"
 							tabIndex={disabled ? -1 : 0}
 							className={cn(
 								"cursor-pointer rounded-sm transition-colors duration-100",
 								"decoration-lime-400/60 decoration-dotted underline-offset-4 hover:underline",
-								"hover:bg-lime-100/60",
+								vocabMode === "word" && "hover:bg-lime-100/60",
+								vocabMode === "phrase" && "hover:bg-sky-100/60",
+								selectedPhraseKeys.includes(token.key) &&
+									"bg-sky-100 text-sky-800 underline",
 								disabled && "pointer-events-none",
 							)}
 							onClick={(e) => {
 								if (!token.word) return;
 								e.stopPropagation();
-								setSelectedWord(token.word.toLowerCase());
-								setAnchorEl(e.currentTarget);
+								if (vocabMode === "word") {
+									setSelectedPhraseKeys([]);
+									setSelectedWord(token.word);
+									setAnchorEl(e.currentTarget);
+									return;
+								}
+
+								setSelectedWord(null);
+								const nextSelection = selectedPhraseKeys.includes(token.key)
+									? selectedPhraseKeys.filter((key) => key !== token.key)
+									: [...selectedPhraseKeys, token.key];
+								setSelectedPhraseKeys(nextSelection);
+								setAnchorEl(
+									nextSelection.length > 0 ? e.currentTarget : null,
+								);
 							}}
 						>
 							{token.text}
@@ -79,7 +110,8 @@ export default function ClickableMessage({
 
 			{selectedWord && anchorEl && (
 				<WordPopover
-					word={selectedWord}
+					text={selectedWord}
+					mode="word"
 					anchorEl={anchorEl}
 					onClose={() => {
 						setSelectedWord(null);
@@ -87,6 +119,21 @@ export default function ClickableMessage({
 					}}
 				/>
 			)}
+			{vocabMode === "phrase" &&
+			selectedPhraseKeys.length > 1 &&
+			selectedPhrase &&
+			anchorEl ? (
+				<WordPopover
+					text={selectedPhrase}
+					mode="phrase"
+					selectionCount={selectedPhraseKeys.length}
+					anchorEl={anchorEl}
+					onClose={() => {
+						setSelectedPhraseKeys([]);
+						setAnchorEl(null);
+					}}
+				/>
+			) : null}
 		</>
 	);
 }

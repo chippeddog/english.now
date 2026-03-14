@@ -116,6 +116,38 @@
           "Śledzenie postępów i analityka"
         ]
       }
+    },
+    "pageTitle": "Który plan jest dla Ciebie odpowiedni?",
+    "pageSubtitle": "Wszystkie plany obejmują dostęp do naszych narzędzi edukacyjnych opartych na AI.",
+    "faqSection": {
+      "title": "FAQ",
+      "subtitle": "Wszystko, co musisz wiedzieć o naszych cenach i planach.",
+      "items": {
+        "switchPlans": {
+          "question": "Czy mogę zmieniać plany?",
+          "answer": "Tak! Możesz zmienić plan na wyższy lub niższy w dowolnym momencie. Przy zmianie na wyższy plan zostaniesz obciążony proporcjonalną różnicą. Przy zmianie na niższy plan, nowa stawka obowiązuje w następnym cyklu rozliczeniowym."
+        },
+        "freeTrial": {
+          "question": "Czy jest dostępna darmowa wersja próbna dla Pro?",
+          "answer": "Oczywiście! Oferujemy 7-dniową darmową wersję próbną dla naszego planu Pro. Nie jest wymagana karta kredytowa, aby rozpocząć. Możesz przetestować wszystkie funkcje Pro i zdecydować, czy jest to dla Ciebie odpowiednie."
+        },
+        "paymentMethods": {
+          "question": "Jakie metody płatności akceptujecie?",
+          "answer": "Akceptujemy wszystkie główne karty kredytowe (Visa, MasterCard, American Express), PayPal i Apple Pay. Dla planów zespołowych oferujemy również rozliczenia na podstawie faktur."
+        },
+        "studentDiscounts": {
+          "question": "Czy oferujecie zniżki dla studentów?",
+          "answer": "Nie, obecnie nie oferujemy zniżek dla studentów. Ale pracujemy nad tym. Bądź na bieżąco!"
+        },
+        "cancelAnytime": {
+          "question": "Czy mogę anulować subskrypcję w dowolnym momencie?",
+          "answer": "Tak, możesz anulować subskrypcję w dowolnym momencie. Twój dostęp będzie kontynuowany do końca bieżącego okresu rozliczeniowego. Bez pytań, bez ukrytych opłat."
+        },
+        "progressSaved": {
+          "question": "Czy mój postęp w nauce jest zapisywany, jeśli anuluję?",
+          "answer": "Twój postęp jest zawsze zapisywany, nawet jeśli anulujesz lub przejdziesz na darmowy plan. Możesz kontynuować od miejsca, w którym przerwałeś, kiedy tylko zdecydujesz się wrócić."
+        }
+      }
     }
   },
   "faq": {

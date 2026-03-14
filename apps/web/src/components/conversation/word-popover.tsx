@@ -1,32 +1,47 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { BookPlus, Loader, MessageSquarePlus } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
 import * as PopoverPrimitive from "@radix-ui/react-popover";
 import { toast } from "sonner";
+import { useUpgradeDialog } from "@/components/dashboard/upgrade-dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/utils/trpc";
 
 type WordPopoverProps = {
-	word: string;
+	text: string;
+	mode: "word" | "phrase";
+	selectionCount?: number;
 	anchorEl: HTMLElement;
 	onClose: () => void;
 };
 
-export function WordPopover({ word, anchorEl, onClose }: WordPopoverProps) {
+export function WordPopover({
+	text,
+	mode,
+	selectionCount,
+	anchorEl,
+	onClose,
+}: WordPopoverProps) {
 	const trpc = useTRPC();
-	const [phraseMode, setPhraseMode] = useState(false);
-	const [phraseText, setPhraseText] = useState(word);
-	const phraseInputRef = useRef<HTMLInputElement>(null);
+	const queryClient = useQueryClient();
+	const { openDialog } = useUpgradeDialog();
 
 	const addWord = useMutation(
 		trpc.vocabulary.addWord.mutationOptions({
 			onSuccess: () => {
-				toast.success(`"${word}" added to vocabulary`);
+				queryClient.invalidateQueries({
+					queryKey: trpc.vocabulary.getWords.queryKey(),
+				});
+				queryClient.invalidateQueries({
+					queryKey: trpc.vocabulary.getAccess.queryKey(),
+				});
+				toast.success(`"${text}" added to vocabulary`);
 				onClose();
 			},
 			onError: (err) => {
+				if (err.message.includes("FREE_VOCAB_ADD_LIMIT_REACHED")) {
+					openDialog();
+				}
 				toast.error(err.message ?? "Failed to add word");
 			},
 		}),
@@ -35,23 +50,26 @@ export function WordPopover({ word, anchorEl, onClose }: WordPopoverProps) {
 	const addPhrase = useMutation(
 		trpc.vocabulary.addPhrase.mutationOptions({
 			onSuccess: () => {
-				toast.success(`"${phraseText}" added to vocabulary`);
+				queryClient.invalidateQueries({
+					queryKey: trpc.vocabulary.getPhrases.queryKey(),
+				});
+				queryClient.invalidateQueries({
+					queryKey: trpc.vocabulary.getAccess.queryKey(),
+				});
+				toast.success(`"${text}" added to vocabulary`);
 				onClose();
 			},
 			onError: (err) => {
+				if (err.message.includes("FREE_VOCAB_ADD_LIMIT_REACHED")) {
+					openDialog();
+				}
 				toast.error(err.message ?? "Failed to add phrase");
 			},
 		}),
 	);
 
 	const isPending = addWord.isPending || addPhrase.isPending;
-
-	useEffect(() => {
-		if (phraseMode) {
-			phraseInputRef.current?.focus();
-			phraseInputRef.current?.select();
-		}
-	}, [phraseMode]);
+	const canSavePhrase = (selectionCount ?? 0) > 1;
 
 	return (
 		<PopoverPrimitive.Root open onOpenChange={(open) => !open && onClose()}>
@@ -69,18 +87,24 @@ export function WordPopover({ word, anchorEl, onClose }: WordPopoverProps) {
 						"data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2",
 					)}
 					onOpenAutoFocus={(e) => e.preventDefault()}
+					onInteractOutside={(e) => {
+						const target = e.target as HTMLElement | null;
+						if (target?.closest("[data-vocab-token='true']")) {
+							e.preventDefault();
+						}
+					}}
 				>
 					<p className="mb-2.5 text-center font-semibold text-sm">
-						"{word}"
+						"{text}"
 					</p>
 
-					{!phraseMode ? (
-						<div className="flex flex-col gap-1.5">
+					{mode === "word" ? (
+						<div className="flex flex-col gap-2">
 							<Button
 								size="sm"
 								className="w-full justify-start gap-2 rounded-lg"
 								onClick={() =>
-									addWord.mutate({ word, source: "chat" })
+									addWord.mutate({ word: text.toLowerCase(), source: "chat" })
 								}
 								disabled={isPending}
 							>
@@ -89,68 +113,32 @@ export function WordPopover({ word, anchorEl, onClose }: WordPopoverProps) {
 								) : (
 									<BookPlus className="size-3.5" />
 								)}
-								Save Word
+								Add word to vocabulary
 							</Button>
-							<Button
-								size="sm"
-								variant="outline"
-								className="w-full justify-start gap-2 rounded-lg"
-								onClick={() => setPhraseMode(true)}
-								disabled={isPending}
-							>
-								<MessageSquarePlus className="size-3.5" />
-								Save as Phrase
-							</Button>
+							<p className="text-center text-muted-foreground text-xs">
+								Word mode saves one selected word at a time.
+							</p>
 						</div>
 					) : (
 						<div className="flex flex-col gap-2">
-							<Input
-								ref={phraseInputRef}
-								value={phraseText}
-								onChange={(e) => setPhraseText(e.target.value)}
-								placeholder="Type a phrase..."
-								className="rounded-lg text-sm"
-								onKeyDown={(e) => {
-									if (e.key === "Enter" && phraseText.trim()) {
-										addPhrase.mutate({
-											phrase: phraseText.trim(),
-											source: "chat",
-										});
-									}
-								}}
-								disabled={isPending}
-							/>
-							<div className="flex gap-1.5">
-								<Button
-									size="sm"
-									variant="outline"
-									className="flex-1 rounded-lg"
-									onClick={() => {
-										setPhraseMode(false);
-										setPhraseText(word);
-									}}
-									disabled={isPending}
-								>
-									Back
-								</Button>
-								<Button
-									size="sm"
-									className="flex-1 gap-2 rounded-lg"
-									onClick={() =>
-										addPhrase.mutate({
-											phrase: phraseText.trim(),
-											source: "chat",
-										})
-									}
-									disabled={!phraseText.trim() || isPending}
-								>
-									{addPhrase.isPending ? (
-										<Loader className="size-3.5 animate-spin" />
-									) : (
-										"Save Phrase"
-									)}
-								</Button>
-							</div>
+							<Button
+								size="sm"
+								className="w-full justify-start gap-2 rounded-lg"
+								onClick={() => addPhrase.mutate({ phrase: text, source: "chat" })}
+								disabled={!canSavePhrase || isPending}
+							>
+								{addPhrase.isPending ? (
+									<Loader className="size-3.5 animate-spin" />
+								) : (
+									<MessageSquarePlus className="size-3.5" />
+								)}
+								Add phrase to vocabulary
+							</Button>
+							<p className="text-center text-muted-foreground text-xs">
+								{canSavePhrase
+									? "Phrase mode saves the selected words as one phrase."
+									: "Select at least 2 words to save a phrase."}
+							</p>
 						</div>
 					)}
 				</PopoverPrimitive.Content>

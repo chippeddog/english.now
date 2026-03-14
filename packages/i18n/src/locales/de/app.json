@@ -7,7 +7,9 @@
     "settings": "Einstellungen",
     "preferences": "Präferenzen",
     "voices": "Stimmen",
-    "signOut": "Abmelden"
+    "signOut": "Abmelden",
+    "menu": "Menü öffnen",
+    "close": "Menü schließen"
   },
   "home": {
     "welcomeBack": "Willkommen zurück, {{firstName}}",
@@ -84,7 +86,8 @@
       "feedback": "Erweitertes KI-Feedback",
       "vocabulary": "Vollständige Wortschatzbibliothek",
       "learningPath": "Personalisierter Lernpfad",
-      "analytics": "Fortschrittsverfolgung und Analysen"
+      "analytics": "Fortschrittsverfolgung und Analysen",
+      "lessons": "Voller Zugang zu Lektionen"
     },
     "yearly": "Jährlich",
     "monthly": "Monatlich",

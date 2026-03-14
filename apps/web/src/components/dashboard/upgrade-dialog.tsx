@@ -1,7 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { CheckIcon, Zap } from "lucide-react";
-import { useState } from "react";
+import {
+	createContext,
+	type ReactNode,
+	useContext,
+	useMemo,
+	useState,
+} from "react";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { openCheckout } from "@/lib/paddle";
@@ -15,7 +21,6 @@ import {
 	DialogDescription,
 	DialogHeader,
 	DialogTitle,
-	DialogTrigger,
 } from "../ui/dialog";
 import { Label } from "../ui/label";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
@@ -24,6 +29,73 @@ const PADDLE_PRICE_IDS = {
 	monthly: import.meta.env.VITE_PADDLE_PRICE_MONTHLY ?? "",
 	yearly: import.meta.env.VITE_PADDLE_PRICE_YEARLY ?? "",
 } as const;
+
+type UpgradeDialogContextValue = {
+	open: boolean;
+	openDialog: () => void;
+	closeDialog: () => void;
+	setOpen: (open: boolean) => void;
+};
+
+const UpgradeDialogContext = createContext<UpgradeDialogContextValue | null>(
+	null,
+);
+
+export function useUpgradeDialog() {
+	const context = useContext(UpgradeDialogContext);
+
+	if (!context) {
+		throw new Error(
+			"useUpgradeDialog must be used within UpgradeDialogProvider",
+		);
+	}
+
+	return context;
+}
+
+export function UpgradeDialogProvider({ children }: { children: ReactNode }) {
+	const [open, setOpen] = useState(false);
+	const value = useMemo(
+		() => ({
+			open,
+			openDialog: () => setOpen(true),
+			closeDialog: () => setOpen(false),
+			setOpen,
+		}),
+		[open],
+	);
+
+	return (
+		<UpgradeDialogContext.Provider value={value}>
+			{children}
+			<UpgradeDialog open={open} onOpenChange={setOpen} />
+		</UpgradeDialogContext.Provider>
+	);
+}
+
+export function UpgradeDialogButton() {
+	const trpc = useTRPC();
+	const { openDialog } = useUpgradeDialog();
+	const { data: profile, isPending } = useQuery(
+		trpc.profile.get.queryOptions(),
+	);
+
+	if (isPending || profile?.subscription?.isPro) {
+		return null;
+	}
+
+	return (
+		<button
+			type="button"
+			aria-label="Upgrade now"
+			onClick={openDialog}
+			className="hidden cursor-pointer items-center gap-0.5 whitespace-nowrap rounded-xl border border-[#C6F64D] bg-[radial-gradient(100%_100%_at_50%_0%,#EFFF9B_0%,#D8FF76_60%,#C6F64D_100%)] px-2 py-1.5 font-medium text-lime-900 text-sm italic shadow-none transition duration-150 ease-in-out will-change-transform hover:bg-lime-700/10 hover:brightness-95 focus:shadow-none focus:outline-none focus-visible:shadow-none md:flex"
+		>
+			<Zap fill="currentColor" className="size-3.5" />
+			PRO
+		</button>
+	);
+}
 
 export default function UpgradeDialog({
 	open,
@@ -41,9 +113,10 @@ export default function UpgradeDialog({
 	);
 
 	const features = [
-		"Unlimited AI conversations",
-		"Advanced AI feedback",
-		"Full vocabulary library",
+		"Unlimited AI conversations and pronunciation",
+		"Full lesson access",
+		"Full AI feedback and corrections",
+		"Unlimited vocabulary practice and saves",
 		"Personalized learning path",
 		"Progress tracking and analytics",
 	];
@@ -53,17 +126,6 @@ export default function UpgradeDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogTrigger asChild>
-				<button
-					type="button"
-					aria-label="Upgrade now"
-					//className="flex cursor-pointer items-center gap-0.5 whitespace-nowrap py-1.5 font-medium text-lime-700 text-sm italic shadow-none transition duration-150 ease-in-out will-change-transform hover:brightness-95 focus:shadow-none focus:outline-none focus-visible:shadow-none"
-					className="flex cursor-pointer items-center gap-0.5 whitespace-nowrap rounded-xl border border-[#C6F64D] bg-[radial-gradient(100%_100%_at_50%_0%,#EFFF9B_0%,#D8FF76_60%,#C6F64D_100%)] px-2 py-1.5 font-medium text-lime-900 text-sm italic shadow-none transition duration-150 ease-in-out will-change-transform hover:bg-lime-700/10 hover:brightness-95 focus:shadow-none focus:outline-none focus-visible:shadow-none"
-				>
-					<Zap fill="currentColor" className="size-3.5" />
-					PRO{" "}
-				</button>
-			</DialogTrigger>
 			<DialogContent className="sm:max-w-[425px]">
 				<DialogHeader>
 					<DialogTitle className="mb-2 font-bold font-lyon text-2xl leading-tight">
@@ -204,46 +266,6 @@ export default function UpgradeDialog({
 						</Link>
 						.
 					</div>
-					{/* 
-					<div className="flex items-center justify-center gap-1.5 font-medium text-sm">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							width={16}
-							height={17}
-							fill="none"
-							className="shrink-0"
-							aria-label="Shield checkmark"
-							role="img"
-							viewBox="0 0 16 17"
-						>
-							<title>Safe &amp; secure payment</title>
-							<path
-								fill="#278C49"
-								d="M.895 4.654c0-.62.37-1.186.939-1.437L7.36.776c.403-.181.869-.181 1.28 0l5.526 2.441c.568.251.94.817.94 1.437v3.69a9.9 9.9 0 0 1-1.25 4.773c-2.435 4.417-8.488 4.417-11.713 0A9.9 9.9 0 0 1 .895 8.344z"
-							/>
-							<g clipPath="url(#a)">
-								<path
-									stroke="#fff"
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={1.184}
-									d="M10.632 6.562 7.014 10.18 5.369 8.536"
-								/>
-							</g>
-							<defs>
-								<clipPath id="a">
-									<rect
-										x={4.053}
-										y={4.585}
-										width={7.895}
-										height={7.895}
-										fill="#fff"
-									/>
-								</clipPath>
-							</defs>
-						</svg>
-						Pay safe &amp; Secure
-					</div> */}
 				</div>
 			</DialogContent>
 		</Dialog>

@@ -5,11 +5,17 @@ import {
 	ChevronRightIcon,
 	ClockIcon,
 	LoaderIcon,
+	LockIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useUpgradeDialog } from "@/components/dashboard/upgrade-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+	getActivityGateState,
+	isFreePracticeLimitError,
+} from "@/lib/feature-gating";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/utils/trpc";
 import PracticeSession, {
@@ -161,6 +167,7 @@ export default function DailyPracticeActivities({
 	const [vocabularyActivity, setVocabularyActivity] =
 		useState<VocabularyActivity | null>(null);
 	const [vocabularySessionKey, setVocabularySessionKey] = useState(0);
+	const { openDialog: openUpgradeDialog } = useUpgradeDialog();
 
 	const queryOptions =
 		variant === "home"
@@ -238,6 +245,7 @@ export default function DailyPracticeActivities({
 	}, [data?.status, ensurePlan.isPending, ensurePlan.isSuccess]);
 
 	const activities = (data?.activities ?? []) as DailyPracticeActivity[];
+	const access = data?.access ?? null;
 	const completedCount =
 		activities.filter((activity) => activity.completedAt !== null).length ?? 0;
 	const isPreparingPlan =
@@ -249,6 +257,15 @@ export default function DailyPracticeActivities({
 
 	async function handleStart(activity: DailyPracticeActivity) {
 		if (activity.completedAt || startingId) return;
+
+		if (activity.type === "conversation" || activity.type === "pronunciation") {
+			const gateState = getActivityGateState(access, activity);
+
+			if (gateState === "locked") {
+				openUpgradeDialog();
+				return;
+			}
+		}
 
 		setStartingId(activity.id);
 
@@ -264,16 +281,7 @@ export default function DailyPracticeActivities({
 				}
 
 				const result = await startConversation.mutateAsync({
-					scenario: activity.payload.scenario,
-					scenarioName: activity.payload.scenarioName,
-					scenarioDescription: activity.payload.scenarioDescription,
-					aiRole: activity.payload.aiRole,
-					scenarioType: activity.payload.scenarioType,
-				});
-
-				await startActivity.mutateAsync({
 					activityId: activity.id,
-					sessionId: result.sessionId,
 				});
 
 				navigate({
@@ -295,12 +303,7 @@ export default function DailyPracticeActivities({
 				}
 
 				const result = await startPronunciation.mutateAsync({
-					paragraph: activity.payload.paragraph,
-				});
-
-				await startActivity.mutateAsync({
 					activityId: activity.id,
-					sessionId: result.sessionId,
 				});
 
 				navigate({
@@ -320,6 +323,13 @@ export default function DailyPracticeActivities({
 
 			setVocabularySessionKey((key) => key + 1);
 			setVocabularyActivity(activity);
+		} catch (error) {
+			if (isFreePracticeLimitError(error)) {
+				openUpgradeDialog();
+				return;
+			}
+
+			throw error;
 		} finally {
 			setStartingId(null);
 		}
@@ -445,6 +455,13 @@ export default function DailyPracticeActivities({
 								!isCompleted &&
 								(activity.startedAt !== null || activity.sessionId !== null);
 							const isStarting = startingId === activity.id;
+							const gateState =
+								activity.type === "conversation" ||
+								activity.type === "pronunciation"
+									? getActivityGateState(access, activity)
+									: "available";
+							const isLocked = gateState === "locked";
+							const isResume = gateState === "resume";
 
 							return (
 								<button
@@ -457,15 +474,21 @@ export default function DailyPracticeActivities({
 										variant === "home" && homeCarouselItemClasses,
 										isCompleted
 											? "border-lime-200 bg-lime-50/50"
-											: isStarted
-												? "hover:-translate-y-0.5 cursor-pointer border-amber-200 bg-amber-50/50 hover:bg-amber-50"
-												: "hover:-translate-y-0.5 cursor-pointer border-border/50 bg-white hover:bg-neutral-50",
+											: isLocked
+												? "cursor-pointer border-neutral-200 bg-neutral-50/70 hover:bg-neutral-50"
+												: isStarted
+													? "hover:-translate-y-0.5 cursor-pointer border-amber-200 bg-amber-50/50 hover:bg-amber-50"
+													: "hover:-translate-y-0.5 cursor-pointer border-border/50 bg-white hover:bg-neutral-50",
 										isStarting && "pointer-events-none opacity-70",
 									)}
 								>
 									{isCompleted ? (
 										<div className="absolute top-4 right-4 flex size-6 items-center justify-center rounded-full border border-lime-400 bg-lime-200 text-lime-600">
 											<CheckIcon className="size-3.5" strokeWidth={3} />
+										</div>
+									) : isLocked ? (
+										<div className="absolute top-4 right-4 flex size-6 items-center justify-center rounded-full border border-neutral-300 bg-neutral-100 text-neutral-500">
+											<LockIcon className="size-3.5" />
 										</div>
 									) : isStarted ? (
 										<div className="absolute top-4 right-4 flex size-6 items-center justify-center rounded-full border border-amber-400 bg-amber-200 text-amber-600">
@@ -480,9 +503,11 @@ export default function DailyPracticeActivities({
 												"mb-4 rounded-lg px-2 py-0.5 font-normal text-xs italic",
 												isCompleted
 													? "border-lime-200 bg-lime-50 text-lime-700"
-													: isStarted
-														? "border-amber-200 bg-amber-50 text-amber-700"
-														: "border-neutral-200",
+													: isLocked
+														? "border-neutral-200 bg-neutral-100 text-neutral-600"
+														: isStarted
+															? "border-amber-200 bg-amber-50 text-amber-700"
+															: "border-neutral-200",
 											)}
 										>
 											{activity.duration}{" "}
@@ -511,16 +536,22 @@ export default function DailyPracticeActivities({
 												"flex items-center gap-1 whitespace-nowrap rounded-xl border px-2.5 py-1.5 font-medium text-xs italic transition",
 												isCompleted
 													? "border-lime-200 bg-lime-50 text-lime-700"
-													: isStarted
-														? "border-amber-200 bg-amber-50 text-amber-700"
-														: "border-neutral-200 text-neutral-700 hover:brightness-95",
+													: isLocked
+														? "border-neutral-200 bg-neutral-100 text-neutral-600"
+														: isStarted
+															? "border-amber-200 bg-amber-50 text-amber-700"
+															: "border-neutral-200 text-neutral-700 hover:brightness-95",
 											)}
 										>
-											{activity.typeLabel}
+											{isLocked
+												? "Upgrade to unlock"
+												: isResume
+													? "Resume"
+													: activity.typeLabel}
 										</span>
 										{isStarting ? (
 											<LoaderIcon className="size-4 animate-spin text-muted-foreground" />
-										) : isCompleted ? null : isStarted ? // <span className="font-medium text-amber-700 text-xs italic">
+										) : isCompleted ? null : isLocked ? null : isStarted ? // <span className="font-medium text-amber-700 text-xs italic">
 										// 	Continue
 										// </span>
 										null : (

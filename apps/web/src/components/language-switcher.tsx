@@ -103,7 +103,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
 					/>
 				</Button>
 			</PopoverTrigger>
-			<PopoverContent className="w-48 rounded-xl p-0 shadow-none" align="start">
+			<PopoverContent className="w-36 rounded-xl p-0 shadow-none" align="end">
 				<div className="flex flex-col">
 					{/* <div className="border-b p-2">
 						<div className="relative">
@@ -129,7 +129,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
 									key={lang.value}
 									onClick={() => handleSelectLanguage(lang.value)}
 									className={cn(
-										"flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
+										"flex w-full cursor-pointer items-center rounded-lg px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
 										interfaceLang === lang.value &&
 											"bg-accent text-accent-foreground",
 									)}

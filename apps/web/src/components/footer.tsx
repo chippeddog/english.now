@@ -1,7 +1,6 @@
 import { useTranslation } from "@english.now/i18n";
 import { Link } from "@tanstack/react-router";
 import { LanguageSwitcher } from "./language-switcher";
-import { ThemeSwitcher } from "./theme-switcher";
 
 export default function Footer() {
 	const { t } = useTranslation("common");
@@ -98,13 +97,13 @@ export default function Footer() {
 						</div>
 					</div>
 					<div className="col-span-2 md:pl-18">
-						<div className="grid grid-cols-4 gap-4">
+						<div className="grid grid-cols-4 md:gap-4">
 							{navigation.map(({ label, items }) => (
 								<div key={label} className="flex flex-col">
-									<h5 className="mb-3 text-muted-foreground text-sm uppercase leading-relaxed tracking-tight">
+									<h5 className="mb-2 text-muted-foreground text-xs uppercase leading-relaxed tracking-tight md:mb-3 md:text-sm">
 										{label}
 									</h5>
-									<ul className="flex flex-col gap-3">
+									<ul className="flex flex-col gap-2 md:gap-3">
 										{items.map(({ label, to }) => (
 											<li key={to}>
 												<Link
@@ -128,8 +127,7 @@ export default function Footer() {
 							© {new Date().getFullYear()} English Now.{" "}
 							{tHome("footer.copyright")}{" "}
 						</div>
-						{/* 
-						<div className="flex flex-col items-center gap-1">
+						{/* <div className="flex flex-col items-center gap-1">
 							<div className="flex items-center gap-1">
 								<svg
 									className="size-3.5"

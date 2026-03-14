@@ -116,6 +116,38 @@
           "Seguimiento del progreso y análisis"
         ]
       }
+    },
+    "pageTitle": "¿Qué plan es adecuado para ti?",
+    "pageSubtitle": "Todos los planes incluyen acceso a nuestras herramientas de aprendizaje impulsadas por IA.",
+    "faqSection": {
+      "title": "Preguntas Frecuentes",
+      "subtitle": "Todo lo que necesitas saber sobre nuestros precios y planes.",
+      "items": {
+        "switchPlans": {
+          "question": "¿Puedo cambiar entre planes?",
+          "answer": "¡Sí! Puedes mejorar o reducir tu plan en cualquier momento. Al mejorar, se te cobrará la diferencia prorrateada. Al reducir, la nueva tarifa se aplicará en tu próximo ciclo de facturación."
+        },
+        "freeTrial": {
+          "question": "¿Hay una prueba gratuita para Pro?",
+          "answer": "¡Por supuesto! Ofrecemos una prueba gratuita de 7 días para nuestro plan Pro. No se requiere tarjeta de crédito para comenzar. Puedes explorar todas las funciones de Pro y decidir si es adecuado para ti."
+        },
+        "paymentMethods": {
+          "question": "¿Qué métodos de pago aceptan?",
+          "answer": "Aceptamos todas las principales tarjetas de crédito (Visa, MasterCard, American Express), PayPal y Apple Pay. Para los planes de equipo, también ofrecemos facturación basada en facturas."
+        },
+        "studentDiscounts": {
+          "question": "¿Ofrecen descuentos para estudiantes?",
+          "answer": "No, actualmente no ofrecemos descuentos para estudiantes. Pero estamos trabajando en ello. ¡Mantente atento!"
+        },
+        "cancelAnytime": {
+          "question": "¿Puedo cancelar mi suscripción en cualquier momento?",
+          "answer": "Sí, puedes cancelar tu suscripción en cualquier momento. Tu acceso continuará hasta el final de tu período de facturación actual. Sin preguntas, sin tarifas ocultas."
+        },
+        "progressSaved": {
+          "question": "¿Se guarda mi progreso de aprendizaje si cancelo?",
+          "answer": "Tu progreso siempre se guarda, incluso si cancelas o cambias al plan gratuito. Puedes retomar donde lo dejaste cuando decidas volver."
+        }
+      }
     }
   },
   "faq": {

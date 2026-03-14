@@ -18,7 +18,12 @@ import {
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure, router } from "../index";
+import {
+	FREE_LESSON_FREE_UNIT_COUNT,
+} from "../services/feature-limit-config";
+import { getLessonAccessSummary } from "../services/feature-gating";
 import { generateLessonExercises } from "../services/generate-lesson-exercises";
+import { recordDailyFeatureUsage } from "../services/feature-usage";
 import { recordActivity } from "../services/record-activity";
 
 // ─── Status Computation ─────────────────────────────────────────────────────
@@ -93,6 +98,65 @@ function computeStatuses(
 	return result;
 }
 
+function resolveLessonGate(input: {
+	isPro: boolean;
+	unitOrder: number;
+	baseStatus: LessonStatus;
+	isCompleted: boolean;
+	hasActiveAttempt: boolean;
+	dailyNewLessonLimitReached: boolean;
+}) {
+	if (input.isCompleted) {
+		return {
+			status: "completed" as const,
+			lockReason: null,
+			replayAllowed: input.unitOrder <= FREE_LESSON_FREE_UNIT_COUNT || input.isPro,
+		};
+	}
+
+	if (input.hasActiveAttempt) {
+		return {
+			status: "current" as const,
+			lockReason: null,
+			replayAllowed: false,
+		};
+	}
+
+	if (!input.isPro && input.unitOrder > FREE_LESSON_FREE_UNIT_COUNT) {
+		return {
+			status: "locked" as const,
+			lockReason: "free_unit_locked" as const,
+			replayAllowed: false,
+		};
+	}
+
+	if (input.baseStatus === "locked") {
+		return {
+			status: "locked" as const,
+			lockReason: "curriculum_locked" as const,
+			replayAllowed: false,
+		};
+	}
+
+	if (
+		!input.isPro &&
+		input.dailyNewLessonLimitReached &&
+		(input.baseStatus === "current" || input.baseStatus === "available")
+	) {
+		return {
+			status: "locked" as const,
+			lockReason: "daily_new_lesson_limit" as const,
+			replayAllowed: false,
+		};
+	}
+
+	return {
+		status: input.baseStatus,
+		lockReason: null,
+		replayAllowed: false,
+	};
+}
+
 // ─── Router ─────────────────────────────────────────────────────────────────
 
 export const contentRouter = router({
@@ -162,6 +226,7 @@ export const contentRouter = router({
 
 	getCourse: protectedProcedure.query(async ({ ctx }) => {
 		const userId = ctx.session.user.id;
+		const lessonAccess = await getLessonAccessSummary(userId);
 
 		const [e] = await db
 			.select()
@@ -210,8 +275,23 @@ export const contentRouter = router({
 			.select({ lessonId: lessonCompletion.lessonId })
 			.from(lessonCompletion)
 			.where(eq(lessonCompletion.enrollmentId, e.id));
+		const activeAttempts = await db
+			.select({
+				lessonId: lessonAttempt.lessonId,
+				attemptId: lessonAttempt.id,
+			})
+			.from(lessonAttempt)
+			.where(
+				and(
+					eq(lessonAttempt.userId, userId),
+					eq(lessonAttempt.status, "active"),
+				),
+			);
 
 		const completedLessonIds = new Set(completions.map((c) => c.lessonId));
+		const activeAttemptByLessonId = new Map(
+			activeAttempts.map((attempt) => [attempt.lessonId, attempt.attemptId]),
+		);
 
 		const lessonsByUnit = new Map<string, typeof lessons>();
 		for (const l of lessons) {
@@ -242,28 +322,44 @@ export const contentRouter = router({
 			level: c.level,
 			title: c.title,
 			progress: overallProgress,
+			access: lessonAccess,
 			units: units.map((u) => {
 				const s = statusMap.get(u.id);
 				const unitLessons = lessonsByUnit.get(u.id) ?? [];
 				const lessonStatusMap = new Map(
 					(s?.lessons ?? []).map((ls) => [ls.lessonId, ls.status]),
 				);
+				const isFreeLockedUnit =
+					!lessonAccess.isPro && u.order > FREE_LESSON_FREE_UNIT_COUNT;
 
 				return {
 					id: u.id,
 					title: u.title,
 					description: u.description,
 					order: u.order,
-					status: s?.unitStatus ?? "locked",
+					status: isFreeLockedUnit ? "locked" : (s?.unitStatus ?? "locked"),
+					lockReason: isFreeLockedUnit ? "free_unit_locked" : null,
+					unlockMessage: isFreeLockedUnit
+						? "Upgrade to unlock this unit."
+						: undefined,
 					progress: s?.unitProgress ?? 0,
 					lessons: unitLessons.map((l) => ({
+						...resolveLessonGate({
+							isPro: lessonAccess.isPro,
+							unitOrder: u.order,
+							baseStatus: lessonStatusMap.get(l.id) ?? "locked",
+							isCompleted: completedLessonIds.has(l.id),
+							hasActiveAttempt: activeAttemptByLessonId.has(l.id),
+							dailyNewLessonLimitReached:
+								!lessonAccess.newLessonStarts.hasAccess,
+						}),
 						id: l.id,
 						title: l.title,
 						subtitle: l.subtitle,
 						type: l.blockType,
 						lessonType: l.lessonType ?? blockTypeToLessonType(l.blockType),
-						status: lessonStatusMap.get(l.id) ?? "locked",
-						progress: lessonStatusMap.get(l.id) === "completed" ? 100 : 0,
+						progress: completedLessonIds.has(l.id) ? 100 : 0,
+						activeAttemptId: activeAttemptByLessonId.get(l.id) ?? null,
 						content: l.content,
 					})),
 				};
@@ -273,22 +369,142 @@ export const contentRouter = router({
 
 	getLesson: protectedProcedure
 		.input(z.object({ lessonId: z.string() }))
-		.query(async ({ input }) => {
-			const [l] = await db
+		.query(async ({ ctx, input }) => {
+			const userId = ctx.session.user.id;
+
+			const [lessonRow] = await db
 				.select()
 				.from(curriculumLesson)
 				.where(eq(curriculumLesson.id, input.lessonId))
 				.limit(1);
 
-			if (!l) return null;
+			if (!lessonRow) return null;
+
+			const [unitRow] = await db
+				.select({
+					id: curriculumUnit.id,
+					order: curriculumUnit.order,
+				})
+				.from(curriculumUnit)
+				.where(eq(curriculumUnit.id, lessonRow.unitId))
+				.limit(1);
+
+			if (!unitRow) return null;
+
+			const [enrollmentRow] = await db
+				.select({
+					id: enrollment.id,
+					courseVersionId: enrollment.courseVersionId,
+				})
+				.from(enrollment)
+				.where(
+					and(eq(enrollment.userId, userId), eq(enrollment.status, "active")),
+				)
+				.limit(1);
+
+			if (!enrollmentRow) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "No active enrollment",
+				});
+			}
+
+			const courseUnits = await db
+				.select({
+					id: curriculumUnit.id,
+					order: curriculumUnit.order,
+				})
+				.from(curriculumUnit)
+				.where(eq(curriculumUnit.courseVersionId, enrollmentRow.courseVersionId))
+				.orderBy(asc(curriculumUnit.order));
+			const courseUnitIds = courseUnits.map((unit) => unit.id);
+			const courseLessons =
+				courseUnitIds.length > 0
+					? await db
+							.select({
+								id: curriculumLesson.id,
+								unitId: curriculumLesson.unitId,
+								order: curriculumLesson.order,
+							})
+							.from(curriculumLesson)
+							.where(inArray(curriculumLesson.unitId, courseUnitIds))
+							.orderBy(asc(curriculumLesson.unitId), asc(curriculumLesson.order))
+					: [];
+
+			const [completions, activeAttemptRow, lessonAccess] = await Promise.all([
+				db
+					.select({ lessonId: lessonCompletion.lessonId })
+					.from(lessonCompletion)
+					.where(eq(lessonCompletion.enrollmentId, enrollmentRow.id)),
+				db
+					.select({ id: lessonAttempt.id })
+					.from(lessonAttempt)
+					.where(
+						and(
+							eq(lessonAttempt.userId, userId),
+							eq(lessonAttempt.lessonId, input.lessonId),
+							eq(lessonAttempt.status, "active"),
+						),
+					)
+					.limit(1)
+					.then((rows) => rows[0] ?? null),
+				getLessonAccessSummary(userId),
+			]);
+			const completedLessonIds = new Set(completions.map((item) => item.lessonId));
+			const lessonsByUnit = new Map<string, Array<{ id: string; order: number }>>();
+			for (const lesson of courseLessons) {
+				const existing = lessonsByUnit.get(lesson.unitId) ?? [];
+				existing.push({ id: lesson.id, order: lesson.order });
+				lessonsByUnit.set(lesson.unitId, existing);
+			}
+			const statuses = computeStatuses(
+				courseUnits.map((unit) => ({
+					id: unit.id,
+					order: unit.order,
+					lessons: lessonsByUnit.get(unit.id) ?? [],
+				})),
+				completedLessonIds,
+			);
+			const statusMap = new Map(statuses.map((status) => [status.unitId, status]));
+			const lessonStatusMap = new Map<string, LessonStatus>();
+			for (const unitStatus of statusMap.values()) {
+				for (const lessonStatus of unitStatus.lessons) {
+					lessonStatusMap.set(lessonStatus.lessonId, lessonStatus.status);
+				}
+			}
+
+			const lessonState = resolveLessonGate({
+				isPro: lessonAccess.isPro,
+				unitOrder: unitRow.order,
+				baseStatus: lessonStatusMap.get(input.lessonId) ?? "locked",
+				isCompleted: completedLessonIds.has(input.lessonId),
+				hasActiveAttempt: Boolean(activeAttemptRow),
+				dailyNewLessonLimitReached: !lessonAccess.newLessonStarts.hasAccess,
+			});
+
+			if (lessonState.status === "locked") {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: lessonState.lockReason ?? "LESSON_LOCKED",
+					cause: {
+						lockReason: lessonState.lockReason,
+						access: lessonAccess,
+					},
+				});
+			}
 
 			return {
-				id: l.id,
-				title: l.title,
-				subtitle: l.subtitle,
-				type: l.blockType,
-				lessonType: l.lessonType ?? blockTypeToLessonType(l.blockType),
-				content: l.content,
+				id: lessonRow.id,
+				title: lessonRow.title,
+				subtitle: lessonRow.subtitle,
+				type: lessonRow.blockType,
+				lessonType:
+					lessonRow.lessonType ?? blockTypeToLessonType(lessonRow.blockType),
+				content: lessonRow.content,
+				access: {
+					...lessonState,
+					activeAttemptId: activeAttemptRow?.id ?? null,
+				},
 			};
 		}),
 
@@ -298,7 +514,10 @@ export const contentRouter = router({
 			const userId = ctx.session.user.id;
 
 			const [e] = await db
-				.select({ id: enrollment.id })
+				.select({
+					id: enrollment.id,
+					courseVersionId: enrollment.courseVersionId,
+				})
 				.from(enrollment)
 				.where(
 					and(eq(enrollment.userId, userId), eq(enrollment.status, "active")),
@@ -347,6 +566,93 @@ export const contentRouter = router({
 				});
 			}
 
+			const [unitRow] = await db
+				.select({
+					id: curriculumUnit.id,
+					order: curriculumUnit.order,
+				})
+				.from(curriculumUnit)
+				.where(eq(curriculumUnit.id, lessonRecord.unitId))
+				.limit(1);
+
+			if (!unitRow) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Unit not found",
+				});
+			}
+
+			const courseUnits = await db
+				.select({
+					id: curriculumUnit.id,
+					order: curriculumUnit.order,
+				})
+				.from(curriculumUnit)
+				.where(eq(curriculumUnit.courseVersionId, e.courseVersionId))
+				.orderBy(asc(curriculumUnit.order));
+			const courseUnitIds = courseUnits.map((unit) => unit.id);
+			const courseLessons =
+				courseUnitIds.length > 0
+					? await db
+							.select({
+								id: curriculumLesson.id,
+								unitId: curriculumLesson.unitId,
+								order: curriculumLesson.order,
+							})
+							.from(curriculumLesson)
+							.where(inArray(curriculumLesson.unitId, courseUnitIds))
+							.orderBy(asc(curriculumLesson.unitId), asc(curriculumLesson.order))
+					: [];
+
+			const [completions, lessonAccess] = await Promise.all([
+				db
+					.select({ lessonId: lessonCompletion.lessonId })
+					.from(lessonCompletion)
+					.where(eq(lessonCompletion.enrollmentId, e.id)),
+				getLessonAccessSummary(userId),
+			]);
+			const completedLessonIds = new Set(completions.map((item) => item.lessonId));
+			const lessonsByUnit = new Map<string, Array<{ id: string; order: number }>>();
+			for (const lesson of courseLessons) {
+				const existing = lessonsByUnit.get(lesson.unitId) ?? [];
+				existing.push({ id: lesson.id, order: lesson.order });
+				lessonsByUnit.set(lesson.unitId, existing);
+			}
+			const statuses = computeStatuses(
+				courseUnits.map((unit) => ({
+					id: unit.id,
+					order: unit.order,
+					lessons: lessonsByUnit.get(unit.id) ?? [],
+				})),
+				completedLessonIds,
+			);
+			const statusMap = new Map(statuses.map((status) => [status.unitId, status]));
+			const lessonStatusMap = new Map<string, LessonStatus>();
+			for (const unitStatus of statusMap.values()) {
+				for (const lessonStatus of unitStatus.lessons) {
+					lessonStatusMap.set(lessonStatus.lessonId, lessonStatus.status);
+				}
+			}
+			const lessonState = resolveLessonGate({
+				isPro: lessonAccess.isPro,
+				unitOrder: unitRow.order,
+				baseStatus: lessonStatusMap.get(input.lessonId) ?? "locked",
+				isCompleted: completedLessonIds.has(input.lessonId),
+				hasActiveAttempt: false,
+				dailyNewLessonLimitReached: !lessonAccess.newLessonStarts.hasAccess,
+			});
+
+			if (lessonState.status === "locked") {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: lessonState.lockReason ?? "LESSON_LOCKED",
+					cause: {
+						lockReason: lessonState.lockReason,
+						access: lessonAccess,
+					},
+				});
+			}
+
 			const content = lessonRecord.content as CurriculumLessonContent | null;
 			if (!content) {
 				throw new TRPCError({
@@ -384,6 +690,17 @@ export const contentRouter = router({
 				correctCount: 0,
 				status: "active",
 			});
+
+			if (!lessonAccess.isPro && !completedLessonIds.has(input.lessonId)) {
+				await recordDailyFeatureUsage({
+					userId,
+					feature: "lesson_start",
+					resourceId: input.lessonId,
+					metadata: {
+						unitId: unitRow.id,
+					},
+				});
+			}
 
 			return {
 				attemptId,

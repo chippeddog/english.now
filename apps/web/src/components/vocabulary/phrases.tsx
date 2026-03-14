@@ -1,6 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
+import { useUpgradeDialog } from "@/components/dashboard/upgrade-dialog";
 import { Button } from "@/components/ui/button";
 import usePlaybackFromUrl from "@/hooks/use-playback-from-url";
 import { useTRPC } from "@/utils/trpc";
@@ -9,10 +12,13 @@ import ItemRow from "./item-row";
 
 export default function Phrases() {
 	const trpc = useTRPC();
+	const { t } = useTranslation("app");
 	const queryClient = useQueryClient();
 	const { data: phrases, isLoading } = useQuery(
 		trpc.vocabulary.getPhrases.queryOptions({ limit: 100 }),
 	);
+	const { data: access } = useQuery(trpc.vocabulary.getAccess.queryOptions());
+	const { openDialog } = useUpgradeDialog();
 	const [addDialogOpen, setAddDialogOpen] = useState(false);
 	const [newPhrase, setNewPhrase] = useState("");
 	const { playAudio, playingId } = usePlaybackFromUrl();
@@ -25,6 +31,13 @@ export default function Phrases() {
 				});
 				setAddDialogOpen(false);
 				setNewPhrase("");
+				toast.success("Phrase added successfully");
+			},
+			onError: (error) => {
+				if (error.message.includes("FREE_VOCAB_ADD_LIMIT_REACHED")) {
+					openDialog();
+				}
+				toast.error(error.message);
 			},
 		}),
 	);
@@ -40,6 +53,13 @@ export default function Phrases() {
 	);
 
 	const filteredPhrases = useMemo(() => phrases ?? [], [phrases]);
+	const remainingAdds = access?.adds.remaining;
+	const addHelperText =
+		access?.isPro || remainingAdds == null
+			? undefined
+			: `${remainingAdds} word or phrase add${
+					remainingAdds === 1 ? "" : "s"
+				} left today.`;
 
 	const handleAddPhrase = () => {
 		const trimmed = newPhrase.trim();
@@ -91,7 +111,9 @@ export default function Phrases() {
 		<div>
 			<div className="mb-4 flex items-center justify-between">
 				<div className="flex items-center gap-2">
-					<span className="font-semibold text-lg">Phrases</span>
+					<span className="font-semibold text-lg">
+						{t("vocabulary.phrases")}
+					</span>
 				</div>
 				<div className="flex items-center gap-2">
 					<button
@@ -108,6 +130,7 @@ export default function Phrases() {
 						isPending={addPhraseMutation.isPending}
 						addDialogOpen={addDialogOpen}
 						setAddDialogOpen={setAddDialogOpen}
+						helperText={addHelperText}
 					/>
 				</div>
 			</div>

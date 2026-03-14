@@ -22,9 +22,12 @@ import {
 	word,
 	wordTranslation,
 } from "@english.now/db";
+import { FREE_DAILY_VOCAB_REVIEW_LIMIT } from "./feature-limit-config";
+import { getDailyFeatureUsageTotal } from "./feature-usage";
 import { profileLevelToCefr } from "../lib/cefr";
 import { generateParagraph } from "./generate-paragraph";
 import { generateSuggestions } from "./generate-suggestions";
+import { getSubscriptionSummaryForUser } from "./subscription";
 
 const MASTERY_PRIORITY: Record<string, number> = {
 	new: 0,
@@ -315,7 +318,12 @@ function sortCardsByMastery(cards: DailyVocabularyCard[]) {
 async function createVocabularyActivities(
 	userId: string,
 	language: string | null,
+	reviewCardLimit: number,
 ): Promise<DailyVocabularyActivity[]> {
+	if (reviewCardLimit <= 0) {
+		return [];
+	}
+
 	const translationLanguage = language ?? "uk";
 
 	const [wordRows, phraseRows] = await Promise.all([
@@ -397,9 +405,12 @@ async function createVocabularyActivities(
 	);
 
 	const activities: DailyVocabularyActivity[] = [];
+	let remainingReviewCards = reviewCardLimit;
 
-	if (wordCards.length > 0) {
-		const cards = shuffle(wordCards.slice(0, Math.min(wordCards.length, 8)));
+	if (wordCards.length > 0 && remainingReviewCards > 0) {
+		const cards = shuffle(
+			wordCards.slice(0, Math.min(wordCards.length, 8, remainingReviewCards)),
+		);
 		activities.push({
 			id: "vocabulary-words",
 			emoji: "📘",
@@ -416,11 +427,12 @@ async function createVocabularyActivities(
 				focus: ["words"],
 			},
 		});
+		remainingReviewCards -= cards.length;
 	}
 
-	if (phraseCards.length > 0) {
+	if (phraseCards.length > 0 && remainingReviewCards > 0) {
 		const cards = shuffle(
-			phraseCards.slice(0, Math.min(phraseCards.length, 6)),
+			phraseCards.slice(0, Math.min(phraseCards.length, 6, remainingReviewCards)),
 		);
 		activities.push({
 			id: "vocabulary-phrases",
@@ -438,13 +450,14 @@ async function createVocabularyActivities(
 				focus: ["phrases"],
 			},
 		});
+		remainingReviewCards -= cards.length;
 	}
 
-	if (wordCards.length + phraseCards.length > 0) {
+	if (wordCards.length + phraseCards.length > 0 && remainingReviewCards > 0) {
 		const mixedCards = shuffle([
 			...wordCards.slice(0, 6),
 			...phraseCards.slice(0, 4),
-		]).slice(0, 10);
+		]).slice(0, Math.min(10, remainingReviewCards));
 
 		if (mixedCards.length > 0) {
 			activities.push({
@@ -463,6 +476,7 @@ async function createVocabularyActivities(
 					focus: ["words", "phrases"],
 				},
 			});
+			remainingReviewCards -= mixedCards.length;
 		}
 	}
 
@@ -601,6 +615,16 @@ export async function generateDailyPracticePlanForUser(
 		.where(eq(dailyPracticePlan.id, basePlan.id));
 
 	try {
+		const [subscription, usedVocabularyReviewCount] = await Promise.all([
+			getSubscriptionSummaryForUser(userId),
+			getDailyFeatureUsageTotal(userId, "vocabulary_review"),
+		]);
+		const remainingVocabularyReviewCount = Math.max(
+			0,
+			subscription.isPro
+				? Number.MAX_SAFE_INTEGER
+				: FREE_DAILY_VOCAB_REVIEW_LIMIT - usedVocabularyReviewCount,
+		);
 		const [suggestions, pronunciationActivities, vocabularyActivities] =
 			await Promise.all([
 				generateSuggestions({
@@ -611,7 +635,11 @@ export async function generateDailyPracticePlanForUser(
 					nativeLanguage: profile.nativeLanguage,
 				}),
 				createPronunciationActivities(level, profile.interests),
-				createVocabularyActivities(userId, profile.nativeLanguage),
+				createVocabularyActivities(
+					userId,
+					profile.nativeLanguage,
+					remainingVocabularyReviewCount,
+				),
 			]);
 
 		const activities: DailyPracticeActivity[] = [

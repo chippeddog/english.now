@@ -7,7 +7,9 @@
     "settings": "Paramètres",
     "preferences": "Préférences",
     "voices": "Voix",
-    "signOut": "Déconnexion"
+    "signOut": "Déconnexion",
+    "menu": "Ouvrir le menu",
+    "close": "Fermer le menu"
   },
   "home": {
     "welcomeBack": "Bon retour, {{firstName}}",
@@ -84,7 +86,8 @@
       "feedback": "Commentaires avancés de l'IA",
       "vocabulary": "Bibliothèque de vocabulaire complète",
       "learningPath": "Parcours d'apprentissage personnalisé",
-      "analytics": "Suivi des progrès et analyses"
+      "analytics": "Suivi des progrès et analyses",
+      "lessons": "Accès complet aux leçons"
     },
     "yearly": "Annuel",
     "monthly": "Mensuel",

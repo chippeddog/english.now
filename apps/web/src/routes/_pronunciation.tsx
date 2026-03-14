@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { Loader2 } from "lucide-react";
+import { Loader } from "lucide-react";
 import { getUser } from "@/functions/get-user";
 
 export const Route = createFileRoute("/_pronunciation")({
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/_pronunciation")({
 function PronunciationPending() {
 	return (
 		<div className="flex h-dvh w-full items-center justify-center">
-			<Loader2 className="size-8 animate-spin text-muted-foreground" />
+			<Loader className="size-5 animate-spin text-muted-foreground" />
 		</div>
 	);
 }

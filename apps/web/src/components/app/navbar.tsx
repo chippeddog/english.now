@@ -12,7 +12,7 @@ import { Headphones, Languages, LogOutIcon, Settings } from "lucide-react";
 import { useEffect, useState } from "react";
 import MobileMenu from "@/components/app/navbar/mobile-menu";
 import Streak from "@/components/app/navbar/streak";
-import UpgradeDialog from "@/components/dashboard/upgrade-dialog";
+import { UpgradeDialogButton } from "@/components/dashboard/upgrade-dialog";
 import VoicesDialog from "@/components/dashboard/voices-dialog";
 import Logo from "@/components/logo";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -34,7 +34,6 @@ import {
 export default function Navbar() {
 	const { t } = useTranslation("app");
 	const trpc = useTRPC();
-	const [upgradeOpen, setUpgradeOpen] = useState(false);
 	const [voicesOpen, setVoicesOpen] = useState(false);
 
 	const [isScrolled, setIsScrolled] = useState(false);
@@ -45,9 +44,7 @@ export default function Navbar() {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const { data: session, isPending } = authClient.useSession();
-	const { data: profile, isPending: isProfilePending } = useQuery(
-		trpc.profile.get.queryOptions(),
-	);
+	const { data: profile } = useQuery(trpc.profile.get.queryOptions());
 	const timezone =
 		profile?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
 	const { data: practiceTimeData, isLoading: isPracticeTimeLoading } = useQuery(
@@ -124,7 +121,7 @@ export default function Navbar() {
 							activityDates={practiceTimeData?.map((time) => time.date) ?? []}
 							isLoading={isPracticeTimeLoading}
 						/>
-						<UpgradeDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} />
+						<UpgradeDialogButton />
 						<VoicesDialog open={voicesOpen} onOpenChange={setVoicesOpen} />
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
@@ -175,8 +172,8 @@ export default function Navbar() {
 								side="bottom"
 							>
 								<DropdownMenuLabel>
-									<div className="flex flex-col text-xs">
-										{session?.user.name}
+									<div className="flex flex-col gap-0.5 text-xs">
+										<span className="font-semibold">{session?.user.name}</span>
 										<span className="font-medium text-gray-500">
 											{session?.user.email}
 										</span>
@@ -193,16 +190,9 @@ export default function Navbar() {
 									</Link>
 								</DropdownMenuItem>
 								<DropdownMenuSeparator />
-								<DropdownMenuLabel>
-									<div className="flex flex-col text-xs">
-										<span className="font-medium text-gray-500">
-											{t("nav.preferences")}
-										</span>
-									</div>
-								</DropdownMenuLabel>
 								<DropdownMenuSub>
 									<DropdownMenuSubTrigger className="flex items-center gap-2">
-										<Languages className="size-4" />
+										<Languages className="size-4 text-muted-foreground" />
 										{languageNames[language]}
 									</DropdownMenuSubTrigger>
 									<DropdownMenuSubContent>
@@ -229,10 +219,10 @@ export default function Navbar() {
 									{t("nav.voices")}
 								</DropdownMenuItem>
 								<DropdownMenuSeparator />
-								<DropdownMenuItem>
+								<DropdownMenuItem asChild>
 									<button
 										type="button"
-										className="flex w-full items-center gap-2"
+										className="flex w-full cursor-pointer items-center gap-2"
 										onClick={() => {
 											authClient.signOut({
 												fetchOptions: {

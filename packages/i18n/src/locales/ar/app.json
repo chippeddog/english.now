@@ -7,7 +7,9 @@
     "settings": "الإعدادات",
     "preferences": "التفضيلات",
     "voices": "الأصوات",
-    "signOut": "تسجيل الخروج"
+    "signOut": "تسجيل الخروج",
+    "menu": "فتح القائمة",
+    "close": "إغلاق القائمة"
   },
   "home": {
     "welcomeBack": "مرحبًا بعودتك، {{firstName}}",
@@ -84,7 +86,8 @@
       "feedback": "تعليقات AI متقدمة",
       "vocabulary": "مكتبة المفردات الكاملة",
       "learningPath": "مسار تعلم مخصص",
-      "analytics": "تتبع التقدم والتحليلات"
+      "analytics": "تتبع التقدم والتحليلات",
+      "lessons": "الوصول الكامل للدروس"
     },
     "yearly": "سنوي",
     "monthly": "شهري",

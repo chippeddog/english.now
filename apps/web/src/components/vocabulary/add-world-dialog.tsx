@@ -18,6 +18,7 @@ export default function AddWordDialog({
 	setNewWord,
 	onSubmit,
 	isPending,
+	helperText,
 }: {
 	addDialogOpen: boolean;
 	setAddDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -25,6 +26,7 @@ export default function AddWordDialog({
 	setNewWord: React.Dispatch<React.SetStateAction<string>>;
 	onSubmit: () => void;
 	isPending: boolean;
+	helperText?: string;
 }) {
 	return (
 		<Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
@@ -50,6 +52,9 @@ export default function AddWordDialog({
 							Definition, pronunciation, and translation will be added
 							automatically.
 						</p>
+						{helperText ? (
+							<p className="text-muted-foreground text-xs">{helperText}</p>
+						) : null}
 					</div>
 				</div>
 				<div className="flex justify-end gap-2">

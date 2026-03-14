@@ -82,9 +82,10 @@
         "title": "Upgrade to Pro",
         "description": "Join <highlight>{{count}}+</highlight> learners and start your journey to fluency today.",
         "features": {
-            "conversations": "Unlimited AI conversations",
-            "feedback": "Advanced AI feedback",
-            "vocabulary": "Full vocabulary library",
+            "conversations": "Unlimited AI conversations and pronunciation",
+            "lessons": "Full lesson access",
+            "feedback": "Full AI feedback and corrections",
+            "vocabulary": "Unlimited vocabulary practice and saves",
             "learningPath": "Personalized learning path",
             "analytics": "Progress tracking and analytics"
         },

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BookOpen, Mic, Sparkles } from "lucide-react";
 import { useState } from "react";
+import { useUpgradeDialog } from "@/components/dashboard/upgrade-dialog";
 import {
 	Dialog,
 	DialogContent,
@@ -33,10 +34,12 @@ type VocabularyActivity = {
 export default function Practice() {
 	const trpc = useTRPC();
 	const queryClient = useQueryClient();
+	const { openDialog } = useUpgradeDialog();
 
 	const { data: planData, isLoading } = useQuery(
 		trpc.practice.getTodayPlan.queryOptions(),
 	);
+	const { data: access } = useQuery(trpc.vocabulary.getAccess.queryOptions());
 	const ensurePlan = useMutation(
 		trpc.practice.ensureTodayPlan.mutationOptions({
 			onSuccess: () => {
@@ -80,6 +83,10 @@ export default function Practice() {
 
 	const handleStart = () => {
 		if (!selectedActivity) return;
+		if (!access?.isPro && access?.reviews.hasAccess === false) {
+			openDialog();
+			return;
+		}
 
 		if (!selectedActivity.completedAt && !selectedActivity.sessionId) {
 			startActivity.mutate({
@@ -113,6 +120,12 @@ export default function Practice() {
 			activity.type === "vocabulary",
 	);
 	const canStart = Boolean(selectedActivity);
+	const reviewHelperText =
+		access?.isPro || access?.reviews.remaining == null
+			? undefined
+			: `${access.reviews.remaining} review card${
+					access.reviews.remaining === 1 ? "" : "s"
+				} left today.`;
 
 	return (
 		<>
@@ -134,7 +147,8 @@ export default function Practice() {
 							Quick Practice
 						</DialogTitle>
 						<DialogDescription className="text-neutral-500">
-							Choose from today&apos;s prepared vocabulary sets
+						{reviewHelperText ??
+							"Choose from today&apos;s prepared vocabulary sets"}
 						</DialogDescription>
 					</DialogHeader>
 

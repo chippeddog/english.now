@@ -1,4 +1,15 @@
 import { MoreHorizontalIcon, Trash2, Volume2 } from "lucide-react";
+import { useState } from "react";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -34,6 +45,7 @@ export default function ItemRow({
 	onDelete,
 	primaryClassName,
 }: ItemRowProps) {
+	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 	return (
 		<div className="group flex w-full items-center justify-between gap-3 rounded-2xl border border-border/50 bg-white p-2.5 px-3 text-left transition-colors hover:border-border/80 hover:shadow-xs dark:bg-slate-900">
 			<div className="flex items-center gap-3">
@@ -78,13 +90,36 @@ export default function ItemRow({
 						</Button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="end">
-						<DropdownMenuItem variant="destructive" onClick={onDelete}>
+						<DropdownMenuItem
+							variant="destructive"
+							onClick={() => setShowDeleteDialog(true)}
+						>
 							<Trash2 />
 							Delete
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
 			</div>
+			<AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+				<AlertDialogContent className="w-sm">
+					<AlertDialogHeader>
+						<AlertDialogTitle>Delete item</AlertDialogTitle>
+						<AlertDialogDescription>
+							Are you sure you want to delete this item? This action cannot be
+							undone.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Cancel</AlertDialogCancel>
+						<AlertDialogAction
+							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+							onClick={onDelete}
+						>
+							Delete
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }

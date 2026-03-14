@@ -255,6 +255,17 @@ function PronunciationSessionPage() {
 							<ReadAloudMode
 								sessionId={sessionId}
 								paragraph={paragraph}
+								attemptAccess={
+									(sessionData.attemptAccess as
+										| {
+												isPro: boolean;
+												used: number;
+												limit: number | null;
+												remaining: number | null;
+												reachedLimit: boolean;
+										  }
+										| undefined)
+								}
 								initialAttempts={(sessionData.attempts ?? [])
 									.filter((a) => a.audioUrl)
 									.map((a) => ({

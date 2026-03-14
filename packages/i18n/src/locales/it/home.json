@@ -116,6 +116,38 @@
           "Tracciamento dei progressi e analisi"
         ]
       }
+    },
+    "pageTitle": "Quale piano è giusto per te?",
+    "pageSubtitle": "Tutti i piani includono l'accesso ai nostri strumenti di apprendimento alimentati dall'IA.",
+    "faqSection": {
+      "title": "Domande Frequenti",
+      "subtitle": "Tutto ciò che devi sapere sui nostri prezzi e piani.",
+      "items": {
+        "switchPlans": {
+          "question": "Posso cambiare piano?",
+          "answer": "Sì! Puoi passare a un piano superiore o inferiore in qualsiasi momento. Quando passi a un piano superiore, ti verrà addebitata la differenza proporzionale. Quando passi a un piano inferiore, la nuova tariffa si applica al tuo prossimo ciclo di fatturazione."
+        },
+        "freeTrial": {
+          "question": "C'è una prova gratuita per il piano Pro?",
+          "answer": "Assolutamente! Offriamo una prova gratuita di 7 giorni per il nostro piano Pro. Non è richiesta la carta di credito per iniziare. Puoi esplorare tutte le funzionalità Pro e decidere se è giusto per te."
+        },
+        "paymentMethods": {
+          "question": "Quali metodi di pagamento accettate?",
+          "answer": "Accettiamo tutte le principali carte di credito (Visa, MasterCard, American Express), PayPal e Apple Pay. Per i piani Team, offriamo anche la fatturazione basata su fattura."
+        },
+        "studentDiscounts": {
+          "question": "Offrite sconti per studenti?",
+          "answer": "No, attualmente non offriamo sconti per studenti. Ma ci stiamo lavorando. Resta sintonizzato!"
+        },
+        "cancelAnytime": {
+          "question": "Posso annullare il mio abbonamento in qualsiasi momento?",
+          "answer": "Sì, puoi annullare il tuo abbonamento in qualsiasi momento. Il tuo accesso continuerà fino alla fine del tuo attuale periodo di fatturazione. Nessuna domanda, nessuna tassa nascosta."
+        },
+        "progressSaved": {
+          "question": "Il mio progresso di apprendimento viene salvato se annullo?",
+          "answer": "Il tuo progresso è sempre salvato, anche se annulli o passi al piano gratuito. Puoi riprendere da dove hai lasciato ogni volta che decidi di tornare."
+        }
+      }
     }
   },
   "faq": {

@@ -153,7 +153,8 @@
       }
     },
     "features": {
-      "unlimitedConversations": "Unlimited AI conversations",
+      "unlimitedConversations": "Unlimited AI conversations and pronunciation",
+      "fullLessons": "Full lesson access",
       "personalizedPath": "Personalized learning path",
       "progressTracking": "Progress tracking",
       "save77": "Save 77%",

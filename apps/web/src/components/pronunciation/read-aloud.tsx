@@ -1,7 +1,6 @@
 import { env } from "@english.now/env/client";
 import { useMutation } from "@tanstack/react-query";
 import {
-	ArrowRight,
 	Check,
 	ChevronDown,
 	Loader2,
@@ -13,13 +12,13 @@ import {
 	X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useUpgradeDialog } from "@/components/dashboard/upgrade-dialog";
 import { Button } from "@/components/ui/button";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
-import { Separator } from "@/components/ui/separator";
 import usePronunciationRecorder from "@/hooks/use-pronunciation-recorder";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/utils/trpc";
@@ -310,16 +309,25 @@ export default function ReadAloudMode({
 	sessionId,
 	paragraph,
 	initialAttempts,
+	attemptAccess,
 	onFinish,
 	getElapsedSeconds,
 }: {
 	sessionId: string;
 	paragraph: ParagraphItem;
 	initialAttempts?: { id: string; audioUrl: string; transcript: string }[];
+	attemptAccess?: {
+		isPro: boolean;
+		used: number;
+		limit: number | null;
+		remaining: number | null;
+		reachedLimit: boolean;
+	};
 	onFinish: () => void;
 	getElapsedSeconds?: () => number;
 }) {
 	const trpc = useTRPC();
+	const { openDialog } = useUpgradeDialog();
 	const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
 	const [selectedDevice, setSelectedDevice] = useState<string>("");
 	const [selectedDeviceOpen, setSelectedDeviceOpen] = useState(false);
@@ -406,6 +414,11 @@ export default function ReadAloudMode({
 	};
 
 	const handleRecord = async () => {
+		if (!isRecording && attemptAccess && !attemptAccess.isPro && attemptAccess.reachedLimit) {
+			openDialog();
+			return;
+		}
+
 		if (isRecording) {
 			const blob = await stopRecording();
 			if (!blob) return;
@@ -437,6 +450,11 @@ export default function ReadAloudMode({
 									waveformPeaks: peaks,
 								},
 							]);
+						},
+						onError: (error) => {
+							if (error.message.includes("FREE_ATTEMPT_LIMIT_REACHED")) {
+								openDialog();
+							}
 						},
 					},
 				);
@@ -555,12 +573,16 @@ export default function ReadAloudMode({
 						</svg>
 						Read the following paragraph:
 					</div>
-					{attempts.length > 0 && (
+					{attemptAccess && !attemptAccess.isPro && attemptAccess.limit ? (
+						<span className="text-muted-foreground text-sm">
+							{attemptAccess.used} / {attemptAccess.limit} attempts used
+						</span>
+					) : attempts.length > 0 ? (
 						<span className="text-muted-foreground text-sm">
 							{attempts.length} attempt
 							{attempts.length !== 1 ? "s" : ""}
 						</span>
-					)}
+					) : null}
 				</div>
 				<p className="font-medium text-xl leading-relaxed tracking-wide">
 					{showTracking
@@ -676,7 +698,15 @@ export default function ReadAloudMode({
 						size="lg"
 						variant={isRecording ? "destructive" : "default"}
 						onClick={handleRecord}
-						disabled={isSaving || submitAttempt.isPending || isFinishing}
+						disabled={
+							isSaving ||
+							submitAttempt.isPending ||
+							isFinishing ||
+							(Boolean(attemptAccess) &&
+								!attemptAccess?.isPro &&
+								!isRecording &&
+								Boolean(attemptAccess?.reachedLimit))
+						}
 						className={cn(
 							"relative flex cursor-pointer gap-1.5 overflow-hidden whitespace-nowrap rounded-xl bg-linear-to-t from-[#202020] to-[#2F2F2F] font-base text-white italic shadow-[inset_0_1px_4px_0_rgba(255,255,255,0.4)] outline-none backdrop-blur transition-all hover:opacity-90 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none",
 							isRecording && "animate-pulse",
@@ -693,7 +723,9 @@ export default function ReadAloudMode({
 							? "Saving..."
 							: isRecording
 								? "Stop Recording"
-								: "Record"}
+								: attemptAccess && !attemptAccess.isPro && attemptAccess.limit
+									? `Record (${attemptAccess.remaining ?? 0} left)`
+									: "Record"}
 					</Button>
 				</div>
 			</div>

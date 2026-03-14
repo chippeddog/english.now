@@ -2,6 +2,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, BookOpen, Loader, Target } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useUpgradeDialog } from "@/components/dashboard/upgrade-dialog";
 import ExercisePlayer from "@/components/lesson/exercise-player";
 import LessonSummary from "@/components/lesson/lesson-summary";
 import TheoryView from "@/components/lesson/theory";
@@ -32,6 +33,7 @@ function LessonPage() {
 	const navigate = useNavigate();
 	const trpc = useTRPC();
 	const { getElapsedSeconds } = usePracticeTimer();
+	const { openDialog } = useUpgradeDialog();
 
 	const [attemptId, setAttemptId] = useState<string | null>(null);
 	const [exercises, setExercises] = useState<ExerciseItem[]>([]);
@@ -41,9 +43,10 @@ function LessonPage() {
 	const [phase, setPhase] = useState<LessonPhase>("loading");
 	const [finalScore, setFinalScore] = useState<number | null>(null);
 
-	const { data: lessonData } = useQuery(
-		trpc.content.getLesson.queryOptions({ lessonId }),
-	);
+	const {
+		data: lessonData,
+		error: lessonError,
+	} = useQuery(trpc.content.getLesson.queryOptions({ lessonId }));
 
 	const lessonContent = lessonData?.content as CurriculumLessonContent | null;
 	const hasTheory = !!lessonContent?.type;
@@ -77,6 +80,10 @@ function LessonPage() {
 					setPhase("guided_practice");
 				}
 			},
+			onError: () => {
+				openDialog();
+				navigate({ to: "/lessons" });
+			},
 		}),
 	);
 
@@ -96,8 +103,16 @@ function LessonPage() {
 	);
 
 	useEffect(() => {
+		if (lessonError) {
+			openDialog();
+			navigate({ to: "/lessons" });
+		}
+	}, [lessonError, navigate, openDialog]);
+
+	useEffect(() => {
+		if (!lessonData) return;
 		startMutation.mutate({ lessonId });
-	}, [lessonId]);
+	}, [lessonData, lessonId]);
 
 	const handleAnswer = useCallback(
 		async (exerciseId: string, answer: string): Promise<AnswerResult> => {

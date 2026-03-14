@@ -1,6 +1,7 @@
+// import Explore from "@/components/vocabulary/explore";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-// import Explore from "@/components/vocabulary/explore";
+import { useTranslation } from "react-i18next";
 import Phrases from "@/components/vocabulary/phrases";
 import Practice from "@/components/vocabulary/practice";
 import Progress from "@/components/vocabulary/progress";
@@ -23,6 +24,7 @@ export const Route = createFileRoute("/_dashboard/vocabulary")({
 });
 
 function VocabularyPage() {
+	const { t } = useTranslation("app");
 	const navigate = useNavigate();
 	const { tab } = Route.useSearch();
 
@@ -46,7 +48,7 @@ function VocabularyPage() {
 			<div className="container relative z-10 mx-auto max-w-5xl px-4 py-6 pt-8">
 				<div className="mb-6 flex items-center gap-1">
 					<h1 className="font-bold font-lyon text-3xl tracking-tight md:text-3xl">
-						Vocabulary
+						{t("vocabulary.title")}
 					</h1>
 				</div>
 
@@ -67,7 +69,7 @@ function VocabularyPage() {
 								)}
 								onClick={() => handleTabChange("words")}
 							>
-								Words
+								{t("vocabulary.words")}
 							</button>
 							<button
 								type="button"
@@ -79,7 +81,7 @@ function VocabularyPage() {
 								)}
 								onClick={() => handleTabChange("phrases")}
 							>
-								Phrases
+								{t("vocabulary.phrases")}
 							</button>
 							<button
 								type="button"
@@ -91,7 +93,7 @@ function VocabularyPage() {
 								)}
 								onClick={() => handleTabChange("progress")}
 							>
-								Progress
+								{t("vocabulary.progress")}
 							</button>
 						</div>
 

@@ -1,7 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { useUpgradeDialog } from "@/components/dashboard/upgrade-dialog";
 import {
 	Select,
 	SelectContent,
@@ -17,10 +19,13 @@ import ItemRow from "./item-row";
 
 export default function Words() {
 	const trpc = useTRPC();
+	const { t } = useTranslation("app");
 	const queryClient = useQueryClient();
 	const { data: words, isLoading } = useQuery(
 		trpc.vocabulary.getWords.queryOptions({ limit: 200 }),
 	);
+	const { data: access } = useQuery(trpc.vocabulary.getAccess.queryOptions());
+	const { openDialog } = useUpgradeDialog();
 
 	const [addDialogOpen, setAddDialogOpen] = useState(false);
 	const [newWord, setNewWord] = useState("");
@@ -41,6 +46,9 @@ export default function Words() {
 				toast.success("Word added successfully");
 			},
 			onError: (error) => {
+				if (error.message.includes("FREE_VOCAB_ADD_LIMIT_REACHED")) {
+					openDialog();
+				}
 				toast.error(error.message);
 			},
 		}),
@@ -57,6 +65,13 @@ export default function Words() {
 	);
 
 	const filteredWords = useMemo(() => words ?? [], [words]);
+	const remainingAdds = access?.adds.remaining;
+	const addHelperText =
+		access?.isPro || remainingAdds == null
+			? undefined
+			: `${remainingAdds} word or phrase add${
+					remainingAdds === 1 ? "" : "s"
+				} left today.`;
 
 	const handleAddWord = () => {
 		const trimmed = newWord.trim();
@@ -74,7 +89,7 @@ export default function Words() {
 
 	if (!words || words.length === 0) {
 		return (
-			<div className="flex flex-col items-center justify-center rounded-2xl border border-dashed bg-white/50 py-16 pb-24 dark:bg-slate-900/50">
+			<div className="flex flex-col items-center justify-center rounded-2xl border border-dashed bg-white/50 py-10 pb-20 dark:bg-slate-900/50">
 				<div className="flex w-32 items-center justify-center">
 					<img src="/icons/empty.png" alt="Empty state" />
 				</div>
@@ -98,6 +113,7 @@ export default function Words() {
 					setNewWord={setNewWord}
 					onSubmit={handleAddWord}
 					isPending={addWordMutation.isPending}
+					helperText={addHelperText}
 				/>
 			</div>
 		);
@@ -107,7 +123,7 @@ export default function Words() {
 		<div>
 			<div className="mb-4 flex items-center justify-between">
 				<div className="flex items-center gap-2">
-					<span className="font-semibold text-lg">Words</span>
+					<span className="font-semibold text-lg">{t("vocabulary.words")}</span>
 				</div>
 				<div className="flex items-center gap-2">
 					<Select
@@ -148,6 +164,7 @@ export default function Words() {
 						setNewWord={setNewWord}
 						onSubmit={handleAddWord}
 						isPending={addWordMutation.isPending}
+						helperText={addHelperText}
 					/>
 				</div>
 			</div>

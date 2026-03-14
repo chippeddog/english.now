@@ -7,7 +7,9 @@
     "settings": "設定",
     "preferences": "設定",
     "voices": "音声",
-    "signOut": "サインアウト"
+    "signOut": "サインアウト",
+    "menu": "メニューを開く",
+    "close": "メニューを閉じる"
   },
   "home": {
     "welcomeBack": "おかえりなさい、{{firstName}}",
@@ -84,7 +86,8 @@
       "feedback": "高度なAIフィードバック",
       "vocabulary": "完全な語彙ライブラリ",
       "learningPath": "個別化された学習パス",
-      "analytics": "進捗追跡と分析"
+      "analytics": "進捗追跡と分析",
+      "lessons": "全レッスンアクセス"
     },
     "yearly": "年間",
     "monthly": "月間",

@@ -16,6 +16,7 @@ import {
 	X,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useUpgradeDialog } from "@/components/dashboard/upgrade-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -79,6 +80,8 @@ interface Lesson {
 	type: LessonType;
 	status: LessonStatus;
 	progress?: number; // 0-100 for completed/current
+	lockReason?: string | null;
+	replayAllowed?: boolean;
 	detail: LessonDetail;
 }
 
@@ -88,6 +91,7 @@ interface Unit {
 	status: UnitStatus;
 	progress: number; // 0-100
 	lessons: Lesson[];
+	lockReason?: string | null;
 	unlockMessage?: string;
 }
 
@@ -407,8 +411,7 @@ function LessonRowContent({
 	return (
 		<button
 			type="button"
-			onClick={() => !isLocked && onSelect(lesson)}
-			disabled={isLocked}
+			onClick={() => onSelect(lesson)}
 			className={cn(
 				"group flex h-full min-h-12 w-full items-center gap-3 rounded-2xl py-0 text-left transition-all",
 				// isCurrent && "bg-white",
@@ -734,6 +737,7 @@ function FooterMessage({ message }: { message: string }) {
 function RouteComponent() {
 	const trpc = useTRPC();
 	const navigate = useNavigate();
+	const { openDialog } = useUpgradeDialog();
 	const { data: courseData, isLoading } = useQuery(
 		trpc.content.getCourse.queryOptions(),
 	);
@@ -757,6 +761,10 @@ function RouteComponent() {
 					type: (apiLesson.lessonType ?? l.type) as LessonType,
 					status: l.status as LessonStatus,
 					progress: l.progress,
+					lockReason: (l as typeof l & { lockReason?: string | null })
+						.lockReason,
+					replayAllowed: (l as typeof l & { replayAllowed?: boolean })
+						.replayAllowed,
 					detail: (l.content as LessonDetail) ?? {
 						description: "",
 						grammarPoints: [],
@@ -764,8 +772,10 @@ function RouteComponent() {
 					},
 				};
 			}),
+			lockReason: (u as typeof u & { lockReason?: string | null }).lockReason,
 			unlockMessage:
-				u.status === "locked" ? "Complete previous units to unlock" : undefined,
+				(u as typeof u & { unlockMessage?: string | undefined }).unlockMessage ??
+				(u.status === "locked" ? "Complete previous units to unlock" : undefined),
 		}));
 	}, [courseData]);
 
@@ -787,6 +797,15 @@ function RouteComponent() {
 	}, [units]);
 
 	const handleSelectLesson = (lesson: Lesson) => {
+		if (
+			lesson.status === "locked" &&
+			(lesson.lockReason === "free_unit_locked" ||
+				lesson.lockReason === "daily_new_lesson_limit")
+		) {
+			openDialog();
+			return;
+		}
+
 		if (lesson.status === "current" || lesson.status === "available") {
 			navigate({ to: "/lesson/$lessonId", params: { lessonId: lesson.id } });
 			return;
