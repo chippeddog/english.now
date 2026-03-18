@@ -1,13 +1,11 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { BookPlus, Loader, MessageSquarePlus } from "lucide-react";
 import * as PopoverPrimitive from "@radix-ui/react-popover";
-import { toast } from "sonner";
-import { useUpgradeDialog } from "@/components/dashboard/upgrade-dialog";
+import { BookPlus, Loader, MessageSquarePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useConversationVocabulary } from "@/hooks/use-conversation-vocabulary";
 import { cn } from "@/lib/utils";
-import { useTRPC } from "@/utils/trpc";
 
 type WordPopoverProps = {
+	sessionId: string;
 	text: string;
 	mode: "word" | "phrase";
 	selectionCount?: number;
@@ -16,59 +14,15 @@ type WordPopoverProps = {
 };
 
 export function WordPopover({
+	sessionId,
 	text,
 	mode,
 	selectionCount,
 	anchorEl,
 	onClose,
 }: WordPopoverProps) {
-	const trpc = useTRPC();
-	const queryClient = useQueryClient();
-	const { openDialog } = useUpgradeDialog();
+	const { addVocabulary, isPending } = useConversationVocabulary(sessionId);
 
-	const addWord = useMutation(
-		trpc.vocabulary.addWord.mutationOptions({
-			onSuccess: () => {
-				queryClient.invalidateQueries({
-					queryKey: trpc.vocabulary.getWords.queryKey(),
-				});
-				queryClient.invalidateQueries({
-					queryKey: trpc.vocabulary.getAccess.queryKey(),
-				});
-				toast.success(`"${text}" added to vocabulary`);
-				onClose();
-			},
-			onError: (err) => {
-				if (err.message.includes("FREE_VOCAB_ADD_LIMIT_REACHED")) {
-					openDialog();
-				}
-				toast.error(err.message ?? "Failed to add word");
-			},
-		}),
-	);
-
-	const addPhrase = useMutation(
-		trpc.vocabulary.addPhrase.mutationOptions({
-			onSuccess: () => {
-				queryClient.invalidateQueries({
-					queryKey: trpc.vocabulary.getPhrases.queryKey(),
-				});
-				queryClient.invalidateQueries({
-					queryKey: trpc.vocabulary.getAccess.queryKey(),
-				});
-				toast.success(`"${text}" added to vocabulary`);
-				onClose();
-			},
-			onError: (err) => {
-				if (err.message.includes("FREE_VOCAB_ADD_LIMIT_REACHED")) {
-					openDialog();
-				}
-				toast.error(err.message ?? "Failed to add phrase");
-			},
-		}),
-	);
-
-	const isPending = addWord.isPending || addPhrase.isPending;
 	const canSavePhrase = (selectionCount ?? 0) > 1;
 
 	return (
@@ -94,9 +48,7 @@ export function WordPopover({
 						}
 					}}
 				>
-					<p className="mb-2.5 text-center font-semibold text-sm">
-						"{text}"
-					</p>
+					<p className="mb-2.5 text-center font-semibold text-sm">"{text}"</p>
 
 					{mode === "word" ? (
 						<div className="flex flex-col gap-2">
@@ -104,16 +56,22 @@ export function WordPopover({
 								size="sm"
 								className="w-full justify-start gap-2 rounded-lg"
 								onClick={() =>
-									addWord.mutate({ word: text.toLowerCase(), source: "chat" })
+									addVocabulary(
+										{
+											text: text.toLowerCase(),
+											mode: "word",
+										},
+										{ onSuccess: () => onClose() },
+									)
 								}
 								disabled={isPending}
 							>
-								{addWord.isPending ? (
+								{isPending ? (
 									<Loader className="size-3.5 animate-spin" />
 								) : (
 									<BookPlus className="size-3.5" />
 								)}
-								Add word to vocabulary
+								Add word
 							</Button>
 							<p className="text-center text-muted-foreground text-xs">
 								Word mode saves one selected word at a time.
@@ -124,15 +82,23 @@ export function WordPopover({
 							<Button
 								size="sm"
 								className="w-full justify-start gap-2 rounded-lg"
-								onClick={() => addPhrase.mutate({ phrase: text, source: "chat" })}
+								onClick={() =>
+									addVocabulary(
+										{
+											text,
+											mode: "phrase",
+										},
+										{ onSuccess: () => onClose() },
+									)
+								}
 								disabled={!canSavePhrase || isPending}
 							>
-								{addPhrase.isPending ? (
+								{isPending ? (
 									<Loader className="size-3.5 animate-spin" />
 								) : (
 									<MessageSquarePlus className="size-3.5" />
 								)}
-								Add phrase to vocabulary
+								Add phrase
 							</Button>
 							<p className="text-center text-muted-foreground text-xs">
 								{canSavePhrase

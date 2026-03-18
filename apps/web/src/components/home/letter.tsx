@@ -83,7 +83,7 @@ export const Letter = () => {
 								<br />
 								{t("letter.paragraph1")} <br />
 								<br />
-								That's when it hit me:{" "}
+								{t("letter.thatsWhenItHitMe")}{" "}
 								<span className="rounded-sm bg-[#D8FF76]/50 px-1 font-medium text-lime-700">
 									{t("letter.highlight1")}
 								</span>{" "}
@@ -97,7 +97,7 @@ export const Letter = () => {
 								{t("letter.paragraph4")}
 								<br />
 								<br />
-								It is completely{" "}
+								{t("letter.isItCompletely")}{" "}
 								<Link className="text-lime-700 underline" to="/login">
 									{t("letter.freeToStart")}
 								</Link>
@@ -109,7 +109,7 @@ export const Letter = () => {
 							<div className="flex items-center gap-6">
 								<p className="flex flex-col gap-1 font-medium text-sm md:text-base">
 									<span className="flex items-center gap-2 font-medium">
-										{t("letter.founder")}{" "}
+										Dmytro Tihunov{" "}
 										<a
 											href="https://x.com/chippeddog"
 											target="_blank"

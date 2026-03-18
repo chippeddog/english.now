@@ -62,7 +62,8 @@
     "conversation": "대화",
     "pronunciation": "발음",
     "practiceYourEnglish": "영어 연습하기",
-    "practiceYourPronunciation": "발음 연습하기"
+    "practiceYourPronunciation": "발음 연습하기",
+    "practiceYourPronunciationDescription": "단락을 선택하고 AI와 함께 발음을 연습하세요"
   },
   "vocabulary": {
     "title": "어휘",

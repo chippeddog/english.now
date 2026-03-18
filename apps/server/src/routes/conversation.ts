@@ -5,17 +5,15 @@ import {
 	markDailyPracticeActivityStarted,
 } from "@english.now/api/services/daily-practice-plan";
 import {
-	FREE_CONVERSATION_MAX_AI_REPLIES,
-} from "@english.now/api/services/feature-limit-config";
-import {
 	getConversationAccessSummary,
 	getConversationReplyAccessSummary,
+	getVocabularyAccessSummary,
 } from "@english.now/api/services/feature-gating";
+import { FREE_CONVERSATION_MAX_AI_REPLIES } from "@english.now/api/services/feature-limit-config";
 import { recordDailyFeatureUsage } from "@english.now/api/services/feature-usage";
 import { recordActivity } from "@english.now/api/services/record-activity";
 import { auth } from "@english.now/auth";
 import {
-	conversationFeedback,
 	conversationMessage,
 	conversationSession,
 	db,
@@ -29,7 +27,10 @@ import { Hono } from "hono";
 import { streamText } from "hono/streaming";
 import { z } from "zod";
 import { rateLimit } from "@/middleware/rate-limit";
-import { enqueueGenerateConversationFeedback } from "../jobs";
+import {
+	enqueueAddConversationVocabulary,
+	enqueueGenerateConversationFeedback,
+} from "../jobs";
 import { generateTTSBase64 } from "../services/tts";
 import { openai } from "../utils/ai";
 import { getQueue } from "../utils/queue";
@@ -61,6 +62,22 @@ const speakSchema = z.object({
 	voice: z.string().default("aura-asteria-en"), // Deepgram voice model
 });
 
+const enqueueConversationVocabularySchema = z.object({
+	sessionId: z.string(),
+	text: z.string().min(1).max(300),
+	mode: z.enum(["word", "phrase"]),
+});
+
+function getSseEventData(event: string) {
+	const data = event
+		.split("\n")
+		.filter((line) => line.startsWith("data: "))
+		.map((line) => line.slice(6))
+		.join("\n");
+
+	return data.trim();
+}
+
 // Middleware to check auth
 const requireAuth = async (
 	c: Context<{ Variables: Variables }>,
@@ -86,12 +103,11 @@ conversation.post("/start", requireAuth, async (c) => {
 	}
 	const body = await c.req.json();
 
-	const { activityId } =
-		z
-			.object({
-				activityId: z.string(),
-			})
-			.parse(body);
+	const { activityId } = z
+		.object({
+			activityId: z.string(),
+		})
+		.parse(body);
 
 	const { plan } = await getTodayPracticePlanRecord(session.user.id);
 
@@ -309,7 +325,8 @@ conversation.post(
 							Authorization: `Bearer ${env.OPENAI_API_KEY}`,
 						},
 						body: JSON.stringify({
-							model: "gpt-4o-mini",
+							// model: "gpt-4o-mini",
+							model: "gpt-4.1-mini",
 							messages,
 							stream: true,
 							max_tokens: 500,
@@ -324,6 +341,7 @@ conversation.post(
 
 				const reader = response.body?.getReader();
 				const decoder = new TextDecoder();
+				let sseBuffer = "";
 
 				if (!reader) {
 					throw new Error("No response body");
@@ -331,27 +349,50 @@ conversation.post(
 
 				while (true) {
 					const { done, value } = await reader.read();
-					if (done) break;
+					sseBuffer += decoder.decode(value ?? new Uint8Array(), {
+						stream: !done,
+					});
+					sseBuffer = sseBuffer.replace(/\r\n/g, "\n");
 
-					const chunk = decoder.decode(value);
-					const lines = chunk.split("\n").filter((line) => line.trim() !== "");
+					let boundaryIndex = sseBuffer.indexOf("\n\n");
+					while (boundaryIndex !== -1) {
+						const event = sseBuffer.slice(0, boundaryIndex);
+						sseBuffer = sseBuffer.slice(boundaryIndex + 2);
 
-					for (const line of lines) {
-						if (line.startsWith("data: ")) {
-							const data = line.slice(6);
-							if (data === "[DONE]") continue;
-
-							try {
-								const parsed = JSON.parse(data);
-								const content = parsed.choices?.[0]?.delta?.content;
-								if (content) {
-									await stream.write(content);
-									fullResponse += content;
-								}
-							} catch {
-								// Skip malformed JSON
-							}
+						const data = getSseEventData(event);
+						if (!data || data === "[DONE]") {
+							boundaryIndex = sseBuffer.indexOf("\n\n");
+							continue;
 						}
+
+						try {
+							const parsed = JSON.parse(data);
+							const content = parsed.choices?.[0]?.delta?.content;
+							if (content) {
+								await stream.write(content);
+								fullResponse += content;
+							}
+						} catch {
+							// Ignore malformed SSE events and keep streaming.
+						}
+
+						boundaryIndex = sseBuffer.indexOf("\n\n");
+					}
+
+					if (done) break;
+				}
+
+				const trailingData = getSseEventData(sseBuffer);
+				if (trailingData && trailingData !== "[DONE]") {
+					try {
+						const parsed = JSON.parse(trailingData);
+						const content = parsed.choices?.[0]?.delta?.content;
+						if (content) {
+							await stream.write(content);
+							fullResponse += content;
+						}
+					} catch {
+						// Ignore trailing malformed SSE event.
 					}
 				}
 
@@ -494,66 +535,6 @@ conversation.post("/transcribe", requireAuth, async (c) => {
 	}
 });
 
-// Generate a contextual hint (what to say next)
-conversation.post("/hint", requireAuth, async (c) => {
-	const session = c.get("session");
-	if (!session) {
-		return c.json({ error: "Unauthorized" }, 401);
-	}
-
-	const body = await c.req.json();
-	const { sessionId } = z.object({ sessionId: z.string() }).parse(body);
-
-	const conversationSessionResult = await db
-		.select()
-		.from(conversationSession)
-		.where(eq(conversationSession.id, sessionId))
-		.limit(1);
-
-	const sessionData = conversationSessionResult[0];
-	if (!sessionData || sessionData.userId !== session.user.id) {
-		return c.json({ error: "Session not found" }, 404);
-	}
-
-	const profile = await db
-		.select()
-		.from(userProfile)
-		.where(eq(userProfile.userId, session.user.id))
-		.limit(1);
-
-	const nativeLanguage = profile[0]?.nativeLanguage ?? "Spanish";
-	const level = sessionData.level ?? "beginner";
-
-	const history = await db
-		.select()
-		.from(conversationMessage)
-		.where(eq(conversationMessage.sessionId, sessionId))
-		.orderBy(conversationMessage.createdAt);
-
-	const conversationHistory = history
-		.map((m) => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`)
-		.join("\n");
-
-	const { output } = await generateText({
-		model: openai("gpt-4o-mini"),
-		output: Output.text(),
-		system: `You help English learners figure out what to say next in a conversation.
-The learner speaks ${nativeLanguage} and is at a ${level} English level.
-Based on the conversation so far, suggest 2-3 short response options the user could say (in English).
-Keep suggestions appropriate for their level.
-Format each suggestion on its own line, prefixed with "•". Do NOT add explanations — just the suggestions.`,
-		prompt: conversationHistory,
-		temperature: 0.7,
-	});
-
-	const suggestions = (output ?? "")
-		.split("\n")
-		.map((l) => l.replace(/^•\s*/, "").trim())
-		.filter(Boolean);
-
-	return c.json({ suggestions });
-});
-
 // Translate from user's native language to English
 conversation.post("/native-to-english", requireAuth, async (c) => {
 	const session = c.get("session");
@@ -589,6 +570,62 @@ Return ONLY the English translation, nothing else. No quotes, no explanations.`,
 	return c.json({ english: output.trim() });
 });
 
+conversation.post(
+	"/vocabulary",
+	requireAuth,
+	rateLimit({ max: 20, windowMs: 60_000 }),
+	async (c) => {
+		const session = c.get("session");
+		if (!session) {
+			return c.json({ error: "Unauthorized" }, 401);
+		}
+
+		const body = await c.req.json();
+		const input = enqueueConversationVocabularySchema.parse(body);
+
+		const [sessionData] = await db
+			.select({
+				id: conversationSession.id,
+				userId: conversationSession.userId,
+			})
+			.from(conversationSession)
+			.where(eq(conversationSession.id, input.sessionId))
+			.limit(1);
+
+		if (!sessionData || sessionData.userId !== session.user.id) {
+			return c.json({ error: "Session not found" }, 404);
+		}
+
+		const access = await getVocabularyAccessSummary(session.user.id);
+		if (!access.isPro && !access.adds.hasAccess) {
+			return c.json(
+				{
+					error: "FREE_VOCAB_ADD_LIMIT_REACHED",
+					limit: access.adds.limit,
+					used: access.adds.used,
+				},
+				403,
+			);
+		}
+
+		const boss = getQueue();
+		const jobId = await enqueueAddConversationVocabulary(boss, {
+			sessionId: input.sessionId,
+			userId: session.user.id,
+			mode: input.mode,
+			text: input.text,
+		});
+
+		return c.json(
+			{
+				status: "queued",
+				jobId,
+			},
+			202,
+		);
+	},
+);
+
 // Finish a conversation session and enqueue feedback generation
 conversation.post("/finish", requireAuth, async (c) => {
 	const session = c.get("session");
@@ -613,18 +650,11 @@ conversation.post("/finish", requireAuth, async (c) => {
 	}
 
 	if (sessionData.status === "completed") {
-		const existing = await db
-			.select()
-			.from(conversationFeedback)
-			.where(eq(conversationFeedback.sessionId, sessionId))
-			.limit(1);
-
-		if (existing[0]) {
-			return c.json({
-				feedbackId: existing[0].id,
-				status: existing[0].status,
-			});
-		}
+		return c.json({
+			canGenerateFeedback:
+				sessionData.review?.availability !== "not_enough_messages",
+			status: sessionData.reviewStatus,
+		});
 	}
 
 	const messages = await db
@@ -639,9 +669,30 @@ conversation.post("/finish", requireAuth, async (c) => {
 	);
 
 	if (userMessageCount < 3) {
+		const now = new Date();
 		await db
 			.update(conversationSession)
-			.set({ status: "completed", updatedAt: new Date() })
+			.set({
+				status: "completed",
+				reviewStatus: "completed",
+				reviewGeneratedAt: now,
+				review: {
+					availability: "not_enough_messages",
+					overallScore: null,
+					scores: {
+						grammar: null,
+						vocabulary: null,
+						pronunciation: null,
+					},
+					problems: [],
+					tasks: [],
+					stats: {
+						totalProblems: 0,
+						totalTasks: 0,
+					},
+				},
+				updatedAt: now,
+			})
 			.where(eq(conversationSession.id, sessionId));
 
 		try {
@@ -656,9 +707,15 @@ conversation.post("/finish", requireAuth, async (c) => {
 		});
 	}
 
+	const now = new Date();
 	await db
 		.update(conversationSession)
-		.set({ status: "completed", updatedAt: new Date() })
+		.set({
+			status: "completed",
+			reviewStatus: "processing",
+			review: null,
+			updatedAt: now,
+		})
 		.where(eq(conversationSession.id, sessionId));
 
 	try {
@@ -666,15 +723,6 @@ conversation.post("/finish", requireAuth, async (c) => {
 	} catch (error) {
 		console.error("Failed to complete daily conversation activity:", error);
 	}
-
-	const feedbackId = crypto.randomUUID();
-	await db.insert(conversationFeedback).values({
-		id: feedbackId,
-		sessionId,
-		userId: session.user.id,
-		status: "generating",
-		createdAt: new Date(),
-	});
 
 	const boss = getQueue();
 	await enqueueGenerateConversationFeedback(boss, {
@@ -684,8 +732,7 @@ conversation.post("/finish", requireAuth, async (c) => {
 
 	return c.json({
 		canGenerateFeedback: true,
-		feedbackId,
-		status: "generating",
+		status: "processing",
 	});
 });
 

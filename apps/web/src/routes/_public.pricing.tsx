@@ -217,7 +217,7 @@ function PricingPage() {
 
 	return (
 		<div className="relative">
-			<div className="container relative mx-auto max-w-5xl px-4 py-16">
+			<div className="container relative mx-auto max-w-5xl px-4 py-10 md:py-16">
 				<div className="mb-16 text-center">
 					<h1 className="mb-4 font-bold font-lyon text-4xl text-neutral-950 leading-tight tracking-tight lg:text-5xl dark:text-white">
 						{t("pricing.pageTitle")}

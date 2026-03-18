@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Brain, Loader, LogOutIcon, SettingsIcon, Zap } from "lucide-react";
+import { Brain, LogOutIcon, SettingsIcon, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Billing } from "@/components/settings/billing";
@@ -23,7 +23,6 @@ export const Route = createFileRoute("/_dashboard/settings")({
 		};
 	},
 	component: RouteComponent,
-	pendingComponent: SettingsPending,
 	head: () => ({
 		meta: [
 			{
@@ -32,14 +31,6 @@ export const Route = createFileRoute("/_dashboard/settings")({
 		],
 	}),
 });
-
-function SettingsPending() {
-	return (
-		<div className="flex h-dvh w-full items-center justify-center">
-			<Loader className="size-8 animate-spin text-muted-foreground" />
-		</div>
-	);
-}
 
 function RouteComponent() {
 	const navigate = useNavigate();

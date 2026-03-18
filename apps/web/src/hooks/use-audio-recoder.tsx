@@ -8,6 +8,7 @@ export default function useAudioRecorder(
 		inputType: "text" | "voice",
 		audioUrl?: string,
 	) => Promise<void>,
+	selectedDevice?: string,
 ) {
 	const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 	const audioChunksRef = useRef<Blob[]>([]);
@@ -19,7 +20,13 @@ export default function useAudioRecorder(
 
 	const startRecording = async () => {
 		try {
-			const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+			const stream = await navigator.mediaDevices.getUserMedia({
+				audio: selectedDevice
+					? {
+							deviceId: { exact: selectedDevice },
+						}
+					: true,
+			});
 			streamRef.current = stream;
 			setAudioStream(stream);
 

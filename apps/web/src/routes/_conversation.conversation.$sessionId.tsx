@@ -1,19 +1,31 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Info, Loader } from "lucide-react";
-import { useEffect, useMemo } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { ChevronLeft, Loader, Settings } from "lucide-react";
+import { type MouseEvent, useEffect, useMemo, useState } from "react";
 import PracticeView from "@/components/conversation/practice-view";
+import ReportIssueDialog from "@/components/conversation/report-issue-dialog";
 import ReviewView, {
 	LoadingState,
 } from "@/components/conversation/review-view";
 import Logo from "@/components/logo";
 import SessionLoader from "@/components/session/loader";
-import ReportIssueDialog from "@/components/session/report-issue-dialog";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import {
 	Popover,
+	PopoverAnchor,
 	PopoverContent,
-	PopoverTrigger,
 } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import { useTRPC } from "@/utils/trpc";
 
 export const Route = createFileRoute("/_conversation/conversation/$sessionId")({
@@ -24,6 +36,11 @@ function ConversationPage() {
 	const { sessionId } = Route.useParams();
 	const navigate = useNavigate();
 	const trpc = useTRPC();
+	const [settingsOpen, setSettingsOpen] = useState(false);
+	const [instructionsOpen, setInstructionsOpen] = useState(false);
+	const [hasDismissedInstructions, setHasDismissedInstructions] =
+		useState(false);
+	const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
 
 	const {
 		data: sessionData,
@@ -57,12 +74,14 @@ function ConversationPage() {
 	}, [sessionData?.session.context]);
 
 	const { data: feedbackData, isLoading: isFeedbackLoading } = useQuery({
-		...trpc.feedback.getFeedback.queryOptions({ sessionId }),
+		...trpc.conversation.getReview.queryOptions({ sessionId }),
 		enabled: isCompleted,
 		refetchInterval: (query) => {
 			const d = query.state.data;
 			if (!d) return 2000;
-			if (d.feedback.status === "completed") return false;
+			if (d.reviewStatus === "completed" || d.reviewStatus === "failed") {
+				return false;
+			}
 			return 2000;
 		},
 		retry: (failureCount, err) => {
@@ -76,6 +95,39 @@ function ConversationPage() {
 			navigate({ to: "/practice" });
 		}
 	}, [sessionError, navigate]);
+
+	useEffect(() => {
+		if (instructions && !hasDismissedInstructions) {
+			setInstructionsOpen(true);
+		}
+	}, [instructions, hasDismissedInstructions]);
+
+	const handleInstructionsOpenChange = (open: boolean) => {
+		setInstructionsOpen(open);
+		if (!open && instructions) {
+			setHasDismissedInstructions(true);
+		}
+	};
+
+	const handleLogoClick = (event: MouseEvent<HTMLAnchorElement>) => {
+		if (!instructions) {
+			event.preventDefault();
+			setLeaveDialogOpen(true);
+			return;
+		}
+
+		if (instructionsOpen) {
+			event.preventDefault();
+			setInstructionsOpen(false);
+			setHasDismissedInstructions(true);
+			return;
+		}
+
+		if (hasDismissedInstructions) {
+			event.preventDefault();
+			setLeaveDialogOpen(true);
+		}
+	};
 
 	if (isSessionLoading) {
 		return <SessionLoader />;
@@ -95,7 +147,11 @@ function ConversationPage() {
 			);
 		}
 
-		if (!feedbackData || feedbackData.feedback.status !== "completed") {
+		if (
+			!feedbackData ||
+			(feedbackData.reviewStatus !== "completed" &&
+				feedbackData.reviewStatus !== "failed")
+		) {
 			return <LoadingState />;
 		}
 
@@ -107,13 +163,23 @@ function ConversationPage() {
 							<div className="items-center gap-2 md:flex">
 								<Logo link="/practice" />
 							</div>
+							<Link
+								to="/conversation"
+								className="flex items-center gap-1 text-muted-foreground text-sm transition-colors hover:text-foreground"
+							>
+								<ChevronLeft className="size-4" />
+								Back to practice
+							</Link>
 						</nav>
 					</div>
 				</div>
 				<ReviewView
-					feedback={feedbackData.feedback}
+					attempts={feedbackData.attempts}
 					messages={feedbackData.messages}
+					practiceProgress={feedbackData.practiceProgress}
 					reportAccess={feedbackData.reportAccess}
+					review={feedbackData.review}
+					reviewStatus={feedbackData.reviewStatus}
 					session={feedbackData.session}
 				/>
 			</>
@@ -121,30 +187,31 @@ function ConversationPage() {
 	}
 
 	return (
-		<>
-			<div className="sticky border-black/5 border-b bg-white">
+		<div className="flex min-h-full flex-col">
+			<div className="sticky top-0 z-20 shrink-0 border-black/5 border-b bg-white/95 backdrop-blur">
 				<div className="container relative z-10 mx-auto max-w-3xl px-4">
 					<nav className="flex grid-cols-2 items-center justify-between py-5 md:grid-cols-5">
-						<div className="items-center gap-2 md:flex">
-							<Logo link="/practice" />
-						</div>
 						<div className="flex items-center gap-2">
-							{instructions ? (
-								<Popover>
-									<PopoverTrigger asChild>
-										<button
-											type="button"
-											className="inline-flex size-9 items-center justify-center text-neutral-600 transition hover:bg-neutral-50 hover:text-neutral-900"
-											aria-label="Show conversation instructions"
-										>
-											<Info className="size-4" />
-										</button>
-									</PopoverTrigger>
+							<Popover
+								open={instructions ? instructionsOpen : false}
+								onOpenChange={handleInstructionsOpenChange}
+							>
+								<PopoverAnchor asChild>
+									<div className="inline-flex">
+										<Logo link="/practice" onClick={handleLogoClick} />
+									</div>
+								</PopoverAnchor>
+								{instructions ? (
 									<PopoverContent
-										align="end"
+										align="start"
 										sideOffset={10}
-										className="w-80 rounded-2xl border-0 bg-black p-4 text-white shadow-[0_12px_32px_rgba(0,0,0,0.22)]"
+										className="w-80 rounded-xl border-0 bg-black p-4 text-white shadow-[0_12px_32px_rgba(0,0,0,0.22)]"
 									>
+										{/* <PopoverArrow
+											className="fill-black"
+											width={10}
+											height={4}
+										/> */}
 										<div className="space-y-2">
 											<div className="flex items-center gap-2">
 												{/* <span className="rounded-md bg-lime-300 px-1.5 py-0.5 font-semibold text-[10px] text-lime-950 uppercase tracking-wide">
@@ -166,25 +233,64 @@ function ConversationPage() {
 													/>
 												</svg>
 												<span className="font-medium text-sm">
-													Conversation instructions
+													Instructions
 												</span>
 											</div>
 											<p className="text-white/80 text-xs">{instructions}</p>
 										</div>
 									</PopoverContent>
-								</Popover>
-							) : null}
+								) : null}
+							</Popover>
+						</div>
+						<div className="flex items-center gap-2">
 							<ReportIssueDialog
 								sessionId={sessionId}
 								sessionType="conversation"
 							/>
+							<Button
+								variant="outline"
+								size="icon"
+								className={cn(
+									"size-9 cursor-pointer rounded-xl shadow-none",
+									settingsOpen && "bg-neutral-100",
+								)}
+								onClick={() => setSettingsOpen(true)}
+							>
+								<Settings className="size-4" strokeWidth={2} />
+							</Button>
 						</div>
 					</nav>
 				</div>
 			</div>
-			<div className="container relative mx-auto flex h-full max-w-3xl flex-col px-4 pt-8">
-				<PracticeView sessionId={sessionId} />
+			<div className="container relative mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 pt-6">
+				<PracticeView
+					sessionId={sessionId}
+					settingsOpen={settingsOpen}
+					onSettingsOpenChange={setSettingsOpen}
+				/>
 			</div>
-		</>
+			<AlertDialog open={leaveDialogOpen} onOpenChange={setLeaveDialogOpen}>
+				<AlertDialogContent className="w-sm">
+					<AlertDialogHeader>
+						<AlertDialogTitle>Leave practice?</AlertDialogTitle>
+						<AlertDialogDescription>
+							You can leave this conversation now and continue it later from the
+							practice page.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel className="rounded-xl bg-neutral-100 text-neutral-900 italic hover:bg-neutral-200">
+							Continue
+						</AlertDialogCancel>
+						<AlertDialogAction
+							className="relative flex cursor-pointer items-center justify-center gap-1.5 overflow-hidden whitespace-nowrap rounded-xl bg-linear-to-t from-[#202020] to-[#2F2F2F] font-base text-white italic shadow-[inset_0_1px_4px_0_rgba(255,255,255,0.4)] outline-none backdrop-blur transition-all hover:opacity-90 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-40 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:from-[rgb(192,192,192)] dark:to-[rgb(255,255,255)] dark:shadow-[inset_0_1px_4px_0_rgba(128,128,128,0.2)] dark:aria-invalid:ring-destructive/40"
+							onClick={() => navigate({ to: "/practice" })}
+						>
+							Leave for now
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
+		</div>
 	);
 }

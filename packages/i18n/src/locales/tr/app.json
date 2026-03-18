@@ -62,7 +62,8 @@
     "conversation": "Konuşma",
     "pronunciation": "Telaffuz",
     "practiceYourEnglish": "İngilizcenizi pratiğe dökün",
-    "practiceYourPronunciation": "Telaffuzunuzu pratiğe dökün"
+    "practiceYourPronunciation": "Telaffuzunuzu pratiğe dökün",
+    "practiceYourPronunciationDescription": "Bir paragraf seçin ve telaffuzunuzu yapay zeka ile pratik yapın"
   },
   "vocabulary": {
     "title": "Kelime Bilgisi",

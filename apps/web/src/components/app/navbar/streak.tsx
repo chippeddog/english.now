@@ -106,7 +106,7 @@ export default function Streak({
 							<h3 className="flex items-center gap-2 font-lyon font-semibold text-xl">
 								<Trans>{t("streak.title", { count: streak })}</Trans>
 								<Tooltip>
-									<TooltipTrigger>
+									<TooltipTrigger autoFocus={false}>
 										<InfoIcon
 											className="size-4 text-neutral-400"
 											strokeWidth={2}

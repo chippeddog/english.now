@@ -62,7 +62,8 @@
     "conversation": "Розмова",
     "pronunciation": "Вимова",
     "practiceYourEnglish": "Практикуйте свою англійську",
-    "practiceYourPronunciation": "Практикуйте свою вимову"
+    "practiceYourPronunciation": "Практикуйте свою вимову",
+    "practiceYourPronunciationDescription": "Виберіть абзац і практикуйте свою вимову за допомогою AI"
   },
   "vocabulary": {
     "title": "Словник",

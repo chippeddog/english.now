@@ -1,6 +1,7 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import {
 	conversationMessage,
+	conversationReviewAttempt,
 	conversationSession,
 	conversationSuggestion,
 	db,
@@ -12,16 +13,17 @@ import { generateText, Output } from "ai";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure, rateLimitedProcedure, router } from "../index";
-import { generateSuggestions } from "../services/generate-suggestions";
+import { getConversationReviewData } from "../services/conversation-review";
+import {
+	getTodayPracticePlanRecord,
+	markDailyPracticeActivityStarted,
+} from "../services/daily-practice-plan";
 import {
 	getConversationAccessSummary,
 	getConversationReplyAccessSummary,
 } from "../services/feature-gating";
 import { recordDailyFeatureUsage } from "../services/feature-usage";
-import {
-	getTodayPracticePlanRecord,
-	markDailyPracticeActivityStarted,
-} from "../services/daily-practice-plan";
+import { generateSuggestions } from "../services/generate-suggestions";
 
 const openai = createOpenAI({ apiKey: env.OPENAI_API_KEY });
 
@@ -153,8 +155,7 @@ export const conversationRouter = router({
 			}
 
 			const activity = plan.activities.find(
-				(item) =>
-					item.id === input.activityId && item.type === "conversation",
+				(item) => item.id === input.activityId && item.type === "conversation",
 			);
 
 			if (!activity || activity.type !== "conversation") {
@@ -293,6 +294,82 @@ The person you're talking to is learning English at a ${level} level.
 			};
 		}),
 
+	getReview: protectedProcedure
+		.input(z.object({ sessionId: z.string() }))
+		.query(async ({ ctx, input }) => {
+			return getConversationReviewData({
+				sessionId: input.sessionId,
+				userId: ctx.session.user.id,
+			});
+		}),
+
+	saveReviewTaskResult: protectedProcedure
+		.input(
+			z.object({
+				sessionId: z.string(),
+				taskId: z.string(),
+				problemId: z.string(),
+				type: z.enum(["grammar", "vocabulary", "pronunciation"]),
+				status: z.enum(["practiced", "completed", "skipped"]),
+				result: z.record(z.string(), z.unknown()).optional(),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const reviewData = await getConversationReviewData({
+				sessionId: input.sessionId,
+				userId: ctx.session.user.id,
+			});
+
+			const task = reviewData.review?.tasks.find(
+				(item) =>
+					item.id === input.taskId &&
+					item.problemId === input.problemId &&
+					item.type === input.type,
+			);
+
+			if (!task) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Review task not found",
+				});
+			}
+
+			const now = new Date();
+			await db
+				.insert(conversationReviewAttempt)
+				.values({
+					id: crypto.randomUUID(),
+					sessionId: input.sessionId,
+					userId: ctx.session.user.id,
+					taskId: input.taskId,
+					problemId: input.problemId,
+					type: input.type,
+					status: input.status,
+					result: input.result ?? null,
+					createdAt: now,
+					updatedAt: now,
+				})
+				.onConflictDoUpdate({
+					target: [
+						conversationReviewAttempt.sessionId,
+						conversationReviewAttempt.userId,
+						conversationReviewAttempt.taskId,
+					],
+					set: {
+						problemId: input.problemId,
+						type: input.type,
+						status: input.status,
+						result: input.result ?? null,
+						updatedAt: now,
+					},
+				});
+
+			return getConversationReviewData({
+				sessionId: input.sessionId,
+				userId: ctx.session.user.id,
+			});
+		}),
+
 	// Send a text message (non-streaming, for tRPC)
 	sendMessage: protectedProcedure
 		.input(
@@ -357,6 +434,61 @@ The person you're talking to is learning English at a ${level} level.
 			}
 
 			return { translation: output };
+		}),
+
+	hint: rateLimitedProcedure(10, 60_000)
+		.input(z.object({ sessionId: z.string() }))
+		.mutation(async ({ ctx, input }) => {
+			const session = await db
+				.select()
+				.from(conversationSession)
+				.where(eq(conversationSession.id, input.sessionId))
+				.limit(1);
+
+			if (!session[0] || session[0].userId !== ctx.session.user.id) {
+				throw new Error("Session not found");
+			}
+
+			const profile = await db
+				.select()
+				.from(userProfile)
+				.where(eq(userProfile.userId, ctx.session.user.id))
+				.limit(1);
+
+			const nativeLanguage = profile[0]?.nativeLanguage ?? "Spanish";
+			const level = session[0].level ?? "beginner";
+
+			const history = await db
+				.select()
+				.from(conversationMessage)
+				.where(eq(conversationMessage.sessionId, input.sessionId))
+				.orderBy(conversationMessage.createdAt);
+
+			const conversationHistory = history
+				.map(
+					(message) =>
+						`${message.role === "user" ? "User" : "Assistant"}: ${message.content}`,
+				)
+				.join("\n");
+
+			const { output } = await generateText({
+				model: openai("gpt-4o-mini"),
+				output: Output.text(),
+				system: `You help English learners figure out what to say next in a conversation.
+The learner speaks ${nativeLanguage} and is at a ${level} English level.
+Based on the conversation so far, suggest 2-3 short response options the user could say (in English).
+Keep suggestions appropriate for their level.
+Format each suggestion on its own line, prefixed with "•". Do NOT add explanations — just the suggestions.`,
+				prompt: conversationHistory,
+				temperature: 0.7,
+			});
+
+			return {
+				suggestions: (output ?? "")
+					.split("\n")
+					.map((line) => line.replace(/^•\s*/, "").trim())
+					.filter(Boolean),
+			};
 		}),
 
 	endSession: protectedProcedure

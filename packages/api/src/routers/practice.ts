@@ -1,10 +1,15 @@
-import type { PronunciationSessionSummary } from "@english.now/db";
+import type {
+	ConversationReview,
+	PronunciationSessionSummary,
+} from "@english.now/db";
 import {
 	and,
+	conversationFeedback,
 	conversationSession,
 	db,
 	desc,
 	eq,
+	inArray,
 	isNull,
 	lt,
 	pronunciationSession,
@@ -237,6 +242,7 @@ export const practiceRouter = router({
 								id: conversationSession.id,
 								scenario: conversationSession.scenario,
 								level: conversationSession.level,
+								review: conversationSession.review,
 								status: conversationSession.status,
 								createdAt: conversationSession.createdAt,
 							})
@@ -254,6 +260,29 @@ export const practiceRouter = router({
 							.limit(fetchLimit)
 					: [],
 			]);
+
+			const conversationFeedbackScores =
+				convResults.length > 0
+					? await db
+							.select({
+								sessionId: conversationFeedback.sessionId,
+								overallScore: conversationFeedback.overallScore,
+							})
+							.from(conversationFeedback)
+							.where(
+								inArray(
+									conversationFeedback.sessionId,
+									convResults.map((session) => session.id),
+								),
+							)
+					: [];
+
+			const feedbackScoreBySessionId = new Map(
+				conversationFeedbackScores.map((item) => [
+					item.sessionId,
+					item.overallScore,
+				]),
+			);
 
 			const unified = [
 				...pronResults.map((s) => ({
@@ -273,7 +302,10 @@ export const practiceRouter = router({
 					title: s.scenario,
 					mode: null,
 					status: s.status,
-					score: null,
+					score:
+						(s.review as ConversationReview | null)?.overallScore ??
+						feedbackScoreBySessionId.get(s.id) ??
+						null,
 					createdAt: s.createdAt,
 				})),
 			];

@@ -62,7 +62,8 @@
     "conversation": "المحادثة",
     "pronunciation": "النطق",
     "practiceYourEnglish": "تمرن على لغتك الإنجليزية",
-    "practiceYourPronunciation": "تمرن على النطق"
+    "practiceYourPronunciation": "تمرن على النطق",
+    "practiceYourPronunciationDescription": "اختر فقرة وتمرن على النطق باستخدام الذكاء الاصطناعي"
   },
   "vocabulary": {
     "title": "المفردات",

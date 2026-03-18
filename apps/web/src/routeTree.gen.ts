@@ -25,6 +25,7 @@ import { Route as PublicRefundRouteImport } from './routes/_public.refund'
 import { Route as PublicPrivacyRouteImport } from './routes/_public.privacy'
 import { Route as PublicPricingRouteImport } from './routes/_public.pricing'
 import { Route as PublicFeaturesRouteImport } from './routes/_public.features'
+import { Route as PublicContactRouteImport } from './routes/_public.contact'
 import { Route as PublicBlogRouteImport } from './routes/_public.blog'
 import { Route as PublicAboutRouteImport } from './routes/_public.about'
 import { Route as LoginVerifyRouteImport } from './routes/_login.verify'
@@ -124,6 +125,11 @@ const PublicPricingRoute = PublicPricingRouteImport.update({
 const PublicFeaturesRoute = PublicFeaturesRouteImport.update({
   id: '/features',
   path: '/features',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicContactRoute = PublicContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
   getParentRoute: () => PublicRoute,
 } as any)
 const PublicBlogRoute = PublicBlogRouteImport.update({
@@ -287,6 +293,7 @@ export interface FileRoutesByFullPath {
   '/verify': typeof LoginVerifyRoute
   '/about': typeof PublicAboutRoute
   '/blog': typeof PublicBlogRouteWithChildren
+  '/contact': typeof PublicContactRoute
   '/features': typeof PublicFeaturesRoute
   '/pricing': typeof PublicPricingRoute
   '/privacy': typeof PublicPrivacyRoute
@@ -323,6 +330,7 @@ export interface FileRoutesByTo {
   '/signup': typeof LoginSignupRoute
   '/verify': typeof LoginVerifyRoute
   '/about': typeof PublicAboutRoute
+  '/contact': typeof PublicContactRoute
   '/features': typeof PublicFeaturesRoute
   '/pricing': typeof PublicPricingRoute
   '/privacy': typeof PublicPrivacyRoute
@@ -369,6 +377,7 @@ export interface FileRoutesById {
   '/_login/verify': typeof LoginVerifyRoute
   '/_public/about': typeof PublicAboutRoute
   '/_public/blog': typeof PublicBlogRouteWithChildren
+  '/_public/contact': typeof PublicContactRoute
   '/_public/features': typeof PublicFeaturesRoute
   '/_public/pricing': typeof PublicPricingRoute
   '/_public/privacy': typeof PublicPrivacyRoute
@@ -409,6 +418,7 @@ export interface FileRouteTypes {
     | '/verify'
     | '/about'
     | '/blog'
+    | '/contact'
     | '/features'
     | '/pricing'
     | '/privacy'
@@ -445,6 +455,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/verify'
     | '/about'
+    | '/contact'
     | '/features'
     | '/pricing'
     | '/privacy'
@@ -490,6 +501,7 @@ export interface FileRouteTypes {
     | '/_login/verify'
     | '/_public/about'
     | '/_public/blog'
+    | '/_public/contact'
     | '/_public/features'
     | '/_public/pricing'
     | '/_public/privacy'
@@ -635,6 +647,13 @@ declare module '@tanstack/react-router' {
       path: '/features'
       fullPath: '/features'
       preLoaderRoute: typeof PublicFeaturesRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/contact': {
+      id: '/_public/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof PublicContactRouteImport
       parentRoute: typeof PublicRoute
     }
     '/_public/blog': {
@@ -944,6 +963,7 @@ const PublicBlogRouteWithChildren = PublicBlogRoute._addFileChildren(
 interface PublicRouteChildren {
   PublicAboutRoute: typeof PublicAboutRoute
   PublicBlogRoute: typeof PublicBlogRouteWithChildren
+  PublicContactRoute: typeof PublicContactRoute
   PublicFeaturesRoute: typeof PublicFeaturesRoute
   PublicPricingRoute: typeof PublicPricingRoute
   PublicPrivacyRoute: typeof PublicPrivacyRoute
@@ -955,6 +975,7 @@ interface PublicRouteChildren {
 const PublicRouteChildren: PublicRouteChildren = {
   PublicAboutRoute: PublicAboutRoute,
   PublicBlogRoute: PublicBlogRouteWithChildren,
+  PublicContactRoute: PublicContactRoute,
   PublicFeaturesRoute: PublicFeaturesRoute,
   PublicPricingRoute: PublicPricingRoute,
   PublicPrivacyRoute: PublicPrivacyRoute,

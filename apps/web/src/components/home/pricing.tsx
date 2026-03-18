@@ -163,7 +163,7 @@ export function Pricing() {
 				>
 					<CarouselContent className="items-end pb-4">
 						{_plans.map((_plan) => (
-							<CarouselItem key={_plan.key} className="basis-[80%] pr-4 pl-4">
+							<CarouselItem key={_plan.key} className={cn("basis-[80%] pr-4 pl-4", _plan.isPopular ? "basis-[80%] pl-1 pr-1" : "")}>
 								{_plan.isPopular
 									? renderPopularWrapper(renderPlanCard(_plan))
 									: renderPlanCard(_plan)}

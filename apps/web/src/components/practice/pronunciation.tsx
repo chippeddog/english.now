@@ -213,12 +213,12 @@ function DialogTopicsPronunciation({
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogContent showCloseButton={false}>
-				<div className="mb-6 flex flex-col gap-2 text-center">
+				<div className="mb-8 flex flex-col gap-3 text-center">
 					<h1 className="font-bold font-lyon text-3xl tracking-tight">
 						{t("practice.pronunciation")}
 					</h1>
-					<p className="text-muted-foreground text-sm">
-						{t("practice.selectMode")}
+					<p className="text-md text-muted-foreground">
+						{t("practice.practiceYourPronunciationDescription")}
 					</p>
 				</div>
 				<div className="relative">
@@ -259,22 +259,21 @@ function DialogTopicsPronunciation({
 									/>
 								</button>
 								<div className="pt-1">
-									<h3 className="font-semibold text-sm italic">
-										{preview ? preview.topic : "Read Aloud"}
-									</h3>
+									<h3 className="font-semibold text-sm italic">Read Aloud</h3>
 									{isGenerating && !preview ? (
 										<SkeletonText />
 									) : preview ? (
 										<div className={cn("pt-4", isGenerating && "opacity-50")}>
 											<p className="text-sm leading-relaxed">{preview.text}</p>
-											{/* <div className="mt-3 flex items-center gap-2">
-											<span className="rounded-md bg-lime-100 px-1.5 py-0.5 font-medium text-lime-700 text-xs">
-												{preview.cefrLevel}
-											</span>
-											<span className="text-muted-foreground text-xs">
-												{preview.topic}
-											</span>
-										</div> */}
+											<div className="mt-3 flex items-center gap-2">
+												{/* <span className="rounded-md bg-lime-100 px-1.5 py-0.5 font-medium text-lime-700 text-xs"> */}
+												<span className="rounded-md bg-radial from-[#EFFF9B] to-[#D8FF76] px-1.5 py-0.5 font-medium text-lime-900 text-xs normal-case tracking-normal md:py-[0.165rem] md:text-xs">
+													{preview.cefrLevel}
+												</span>
+												<span className="text-muted-foreground text-xs">
+													{preview.topic}
+												</span>
+											</div>
 										</div>
 									) : (
 										<p className="pt-3 text-muted-foreground text-sm">
@@ -321,7 +320,9 @@ export default function Pronunciation() {
 	const navigate = useNavigate();
 	const trpc = useTRPC();
 	const { openDialog: openUpgradeDialog } = useUpgradeDialog();
-	const { data: planData } = useQuery(trpc.practice.getTodayPlan.queryOptions());
+	const { data: planData } = useQuery(
+		trpc.practice.getTodayPlan.queryOptions(),
+	);
 	const gateState = getPracticeTypeGateState(
 		planData?.access ?? null,
 		"pronunciation",
@@ -376,11 +377,7 @@ export default function Pronunciation() {
 							{t("practice.pronunciation")}
 						</h2>
 						<p className="text-muted-foreground text-sm">
-							{gateState === "locked"
-								? "Daily free AI practice used. Upgrade to unlock more."
-								: gateState === "resume"
-									? "Resume your pronunciation session from today."
-									: t("practice.practiceYourPronunciation")}
+							{t("practice.practiceYourPronunciation")}
 						</p>
 					</div>
 				</div>

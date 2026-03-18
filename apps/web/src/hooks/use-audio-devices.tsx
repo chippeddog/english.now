@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 
-export default function useAudioDevices() {
+export default function useAudioDevices(enabled: boolean) {
 	const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
 	const [selectedDevice, setSelectedDevice] = useState<string>("");
-	const [settingsOpen, setSettingsOpen] = useState(false);
 
 	useEffect(() => {
 		const getDevices = async () => {
@@ -22,16 +21,14 @@ export default function useAudioDevices() {
 			}
 		};
 
-		if (settingsOpen) {
+		if (enabled) {
 			getDevices();
 		}
-	}, [settingsOpen, selectedDevice]);
+	}, [enabled, selectedDevice]);
 
 	return {
 		audioDevices,
 		selectedDevice,
 		setSelectedDevice,
-		settingsOpen,
-		setSettingsOpen,
 	};
 }

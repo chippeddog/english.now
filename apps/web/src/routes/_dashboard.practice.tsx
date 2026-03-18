@@ -14,8 +14,8 @@ import {
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import CantFind from "@/components/practice/cant-find";
 import Conversation from "@/components/practice/convesation";
+import Grammar from "@/components/practice/grammar";
 import ProgressCircle from "@/components/practice/progress-circle";
 import Pronunciation from "@/components/practice/pronunciation";
 import SessionSkeleton from "@/components/practice/session-skeleton";
@@ -118,7 +118,8 @@ function RouteComponent() {
 					<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
 						<Conversation />
 						<Pronunciation />
-						<CantFind />
+						<Grammar />
+						{/* <CantFind /> */}
 					</div>
 				</div>
 				<div className="mt-6">

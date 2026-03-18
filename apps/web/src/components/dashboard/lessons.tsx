@@ -338,7 +338,9 @@ export default function Lessons({
 					"0 0 0 1px rgba(0,0,0,.05),0 10px 10px -5px rgba(0,0,0,.04),0 20px 25px -5px rgba(0,0,0,.04),0 20px 32px -12px rgba(0,0,0,.04)",
 			}}
 		>
-			<div className="-bottom-3 absolute right-0 left-0 z-20 h-24 w-full bg-linear-to-t from-white to-transparent" />
+			{!isLoading && summary && summary?.currentLesson && (
+				<div className="-bottom-3 absolute right-0 left-0 z-20 h-24 w-full bg-linear-to-t from-white to-transparent" />
+			)}
 			<div className="mb-2 flex items-center justify-between gap-2 pl-1.5">
 				<div className="font-bold font-lyon text-xl">Lessons</div>
 			</div>
@@ -350,7 +352,7 @@ export default function Lessons({
 					<div className="h-10 animate-pulse rounded-2xl bg-neutral-100" />
 				</div>
 			) : !summary || !summary.currentLesson ? (
-				<div className="rounded-2xl border border-border/50 px-4 py-5 text-center">
+				<div className="flex min-h-[160px] flex-col items-center justify-center rounded-2xl border border-border/50 px-4 py-5 text-center">
 					<p className="font-medium text-sm">No active lessons yet.</p>
 					<p className="mt-1 text-muted-foreground text-xs">
 						Complete onboarding to generate your learning path.
@@ -389,7 +391,7 @@ export default function Lessons({
 											summary.currentLesson.lockReason,
 											"Locked",
 										)
-									: (summary.currentLesson.subtitle || "Current lesson")
+									: summary.currentLesson.subtitle || "Current lesson"
 							}
 							action={
 								summary.currentLesson.status !== "locked" ? (
@@ -427,9 +429,9 @@ export default function Lessons({
 													summary.nextStep.lesson.lockReason,
 													"Next lesson",
 												)
-											: (summary.nextStep.lesson.subtitle || "Next lesson")
+											: summary.nextStep.lesson.subtitle || "Next lesson"
 										: summary.nextStep.unit.status === "locked"
-											? (summary.nextStep.unit.unlockMessage || "Next unit")
+											? summary.nextStep.unit.unlockMessage || "Next unit"
 											: "Continue to the next unit"
 								}
 								muted={

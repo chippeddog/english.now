@@ -1,28 +1,36 @@
 import type { AppRouter } from "@english.now/api/routers/index";
-import { Link } from "@tanstack/react-router";
+import { env } from "@english.now/env/client";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { inferRouterOutputs } from "@trpc/server";
 import {
-	ArrowLeft,
 	BookOpen,
 	Check,
-	ChevronRight,
+	CheckCircle2,
 	Loader2,
 	MessageSquare,
 	Mic,
-	Share2,
+	SkipForward,
 	Sparkles,
 	TrendingUp,
+	Volume2,
 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useUpgradeDialog } from "@/components/dashboard/upgrade-dialog";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { useConversationVocabulary } from "@/hooks/use-conversation-vocabulary";
+import useTextToSpeech from "@/hooks/use-text-to-speech";
+import useVoiceRecorder from "@/hooks/use-voice-recorder";
 import { cn } from "@/lib/utils";
 import { formatRelativeDate } from "@/utils/date";
+import { useTRPC } from "@/utils/trpc";
+import ClickableMessage from "./clickable-message";
 
-type FeedbackResponse =
-	inferRouterOutputs<AppRouter>["feedback"]["getFeedback"];
-type FeedbackData = FeedbackResponse["feedback"];
-type ReportAccess = FeedbackResponse["reportAccess"];
+type ReviewResponse =
+	inferRouterOutputs<AppRouter>["conversation"]["getReview"];
+type ReviewData = ReviewResponse["review"];
+type PracticeProgress = ReviewResponse["practiceProgress"];
+type ReportAccess = ReviewResponse["reportAccess"];
+type AttemptRow = ReviewResponse["attempts"][number];
 
 type GenerationStep = {
 	id: string;
@@ -45,21 +53,24 @@ const STEPS: GenerationStep[] = [
 		icon: MessageSquare,
 		delay: 4000,
 	},
-	{ id: "fluency", label: "Assessing fluency", icon: TrendingUp, delay: 6000 },
 	{
-		id: "summary",
-		label: "Preparing your feedback",
+		id: "tasks",
+		label: "Preparing your practice tasks",
 		icon: Sparkles,
-		delay: 8000,
+		delay: 6000,
 	},
 ];
 
 function TranscriptMessage({
+	sessionId,
 	content,
 	role,
+	vocabMode,
 }: {
+	sessionId: string;
 	content: string;
 	role: "user" | "assistant";
+	vocabMode: "off" | "word" | "phrase";
 }) {
 	return (
 		<div className="flex gap-3">
@@ -76,7 +87,13 @@ function TranscriptMessage({
 				</div>
 			</div>
 			<div className="flex-1">
-				<p className="text-sm leading-relaxed">{content}</p>
+				<p className="text-sm leading-relaxed">
+					<ClickableMessage
+						sessionId={sessionId}
+						content={content}
+						vocabMode={vocabMode}
+					/>
+				</p>
 			</div>
 		</div>
 	);
@@ -185,6 +202,396 @@ function CorrectionBadge({ type }: { type: string }) {
 	);
 }
 
+function TaskStatusBadge({ status }: { status?: string }) {
+	if (!status) {
+		return (
+			<span className="rounded-full bg-neutral-100 px-2.5 py-1 font-medium text-[11px] text-neutral-600">
+				New task
+			</span>
+		);
+	}
+
+	const config: Record<string, string> = {
+		practiced: "bg-lime-100 text-lime-700",
+		completed: "bg-green-100 text-green-700",
+		skipped: "bg-neutral-200 text-neutral-600",
+	};
+
+	return (
+		<span
+			className={cn(
+				"rounded-full px-2.5 py-1 font-medium text-[11px]",
+				config[status] ?? "bg-neutral-100 text-neutral-600",
+			)}
+		>
+			{status === "completed"
+				? "Completed"
+				: status === "practiced"
+					? "Practiced"
+					: "Skipped"}
+		</span>
+	);
+}
+
+function VocabModeToggle({
+	value,
+	onChange,
+}: {
+	value: "off" | "word" | "phrase";
+	onChange: (value: "off" | "word" | "phrase") => void;
+}) {
+	return (
+		<div className="inline-flex rounded-xl border bg-white p-1">
+			{(["off", "word", "phrase"] as const).map((item) => (
+				<button
+					key={item}
+					type="button"
+					onClick={() => onChange(item)}
+					className={cn(
+						"rounded-lg px-3 py-1.5 font-medium text-xs capitalize transition-colors",
+						value === item
+							? "bg-neutral-900 text-white"
+							: "text-muted-foreground hover:bg-neutral-100",
+					)}
+				>
+					{item === "off" ? "Transcript" : item}
+				</button>
+			))}
+		</div>
+	);
+}
+
+function blobToBase64(blob: Blob): Promise<string> {
+	return blob.arrayBuffer().then((buffer) => {
+		const bytes = new Uint8Array(buffer);
+		let binary = "";
+		for (const byte of bytes) {
+			binary += String.fromCharCode(byte);
+		}
+		return btoa(binary);
+	});
+}
+
+function getAttemptScore(attempt?: AttemptRow) {
+	const score = attempt?.result?.score;
+	return typeof score === "number" ? score : null;
+}
+
+function getVocabularyCandidates(
+	problem: NonNullable<ReviewData>["problems"][number],
+	task: NonNullable<ReviewData>["tasks"][number] | undefined,
+) {
+	const candidates = new Set<string>();
+	for (const item of problem.vocabularyItems ?? []) {
+		if (item.trim()) candidates.add(item.trim());
+	}
+	for (const item of task?.payload.vocabularyItems ?? []) {
+		if (item.trim()) candidates.add(item.trim());
+	}
+	return [...candidates];
+}
+
+function ReviewTaskCard({
+	problem,
+	task,
+	attempt,
+	onSaveTask,
+	onAddVocabulary,
+	onSpeak,
+}: {
+	problem: NonNullable<ReviewData>["problems"][number];
+	task?: NonNullable<ReviewData>["tasks"][number];
+	attempt?: AttemptRow;
+	onSaveTask: (input: {
+		taskId: string;
+		problemId: string;
+		type: "grammar" | "vocabulary" | "pronunciation";
+		status: "practiced" | "completed" | "skipped";
+		result?: Record<string, unknown>;
+	}) => void;
+	onAddVocabulary: (text: string, mode: "word" | "phrase") => void;
+	onSpeak: (text: string) => void;
+}) {
+	const { isRecording, startRecording, stopRecording } = useVoiceRecorder();
+	const [isAssessing, setIsAssessing] = useState(false);
+	const [localScore, setLocalScore] = useState<number | null>(null);
+	const [localTranscript, setLocalTranscript] = useState<string | null>(null);
+
+	const practiceText =
+		task?.payload.practiceText ?? problem.suggestedText ?? problem.sourceText;
+	const vocabularyCandidates = getVocabularyCandidates(problem, task);
+	const currentScore = localScore ?? getAttemptScore(attempt);
+	const attemptStatus = attempt?.status;
+	const pronunciationTarget =
+		task?.payload.pronunciationTarget ??
+		problem.pronunciationTargets?.[0]?.text ??
+		problem.suggestedText;
+
+	const assessPronunciation = async () => {
+		const blob = await stopRecording();
+		if (!blob || !task || !pronunciationTarget) return;
+
+		setIsAssessing(true);
+		try {
+			const audio = await blobToBase64(blob);
+			const response = await fetch(
+				`${env.VITE_SERVER_URL}/api/pronunciation/assess`,
+				{
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					credentials: "include",
+					body: JSON.stringify({
+						audio,
+						referenceText: pronunciationTarget,
+					}),
+				},
+			);
+
+			if (!response.ok) {
+				const err = (await response.json().catch(() => ({}))) as {
+					details?: string;
+				};
+				throw new Error(err.details ?? "Pronunciation assessment failed");
+			}
+
+			const result = (await response.json()) as {
+				pronunciationScore: number;
+				transcript: string;
+				accuracyScore?: number;
+				fluencyScore?: number;
+				completenessScore?: number;
+				prosodyScore?: number;
+				audioUrl?: string;
+			};
+
+			setLocalScore(result.pronunciationScore);
+			setLocalTranscript(result.transcript);
+			onSaveTask({
+				taskId: task.id,
+				problemId: problem.id,
+				type: "pronunciation",
+				status:
+					result.pronunciationScore >= (task.payload.targetScore ?? 75)
+						? "completed"
+						: "practiced",
+				result: {
+					score: result.pronunciationScore,
+					transcript: result.transcript,
+					accuracyScore: result.accuracyScore ?? null,
+					fluencyScore: result.fluencyScore ?? null,
+					completenessScore: result.completenessScore ?? null,
+					prosodyScore: result.prosodyScore ?? null,
+					audioUrl: result.audioUrl ?? null,
+				},
+			});
+		} catch (error) {
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "Failed to assess pronunciation",
+			);
+		} finally {
+			setIsAssessing(false);
+		}
+	};
+
+	return (
+		<div className="rounded-2xl border bg-white p-5 shadow-sm">
+			<div className="mb-3 flex items-start justify-between gap-3">
+				<div className="space-y-1">
+					<div className="flex items-center gap-2">
+						<CorrectionBadge type={problem.type} />
+						<TaskStatusBadge status={attemptStatus} />
+					</div>
+					<h3 className="font-semibold text-base">{problem.title}</h3>
+				</div>
+				{currentScore != null ? (
+					<div className="rounded-full bg-neutral-100 px-3 py-1 font-semibold text-sm">
+						{currentScore}
+					</div>
+				) : null}
+			</div>
+
+			<div className="grid gap-3 md:grid-cols-2">
+				<div className="rounded-xl border border-red-100 bg-red-50/60 p-4">
+					<p className="mb-1 font-medium text-[11px] text-red-500 uppercase tracking-wide">
+						You said
+					</p>
+					<p className="text-sm leading-relaxed">{problem.sourceText}</p>
+				</div>
+				<div className="rounded-xl border border-green-100 bg-green-50/70 p-4">
+					<p className="mb-1 font-medium text-[11px] text-green-600 uppercase tracking-wide">
+						Try instead
+					</p>
+					<p className="text-sm leading-relaxed">{problem.suggestedText}</p>
+				</div>
+			</div>
+
+			<p className="mt-3 text-muted-foreground text-sm leading-relaxed">
+				{problem.explanation}
+			</p>
+
+			{task?.prompt ? (
+				<div className="mt-4 rounded-xl bg-neutral-50 p-4">
+					<p className="font-medium text-sm">{task.prompt}</p>
+					{problem.type === "pronunciation" ? (
+						<div className="mt-3 space-y-3">
+							<div className="flex flex-wrap items-center gap-2">
+								<Button
+									variant="outline"
+									size="sm"
+									className="rounded-xl"
+									onClick={() => onSpeak(pronunciationTarget ?? practiceText)}
+								>
+									<Volume2 className="mr-1 size-4" />
+									Listen
+								</Button>
+								<Button
+									size="sm"
+									className="rounded-xl"
+									onClick={() => {
+										if (isRecording) {
+											void assessPronunciation();
+											return;
+										}
+										void startRecording();
+									}}
+									disabled={isAssessing}
+								>
+									{isRecording ? (
+										<>
+											<Loader2 className="mr-1 size-4 animate-pulse" />
+											Stop & score
+										</>
+									) : isAssessing ? (
+										<>
+											<Loader2 className="mr-1 size-4 animate-spin" />
+											Scoring
+										</>
+									) : (
+										<>
+											<Mic className="mr-1 size-4" />
+											Practice
+										</>
+									)}
+								</Button>
+								<Button
+									variant="ghost"
+									size="sm"
+									className="rounded-xl"
+									onClick={() =>
+										task &&
+										onSaveTask({
+											taskId: task.id,
+											problemId: problem.id,
+											type: "pronunciation",
+											status: "skipped",
+											result: { skipped: true },
+										})
+									}
+								>
+									<SkipForward className="mr-1 size-4" />
+									Skip
+								</Button>
+							</div>
+							{localTranscript ? (
+								<p className="text-muted-foreground text-xs">
+									Heard: {localTranscript}
+								</p>
+							) : null}
+						</div>
+					) : (
+						<div className="mt-3 flex flex-wrap items-center gap-2">
+							<Button
+								size="sm"
+								className="rounded-xl"
+								onClick={() =>
+									task &&
+									onSaveTask({
+										taskId: task.id,
+										problemId: problem.id,
+										type: problem.type,
+										status: "practiced",
+										result: {
+											practiceText,
+										},
+									})
+								}
+							>
+								<CheckCircle2 className="mr-1 size-4" />
+								Practice
+							</Button>
+							<Button
+								variant="outline"
+								size="sm"
+								className="rounded-xl"
+								onClick={() => onSpeak(practiceText)}
+							>
+								<Volume2 className="mr-1 size-4" />
+								Listen
+							</Button>
+							<Button
+								variant="ghost"
+								size="sm"
+								className="rounded-xl"
+								onClick={() =>
+									task &&
+									onSaveTask({
+										taskId: task.id,
+										problemId: problem.id,
+										type: problem.type,
+										status: "skipped",
+										result: { skipped: true },
+									})
+								}
+							>
+								<SkipForward className="mr-1 size-4" />
+								Skip
+							</Button>
+						</div>
+					)}
+				</div>
+			) : null}
+
+			{problem.type !== "pronunciation" ? (
+				<div className="mt-4 flex flex-wrap gap-2">
+					{vocabularyCandidates.map((item) => {
+						const mode =
+							item.trim().split(/\s+/).length > 1 ? "phrase" : "word";
+						return (
+							<Button
+								key={item}
+								variant="outline"
+								size="sm"
+								className="rounded-xl"
+								onClick={() => onAddVocabulary(item, mode)}
+							>
+								{mode === "phrase" ? "Add phrase" : "Add word"}: {item}
+							</Button>
+						);
+					})}
+					{problem.suggestedText.trim().split(/\s+/).length > 1 ? (
+						<Button
+							variant="outline"
+							size="sm"
+							className="rounded-xl"
+							onClick={() => onAddVocabulary(problem.suggestedText, "phrase")}
+						>
+							Add phrase: {problem.suggestedText}
+						</Button>
+					) : null}
+				</div>
+			) : null}
+
+			{attempt?.updatedAt ? (
+				<p className="mt-3 text-muted-foreground text-xs">
+					Last updated {formatRelativeDate(new Date(attempt.updatedAt))}
+				</p>
+			) : null}
+		</div>
+	);
+}
+
 export function LoadingState() {
 	const [activeStep, setActiveStep] = useState(0);
 
@@ -262,24 +669,84 @@ export function LoadingState() {
 }
 
 export default function ReviewView({
-	feedback,
+	attempts,
 	messages,
+	practiceProgress,
 	session,
 	reportAccess,
+	review,
+	reviewStatus,
 }: {
-	feedback: FeedbackData;
-	messages: FeedbackResponse["messages"];
-	session: FeedbackResponse["session"];
+	attempts: ReviewResponse["attempts"];
+	messages: ReviewResponse["messages"];
+	practiceProgress: PracticeProgress;
+	session: ReviewResponse["session"];
 	reportAccess: ReportAccess;
+	review: ReviewData;
+	reviewStatus: ReviewResponse["reviewStatus"];
 }) {
-	const { openDialog: openUpgradeDialog } = useUpgradeDialog();
+	const trpc = useTRPC();
+	const queryClient = useQueryClient();
+	const { speak } = useTextToSpeech();
+	const sessionId = session?.id ?? "";
+	const [vocabMode, setVocabMode] = useState<"off" | "word" | "phrase">("off");
+	const { addVocabulary } = useConversationVocabulary(sessionId);
+	const saveTaskResult = useMutation(
+		trpc.conversation.saveReviewTaskResult.mutationOptions({
+			onSuccess: () => {
+				queryClient.invalidateQueries({
+					queryKey: trpc.conversation.getReview.queryKey({ sessionId }),
+				});
+			},
+			onError: (error) => {
+				toast.error(error.message ?? "Failed to save task progress");
+			},
+		}),
+	);
+
+	const attemptMap = useMemo(
+		() => new Map(attempts.map((attempt) => [attempt.taskId, attempt])),
+		[attempts],
+	);
+
 	const scores = [
-		{ label: "Grammar", score: feedback.grammarScore },
-		{ label: "Vocabulary", score: feedback.vocabularyScore },
-		{ label: "Fluency", score: feedback.fluencyScore },
-		{ label: "Pronunciation", score: feedback.pronunciationScore },
-	].filter((s) => s.score != null) as { label: string; score: number }[];
+		{ label: "Grammar", score: review?.scores.grammar ?? null, icon: BookOpen },
+		{
+			label: "Vocabulary",
+			score: review?.scores.vocabulary ?? null,
+			icon: MessageSquare,
+		},
+		{
+			label: "Pronunciation",
+			score: review?.scores.pronunciation ?? null,
+			icon: Mic,
+		},
+	].filter((item) => item.score != null) as Array<{
+		label: string;
+		score: number;
+		icon: typeof BookOpen;
+	}>;
 	const isPreviewLocked = reportAccess.locked && reportAccess.preview;
+	const taskMap = useMemo(
+		() => new Map((review?.tasks ?? []).map((task) => [task.problemId, task])),
+		[review?.tasks],
+	);
+
+	const hasTasks = (review?.tasks.length ?? 0) > 0;
+
+	const handleSaveTask = (input: {
+		taskId: string;
+		problemId: string;
+		type: "grammar" | "vocabulary" | "pronunciation";
+		status: "practiced" | "completed" | "skipped";
+		result?: Record<string, unknown>;
+	}) => {
+		saveTaskResult.mutate({
+			sessionId,
+			...input,
+			result: input.result,
+		});
+	};
 
 	return (
 		<div className="min-h-dvh bg-neutral-50">
@@ -287,11 +754,6 @@ export default function ReviewView({
 				{/* Header */}
 				<div className="mb-6 flex items-center justify-between">
 					<div className="flex items-center gap-4">
-						<Link to="/practice">
-							<Button variant="ghost" size="icon" className="rounded-xl">
-								<ArrowLeft className="size-5" />
-							</Button>
-						</Link>
 						<div>
 							<h1 className="font-semibold text-xl">{session?.scenario}</h1>
 							<p className="text-muted-foreground text-sm">
@@ -305,192 +767,173 @@ export default function ReviewView({
 								Preview
 							</span>
 						)}
-						<Button variant="outline" className="gap-2 rounded-xl">
-							<Share2 className="size-4" />
-							Share
-						</Button>
 					</div>
 				</div>
 
-				<div className="grid grid-cols-5 items-start gap-6">
-					{/* Left panel - Transcript */}
-					<div
-						className="col-span-3 shrink-0 rounded-2xl bg-white"
-						style={{
-							boxShadow:
-								"0 0 0 1px rgba(0,0,0,.05),0 10px 10px -5px rgba(0,0,0,.04),0 20px 25px -5px rgba(0,0,0,.04),0 20px 32px -12px rgba(0,0,0,.04)",
-						}}
-					>
-						<div className="max-h-[calc(100vh-200px)] space-y-6 overflow-y-auto p-6">
-							{messages.map((msg) => (
-								<TranscriptMessage
-									key={msg.id}
-									content={msg.content}
-									role={msg.role as "user" | "assistant"}
+				<div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(320px,1fr)]">
+					<div className="space-y-6">
+						<div className="grid gap-4 xl:grid-cols-[220px_repeat(3,minmax(0,1fr))]">
+							<div className="rounded-2xl border bg-white p-5 shadow-sm">
+								<div className="mb-3 flex items-center gap-2 text-muted-foreground text-xs uppercase tracking-wide">
+									<TrendingUp className="size-4" />
+									Overall
+								</div>
+								{review?.overallScore != null ? (
+									<div className="flex items-center gap-4">
+										<ScoreRing
+											score={review.overallScore}
+											size={88}
+											strokeWidth={7}
+										/>
+										<div>
+											<p className="font-semibold">Session score</p>
+											<p className="text-muted-foreground text-sm">
+												{review.overallScore >= 80
+													? "Strong session"
+													: review.overallScore >= 60
+														? "Good progress"
+														: "More targeted practice will help"}
+											</p>
+										</div>
+									</div>
+								) : (
+									<p className="text-muted-foreground text-sm">
+										No score yet for this session.
+									</p>
+								)}
+							</div>
+
+							<div className="rounded-2xl border bg-white p-5 shadow-sm xl:col-span-3">
+								<div className="mb-4 flex items-center justify-between gap-3">
+									<div>
+										<p className="font-semibold">Practice progress</p>
+										<p className="text-muted-foreground text-sm">
+											Practiced {practiceProgress.practicedTasks} of{" "}
+											{practiceProgress.totalTasks} tasks
+										</p>
+									</div>
+									<div className="rounded-full bg-lime-100 px-3 py-1 font-semibold text-lime-700 text-sm">
+										{practiceProgress.completedTasks} completed
+									</div>
+								</div>
+								<div className="grid gap-3 sm:grid-cols-3">
+									{scores.map((item) => {
+										const Icon = item.icon;
+										const typeKey = item.label.toLowerCase() as
+											| "grammar"
+											| "vocabulary"
+											| "pronunciation";
+										const typeProgress = practiceProgress.byType[typeKey];
+										return (
+											<div
+												key={item.label}
+												className="rounded-xl bg-neutral-50 p-4"
+											>
+												<div className="mb-2 flex items-center justify-between">
+													<div className="flex items-center gap-2">
+														<Icon className="size-4 text-muted-foreground" />
+														<span className="font-medium text-sm">
+															{item.label}
+														</span>
+													</div>
+													<span className="font-semibold text-sm">
+														{item.score}
+													</span>
+												</div>
+												<p className="text-muted-foreground text-xs">
+													{typeProgress.practiced} practiced /{" "}
+													{typeProgress.total} tasks
+												</p>
+											</div>
+										);
+									})}
+								</div>
+							</div>
+						</div>
+
+						<div className="space-y-4">
+							<div className="flex items-center justify-between gap-3">
+								<div>
+									<h2 className="font-semibold text-lg">Problems to fix</h2>
+									<p className="text-muted-foreground text-sm">
+										Fast tasks based on grammar, vocabulary, and pronunciation.
+									</p>
+								</div>
+								{saveTaskResult.isPending ? (
+									<Loader2 className="size-4 animate-spin text-muted-foreground" />
+								) : null}
+							</div>
+
+							{reviewStatus === "failed" ? (
+								<div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-red-700">
+									We couldn&apos;t generate this review yet. Try finishing
+									another session after a few more replies.
+								</div>
+							) : null}
+
+							{review?.availability === "not_enough_messages" ? (
+								<div className="rounded-2xl border bg-white p-5 shadow-sm">
+									<h3 className="font-semibold">
+										Session too short for review
+									</h3>
+									<p className="mt-2 text-muted-foreground text-sm leading-relaxed">
+										Keep the conversation going for at least 3 learner replies
+										next time, and we&apos;ll generate targeted grammar,
+										vocabulary, and pronunciation tasks here.
+									</p>
+								</div>
+							) : null}
+
+							{reviewStatus !== "failed" &&
+							review?.availability !== "not_enough_messages" &&
+							!hasTasks ? (
+								<div className="rounded-2xl border bg-white p-5 shadow-sm">
+									<h3 className="font-semibold">No urgent problems found</h3>
+									<p className="mt-2 text-muted-foreground text-sm leading-relaxed">
+										This session did not surface clear high-priority fixes. Use
+										the transcript tools on the right to save helpful words and
+										phrases.
+									</p>
+								</div>
+							) : null}
+
+							{review?.problems.map((problem) => (
+								<ReviewTaskCard
+									key={problem.id}
+									problem={problem}
+									task={taskMap.get(problem.id)}
+									attempt={attemptMap.get(taskMap.get(problem.id)?.id ?? "")}
+									onSaveTask={handleSaveTask}
+									onAddVocabulary={(text, mode) =>
+										addVocabulary({ text, mode })
+									}
+									onSpeak={speak}
 								/>
 							))}
 						</div>
 					</div>
 
-					<div className="col-span-2 space-y-6">
-						{/* Overall score */}
-						{feedback.overallScore != null && (
-							<div className="flex flex-col items-center gap-3 rounded-2xl border bg-white p-6">
-								<ScoreRing
-									score={feedback.overallScore}
-									size={100}
-									strokeWidth={8}
-								/>
-								<div className="text-center">
-									<p className="font-semibold text-lg">Overall Score</p>
-									<p className="text-muted-foreground text-sm">
-										{feedback.overallScore >= 80
-											? "Excellent work!"
-											: feedback.overallScore >= 60
-												? "Good progress!"
-												: feedback.overallScore >= 40
-													? "Keep practicing!"
-													: "Don't give up!"}
-									</p>
-								</div>
+					<div className="space-y-4">
+						<div className="flex items-center justify-between">
+							<div>
+								<h2 className="font-semibold text-lg">Transcript</h2>
 							</div>
-						)}
-
-						{/* Individual scores */}
-						{scores.length > 0 && (
-							<div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-								{scores.map((s) => (
-									<div
-										key={s.label}
-										className="flex flex-col items-center gap-1 rounded-xl border bg-white p-4"
-									>
-										<ScoreRing score={s.score} size={64} strokeWidth={5} />
-										<span className="font-medium text-muted-foreground text-xs">
-											{s.label}
-										</span>
-									</div>
-								))}
-							</div>
-						)}
-
-						{/* Summary */}
-						{feedback.summary && (
-							<div className="rounded-xl border bg-white p-5">
-								<h2 className="mb-2 font-semibold text-sm">Summary</h2>
-								<p className="text-muted-foreground text-sm leading-relaxed">
-									{feedback.summary}
-								</p>
-							</div>
-						)}
-
-						{isPreviewLocked && (
-							<div className="rounded-xl border border-amber-200 bg-amber-50 p-5">
-								<h2 className="mb-2 font-semibold text-amber-800 text-sm">
-									Unlock Full Feedback
-								</h2>
-								<p className="text-amber-700 text-sm leading-relaxed">
-									Upgrade to see detailed skill scores, full correction
-									explanations, strengths, improvements, and vocabulary
-									suggestions for this session.
-								</p>
-								<Button className="mt-4 rounded-xl" onClick={openUpgradeDialog}>
-									Unlock Full Report
-								</Button>
-							</div>
-						)}
-
-						{/* Strengths & Improvements */}
-						<div className="grid gap-3 sm:grid-cols-2">
-							{feedback.strengths && feedback.strengths.length > 0 && (
-								<div className="rounded-xl border border-green-200 bg-green-50 p-5">
-									<h2 className="mb-3 font-semibold text-green-800 text-sm">
-										Strengths
-									</h2>
-									<ul className="space-y-2">
-										{feedback.strengths.map((s) => (
-											<li
-												key={s}
-												className="flex items-start gap-2 text-green-700 text-sm"
-											>
-												<Check className="mt-0.5 size-3.5 shrink-0" />
-												<span>{s}</span>
-											</li>
-										))}
-									</ul>
-								</div>
-							)}
-
-							{feedback.improvements && feedback.improvements.length > 0 && (
-								<div className="rounded-xl border border-amber-200 bg-amber-50 p-5">
-									<h2 className="mb-3 font-semibold text-amber-800 text-sm">
-										Areas to Improve
-									</h2>
-									<ul className="space-y-2">
-										{feedback.improvements.map((imp) => (
-											<li
-												key={imp}
-												className="flex items-start gap-2 text-amber-700 text-sm"
-											>
-												<ChevronRight className="mt-0.5 size-3.5 shrink-0" />
-												<span>{imp}</span>
-											</li>
-										))}
-									</ul>
-								</div>
-							)}
+							<VocabModeToggle value={vocabMode} onChange={setVocabMode} />
 						</div>
 
-						{/* Corrections */}
-						{feedback.corrections && feedback.corrections.length > 0 && (
-							<div className="rounded-xl border bg-white p-5">
-								<h2 className="mb-3 font-semibold text-sm">Corrections</h2>
-								<div className="space-y-3">
-									{feedback.corrections.map((correction, i) => (
-										<div
-											key={`${correction.original}-${i}`}
-											className="rounded-lg border border-dashed p-3"
-										>
-											<div className="mb-2 flex items-center gap-2">
-												<CorrectionBadge type={correction.type} />
-											</div>
-											<div className="space-y-1 text-sm">
-												<p className="text-red-600 line-through">
-													{correction.original}
-												</p>
-												<p className="font-medium text-green-700">
-													{correction.corrected}
-												</p>
-												{correction.explanation && (
-													<p className="text-muted-foreground text-xs">
-														{correction.explanation}
-													</p>
-												)}
-											</div>
-										</div>
-									))}
-								</div>
+						<div className="rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
+							<div className="max-h-[calc(100vh-180px)] space-y-6 overflow-y-auto p-6">
+								{messages.map((msg) => (
+									<TranscriptMessage
+										key={msg.id}
+										sessionId={sessionId}
+										content={msg.content}
+										role={msg.role as "user" | "assistant"}
+										vocabMode={vocabMode}
+									/>
+								))}
 							</div>
-						)}
-
-						{/* Vocabulary Suggestions */}
-						{feedback.vocabularySuggestions &&
-							feedback.vocabularySuggestions.length > 0 && (
-								<div className="rounded-xl border bg-white p-5">
-									<h2 className="mb-3 font-semibold text-sm">
-										Vocabulary to Learn
-									</h2>
-									<div className="flex flex-wrap gap-2">
-										{feedback.vocabularySuggestions.map((word) => (
-											<span
-												key={word}
-												className="rounded-full border bg-neutral-50 px-3 py-1.5 text-sm"
-											>
-												{word}
-											</span>
-										))}
-									</div>
-								</div>
-							)}
+						</div>
 					</div>
 				</div>
 			</div>

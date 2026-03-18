@@ -132,11 +132,62 @@ export default function Navbar() {
 										) : (
 											<div className="relative flex items-center gap-2">
 												{!session.user.image ? (
-													<div className="relative flex size-8.5 shrink-0 items-center justify-center space-x-0 overflow-hidden rounded-full border border-neutral-200 font-semibold text-neutral-400 uppercase">
-														<span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-neutral-100">
-															<span className="pointer-events-none flex aspect-square size-6 select-none items-center justify-center rounded-full object-cover object-center italic">
-																{session.user.name?.charAt(0) ?? "?"}
+													<div
+														className={cn(
+															"relative flex size-9 shrink-0 items-center justify-center space-x-0 rounded-full border font-semibold text-neutral-400 uppercase",
+															profile?.subscription.isPro
+																? "border-black"
+																: "border-neutral-200",
+														)}
+													>
+														{profile?.subscription.isPro && (
+															<span className="-bottom-0.5 absolute mx-auto rounded-full border border-black bg-linear-to-t from-[#202020] to-[#2F2F2F] px-1 font-semibold text-[9px] text-sm text-white italic">
+																PRO
 															</span>
+														)}
+
+														<span className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full">
+															<svg
+																className="size-8"
+																viewBox="0 0 108 108"
+																fill="none"
+																xmlns="http://www.w3.org/2000/svg"
+																aria-hidden="true"
+															>
+																<g clip-path="url(#clip0_6240_46818)">
+																	<rect width="108" height="108" fill="white" />
+																	<rect
+																		opacity="0.3"
+																		width="108"
+																		height="108"
+																		fill="#F2F2F2"
+																	/>
+																	<circle
+																		cx="54"
+																		cy="129"
+																		r="58"
+																		fill="#DADADA"
+																	/>
+																	<circle
+																		cx="54"
+																		cy="44"
+																		r="21"
+																		fill="#DADADA"
+																	/>
+																</g>
+																<defs>
+																	<clipPath id="clip0_6240_46818">
+																		<rect
+																			width="108"
+																			height="108"
+																			fill="white"
+																		/>
+																	</clipPath>
+																</defs>
+															</svg>
+															{/* <span className="pointer-events-none flex aspect-square size-6 select-none items-center justify-center rounded-full object-cover object-center italic">
+																{session.user.name?.charAt(0) ?? "?"}
+															</span> */}
 														</span>
 													</div>
 												) : (

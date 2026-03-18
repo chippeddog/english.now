@@ -62,7 +62,8 @@
     "conversation": "Konversation",
     "pronunciation": "Aussprache",
     "practiceYourEnglish": "Üben Sie Ihr Englisch",
-    "practiceYourPronunciation": "Üben Sie Ihre Aussprache"
+    "practiceYourPronunciation": "Üben Sie Ihre Aussprache",
+    "practiceYourPronunciationDescription": "Wählen Sie einen Absatz aus und üben Sie Ihre Aussprache mit KI"
   },
   "vocabulary": {
     "title": "Wortschatz",

@@ -62,7 +62,8 @@
     "conversation": "Rozmowa",
     "pronunciation": "Wymowa",
     "practiceYourEnglish": "Ćwicz swój angielski",
-    "practiceYourPronunciation": "Ćwicz swoją wymowę"
+    "practiceYourPronunciation": "Ćwicz swoją wymowę",
+    "practiceYourPronunciationDescription": "Wybierz akapit i ćwicz swoją wymowę z AI"
   },
   "vocabulary": {
     "title": "Słownictwo",

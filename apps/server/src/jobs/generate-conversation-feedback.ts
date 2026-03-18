@@ -30,7 +30,7 @@ export async function registerGenerateConversationFeedbackWorker(boss: PgBoss) {
 					job.data.userId,
 				);
 
-				console.log(`[${QUEUE_NAME}] done — feedbackId=${result.feedbackId}`);
+				console.log(`[${QUEUE_NAME}] done — sessionId=${result.sessionId}`);
 			}
 		},
 	);

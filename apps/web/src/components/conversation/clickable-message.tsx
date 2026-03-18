@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { WordPopover } from "./word-popover";
 
 type ClickableMessageProps = {
+	sessionId: string;
 	content: string;
 	vocabMode: "off" | "word" | "phrase";
 	disabled?: boolean;
@@ -33,6 +34,7 @@ function tokenize(content: string): Token[] {
 }
 
 export default function ClickableMessage({
+	sessionId,
 	content,
 	vocabMode,
 	disabled,
@@ -97,9 +99,7 @@ export default function ClickableMessage({
 									? selectedPhraseKeys.filter((key) => key !== token.key)
 									: [...selectedPhraseKeys, token.key];
 								setSelectedPhraseKeys(nextSelection);
-								setAnchorEl(
-									nextSelection.length > 0 ? e.currentTarget : null,
-								);
+								setAnchorEl(nextSelection.length > 0 ? e.currentTarget : null);
 							}}
 						>
 							{token.text}
@@ -110,6 +110,7 @@ export default function ClickableMessage({
 
 			{selectedWord && anchorEl && (
 				<WordPopover
+					sessionId={sessionId}
 					text={selectedWord}
 					mode="word"
 					anchorEl={anchorEl}
@@ -124,6 +125,7 @@ export default function ClickableMessage({
 			selectedPhrase &&
 			anchorEl ? (
 				<WordPopover
+					sessionId={sessionId}
 					text={selectedPhrase}
 					mode="phrase"
 					selectionCount={selectedPhraseKeys.length}

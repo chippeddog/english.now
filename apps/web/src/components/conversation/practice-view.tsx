@@ -1,5 +1,5 @@
 import { env } from "@english.now/env/client";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { Languages, Loader, Loader2, PauseIcon, PlayIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 import { useTRPC } from "@/utils/trpc";
 import ClickableMessage from "./clickable-message";
 import { ControlToolbar } from "./control-toolbar";
+import ConversationSettingsDrawer from "./settings-drawer";
 
 type Message = {
 	id: string;
@@ -34,9 +35,18 @@ type Message = {
 
 type VocabularyMode = "off" | "word" | "phrase";
 
-export default function PracticeView({ sessionId }: { sessionId: string }) {
+export default function PracticeView({
+	sessionId,
+	settingsOpen,
+	onSettingsOpenChange,
+}: {
+	sessionId: string;
+	settingsOpen: boolean;
+	onSettingsOpenChange: (open: boolean) => void;
+}) {
 	const trpc = useTRPC();
 	const navigate = useNavigate();
+	const queryClient = useQueryClient();
 	const { getElapsedSeconds } = usePracticeTimer();
 	const { openDialog } = useUpgradeDialog();
 	const [messages, setMessages] = useState<Message[]>([]);
@@ -53,16 +63,12 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 		return localStorage.getItem("conversation:autoTranslate") === "true";
 	});
 	const hasPlayedInitialAudio = useRef(false);
+	const audioPlaybackGenerationRef = useRef(0);
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 	const streamRef = useRef<MediaStream | null>(null);
 
-	const {
-		audioDevices,
-		selectedDevice,
-		settingsOpen,
-		setSelectedDevice,
-		setSettingsOpen,
-	} = useAudioDevices();
+	const { audioDevices, selectedDevice, setSelectedDevice } =
+		useAudioDevices(settingsOpen);
 
 	const { data: profile } = useQuery(trpc.profile.get.queryOptions());
 
@@ -75,23 +81,18 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 	});
 
 	const voice = profile?.voiceModel ?? "aura-2-asteria-en";
-	const { audioRef, isPlaying, playAudio, setIsPlaying } =
-		useAudioPlayback(voice);
-	const replyAccess = data?.replyAccess as
-		| {
-				isPro: boolean;
-				used: number;
-				limit: number | null;
-				remaining: number | null;
-				reachedLimit: boolean;
-		  }
-		| undefined;
+	const { isPlaying, playAudio, stopAudio } = useAudioPlayback(voice);
 	const userMessageCount = messages.filter((m) => m.role === "user").length;
 	const canGetFeedback = userMessageCount >= 3;
 
 	useEffect(() => {
 		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
 	}, [messages]);
+
+	const stopAssistantAudio = useCallback(() => {
+		audioPlaybackGenerationRef.current += 1;
+		stopAudio();
+	}, [stopAudio]);
 
 	useEffect(() => {
 		return () => {
@@ -100,12 +101,9 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 					track.stop();
 				}
 			}
-			if (audioRef.current) {
-				audioRef.current.pause();
-				audioRef.current = null;
-			}
+			stopAudio();
 		};
-	}, []);
+	}, [stopAudio]);
 
 	useEffect(() => {
 		const handler = (e: BeforeUnloadEvent) => {
@@ -124,6 +122,7 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 	const translateMutation = useMutation(
 		trpc.conversation.translate.mutationOptions({}),
 	);
+	const hintMutation = useMutation(trpc.conversation.hint.mutationOptions({}));
 
 	const translateMessage = useCallback(
 		async (messageId: string, text: string) => {
@@ -193,17 +192,7 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 		if (!sessionId) return;
 		setIsLoadingHint(true);
 		try {
-			const response = await fetch(
-				`${env.VITE_SERVER_URL}/api/conversation/hint`,
-				{
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					credentials: "include",
-					body: JSON.stringify({ sessionId }),
-				},
-			);
-			if (!response.ok) throw new Error("Failed to fetch hints");
-			const { suggestions } = await response.json();
+			const { suggestions } = await hintMutation.mutateAsync({ sessionId });
 			setHintSuggestions(suggestions ?? []);
 		} catch (err) {
 			console.error("Hint generation error:", err);
@@ -211,7 +200,7 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 		} finally {
 			setIsLoadingHint(false);
 		}
-	}, [sessionId]);
+	}, [sessionId, hintMutation]);
 
 	const sendMessage = useCallback(
 		async (
@@ -220,6 +209,7 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 			audioUrl?: string,
 		) => {
 			if (!sessionId || !content.trim()) return;
+			const audioPlaybackGeneration = audioPlaybackGenerationRef.current;
 
 			const userMessageId = crypto.randomUUID();
 			setMessages((prev) => [
@@ -311,7 +301,10 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 					),
 				);
 
-				if (audioBase64) {
+				if (
+					audioBase64 &&
+					audioPlaybackGeneration === audioPlaybackGenerationRef.current
+				) {
 					playAudio(audioBase64, aiMessageId);
 				}
 			} catch (error) {
@@ -387,10 +380,14 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 					},
 				);
 				if (!response.ok) throw new Error("Failed to finish session");
-				navigate({
-					to: "/feedback/$sessionId",
-					params: { sessionId },
-				});
+				await Promise.all([
+					queryClient.invalidateQueries({
+						queryKey: trpc.conversation.getSession.queryKey({ sessionId }),
+					}),
+					queryClient.invalidateQueries({
+						queryKey: trpc.conversation.getReview.queryKey({ sessionId }),
+					}),
+				]);
 			} else {
 				await fetch(`${env.VITE_SERVER_URL}/api/conversation/finish`, {
 					method: "POST",
@@ -404,7 +401,14 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 			console.error("Error finishing session:", error);
 			setIsFinishing(false);
 		}
-	}, [sessionId, canGetFeedback, navigate, getElapsedSeconds]);
+	}, [
+		sessionId,
+		canGetFeedback,
+		navigate,
+		getElapsedSeconds,
+		queryClient,
+		trpc,
+	]);
 
 	useEffect(() => {
 		if (data?.messages && !hasPlayedInitialAudio.current) {
@@ -421,8 +425,12 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 
 			if (lastAiMessage) {
 				hasPlayedInitialAudio.current = true;
+				const audioPlaybackGeneration = audioPlaybackGenerationRef.current;
 				generateTTS(lastAiMessage.content, lastAiMessage.id).then((audio) => {
-					if (audio) {
+					if (
+						audio &&
+						audioPlaybackGeneration === audioPlaybackGenerationRef.current
+					) {
 						playAudio(audio, lastAiMessage.id);
 					}
 				});
@@ -430,23 +438,15 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 		}
 	}, [data, generateTTS, playAudio]);
 
-	const {
-		startRecording,
-		stopRecording,
-		cancelRecording,
-		recordingState,
-		audioStream,
-	} = useAudioRecorder(sessionId, sendMessage);
+	const { startRecording, stopRecording, cancelRecording, recordingState } =
+		useAudioRecorder(sessionId, sendMessage, selectedDevice);
+	const handleStartRecording = useCallback(async () => {
+		stopAssistantAudio();
+		await startRecording();
+	}, [startRecording, stopAssistantAudio]);
 	return (
-		<>
-			{/* Messages */}
-			<div className="flex-1 space-y-4 overflow-y-auto px-1 py-4">
-				{replyAccess && !replyAccess.isPro && replyAccess.limit ? (
-					<div className="mx-auto max-w-xl rounded-xl border border-neutral-200 border-dashed bg-white px-3 py-2 text-muted-foreground text-xs">
-						{replyAccess.used} / {replyAccess.limit} AI replies used in this
-						session.
-					</div>
-				) : null}
+		<div className="flex min-h-full flex-1 flex-col">
+			<div className="flex-1 space-y-4 px-1 py-4">
 				{messages.map((message) => (
 					<div
 						key={message.id}
@@ -469,6 +469,7 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 						>
 							<p className="whitespace-pre-wrap text-sm leading-relaxed">
 								<ClickableMessage
+									sessionId={sessionId}
 									content={message.content}
 									vocabMode={vocabMode}
 									disabled={message.isStreaming}
@@ -499,17 +500,19 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 											onClick={() => {
 												if (generatingTTS.has(message.id)) return;
 												if (isPlaying === message.id) {
-													if (audioRef.current) {
-														audioRef.current.pause();
-														audioRef.current = null;
-													}
-													setIsPlaying(null);
+													stopAudio();
 												} else if (message.audio) {
 													playAudio(message.audio, message.id);
 												} else {
+													const audioPlaybackGeneration =
+														audioPlaybackGenerationRef.current;
 													generateTTS(message.content, message.id).then(
 														(audio) => {
-															if (audio) {
+															if (
+																audio &&
+																audioPlaybackGeneration ===
+																	audioPlaybackGenerationRef.current
+															) {
 																playAudio(audio, message.id);
 															}
 														},
@@ -571,62 +574,64 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 				<div ref={messagesEndRef} />
 			</div>
 
-			{/* Hint suggestions */}
-			{showHint && (
-				<div className="mx-auto mb-3 max-w-xl rounded-xl border border-amber-200 border-dashed bg-amber-50 p-3 dark:bg-amber-950/30">
-					<div className="mb-2 flex items-center gap-2 text-amber-900 dark:text-amber-200">
-						<p className="font-medium text-xs">You could say:</p>
-					</div>
-					{isLoadingHint ? (
-						<div className="flex items-center gap-2 py-2 text-amber-700">
-							<Loader2 className="size-3.5 animate-spin" />
-							<span className="text-xs">Thinking of suggestions...</span>
-						</div>
-					) : (
-						<div className="flex flex-col gap-1.5">
-							{hintSuggestions.map((suggestion) => (
-								<button
-									key={suggestion}
-									type="button"
-									className="flex items-start gap-2 rounded-lg border border-amber-100 bg-white/70 px-3 py-2 text-left text-amber-900 text-sm transition-colors hover:border-amber-200 hover:bg-white dark:bg-white/10 dark:text-amber-100 dark:hover:bg-white/20"
-									onClick={() => {
-										sendMessage(suggestion);
-										setShowHint(false);
-									}}
-									disabled={isLoading}
-								>
-									{suggestion}
-								</button>
-							))}
-						</div>
-					)}
-				</div>
-			)}
-
-			{/* Control toolbar */}
-			<ControlToolbar
-				showHint={showHint}
-				setShowHint={setShowHint}
-				hintSuggestions={hintSuggestions}
-				fetchHintSuggestions={fetchHintSuggestions}
-				isLoading={isLoading}
-				recordingState={recordingState}
-				startRecording={startRecording}
-				stopRecording={stopRecording}
-				cancelRecording={cancelRecording}
-				setShowFinishDialog={setShowFinishDialog}
-				isFinishing={isFinishing}
-				audioStream={audioStream}
-				settingsOpen={settingsOpen}
-				setSettingsOpen={setSettingsOpen}
+			<ConversationSettingsDrawer
+				open={settingsOpen}
+				onOpenChange={onSettingsOpenChange}
 				audioDevices={audioDevices}
 				selectedDevice={selectedDevice}
 				setSelectedDevice={setSelectedDevice}
 				autoTranslate={autoTranslate}
 				onAutoTranslateChange={handleAutoTranslateToggle}
-				vocabMode={vocabMode}
-				setVocabMode={setVocabMode}
 			/>
+
+			<div className="sticky bottom-0 z-20 shrink-0 bg-linear-to-t from-neutral-50 via-neutral-50/95 to-transparent pt-3 dark:from-neutral-900 dark:via-neutral-900/95">
+				{showHint && (
+					<div className="mx-auto mb-3 max-w-xl rounded-xl border border-amber-200 border-dashed bg-amber-50 p-3 dark:bg-amber-950/30">
+						<div className="mb-2 flex items-center gap-2 text-amber-900 dark:text-amber-200">
+							<p className="font-medium text-xs">You could say:</p>
+						</div>
+						{isLoadingHint ? (
+							<div className="flex items-center gap-2 py-2 text-amber-700">
+								<Loader2 className="size-3.5 animate-spin" />
+								<span className="text-xs">Thinking of suggestions...</span>
+							</div>
+						) : (
+							<div className="flex flex-col gap-1.5">
+								{hintSuggestions.map((suggestion) => (
+									<button
+										key={suggestion}
+										type="button"
+										className="flex items-start gap-2 rounded-lg border border-amber-100 bg-white/70 px-3 py-2 text-left text-amber-900 text-sm transition-colors hover:border-amber-200 hover:bg-white dark:bg-white/10 dark:text-amber-100 dark:hover:bg-white/20"
+										onClick={() => {
+											sendMessage(suggestion);
+											setShowHint(false);
+										}}
+										disabled={isLoading}
+									>
+										{suggestion}
+									</button>
+								))}
+							</div>
+						)}
+					</div>
+				)}
+
+				<ControlToolbar
+					showHint={showHint}
+					setShowHint={setShowHint}
+					hintSuggestions={hintSuggestions}
+					fetchHintSuggestions={fetchHintSuggestions}
+					isLoading={isLoading}
+					recordingState={recordingState}
+					startRecording={handleStartRecording}
+					stopRecording={stopRecording}
+					cancelRecording={cancelRecording}
+					setShowFinishDialog={setShowFinishDialog}
+					isFinishing={isFinishing}
+					vocabMode={vocabMode}
+					setVocabMode={setVocabMode}
+				/>
+			</div>
 
 			<AlertDialog open={showFinishDialog} onOpenChange={setShowFinishDialog}>
 				<AlertDialogContent className="w-sm">
@@ -640,14 +645,14 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 					</AlertDialogHeader>
 					<AlertDialogFooter>
 						<AlertDialogCancel
-							className="rounded-xl bg-neutral-100 text-neutral-900 hover:bg-neutral-200"
+							className="rounded-xl bg-neutral-100 text-neutral-900 italic hover:bg-neutral-200"
 							disabled={isFinishing}
 						>
 							Cancel
 						</AlertDialogCancel>
 						<AlertDialogAction
 							className={cn(
-								"rounded-xl text-white",
+								"rounded-xl text-white italic",
 								canGetFeedback
 									? "bg-lime-600 hover:bg-lime-700"
 									: "bg-red-600 hover:bg-red-700",
@@ -666,6 +671,6 @@ export default function PracticeView({ sessionId }: { sessionId: string }) {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
-		</>
+		</div>
 	);
 }

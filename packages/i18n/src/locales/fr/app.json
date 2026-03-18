@@ -62,7 +62,8 @@
     "conversation": "Conversation",
     "pronunciation": "Prononciation",
     "practiceYourEnglish": "Pratiquez votre anglais",
-    "practiceYourPronunciation": "Pratiquez votre prononciation"
+    "practiceYourPronunciation": "Pratiquez votre prononciation",
+    "practiceYourPronunciationDescription": "Sélectionnez un paragraphe et entraînez-vous à la prononciation avec l'IA"
   },
   "vocabulary": {
     "title": "Vocabulaire",

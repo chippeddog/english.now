@@ -1,6 +1,11 @@
 import { i18n, Trans, useTranslation } from "@english.now/i18n";
 import { Link } from "@tanstack/react-router";
-import { PlayIcon } from "lucide-react";
+import {
+	Bookmark,
+	Flag,
+	Mic,
+	PlayIcon,
+} from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import DialogDemo from "../dialog-demo";
@@ -16,14 +21,52 @@ export default function Hero() {
 		{ id: "4", letter: "O" },
 	];
 
+	const mistakes = [
+		{
+			id: "mistake1",
+			original: "I goed to school",
+			corrected: "I went to school",
+			type: "Past tense",
+		},
+		{
+			id: "mistake2",
+			original: "She don't like it",
+			corrected: "She doesn't like it",
+			type: "Subject-verb",
+		},
+		{
+			id: "mistake3",
+			original: "She don't like it",
+			corrected: "She doesn't like it",
+			type: "Subject-verb",
+		},
+	];
+
+	const renderCorrectedSentence = (mistake: (typeof mistakes)[number]) => {
+		// In a real app, this would dynamically render based on original/corrected
+		return (
+			<p className="text-[11px] leading-relaxed">
+				I am so grateful to you{" "}
+				<span className="font-medium text-lime-600">
+					{mistake.corrected || "for knocking"}
+				</span>{" "}
+				<span className="text-rose-400 line-through">
+					{mistake.original || "that you knocked"}
+				</span>{" "}
+				me down with <span className="text-rose-400 line-through">our</span>{" "}
+				<span className="font-medium text-lime-600">your</span> car.
+			</p>
+		);
+	};
+
 	return (
 		<section className="relative pt-10 md:pt-16">
 			<DialogDemo open={open} setOpen={setOpen} />
 			<div className="relative mx-auto flex flex-col md:flex-row md:items-center">
-				<div className="mb-16 flex flex-1 flex-col items-start gap-6 sm:mb-6 md:mb-0">
+				<div className="mb-16 flex flex-1 flex-col items-start gap-6 text-center sm:mb-6 md:mb-0 md:text-left">
 					<h1
 						className={cn(
-							"font-bold font-lyon text-5xl text-neutral-900 tracking-tight sm:text-5xl lg:text-6xl dark:text-white",
+							"font-bold font-lyon text-6xl text-neutral-900 tracking-tight lg:text-6xl dark:text-white",
 							{
 								"text-4xl leading-tight sm:text-4xl lg:text-5xl":
 									i18n.language === "uk",
@@ -39,7 +82,7 @@ export default function Hero() {
 						{t("hero.subtitle")}
 					</p>
 
-					<div className="flex flex-wrap items-center gap-3 pt-2">
+					<div className="flex w-full flex-wrap items-center justify-center gap-3 pt-2 md:justify-start">
 						<Button
 							variant="gradientblack"
 							size="xl"
@@ -48,7 +91,7 @@ export default function Hero() {
 						>
 							<Link to="/login">
 								{t("hero.getStarted")}
-								<span className="font-lyon text-neutral-500 text-xl italic">
+								<span className="hidden font-lyon text-neutral-500 text-xl italic md:inline">
 									for free
 								</span>
 							</Link>
@@ -66,7 +109,7 @@ export default function Hero() {
 
 					<div className="hidden items-center gap-4 pt-4 text-muted-foreground text-sm sm:flex">
 						<span className="flex items-center gap-1.5">
-							<span className="-space-x-1 flex">
+							{/* <span className="-space-x-1 flex">
 								{avatarLetters.map(({ id, letter }) => (
 									<div
 										key={id}
@@ -75,11 +118,14 @@ export default function Hero() {
 										{letter}
 									</div>
 								))}
-							</span>
-							<span>{t("hero.learners", { count: 10000 })}</span>
+							</span> */}
+							<span>Loved by {t("hero.learners", { count: 10000 })}</span>
 						</span>
 						<span className="h-4 w-px bg-neutral-400" />
-						<span>{t("hero.noCard")}</span>
+						<span>No Credit Card Required</span>
+						{/* *No Credit Card Required{" "}
+						<span className="h-3 w-px bg-neutral-400" /> 7-day free trial */}
+						{/* t("hero.noCard")} */}
 					</div>
 				</div>
 
@@ -98,14 +144,14 @@ export default function Hero() {
 								"linear-gradient(45deg, white 70%, rgba(255,255,255,0.8) 100%)",
 						}}
 					>
-						<div className="relative mb-0.5 flex items-center gap-1.5">
-							<span className="font-semibold text-xs md:text-sm">Feedback</span>{" "}
-							<span className="rounded-md bg-radial from-[#EFFF9B] to-[#D8FF76] px-1.5 py-0.5 font-medium text-black text-xs normal-case tracking-normal md:py-[0.165rem] md:text-xs">
+						<div className="relative mb-3 flex items-center gap-1.5">
+							<span className="font-semibold text-xs md:text-sm">Review Mistakes</span>{" "}
+							<span className="rounded-md bg-radial from-[#EFFF9B] to-[#D8FF76] px-1.5 py-0.5 font-medium text-lime-900 text-xs normal-case tracking-normal md:py-[0.165rem] md:text-xs">
 								AI
 							</span>
 						</div>
-
-						<div className="text-neutral-900 text-sm">
+						{/* <span className="font-medium text-xs mb-3">Here's your feedback:</span> */}
+						{/* <div className="text-neutral-900 text-sm">
 							<span className="font-medium text-xs">Here's your feedback:</span>
 							<div className="mt-3 flex flex-col divide-neutral-200">
 								<div className="relative h-[48px]">
@@ -126,6 +172,153 @@ export default function Hero() {
 									</span>
 								</div>
 							</div>
+						</div> */}
+						<div className=" gap-2 flex flex-col">
+						{mistakes.map((mistake) => (
+				<div
+					key={mistake.id}
+					className="rounded-xl border border-neutral-100 bg-white p-3"
+				>
+					{/* Header */}
+					<div className="mb-3 flex items-center gap-2 text-[10px] text-muted-foreground">
+						<span>Correct the Sentence</span>
+						<span>|</span>
+						<span>Correctness</span>
+					</div>
+
+					{/* Correction display */}
+					<div className="mb-4 flex items-start justify-between gap-4">
+						{renderCorrectedSentence(mistakes[0])}
+						<div className="flex shrink-0 gap-1">
+							{/* <Button variant="ghost" size="icon" className="size-6">
+								<Volume2 className="size-3" />
+							</Button> */}
+						
+						</div>
+					</div>
+
+					{/* Actions */}
+					<div className="flex items-center gap-2">
+						<Button
+							size="sm"
+							className="group flex h-7 cursor-pointer items-center gap-1 whitespace-nowrap rounded-lg border border-[#C6F64D] bg-[radial-gradient(100%_100%_at_50%_0%,#EFFF9B_0%,#D8FF76_60%,#C6F64D_100%)] px-2 py-1 font-medium text-lime-900 text-[11px] italic shadow-none transition duration-150 ease-in-out will-change-transform hover:bg-lime-700/10 hover:brightness-95 focus:shadow-none focus:outline-none focus-visible:shadow-none"
+						>
+							<Mic className="size-3" />
+							Practice
+						</Button>
+						<Button
+							size="sm"
+							variant="outline"
+							className="h-7 rounded-lg text-[11px]"
+						>
+							Skip
+						</Button>
+						<Button
+							variant="ghost"
+							size="icon"
+							className="ml-auto size-6"
+						>
+							<Flag className="size-3" />
+						</Button>
+					</div>
+				</div>
+			))}
+			</div>
+						<div className="mt-3 flex flex-col text-neutral-900">
+							{/* <p className="font-medium text-xs">You're in the flow!</p> */}
+							{/* <span className="text-[10px] text-neutral-500">
+								Natural back-and-forth and good turn-taking.
+							</span> */}
+
+							{/* <div className="mt-2 flex flex-col items-center">
+								<div className="relative h-5 w-full">
+									<div className="relative flex h-5 w-full gap-0.5 rounded-lg">
+										<div
+											className="grow rounded-sm bg-red-600 opacity-20"
+											style={{ width: "15%" }}
+										/>
+										<div
+											className="grow rounded-sm bg-orange-600 opacity-20"
+											style={{ width: "15%" }}
+										/>
+										<div
+											className="grow rounded-sm bg-yellow-500 opacity-20"
+											style={{ width: "15%" }}
+										/>
+										<div
+											className="grow rounded-sm bg-green-500 opacity-20"
+											style={{ width: "15%" }}
+										/>
+										<div
+											className="grow rounded-sm bg-green-600 opacity-20"
+											style={{ width: "15%" }}
+										/>
+										<div
+											className="grow rounded-sm rounded-r-sm bg-green-700 opacity-100"
+											style={{ width: "25%", transform: "scaleY(1.15)" }}
+										/>
+									</div>
+									<div
+										className="-translate-y-1/2 absolute top-1/2 h-8 w-1 rounded-full bg-neutral-900 ring-2 ring-neutral-100"
+										style={{ left: "86.3551%" }}
+									/>
+									<div
+										className="-top-8 -translate-x-4 absolute"
+										style={{ left: "87.5%" }}
+									>
+										<div className="flex min-w-8 max-w-8 items-center justify-center rounded bg-green-700 px-0 py-0.5 font-bold text-white text-xs">
+											86
+										</div>
+									</div>
+								</div>
+								<div className="mt-1.5 flex w-full justify-between text-[10px] text-neutral-500">
+									<span>Stilted</span>
+									<span>Natural</span>
+								</div>
+							</div>
+							<hr className="my-3 border-neutral-200 border-dashed" />
+							<div className="flex mt-1 flex-col gap-2 rounded-lg border border-border/50 bg-white p-2">
+								<div className="flex flex-row items-center justify-between gap-2">
+									<p className="w-[72px] min-w-[72px] shrink-0 whitespace-nowrap font-medium text-[10px] text-neutral-500">
+										Turn length
+									</p>
+									<div className="relative flex w-full flex-row items-center justify-between gap-0.5">
+										{[
+											"filled-0",
+											"filled-1",
+											"filled-2",
+											"filled-3",
+											"filled-4",
+										].map((key, i) => (
+											<div
+												key={key}
+												className={cn(
+													"h-3 w-1.5 rounded-[2px]",
+													i < 5 ? "bg-orange-300" : "bg-neutral-100",
+												)}
+											/>
+										))}
+										{[
+											"empty-0",
+											"empty-1",
+											"empty-2",
+											"empty-3",
+											"empty-4",
+										].map((key) => (
+											<div
+												key={key}
+												className="h-3 w-1.5 rounded-[2px] bg-neutral-100"
+											/>
+										))}
+									</div>
+									<p className="min-w-6 max-w-6 text-right font-bold text-[10px] text-neutral-600">
+										43%
+									</p>
+								</div>
+								<p className="text-[10px] text-neutral-500">
+									Mix of short and medium replies. Keeps the conversation going.
+								</p>
+							</div> */}
 						</div>
 					</div>
 

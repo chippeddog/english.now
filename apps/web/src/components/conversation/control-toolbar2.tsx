@@ -1,4 +1,11 @@
-import { Lightbulb, Loader2, Mic, MicOff, Settings, X } from "lucide-react";
+import {
+	Lightbulb,
+	Loader2,
+	Mic,
+	MicOff,
+	Settings,
+	SignOutIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
 	Tooltip,
@@ -124,7 +131,7 @@ export function ControlToolbar({
 							className="shrink-0 cursor-pointer rounded-xl text-red-600 hover:bg-red-50 hover:text-red-700"
 							disabled={isLoading || isFinishing}
 						>
-							<X className="size-5" />
+							<SignOutIcon className="size-5" />
 						</Button>
 					</TooltipTrigger>
 					<TooltipContent>Finish session</TooltipContent>

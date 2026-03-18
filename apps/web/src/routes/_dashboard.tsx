@@ -5,9 +5,9 @@ import {
 	redirect,
 	useRouterState,
 } from "@tanstack/react-router";
-import { Loader } from "lucide-react";
 import { useEffect } from "react";
 import Navbar from "@/components/app/navbar";
+import RouteLoader, { RouteShellLoader } from "@/components/loader";
 import { getProfile } from "@/functions/get-profile";
 import { getUser } from "@/functions/get-user";
 import { useTRPC } from "@/utils/trpc";
@@ -36,16 +36,7 @@ export const Route = createFileRoute("/_dashboard")({
 });
 
 function DashboardPending() {
-	return (
-		<div className="flex h-dvh w-full">
-			<main className="relative flex h-full w-full flex-1 flex-col overflow-auto">
-				<Navbar />
-				<div className="flex justify-center pt-24">
-					<Loader className="size-8 animate-spin text-muted-foreground" />
-				</div>
-			</main>
-		</div>
-	);
+	return <RouteLoader />;
 }
 
 function DashboardLayout() {
@@ -74,11 +65,7 @@ function DashboardLayout() {
 	});
 
 	if (isTransitioningAway) {
-		return (
-			<div className="flex h-dvh w-full items-center justify-center">
-				<Loader className="size-8 animate-spin text-muted-foreground" />
-			</div>
-		);
+		return <RouteLoader />;
 	}
 
 	return (
