@@ -761,23 +761,17 @@ function FeatureBlock({
 	);
 }
 
-// ---------------------------------------------------------------------------
-// Page
-// ---------------------------------------------------------------------------
-
 function RouteComponent() {
 	return (
-		<div className="container relative z-10 mx-auto max-w-5xl px-4 py-2 pt-18">
-			<div className="mb-20 flex flex-col items-center gap-5 text-center">
-				<h1 className="font-bold font-lyon text-3xl text-neutral-900 tracking-tight sm:text-4xl lg:text-5xl">
-					Everything you need to master English
+		<div className="container relative z-10 mx-auto max-w-5xl px-4 py-2 pt-10 md:pt-18">
+			<div className="mb-16 flex flex-col items-center gap-4 text-center">
+				<h1 className="font-bold font-lyon text-4xl text-neutral-900 tracking-tight md:text-5xl dark:text-white">
+					Everything you need <br className="md:hidden" /> to master English
 				</h1>
-				<p className="text-balance text-center text-muted-foreground text-sm md:mx-auto md:max-w-boundary-sm md:text-lg">
+				<p className="mx-auto text-balance text-muted-foreground md:text-lg">
 					All plans include access to our AI-powered learning tools.
 				</p>
 			</div>
-
-			{/* Features Grid */}
 			<div className="space-y-24 pb-20 md:space-y-32">
 				{features.map((feature, index) => (
 					<FeatureBlock

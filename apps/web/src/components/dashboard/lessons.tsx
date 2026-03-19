@@ -7,6 +7,7 @@ import {
 	ChevronRight,
 	FileText,
 	GraduationCap,
+	LibraryBig,
 	Lock,
 	PenTool,
 	Play,
@@ -353,9 +354,8 @@ export default function Lessons({
 				</div>
 			) : !summary || !summary.currentLesson ? (
 				<div className="flex min-h-[160px] flex-col items-center justify-center rounded-2xl border border-border/50 px-4 py-5 text-center">
-					<p className="font-medium text-sm">No active lessons yet.</p>
-					<p className="mt-1 text-muted-foreground text-xs">
-						Complete onboarding to generate your learning path.
+					<p className="font-medium text-muted-foreground text-sm">
+						No active lessons yet.
 					</p>
 				</div>
 			) : (

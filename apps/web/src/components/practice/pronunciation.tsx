@@ -224,7 +224,7 @@ function DialogTopicsPronunciation({
 				<div className="relative">
 					<div className="-top-4.5 absolute right-0 left-0 mx-auto h-[200px] w-[80%] rounded-t-2xl bg-white shadow ring-1 ring-black/5" />
 					<div className="-top-2 absolute right-0 left-0 mx-auto h-[200px] w-[87%] rounded-t-2xl bg-white shadow ring-1 ring-black/5" />
-					<div className="relative z-10 overflow-hidden border-neutral-200 border-b border-dashed p-4 pt-0.5 pb-0">
+					<div className="relative z-10 overflow-hidden border-neutral-200 border-b border-dashed px-2 pt-0.5 pb-0 md:p-4">
 						<AnimatePresence initial={false} mode="popLayout">
 							<motion.div
 								key={previewKey}

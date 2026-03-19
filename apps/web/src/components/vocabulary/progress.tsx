@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
 	BookOpen,
 	GraduationCap,
-	Loader2,
+	Loader,
 	MessageSquareText,
 	Sparkles,
 	Target,
@@ -200,7 +200,7 @@ function VocabularyProgressContent() {
 	if (isLoading) {
 		return (
 			<div className="flex min-h-[200px] items-center justify-center">
-				<Loader2 className="size-8 animate-spin text-muted-foreground" />
+				<Loader className="size-8 animate-spin text-muted-foreground" />
 			</div>
 		);
 	}
@@ -230,7 +230,8 @@ function VocabularyProgressContent() {
 				</div>
 			</div>
 
-			<div className="grid gap-3 rounded-3xl bg-white p-3 sm:grid-cols-4"
+			<div
+				className="grid gap-3 rounded-3xl bg-white p-3 sm:grid-cols-4"
 				style={{
 					boxShadow:
 						"0 0 0 1px rgba(0,0,0,.05),0 10px 10px -5px rgba(0,0,0,.04),0 20px 25px -5px rgba(0,0,0,.04),0 20px 32px -12px rgba(0,0,0,.04)",
@@ -246,19 +247,11 @@ function VocabularyProgressContent() {
 						combinedTotal > 0 ? Math.round((count / combinedTotal) * 100) : 0;
 					return (
 						<div key={key} className={cn("flex items-center gap-3")}>
-							<div
-							 className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-[#C6F64D] bg-radial from-[#EFFF9B] to-[#D8FF76]">
+							<div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-[#C6F64D] bg-radial from-[#EFFF9B] to-[#D8FF76]">
 								<Icon className="size-5 text-lime-700" />
 							</div>
 							<div className="min-w-0">
-								<div
-									className={cn(
-										"font-bold text-xl",
-								
-									)}
-								>
-									{count}
-								</div>
+								<div className={cn("font-bold text-xl")}>{count}</div>
 								<div className={cn("text-sm")}>
 									{config.label}
 									<span className="ml-1 opacity-60">({pct}%)</span>
@@ -374,7 +367,7 @@ function VocabularyProgressContent() {
 					<CardContent className="pt-0">
 						<ChartContainer
 							config={comparisonChartConfig}
-							className="mx-auto aspect-square max-h-[250px]"
+							className="mx-auto aspect-square max-h-[250px] w-full"
 						>
 							<BarChart
 								data={comparisonData}
@@ -434,7 +427,7 @@ function VocabularyProgressContent() {
 					<CardContent className="pt-0">
 						<ChartContainer
 							config={levelChartConfig}
-							className="mx-auto aspect-[2/1] max-h-[220px]"
+							className="mx-auto aspect-[2/1] max-h-[220px] w-full"
 						>
 							<BarChart
 								data={levelData}
@@ -495,7 +488,7 @@ export default function Progress() {
 	if (!mounted) {
 		return (
 			<div className="flex min-h-[200px] items-center justify-center">
-				<Loader2 className="size-8 animate-spin text-muted-foreground" />
+				<Loader className="size-8 animate-spin text-muted-foreground" />
 			</div>
 		);
 	}

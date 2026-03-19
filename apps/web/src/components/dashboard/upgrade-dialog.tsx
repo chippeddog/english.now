@@ -76,11 +76,18 @@ export function UpgradeDialogProvider({ children }: { children: ReactNode }) {
 export function UpgradeDialogButton() {
 	const trpc = useTRPC();
 	const { openDialog } = useUpgradeDialog();
-	const { data: profile, isPending } = useQuery(
-		trpc.profile.get.queryOptions(),
-	);
+	const { data: session, isPending: isSessionPending } =
+		authClient.useSession();
+	const canLoadProfile = !isSessionPending && Boolean(session?.user);
+	const { data: profile, isPending: isProfilePending } = useQuery({
+		...trpc.profile.get.queryOptions(),
+		enabled: canLoadProfile,
+	});
 
-	if (isPending || profile?.subscription?.isPro) {
+	if (isSessionPending || !session?.user) {
+		return null;
+	}
+	if (isProfilePending || profile?.subscription?.isPro) {
 		return null;
 	}
 
@@ -107,10 +114,13 @@ export default function UpgradeDialog({
 	const trpc = useTRPC();
 	const [isLoading, setIsLoading] = useState(false);
 	const [plan, setPlan] = useState<"monthly" | "yearly">("monthly");
-	const { data: session } = authClient.useSession();
-	const { data: profile, isPending } = useQuery(
-		trpc.profile.get.queryOptions(),
-	);
+	const { data: session, isPending: isSessionPending } =
+		authClient.useSession();
+	const canLoadProfile = !isSessionPending && Boolean(session?.user);
+	const { data: profile, isPending: isProfilePending } = useQuery({
+		...trpc.profile.get.queryOptions(),
+		enabled: canLoadProfile,
+	});
 
 	const features = [
 		"Unlimited AI conversations and pronunciation",
@@ -121,7 +131,8 @@ export default function UpgradeDialog({
 		"Progress tracking and analytics",
 	];
 
-	if (isPending) return null;
+	if (isSessionPending || !session?.user) return null;
+	if (isProfilePending) return null;
 	if (profile?.subscription?.isPro) return null;
 
 	return (

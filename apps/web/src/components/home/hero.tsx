@@ -1,11 +1,6 @@
 import { i18n, Trans, useTranslation } from "@english.now/i18n";
 import { Link } from "@tanstack/react-router";
-import {
-	Bookmark,
-	Flag,
-	Mic,
-	PlayIcon,
-} from "lucide-react";
+import { CheckIcon, Flag, Mic, PlayIcon } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import DialogDemo from "../dialog-demo";
@@ -108,8 +103,24 @@ export default function Hero() {
 					</div>
 
 					<div className="hidden items-center gap-4 pt-4 text-muted-foreground text-sm sm:flex">
-						<span className="flex items-center gap-1.5">
-							{/* <span className="-space-x-1 flex">
+						<div className="flex flex-col items-center justify-center gap-3 text-muted-foreground text-xs sm:flex-row sm:gap-5">
+							<span className="flex items-center gap-1.5">
+								<CheckIcon
+									aria-label="No credit card required"
+									className="size-4"
+								/>
+								{t("hero.noCard")}
+							</span>
+							<span className="flex items-center gap-1.5">
+								<CheckIcon aria-label="7-day free trial" className="size-4" />
+								7-day free trial
+							</span>
+							<span className="flex items-center gap-1.5">
+								<CheckIcon aria-label="Cancel anytime" className="size-4" />
+								Cancel anytime
+							</span>
+						</div>
+						{/* <span className="-space-x-1 flex">
 								{avatarLetters.map(({ id, letter }) => (
 									<div
 										key={id}
@@ -119,10 +130,10 @@ export default function Hero() {
 									</div>
 								))}
 							</span> */}
-							<span>Loved by {t("hero.learners", { count: 10000 })}</span>
-						</span>
-						<span className="h-4 w-px bg-neutral-400" />
-						<span>No Credit Card Required</span>
+						{/* <span>Loved by {t("hero.learners", { count: 10000 })}</span> */}
+
+						{/* <span className="h-4 w-px bg-neutral-400" /> */}
+						{/* <span>No Credit Card Required</span> */}
 						{/* *No Credit Card Required{" "}
 						<span className="h-3 w-px bg-neutral-400" /> 7-day free trial */}
 						{/* t("hero.noCard")} */}
@@ -145,7 +156,9 @@ export default function Hero() {
 						}}
 					>
 						<div className="relative mb-3 flex items-center gap-1.5">
-							<span className="font-semibold text-xs md:text-sm">Review Mistakes</span>{" "}
+							<span className="font-semibold text-xs md:text-sm">
+								Review Mistakes
+							</span>{" "}
 							<span className="rounded-md bg-radial from-[#EFFF9B] to-[#D8FF76] px-1.5 py-0.5 font-medium text-lime-900 text-xs normal-case tracking-normal md:py-[0.165rem] md:text-xs">
 								AI
 							</span>
@@ -173,57 +186,56 @@ export default function Hero() {
 								</div>
 							</div>
 						</div> */}
-						<div className=" gap-2 flex flex-col">
-						{mistakes.map((mistake) => (
-				<div
-					key={mistake.id}
-					className="rounded-xl border border-neutral-100 bg-white p-3"
-				>
-					{/* Header */}
-					<div className="mb-3 flex items-center gap-2 text-[10px] text-muted-foreground">
-						<span>Correct the Sentence</span>
-						<span>|</span>
-						<span>Correctness</span>
-					</div>
+						<div className="flex flex-col gap-2">
+							{mistakes.map((mistake) => (
+								<div
+									key={mistake.id}
+									className="rounded-xl border border-neutral-100 bg-white p-3"
+								>
+									{/* Header */}
+									<div className="mb-3 flex items-center gap-2 text-[10px] text-muted-foreground">
+										<span>Correct the Sentence</span>
+										<span>|</span>
+										<span>Correctness</span>
+									</div>
 
-					{/* Correction display */}
-					<div className="mb-4 flex items-start justify-between gap-4">
-						{renderCorrectedSentence(mistakes[0])}
-						<div className="flex shrink-0 gap-1">
-							{/* <Button variant="ghost" size="icon" className="size-6">
+									{/* Correction display */}
+									<div className="mb-4 flex items-start justify-between gap-4">
+										{renderCorrectedSentence(mistakes[0])}
+										<div className="flex shrink-0 gap-1">
+											{/* <Button variant="ghost" size="icon" className="size-6">
 								<Volume2 className="size-3" />
 							</Button> */}
-						
-						</div>
-					</div>
+										</div>
+									</div>
 
-					{/* Actions */}
-					<div className="flex items-center gap-2">
-						<Button
-							size="sm"
-							className="group flex h-7 cursor-pointer items-center gap-1 whitespace-nowrap rounded-lg border border-[#C6F64D] bg-[radial-gradient(100%_100%_at_50%_0%,#EFFF9B_0%,#D8FF76_60%,#C6F64D_100%)] px-2 py-1 font-medium text-lime-900 text-[11px] italic shadow-none transition duration-150 ease-in-out will-change-transform hover:bg-lime-700/10 hover:brightness-95 focus:shadow-none focus:outline-none focus-visible:shadow-none"
-						>
-							<Mic className="size-3" />
-							Practice
-						</Button>
-						<Button
-							size="sm"
-							variant="outline"
-							className="h-7 rounded-lg text-[11px]"
-						>
-							Skip
-						</Button>
-						<Button
-							variant="ghost"
-							size="icon"
-							className="ml-auto size-6"
-						>
-							<Flag className="size-3" />
-						</Button>
-					</div>
-				</div>
-			))}
-			</div>
+									{/* Actions */}
+									<div className="flex items-center gap-2">
+										<Button
+											size="sm"
+											className="group flex h-7 cursor-pointer items-center gap-1 whitespace-nowrap rounded-lg border border-[#C6F64D] bg-[radial-gradient(100%_100%_at_50%_0%,#EFFF9B_0%,#D8FF76_60%,#C6F64D_100%)] px-2 py-1 font-medium text-[11px] text-lime-900 italic shadow-none transition duration-150 ease-in-out will-change-transform hover:bg-lime-700/10 hover:brightness-95 focus:shadow-none focus:outline-none focus-visible:shadow-none"
+										>
+											<Mic className="size-3" />
+											Practice
+										</Button>
+										<Button
+											size="sm"
+											variant="outline"
+											className="h-7 rounded-lg text-[11px]"
+										>
+											Skip
+										</Button>
+										<Button
+											variant="ghost"
+											size="icon"
+											className="ml-auto size-6"
+										>
+											<Flag className="size-3" />
+										</Button>
+									</div>
+								</div>
+							))}
+						</div>
 						<div className="mt-3 flex flex-col text-neutral-900">
 							{/* <p className="font-medium text-xs">You're in the flow!</p> */}
 							{/* <span className="text-[10px] text-neutral-500">

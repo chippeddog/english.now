@@ -23,6 +23,16 @@ export function formatRelativeDate(date: Date): string {
 	return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
+export function formatCalendarDate(
+	dateString: string,
+	options: Intl.DateTimeFormatOptions,
+): string {
+	return new Intl.DateTimeFormat("en-US", {
+		timeZone: "UTC",
+		...options,
+	}).format(new Date(`${dateString}T00:00:00Z`));
+}
+
 export function getTodayIndex(timezone: string): number {
 	const dayName = new Date().toLocaleDateString("en-US", {
 		timeZone: timezone,

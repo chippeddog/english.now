@@ -31,7 +31,7 @@ export const Route = createFileRoute("/sitemap.xml")({
 				const blogEntries = allPosts
 					.map(
 						(post) => `  <url>
-    <loc>${BASE_URL}/blog/${post._meta.path}</loc>
+    <loc>${BASE_URL}/blog/${post.slug}</loc>
     <lastmod>${post.published}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>

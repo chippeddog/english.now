@@ -630,10 +630,10 @@ function SessionFeedbackPage() {
 									"0 0 0 1px rgba(0,0,0,.05),0 2px 4px rgba(0,0,0,.04)",
 							}}
 						>
-							<TabsList className="grid h-auto w-full grid-cols-4 bg-transparent p-0">
+							<TabsList className="flex h-auto w-full items-center gap-0.5 rounded-2xl border border-border/50 bg-muted/50 p-0.5">
 								<TabsTrigger
 									value="pronunciation"
-									className="rounded-xl py-3 data-[state=active]:bg-neutral-100"
+									className="flex h-[34px] cursor-pointer items-center justify-center rounded-xl px-2.5 font-medium text-muted-foreground text-sm italic transition-all"
 								>
 									Pronunciation
 								</TabsTrigger>

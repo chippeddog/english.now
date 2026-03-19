@@ -1,136 +1,117 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Bot, type LucideIcon, Sparkles, UserRound } from "lucide-react";
 
 export const Route = createFileRoute("/_public/about")({
 	component: About,
 });
 
-const DIFFERENTIATORS = [
+type ComparisonKey = "tutors" | "gpt" | "englishNow";
+
+type ComparisonColumn = {
+	key: ComparisonKey;
+	title: string;
+	icon: LucideIcon;
+	featured?: boolean;
+};
+
+type ComparisonRow = {
+	label: string;
+	values: Record<ComparisonKey, string>;
+};
+
+const COMPARISON_COLUMNS: readonly ComparisonColumn[] = [
 	{
-		title: "Duolingo doesn't teach you to speak",
-		description:
-			"Gamified apps focus on tapping and matching. You earn points but can't hold a real conversation. English.now puts speaking first with AI conversations that feel like talking to a patient friend.",
+		key: "tutors",
+		title: "Tutors",
+		icon: UserRound,
 	},
 	{
-		title: "We adapt to you, not the other way around",
-		description:
-			"Every lesson, every correction, every vocabulary suggestion is personalized to your level, your goals, and the mistakes you actually make. No one-size-fits-all curriculum.",
+		key: "gpt",
+		title: "Just GPT",
+		icon: Bot,
 	},
 	{
-		title: "Real feedback, not just right or wrong",
-		description:
-			"When you make a mistake, we explain why it's wrong and how to fix it. Grammar, pronunciation, word choice. You learn the reasoning, not just the answer.",
-	},
-	{
-		title: "Available 24/7, no scheduling required",
-		description:
-			"No booking a tutor two weeks out. No cancellation fees. Practice at 2 AM or on your lunch break. The AI is always ready when you are.",
+		key: "englishNow",
+		title: "English.now",
+		icon: Sparkles,
+		featured: true,
 	},
 ];
 
-const USERS = [
+const COMPARISON_ROWS: readonly ComparisonRow[] = [
 	{
-		title: "Career-driven professionals",
-		description:
-			"Engineers, designers, and managers who need confident English for meetings, interviews, and international teams.",
+		label: "Approach",
+		values: {
+			tutors: "Human-led, scheduled sessions.",
+			gpt: "Single AI chat that follows your prompts.",
+			englishNow: "Guided AI speaking system built for learners.",
+		},
 	},
 	{
-		title: "Students preparing for exams",
-		description:
-			"Learners studying for IELTS, TOEFL, or university entrance exams who need structured practice and measurable progress.",
+		label: "Speed",
+		values: {
+			tutors: "Progress depends on how often you can book sessions.",
+			gpt: "Fast to start, but you build the system yourself.",
+			englishNow: "Practice in minutes with a ready-to-use flow.",
+		},
 	},
 	{
-		title: "Self-taught learners",
-		description:
-			"People who watch English content and want to go from passive understanding to active fluency without a tutor.",
+		label: "Scale",
+		values: {
+			tutors: "Limited by calendar time, budget, and tutor availability.",
+			gpt: "Works for many tasks, but degrades without structure.",
+			englishNow: "Scales to daily speaking practice without extra planning.",
+		},
 	},
 	{
-		title: "Travelers and expats",
-		description:
-			"Anyone moving abroad or traveling frequently who needs practical, real-world English for everyday situations.",
+		label: "Quality",
+		values: {
+			tutors: "Can be great, but quality varies tutor to tutor.",
+			gpt: "Smart, but often inconsistent, generic, or too verbose.",
+			englishNow: "Consistent feedback tuned for speaking and correction.",
+		},
+	},
+	{
+		label: "Output",
+		values: {
+			tutors: "Conversation, notes, and homework from each session.",
+			gpt: "Raw answers and chat threads with detail loss over time.",
+			englishNow: "A complete loop of practice, feedback, and repetition.",
+		},
 	},
 ];
 
 export default function About() {
 	return (
-		<div className="container relative mx-auto max-w-3xl px-4 py-10 md:py-20">
-			{/* Hero */}
-			<div className="mx-auto mb-20 max-w-2xl text-center">
-				<p className="mb-3 font-semibold text-lime-600 text-xs uppercase tracking-[0.2em] dark:text-lime-400">
-					What is this
-				</p>
-				<h1 className="mb-5 font-bold font-lyon text-4xl text-neutral-900 tracking-tight md:text-5xl dark:text-white">
+		<div className="container relative z-10 mx-auto max-w-4xl px-4 py-2 pt-10 md:pt-18">
+			<div className="mx-auto mb-16 flex max-w-2xl flex-col items-center gap-4 text-center">
+				<h1 className="font-bold font-lyon text-4xl text-neutral-900 tracking-tight md:text-5xl dark:text-white">
 					About English.now
 				</h1>
-				<p className="mx-auto max-w-lg text-balance text-muted-foreground md:text-lg">
+				<p className="mx-auto max-w-2xl text-balance text-muted-foreground md:text-lg">
 					An AI-powered English learning app that helps you speak, think, and
 					communicate in English through real practice, not gamified drills.
 				</p>
 			</div>
 
-			{/* Solution */}
-			<section className="mb-20">
-				<p className="mb-3 font-semibold text-lime-600 text-xs uppercase tracking-[0.2em] dark:text-lime-400">
-					Solution
-				</p>
-				<h2 className="mb-6 font-bold font-lyon text-3xl text-neutral-900 tracking-tight md:text-4xl dark:text-white">
-					What English.now does
-				</h2>
-				<div className="space-y-4 text-muted-foreground leading-relaxed md:text-base">
-					<p>
-						English.now combines AI conversations, personalized lessons,
-						vocabulary building, pronunciation coaching, and grammar correction
-						into one app. Everything adapts to your level.
-					</p>
-					<p>
-						"How do I sound more natural?" "What's the difference between these
-						two words?" "Correct my pronunciation on this sentence."
-					</p>
-					<p>
-						Unlike generic chatbots, English.now is built specifically for
-						language learners. It understands your native language, tracks your
-						progress, and gives you feedback that actually helps you improve. No
-						copy-pasting prompts. No switching between apps.
-					</p>
-				</div>
-			</section>
-
-			{/* Differentiators */}
-			<section className="mb-20">
-				<p className="mb-3 font-semibold text-lime-600 text-xs uppercase tracking-[0.2em] dark:text-lime-400">
-					Differentiators
-				</p>
-				<h2 className="mb-8 font-bold font-lyon text-3xl text-neutral-900 tracking-tight md:text-4xl dark:text-white">
-					Why not just use Duolingo?
-				</h2>
-				<div className="space-y-6">
-					{DIFFERENTIATORS.map((item, index) => (
-						<div
-							key={item.title}
-							className="rounded-xl border border-border bg-card p-5 sm:p-6"
-						>
-							<div className="mb-2 flex items-start gap-3">
-								<span className="shrink-0 font-bold font-mono text-lime-600 text-sm dark:text-lime-400">
-									#{String(index + 1).padStart(2, "0")}.
-								</span>
-								<h3 className="font-semibold text-neutral-900 dark:text-white">
-									{item.title}
-								</h3>
-							</div>
-							<p className="ml-10 text-muted-foreground text-sm leading-relaxed md:text-base">
-								{item.description}
-							</p>
-						</div>
-					))}
-				</div>
-			</section>
-
+			<div
+				className="mb-10 overflow-hidden rounded-3xl"
+				style={{
+					boxShadow:
+						"0 0 0 1px rgba(0,0,0,.05),0 10px 10px -5px rgba(0,0,0,.04),0 20px 25px -5px rgba(0,0,0,.04),0 20px 32px -12px rgba(0,0,0,.04)",
+				}}
+			>
+				<img
+					src="/images/about.png"
+					alt="English.now"
+					className="h-auto w-full"
+				/>
+			</div>
+			<hr className="my-16 border-border/50 border-t md:my-24" />
 			{/* Origin */}
-			<section className="mb-20">
-				<p className="mb-3 font-semibold text-lime-600 text-xs uppercase tracking-[0.2em] dark:text-lime-400">
-					Origin
-				</p>
+			<section className="mx-auto mb-20 max-w-3xl">
 				<h2 className="mb-6 font-bold font-lyon text-3xl text-neutral-900 tracking-tight md:text-4xl dark:text-white">
-					Why we built this
+					Why I built this
 				</h2>
 				<div className="space-y-4 text-muted-foreground leading-relaxed md:text-base">
 					<p>
@@ -178,6 +159,7 @@ export default function About() {
 								aria-label="X (Twitter)"
 								className="text-muted-foreground transition-colors hover:text-neutral-900 dark:hover:text-white"
 							>
+								<span className="sr-only">Open X profile</span>
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
 									className="size-4"
@@ -198,83 +180,111 @@ export default function About() {
 				</div>
 			</section>
 
-			{/* Users */}
-			<section className="mb-20">
-				<p className="mb-3 font-semibold text-lime-600 text-xs uppercase tracking-[0.2em] dark:text-lime-400">
-					Users
-				</p>
-				<h2 className="mb-4 font-bold font-lyon text-3xl text-neutral-900 tracking-tight md:text-4xl dark:text-white">
-					Who uses English.now
-				</h2>
-				<p className="mb-8 text-muted-foreground md:text-base">
-					Anyone who wants to go from understanding English to actually speaking
-					it with confidence.
-				</p>
-				<div className="grid gap-4 sm:grid-cols-2">
-					{USERS.map((user) => (
+			{/* <section className="mx-auto mb-20 max-w-3xl">
+				<div className="mb-8">
+					<h2 className="mb-4 font-bold font-lyon text-3xl text-neutral-900 tracking-tight md:text-4xl dark:text-white">
+						How English.now compares
+					</h2>
+					<p className="text-muted-foreground leading-relaxed md:text-base">
+						Tutors and GPT are useful, but each leaves important gaps.
+						English.now combines structure, consistency, and real speaking
+						practice in one focused product.
+					</p>
+				</div>
+
+				<div className="space-y-4 md:hidden">
+					{COMPARISON_COLUMNS.map((column) => (
 						<div
-							key={user.title}
-							className="rounded-xl border border-border bg-card p-5"
+							key={column.key}
+							className={`rounded-2xl border p-5 ${
+								column.featured
+									? "border-border bg-muted/40 dark:bg-white/4"
+									: "border-border bg-card"
+							}`}
 						>
-							<h3 className="mb-2 font-semibold text-neutral-900 text-sm dark:text-white">
-								{user.title}
-							</h3>
-							<p className="text-muted-foreground text-sm leading-relaxed">
-								{user.description}
-							</p>
+							<div className="mb-5 flex items-center gap-2">
+								<column.icon className="size-4 text-muted-foreground" />
+								<h3 className="font-medium text-base text-neutral-900 dark:text-white">
+									{column.title}
+								</h3>
+							</div>
+
+							<div className="space-y-3">
+								{COMPARISON_ROWS.map((row) => (
+									<div
+										key={`${column.key}-${row.label}`}
+										className="rounded-xl border border-border/70 bg-background/80 p-3"
+									>
+										<p className="mb-1 font-medium text-[11px] text-muted-foreground uppercase tracking-[0.14em]">
+											{row.label}
+										</p>
+										<p className="text-neutral-900 text-sm leading-relaxed dark:text-white">
+											{row.values[column.key]}
+										</p>
+									</div>
+								))}
+							</div>
 						</div>
 					))}
 				</div>
-			</section>
 
-			{/* Contact */}
-			<section>
-				<p className="mb-3 font-semibold text-lime-600 text-xs uppercase tracking-[0.2em] dark:text-lime-400">
-					Contact
-				</p>
-				<h2 className="mb-4 font-bold font-lyon text-3xl text-neutral-900 tracking-tight md:text-4xl dark:text-white">
-					Questions?
-				</h2>
-				<p className="mb-6 text-muted-foreground md:text-base">
-					We're a small team. You'll probably talk to someone who writes code or
-					designs the product.
-				</p>
-				<div className="space-y-2 text-sm">
-					<p>
-						<span className="font-medium text-neutral-900 dark:text-white">
-							General inquiries:
-						</span>{" "}
-						<a
-							href="mailto:contact@english.now"
-							className="text-lime-700 underline dark:text-lime-400"
-						>
-							contact@english.now
-						</a>
-					</p>
-					<p>
-						<span className="font-medium text-neutral-900 dark:text-white">
-							Support:
-						</span>{" "}
-						<a
-							href="mailto:support@english.now"
-							className="text-lime-700 underline dark:text-lime-400"
-						>
-							support@english.now
-						</a>
-					</p>
-					<p>
-						<span className="font-medium text-neutral-900 dark:text-white">
-							Sales:
-						</span>{" "}
-						<a
-							href="mailto:sales@english.now"
-							className="text-lime-700 underline dark:text-lime-400"
-						>
-							sales@english.now
-						</a>
-					</p>
+				<div className="hidden overflow-hidden rounded-3xl border border-border bg-card md:block">
+					<div className="grid grid-cols-[minmax(130px,0.8fr)_repeat(3,minmax(0,1fr))]">
+						<div className="border-border border-b bg-background p-6" />
+						{COMPARISON_COLUMNS.map((column) => (
+							<div
+								key={column.key}
+								className={`border-border border-b border-l p-6 ${
+									column.featured
+										? "rounded-t-3xl bg-muted/40 dark:bg-white/4"
+										: "bg-background"
+								}`}
+							>
+								<div className="flex items-center gap-2">
+									<column.icon className="size-4 text-muted-foreground" />
+									<h3 className="font-medium text-neutral-900 text-sm dark:text-white">
+										{column.title}
+									</h3>
+								</div>
+							</div>
+						))}
+
+						{COMPARISON_ROWS.map((row, index) => (
+							<div key={row.label} className="contents">
+								<div
+									className={`border-border border-b p-5 ${
+										index === COMPARISON_ROWS.length - 1 ? "border-b-0" : ""
+									}`}
+								>
+									<p className="font-medium text-neutral-900 text-sm dark:text-white">
+										{row.label}
+									</p>
+								</div>
+								{COMPARISON_COLUMNS.map((column) => (
+									<div
+										key={`${row.label}-${column.key}`}
+										className={`border-border border-b border-l p-5 ${
+											column.featured
+												? "bg-muted/40 dark:bg-white/4"
+												: "bg-background"
+										} ${
+											index === COMPARISON_ROWS.length - 1 ? "border-b-0" : ""
+										} ${
+											column.featured && index === COMPARISON_ROWS.length - 1
+												? "rounded-b-3xl"
+												: ""
+										}`}
+									>
+										<p className="text-muted-foreground text-sm leading-relaxed">
+											{row.values[column.key]}
+										</p>
+									</div>
+								))}
+							</div>
+						))}
+					</div>
 				</div>
-			</section>
+			</section> */}
 		</div>
 	);
 }

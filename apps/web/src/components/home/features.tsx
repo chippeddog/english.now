@@ -193,32 +193,9 @@ function PracticeSpeakingDemo() {
 						AI
 					</span>
 				</div>
-				<button
-					className="absolute top-3 right-3"
-					type="button"
-					onClick={() => setShowFeedback(!showFeedback)}
-				>
-					<X className="size-3.5 cursor-pointer text-muted-foreground hover:text-muted-foreground/80" />
-				</button>
 
 				<div className="mt-3 flex flex-col gap-2.5">
-					<div className="relative flex flex-col">
-						<span className="w-fit rounded-t-md bg-[#D8FF76] px-1.5 py-0.5 font-semibold text-lime-700 text-xs">
-							Fluency
-						</span>
-						<span className="rounded-b-md border-2 border-[#D8FF76] bg-[#D8FF76]/50 px-1.5 py-0.5 text-neutral-900 text-xs">
-							Good use of phrases.
-						</span>
-					</div>
 					<hr className="my-1.5 border-neutral-200 border-dashed" />
-					<div className="relative flex flex-col">
-						<span className="w-fit rounded-t-md bg-amber-200 px-1.5 py-0.5 font-semibold text-amber-700 text-xs">
-							Grammar
-						</span>
-						<span className="rounded-b-md border-2 border-amber-200 bg-amber-100/50 px-1.5 py-0.5 text-neutral-900 text-xs">
-							Minor article error.
-						</span>
-					</div>
 				</div>
 			</div>
 		</div>

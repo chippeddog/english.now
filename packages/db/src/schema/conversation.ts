@@ -129,7 +129,7 @@ export const conversationMessage = pgTable("conversation_message", {
 	sessionId: text("session_id")
 		.notNull()
 		.references(() => conversationSession.id, { onDelete: "cascade" }),
-	role: text("role").notNull(), // user, assistant
+	role: text("role").notNull(),
 	content: text("content").notNull(),
 	audioUrl: text("audio_url"), // URL to stored audio if voice message
 	metadata: jsonb("metadata").$type<{

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ChevronLeft, Loader, Settings } from "lucide-react";
+import { ArrowLeft, ChevronLeft, Loader, Settings } from "lucide-react";
 import { type MouseEvent, useEffect, useMemo, useState } from "react";
 import PracticeView from "@/components/conversation/practice-view";
 import ReportIssueDialog from "@/components/conversation/report-issue-dialog";
@@ -163,9 +163,17 @@ function ConversationPage() {
 							<div className="items-center gap-2 md:flex">
 								<Logo link="/practice" />
 							</div>
+							<Button
+								variant="outline"
+								size="icon"
+								className="size-9 cursor-pointer rounded-xl shadow-none md:hidden"
+								onClick={() => navigate({ to: "/practice" })}
+							>
+								<ArrowLeft className="size-4" strokeWidth={2} />
+							</Button>
 							<Link
 								to="/conversation"
-								className="flex items-center gap-1 text-muted-foreground text-sm transition-colors hover:text-foreground"
+								className="hidden items-center gap-1 text-muted-foreground text-sm transition-colors hover:text-foreground md:flex"
 							>
 								<ChevronLeft className="size-4" />
 								Back to practice

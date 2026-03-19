@@ -217,12 +217,12 @@ function PricingPage() {
 
 	return (
 		<div className="relative">
-			<div className="container relative mx-auto max-w-5xl px-4 py-10 md:py-16">
-				<div className="mb-16 text-center">
-					<h1 className="mb-4 font-bold font-lyon text-4xl text-neutral-950 leading-tight tracking-tight lg:text-5xl dark:text-white">
+			<div className="container relative mx-auto max-w-5xl px-4 py-10 md:py-20">
+				<div className="mx-auto mb-16 max-w-2xl text-center">
+					<h1 className="mb-5 font-bold font-lyon text-4xl text-neutral-900 tracking-tight md:text-5xl dark:text-white">
 						{t("pricing.pageTitle")}
 					</h1>
-					<p className="text-balance text-center text-muted-foreground text-sm md:mx-auto md:max-w-boundary-sm md:text-lg">
+					<p className="mx-auto max-w-2xl text-balance text-muted-foreground md:text-lg">
 						{t("pricing.pageSubtitle")}
 					</p>
 				</div>

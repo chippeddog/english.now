@@ -1,6 +1,6 @@
 import { Trans, useTranslation } from "@english.now/i18n";
 import { Link } from "@tanstack/react-router";
-import { PlayIcon } from "lucide-react";
+import { CheckIcon, PlayIcon } from "lucide-react";
 import { useState } from "react";
 import DialogDemo from "../dialog-demo";
 import { Button } from "../ui/button";
@@ -19,7 +19,7 @@ export function Start() {
 				}}
 			>
 				<div className="relative z-10 justify-center text-center">
-					<div className="mb-4 flex items-center justify-center gap-0 text-neutral-900">
+					{/*<div className="mb-4 flex items-center justify-center gap-0 text-neutral-900">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							width={21}
@@ -76,7 +76,7 @@ export function Start() {
 								fillRule="evenodd"
 							/>
 						</svg>
-					</div>
+					</div> */}
 					<h2 className="font-bold font-lyon text-4xl text-neutral-900 tracking-tight sm:text-5xl lg:text-6xl">
 						<Trans components={{ br: <br className="" /> }}>
 							{t("start.title")}
@@ -105,8 +105,34 @@ export function Start() {
 							{t("hero.watchDemo")}
 						</Button>
 					</div>
-					<div className="mt-4 text-neutral-600 text-sm">
+					{/* <div className="mt-4 text-neutral-600 text-sm">
 						{t("start.subtitle")}
+					</div> */}
+					<div className="mt-5 flex flex-col items-center justify-center gap-3 text-neutral-600 text-xs sm:flex-row sm:gap-5">
+						<span className="flex items-center gap-1.5">
+							<CheckIcon
+								aria-hidden="true"
+								aria-label="No credit card required"
+								className="size-4"
+							/>
+							{t("hero.noCard")}
+						</span>
+						<span className="flex items-center gap-1.5">
+							<CheckIcon
+								aria-hidden="true"
+								aria-label="7-day free trial"
+								className="size-4"
+							/>
+							7-day free trial
+						</span>
+						<span className="flex items-center gap-1.5">
+							<CheckIcon
+								aria-hidden="true"
+								aria-label="Cancel anytime"
+								className="size-4"
+							/>
+							Cancel anytime
+						</span>
 					</div>
 				</div>
 				<div className="absolute bottom-0 left-0 w-full">
