@@ -1,12 +1,12 @@
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import {
+	type ConversationReview,
+	type ConversationReviewProblem,
+	type ConversationReviewTask,
 	conversationMessage,
 	conversationSession,
 	db,
 	eq,
-	type ConversationReview,
-	type ConversationReviewProblem,
-	type ConversationReviewTask,
 } from "@english.now/db";
 import { generateText, Output } from "ai";
 import { z } from "zod";
@@ -19,7 +19,7 @@ import {
 } from "./pronunciation-assessment";
 
 const MIN_USER_MESSAGES = 3;
-const MAX_PROBLEMS_PER_TYPE = 2;
+const MAX_PROBLEMS_PER_TYPE = 10;
 
 const reviewAnalysisSchema = z.object({
 	grammarScore: z
@@ -275,7 +275,8 @@ function buildPronunciationReview(
 			})),
 		)
 		.filter(
-			(word) => word.word && (word.errorType !== "None" || word.accuracyScore < 78),
+			(word) =>
+				word.word && (word.errorType !== "None" || word.accuracyScore < 78),
 		)
 		.sort((a, b) => a.accuracyScore - b.accuracyScore);
 
@@ -339,7 +340,9 @@ export async function generateConversationFeedback(
 	sessionId: string,
 	userId: string,
 ): Promise<{ sessionId: string }> {
-	console.log(`[feedback] Starting feedback generation for session ${sessionId}`);
+	console.log(
+		`[feedback] Starting feedback generation for session ${sessionId}`,
+	);
 
 	const now = new Date();
 
@@ -402,7 +405,10 @@ export async function generateConversationFeedback(
 		const vocabularyProblems: ConversationReviewProblem[] = [];
 		const tasks: ConversationReviewTask[] = [];
 
-		for (const item of aiAnalysis.grammarProblems.slice(0, MAX_PROBLEMS_PER_TYPE)) {
+		for (const item of aiAnalysis.grammarProblems.slice(
+			0,
+			MAX_PROBLEMS_PER_TYPE,
+		)) {
 			const problemId = crypto.randomUUID();
 			grammarProblems.push({
 				id: problemId,
@@ -430,7 +436,10 @@ export async function generateConversationFeedback(
 			});
 		}
 
-		for (const item of aiAnalysis.vocabularyProblems.slice(0, MAX_PROBLEMS_PER_TYPE)) {
+		for (const item of aiAnalysis.vocabularyProblems.slice(
+			0,
+			MAX_PROBLEMS_PER_TYPE,
+		)) {
 			const problemId = crypto.randomUUID();
 			vocabularyProblems.push({
 				id: problemId,
@@ -466,7 +475,9 @@ export async function generateConversationFeedback(
 			});
 		}
 
-		const pronunciationReview = buildPronunciationReview(pronunciationResult.results);
+		const pronunciationReview = buildPronunciationReview(
+			pronunciationResult.results,
+		);
 		const problems = [
 			...grammarProblems,
 			...vocabularyProblems,
