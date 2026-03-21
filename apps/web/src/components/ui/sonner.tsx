@@ -12,7 +12,8 @@ const toastElevatedShadowOnDefault =
 
 /** Rich toast shell: same shadow + padding for all semantic types */
 const richToastSurfaceCore =
-	"!rounded-2xl !border !px-5 !py-3.5 !text-sm !font-medium " + toastElevatedShadow;
+	"!rounded-2xl !border !px-5 !py-3.5 !text-sm !font-medium " +
+	toastElevatedShadow;
 
 const richToastCloseButton =
 	"group-data-[rich-colors=true]:group-data-[type=error]:!top-3 group-data-[rich-colors=true]:group-data-[type=error]:!right-3 group-data-[rich-colors=true]:group-data-[type=error]:!size-7 group-data-[rich-colors=true]:group-data-[type=error]:!rounded-full group-data-[rich-colors=true]:group-data-[type=error]:!border group-data-[rich-colors=true]:group-data-[type=error]:!border-white/25 group-data-[rich-colors=true]:group-data-[type=error]:!bg-white/15 group-data-[rich-colors=true]:group-data-[type=error]:!text-white group-data-[rich-colors=true]:group-data-[type=error]:!shadow-none group-data-[rich-colors=true]:group-data-[type=error]:hover:!bg-white/25 " +

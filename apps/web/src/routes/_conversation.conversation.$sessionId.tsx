@@ -181,7 +181,10 @@ function ConversationPage() {
 										onOpenChange={setInstructionsOpen}
 									>
 										<PopoverTrigger asChild>
-											<button className="-top-1.5 absolute right-0 z-10 cursor-pointer text-sm italic">
+											<button
+												type="button"
+												className="-top-1.5 absolute right-0 z-10 cursor-pointer text-sm italic"
+											>
 												{/* <svg
 													className="size-4"
 													aria-hidden="true"
