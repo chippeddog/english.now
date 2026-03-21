@@ -1,7 +1,6 @@
 import { integer, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { user } from "./auth";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
 export type CefrLevel = "A1" | "A2" | "B1" | "B2" | "C1";
 
 export type ParagraphItem = {
@@ -16,6 +15,9 @@ export type ParagraphItem = {
 export type PhonemeResult = {
 	phoneme: string;
 	accuracyScore: number;
+	/** Azure: offset from utterance start in 100ns ticks (when returned by the service). */
+	offset?: number;
+	duration?: number;
 };
 
 export type WordResult = {
@@ -31,6 +33,9 @@ export type WordResult = {
 		| "MissingBreak"
 		| "Monotone";
 	phonemes: PhonemeResult[];
+	/** Azure word timing in 100ns ticks (utterance-relative). */
+	offset?: number;
+	duration?: number;
 };
 
 export type WeakPhoneme = {

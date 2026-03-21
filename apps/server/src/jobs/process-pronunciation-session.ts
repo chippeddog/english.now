@@ -114,6 +114,8 @@ async function processPronunciationSession(
 					accuracyScore: w.accuracyScore,
 					errorType: w.errorType as WordResult["errorType"],
 					phonemes: w.phonemes,
+					offset: w.offset,
+					duration: w.duration,
 				}));
 
 				await db

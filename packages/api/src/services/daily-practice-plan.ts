@@ -25,6 +25,10 @@ import {
 import { FREE_DAILY_VOCAB_REVIEW_LIMIT } from "./feature-limit-config";
 import { getDailyFeatureUsageTotal } from "./feature-usage";
 import { profileLevelToCefr } from "../lib/cefr";
+import {
+	buildDefaultConversationGoals,
+	buildDefaultConversationModeConfig,
+} from "./conversation-mode";
 import { generateParagraph } from "./generate-paragraph";
 import { generateSuggestions } from "./generate-suggestions";
 import { getSubscriptionSummaryForUser } from "./subscription";
@@ -255,7 +259,16 @@ function createConversationActivities(
 				scenario: topic.id,
 				scenarioName: topic.name,
 				scenarioDescription: topic.description,
-				scenarioType: "topic" as const,
+				goals: buildDefaultConversationGoals({
+					mode: "general-conversation",
+					title: topic.name,
+				}),
+				mode: "general-conversation" as const,
+				modeConfig: buildDefaultConversationModeConfig({
+					mode: "general-conversation",
+					sourceId: topic.id,
+					subtitle: topic.description,
+				}),
 			},
 		})),
 		...roleplays.map((roleplay, index) => ({
@@ -274,7 +287,16 @@ function createConversationActivities(
 				scenarioName: roleplay.name,
 				scenarioDescription: roleplay.description,
 				aiRole: roleplay.aiRole,
-				scenarioType: "roleplay" as const,
+				goals: buildDefaultConversationGoals({
+					mode: "roleplay",
+					title: roleplay.name,
+				}),
+				mode: "roleplay" as const,
+				modeConfig: buildDefaultConversationModeConfig({
+					mode: "roleplay",
+					sourceId: roleplay.id,
+					subtitle: roleplay.description,
+				}),
 			},
 		})),
 	];

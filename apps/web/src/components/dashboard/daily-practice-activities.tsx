@@ -47,7 +47,10 @@ type ConversationActivity = {
 		scenarioName: string;
 		scenarioDescription: string;
 		aiRole?: string;
-		scenarioType: "topic" | "roleplay";
+		userRole?: string | null;
+		goals?: string[];
+		mode?: "general-conversation" | "roleplay" | "mini-class";
+		scenarioType?: "topic" | "roleplay";
 	};
 };
 

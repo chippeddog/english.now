@@ -5,6 +5,7 @@ import {
 	BookOpen,
 	Bot,
 	Check,
+	Loader,
 	Loader2,
 	MessageSquare,
 	Mic,
@@ -32,35 +33,6 @@ type ReviewData = ReviewResponse["review"];
 type PracticeProgress = ReviewResponse["practiceProgress"];
 type ReportAccess = ReviewResponse["reportAccess"];
 type ReviewType = "grammar" | "vocabulary" | "pronunciation";
-
-type GenerationStep = {
-	id: string;
-	label: string;
-	icon: typeof Sparkles;
-	delay: number;
-};
-
-const STEPS: GenerationStep[] = [
-	{
-		id: "pronunciation",
-		label: "Analyzing pronunciation",
-		icon: Mic,
-		delay: 0,
-	},
-	{ id: "grammar", label: "Checking grammar", icon: BookOpen, delay: 2000 },
-	{
-		id: "vocabulary",
-		label: "Evaluating vocabulary",
-		icon: MessageSquare,
-		delay: 4000,
-	},
-	{
-		id: "tasks",
-		label: "Preparing your practice tasks",
-		icon: Sparkles,
-		delay: 6000,
-	},
-];
 
 const REVIEW_TYPES: ReviewType[] = ["pronunciation", "vocabulary", "grammar"];
 
@@ -207,76 +179,13 @@ function VocabModeToggle({
 }
 
 export function LoadingState() {
-	const [activeStep, setActiveStep] = useState(0);
-
-	useEffect(() => {
-		const timers = STEPS.map((step, i) =>
-			setTimeout(() => setActiveStep(i), step.delay),
-		);
-		return () => timers.forEach(clearTimeout);
-	}, []);
-
 	return (
-		<div className="flex min-h-dvh flex-col items-center justify-center bg-neutral-50 p-6">
-			<div className="w-full max-w-md space-y-8">
-				<div className="space-y-2 text-center">
-					<h1 className="font-bold text-2xl tracking-tight">
-						Analyzing Your Session
-					</h1>
-					<p className="text-muted-foreground text-sm">
-						We're evaluating your conversation performance. This takes about 15
-						seconds.
-					</p>
-				</div>
-
-				<div className="space-y-3">
-					{STEPS.map((step, i) => {
-						const Icon = step.icon;
-						const status =
-							i < activeStep
-								? "completed"
-								: i === activeStep
-									? "active"
-									: "pending";
-						return (
-							<div
-								key={step.id}
-								className={cn(
-									"flex items-center gap-3 rounded-lg border p-3 transition-all duration-300",
-									status === "active" && "border-lime-500/50 bg-lime-50",
-									status === "completed" && "border-green-500/30 bg-green-50",
-									status === "pending" && "border-transparent opacity-50",
-								)}
-							>
-								<div
-									className={cn(
-										"flex size-8 items-center justify-center rounded-full",
-										status === "active" && "bg-lime-100 text-lime-600",
-										status === "completed" && "bg-green-100 text-green-600",
-										status === "pending" && "bg-muted text-muted-foreground",
-									)}
-								>
-									{status === "active" ? (
-										<Loader2 className="size-4 animate-spin" />
-									) : status === "completed" ? (
-										<Check className="size-4" />
-									) : (
-										<Icon className="size-4" />
-									)}
-								</div>
-								<span
-									className={cn(
-										"font-medium text-sm",
-										status === "completed" && "text-green-700",
-										status === "pending" && "text-muted-foreground",
-									)}
-								>
-									{step.label}
-								</span>
-							</div>
-						);
-					})}
-				</div>
+		<div className="container mx-auto flex min-h-dvh max-w-3xl flex-col items-center justify-center px-4 py-8">
+			<div className="flex flex-col items-center gap-4">
+				<Loader className="size-7 animate-spin text-lime-600" />
+				<p className="font-medium text-foreground-muted">
+					Analyzing your session...
+				</p>
 			</div>
 		</div>
 	);
@@ -387,13 +296,7 @@ export default function ReviewView({
 									{review?.overallScore ?? 0}
 								</span>
 							</div>
-							<Button
-								type="button"
-								variant="outline"
-								className="group flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-xl border border-[#C6F64D] bg-[radial-gradient(100%_100%_at_50%_0%,#EFFF9B_0%,#D8FF76_60%,#C6F64D_100%)] px-2.5 py-1.5 font-medium text-lime-900 text-sm italic shadow-none transition duration-150 ease-in-out will-change-transform hover:bg-lime-700/10 hover:brightness-95 focus:shadow-none focus:outline-none focus-visible:shadow-none"
-							>
-								Practice all
-							</Button>
+
 							{/* <div>
 								<p className="text-muted-foreground text-sm">
 									Practiced {practiceProgress.practicedTasks} of{" "}

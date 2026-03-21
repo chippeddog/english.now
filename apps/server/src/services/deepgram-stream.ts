@@ -20,7 +20,15 @@ async function authenticateFromRequest(req: IncomingMessage): Promise<boolean> {
 	try {
 		const headers = new Headers();
 		for (const [key, value] of Object.entries(req.headers)) {
-			if (value) headers.set(key, Array.isArray(value) ? value[0] : value);
+			if (!value) continue;
+			if (Array.isArray(value)) {
+				const firstValue = value[0];
+				if (firstValue) {
+					headers.set(key, firstValue);
+				}
+				continue;
+			}
+			headers.set(key, value);
 		}
 
 		const session = await auth.api.getSession({ headers });

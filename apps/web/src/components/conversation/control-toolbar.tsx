@@ -1,11 +1,11 @@
 import {
-	BookOpen,
 	Circle,
 	Lightbulb,
 	Loader,
 	LogOutIcon,
 	Mic,
 	MicOff,
+	SearchIcon,
 	Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,8 +27,8 @@ import { cn } from "@/lib/utils";
 type ControlToolbarProps = {
 	showHint: boolean;
 	setShowHint: (show: boolean) => void;
-	hintSuggestions: string[];
-	fetchHintSuggestions: () => void;
+	hasHint: boolean;
+	fetchHintSuggestion: () => void;
 	isLoading: boolean;
 	recordingState: "idle" | "recording" | "transcribing";
 	startRecording: () => void;
@@ -43,8 +43,8 @@ type ControlToolbarProps = {
 export function ControlToolbar({
 	showHint,
 	setShowHint,
-	hintSuggestions,
-	fetchHintSuggestions,
+	hasHint,
+	fetchHintSuggestion,
 	isLoading,
 	recordingState,
 	startRecording,
@@ -86,7 +86,7 @@ export function ControlToolbar({
 									)}
 								>
 									<div className="relative">
-										<BookOpen className="size-5" />
+										<SearchIcon className="size-5" />
 										{vocabMode === "phrase" ? (
 											<Circle className="-right-1 -top-1 absolute size-2.5 fill-current" />
 										) : null}
@@ -124,8 +124,8 @@ export function ControlToolbar({
 							onClick={() => {
 								const next = !showHint;
 								setShowHint(next);
-								if (next && hintSuggestions.length === 0) {
-									fetchHintSuggestions();
+								if (next && !hasHint) {
+									fetchHintSuggestion();
 								}
 							}}
 							disabled={isLoading}

@@ -2,9 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Loader } from "lucide-react";
 import { useEffect } from "react";
-import ReviewView, {
-	LoadingState,
-} from "@/components/conversation/review-view";
+import { ConversationReviewScreen } from "@/components/conversation/review/conversation-review-screen";
+import { LoadingState } from "@/components/conversation/review-view";
 import { useTRPC } from "@/utils/trpc";
 
 export const Route = createFileRoute("/_session/feedback/$sessionId")({
@@ -21,7 +20,9 @@ function FeedbackPage() {
 		refetchInterval: (query) => {
 			const d = query.state.data;
 			if (!d) return 2000;
-			if (d.feedback.status === "completed") return false;
+			if (d.reviewStatus === "completed" || d.reviewStatus === "failed") {
+				return false;
+			}
 			return 2000;
 		},
 		retry: (failureCount, err) => {
@@ -49,15 +50,33 @@ function FeedbackPage() {
 		);
 	}
 
-	if (!data || data.feedback.status !== "completed") {
+	if (!data) {
+		return <LoadingState />;
+	}
+
+	if (data.reviewStatus === "failed") {
+		return (
+			<div className="container mx-auto max-w-3xl px-4 py-8">
+				<div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">
+					We couldn&apos;t load this review. Try again from your practice
+					history.
+				</div>
+			</div>
+		);
+	}
+
+	if (data.reviewStatus !== "completed" || !data.review) {
 		return <LoadingState />;
 	}
 
 	return (
-		<ReviewView
-			feedback={data.feedback}
+		<ConversationReviewScreen
+			attempts={data.attempts}
 			messages={data.messages}
+			practiceProgress={data.practiceProgress}
 			reportAccess={data.reportAccess}
+			review={data.review}
+			reviewStatus={data.reviewStatus}
 			session={data.session}
 		/>
 	);

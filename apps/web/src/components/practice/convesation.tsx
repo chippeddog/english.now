@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
+import { resolveConversationActivityMode } from "@english.now/api/services/conversation-mode";
 import { Loader2, MessageCircleIcon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -34,7 +35,8 @@ type ConversationActivity = {
 		scenarioName: string;
 		scenarioDescription: string;
 		aiRole?: string;
-		scenarioType: "topic" | "roleplay";
+		mode?: "general-conversation" | "roleplay" | "mini-class";
+		scenarioType?: "topic" | "roleplay";
 	};
 };
 
@@ -105,10 +107,12 @@ function DialogTopics({
 	);
 
 	const topics = conversationActivities.filter(
-		(activity) => activity.payload.scenarioType === "topic",
+		(activity) =>
+			resolveConversationActivityMode(activity.payload) ===
+			"general-conversation",
 	);
 	const roleplays = conversationActivities.filter(
-		(activity) => activity.payload.scenarioType === "roleplay",
+		(activity) => resolveConversationActivityMode(activity.payload) === "roleplay",
 	);
 	const hasContent = topics.length > 0 || roleplays.length > 0;
 	const access = planData?.access ?? null;
@@ -276,7 +280,6 @@ function DialogTopics({
 							(() => {
 								const gateState = getActivityGateState(access, roleplay);
 								const isLocked = gateState === "locked";
-								const isResume = gateState === "resume";
 
 								return (
 									<button

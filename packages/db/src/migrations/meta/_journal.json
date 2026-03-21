@@ -225,6 +225,13 @@
       "when": 1773674637144,
       "tag": "0031_odd_dust",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1774112704920,
+      "tag": "0032_robust_lethal_legion",
+      "breakpoints": true
     }
   ]
 }

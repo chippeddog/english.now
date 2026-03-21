@@ -1,8 +1,20 @@
+import {
+	getConversationModeLabel,
+	getConversationSessionMeta,
+} from "@english.now/api/services/conversation-mode";
 import { env } from "@english.now/env/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { Languages, Loader, Loader2, PauseIcon, PlayIcon } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+	Languages,
+	Lightbulb,
+	Loader,
+	Loader2,
+	PauseIcon,
+	PlayIcon,
+	RefreshCw,
+} from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useUpgradeDialog } from "@/components/dashboard/upgrade-dialog";
 import {
 	AlertDialog,
@@ -33,6 +45,11 @@ type Message = {
 	audio?: string;
 };
 
+type HintSuggestion = {
+	text: string;
+	translation: string;
+};
+
 type VocabularyMode = "off" | "word" | "phrase";
 
 export default function PracticeView({
@@ -52,7 +69,9 @@ export default function PracticeView({
 	const [messages, setMessages] = useState<Message[]>([]);
 	const [translations, setTranslations] = useState<Record<string, string>>({});
 	const [showHint, setShowHint] = useState(false);
-	const [hintSuggestions, setHintSuggestions] = useState<string[]>([]);
+	const [hintSuggestion, setHintSuggestion] = useState<HintSuggestion | null>(
+		null,
+	);
 	const [isLoadingHint, setIsLoadingHint] = useState(false);
 	const [translatingId, setTranslatingId] = useState<string | null>(null);
 	const [showFinishDialog, setShowFinishDialog] = useState(false);
@@ -84,6 +103,32 @@ export default function PracticeView({
 	const { isPlaying, playAudio, stopAudio } = useAudioPlayback(voice);
 	const userMessageCount = messages.filter((m) => m.role === "user").length;
 	const canGetFeedback = userMessageCount >= 3;
+	const sessionMeta = useMemo(
+		() => (data?.session ? getConversationSessionMeta(data.session) : null),
+		[data?.session],
+	);
+	const isRoleplay = sessionMeta?.mode === "roleplay";
+	const roleplayObjective =
+		sessionMeta?.modeConfig.kind === "roleplay"
+			? sessionMeta.modeConfig.objective
+			: (sessionMeta?.subtitle ?? "");
+	const roleplayCriteria =
+		sessionMeta?.modeConfig.kind === "roleplay"
+			? sessionMeta.modeConfig.successCriteria
+			: [];
+	const hintHeading = isRoleplay ? "Try this line" : "You can say";
+	const hintLoadingText = isRoleplay
+		? "Thinking of a realistic line for this roleplay..."
+		: "Thinking of something natural to say...";
+	const hintEmptyText = isRoleplay
+		? "Tap regenerate to get another realistic line."
+		: "Tap regenerate to get a fresh response idea.";
+	const finishTitle = isRoleplay ? "Finish roleplay" : "Finish conversation";
+	const finishDescription = canGetFeedback
+		? isRoleplay
+			? "Your roleplay will be analyzed for pronunciation, grammar, vocabulary, and how naturally you handled the scenario."
+			: "Your session will be analyzed for pronunciation, grammar, vocabulary, and fluency. You'll receive detailed feedback."
+		: `You need at least 3 responses to receive feedback (you have ${userMessageCount}). Are you sure you want to leave?`;
 
 	useEffect(() => {
 		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -188,15 +233,18 @@ export default function PracticeView({
 		prevMessagesRef.current = messages;
 	}, [messages, translations, translateMessage]);
 
-	const fetchHintSuggestions = useCallback(async () => {
+	const fetchHintSuggestion = useCallback(async () => {
 		if (!sessionId) return;
 		setIsLoadingHint(true);
 		try {
-			const { suggestions } = await hintMutation.mutateAsync({ sessionId });
-			setHintSuggestions(suggestions ?? []);
+			const { suggestion } = await hintMutation.mutateAsync({ sessionId });
+			setHintSuggestion(suggestion);
 		} catch (err) {
 			console.error("Hint generation error:", err);
-			setHintSuggestions(["I'm not sure what to say…"]);
+			setHintSuggestion({
+				text: "I'm not sure what to say right now.",
+				translation: "",
+			});
 		} finally {
 			setIsLoadingHint(false);
 		}
@@ -217,7 +265,7 @@ export default function PracticeView({
 				{ id: userMessageId, role: "user", content },
 			]);
 			setShowHint(false);
-			setHintSuggestions([]);
+			setHintSuggestion(null);
 
 			const aiMessageId = crypto.randomUUID();
 			setMessages((prev) => [
@@ -586,41 +634,53 @@ export default function PracticeView({
 
 			<div className="sticky bottom-0 z-20 shrink-0 bg-linear-to-t from-neutral-50 via-neutral-50/95 to-transparent pt-3 dark:from-neutral-900 dark:via-neutral-900/95">
 				{showHint && (
-					<div className="mx-auto mb-3 max-w-xl rounded-xl border border-amber-200 border-dashed bg-amber-50 p-3 dark:bg-amber-950/30">
-						<div className="mb-2 flex items-center gap-2 text-amber-900 dark:text-amber-200">
-							<p className="font-medium text-xs">You could say:</p>
+					<div className="mx-auto mb-3 max-w-xs">
+						<div className="rounded-3xl border border-amber-200 bg-amber-50 px-4 py-3 pb-4 text-amber-700 shadow-[0_1px_1px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.75)]">
+							<div className="mb-4 flex items-center justify-between gap-3">
+								<div className="flex items-center gap-1">
+									<Lightbulb className="size-4 shrink-0" />
+									<p className="font-semibold text-xs">{hintHeading}</p>
+								</div>
+								<button
+									type="button"
+									className="rounded-full p-0 text-amber-700 hover:text-amber-600"
+									onClick={fetchHintSuggestion}
+									disabled={isLoading || isLoadingHint}
+								>
+									<RefreshCw
+										className={cn(
+											"mr-1 size-3.5",
+											isLoadingHint ? "animate-spin" : "",
+										)}
+									/>
+								</button>
+							</div>
+							{isLoadingHint ? (
+								<div className="flex items-center gap-2 py-4 text-amber-700/80 text-sm">
+									<Loader className="size-4 animate-spin" />
+									<span>{hintLoadingText}</span>
+								</div>
+							) : hintSuggestion ? (
+								<div className="space-y-3">
+									<p className="text-sm leading-tight">{hintSuggestion.text}</p>
+									{hintSuggestion.translation ? (
+										<p className="border-amber-400 border-t border-dashed pt-2 text-amber-700 text-xs italic leading-tight">
+											{hintSuggestion.translation}
+										</p>
+									) : null}
+								</div>
+							) : (
+								<p className="text-[#6d35ff]/80 text-sm">{hintEmptyText}</p>
+							)}
 						</div>
-						{isLoadingHint ? (
-							<div className="flex items-center gap-2 py-2 text-amber-700">
-								<Loader2 className="size-3.5 animate-spin" />
-								<span className="text-xs">Thinking of suggestions...</span>
-							</div>
-						) : (
-							<div className="flex flex-col gap-1.5">
-								{hintSuggestions.map((suggestion) => (
-									<button
-										key={suggestion}
-										type="button"
-										className="flex items-start gap-2 rounded-lg border border-amber-100 bg-white/70 px-3 py-2 text-left text-amber-900 text-sm transition-colors hover:border-amber-200 hover:bg-white dark:bg-white/10 dark:text-amber-100 dark:hover:bg-white/20"
-										onClick={() => {
-											sendMessage(suggestion);
-											setShowHint(false);
-										}}
-										disabled={isLoading}
-									>
-										{suggestion}
-									</button>
-								))}
-							</div>
-						)}
 					</div>
 				)}
 
 				<ControlToolbar
 					showHint={showHint}
 					setShowHint={setShowHint}
-					hintSuggestions={hintSuggestions}
-					fetchHintSuggestions={fetchHintSuggestions}
+					hasHint={Boolean(hintSuggestion)}
+					fetchHintSuggestion={fetchHintSuggestion}
 					isLoading={isLoading}
 					recordingState={recordingState}
 					startRecording={handleStartRecording}
@@ -636,12 +696,8 @@ export default function PracticeView({
 			<AlertDialog open={showFinishDialog} onOpenChange={setShowFinishDialog}>
 				<AlertDialogContent className="w-sm">
 					<AlertDialogHeader>
-						<AlertDialogTitle>Finish conversation</AlertDialogTitle>
-						<AlertDialogDescription>
-							{canGetFeedback
-								? "Your session will be analyzed for pronunciation, grammar, vocabulary, and fluency. You'll receive detailed feedback."
-								: `You need at least 3 responses to receive feedback (you have ${userMessageCount}). Are you sure you want to leave?`}
-						</AlertDialogDescription>
+						<AlertDialogTitle>{finishTitle}</AlertDialogTitle>
+						<AlertDialogDescription>{finishDescription}</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
 						<AlertDialogCancel

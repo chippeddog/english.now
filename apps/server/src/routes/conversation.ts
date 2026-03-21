@@ -1,5 +1,9 @@
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import {
+	buildFallbackConversationSystemPrompt,
+	buildConversationSessionFromActivity,
+} from "@english.now/api/services/conversation-prompt";
+import {
 	getTodayPracticePlanRecord,
 	markDailyPracticeActivityCompleted,
 	markDailyPracticeActivityStarted,
@@ -147,31 +151,15 @@ conversation.post("/start", requireAuth, async (c) => {
 	const level = profile[0]?.level ?? "beginner";
 	const voiceModel = profile[0]?.voiceModel ?? "aura-2-thalia-en";
 	console.log("voiceModel", voiceModel);
-
-	const finalName = activity.payload.scenarioName;
-	const finalDescription = activity.payload.scenarioDescription;
-	const role = activity.payload.aiRole ?? "conversation partner";
-	const finalSystemPrompt = `You are a ${role} in a ${finalName} scenario. ${finalDescription}.
-The person you're talking to is learning English at a ${level} level.
-- Keep your language appropriate for their level
-- Be encouraging and supportive
-- After they respond, provide helpful corrections for any grammar or vocabulary mistakes
-- Ask follow-up questions to keep the conversation flowing
-- Use natural, authentic language for this scenario`;
-	const greeting = generateDynamicGreeting(finalName, role, level);
+	const sessionConfig = buildConversationSessionFromActivity(activity, level);
 
 	await db.insert(conversationSession).values({
 		id: sessionId,
 		userId: session.user.id,
-		scenario: finalName,
+		scenario: sessionConfig.sessionLabel,
+		mode: sessionConfig.mode,
 		level,
-		context: {
-			systemPrompt: finalSystemPrompt,
-			scenarioDescription: finalDescription,
-			goals: [],
-			scenarioType: activity.payload.scenarioType,
-			aiRole: role,
-		},
+		context: sessionConfig.context,
 		status: "active",
 		createdAt: new Date(),
 		updatedAt: new Date(),
@@ -183,7 +171,7 @@ The person you're talking to is learning English at a ${level} level.
 		id: messageId,
 		sessionId,
 		role: "assistant",
-		content: greeting,
+		content: sessionConfig.greeting,
 		createdAt: new Date(),
 	});
 
@@ -199,24 +187,24 @@ The person you're talking to is learning English at a ${level} level.
 		metadata: {
 			activityId: activity.id,
 			scenario: activity.payload.scenario,
+			mode: sessionConfig.mode,
 		},
 	});
 
 	// Generate TTS for the initial greeting
-	const greetingAudio = await generateTTSBase64(greeting, voiceModel);
+	const greetingAudio = await generateTTSBase64(
+		sessionConfig.greeting,
+		voiceModel,
+	);
 
 	return c.json({
 		sessionId,
-		scenario: {
-			id: activity.payload.scenario,
-			name: finalName,
-			description: finalDescription,
-		},
+		scenario: sessionConfig.scenario,
 		level,
 		initialMessage: {
 			id: messageId,
 			role: "assistant",
-			content: greeting,
+			content: sessionConfig.greeting,
 			audio: greetingAudio,
 		},
 	});
@@ -301,7 +289,8 @@ conversation.post(
 			{
 				role: "system" as const,
 				content:
-					context?.systemPrompt || getDefaultSystemPrompt(sessionData.level),
+					context?.systemPrompt ||
+					buildFallbackConversationSystemPrompt(sessionData.level),
 			},
 			...history.map((m) => ({
 				role: m.role as "user" | "assistant",
@@ -402,7 +391,6 @@ conversation.post(
 					sessionId: input.sessionId,
 					role: "assistant",
 					content: fullResponse,
-					corrections: extractCorrections(input.content, fullResponse),
 					createdAt: new Date(),
 				});
 
@@ -736,38 +724,5 @@ conversation.post("/finish", requireAuth, async (c) => {
 	});
 });
 
-function generateDynamicGreeting(
-	scenarioName: string,
-	aiRole: string,
-	level: string,
-): string {
-	const greetings: Record<string, string> = {
-		beginner: `Hello! I'm your ${aiRole} today. Let's talk about ${scenarioName}. Are you ready to start?`,
-		intermediate: `Hi there! Welcome to our ${scenarioName} session. I'll be your ${aiRole} today. How are you doing? Let's get started!`,
-		advanced: `Good to meet you! I'll be acting as your ${aiRole} for this ${scenarioName} scenario. Feel free to jump right in — I'm here to make this feel as natural and engaging as possible. What's on your mind?`,
-	};
-	return (
-		greetings[level] ??
-		`Hello! I'm your ${aiRole} today. Let's talk about ${scenarioName}. Are you ready to start?`
-	);
-}
-
-function getDefaultSystemPrompt(level: string): string {
-	return `You are a friendly English conversation partner helping someone practice English at a ${level} level. Be encouraging, keep the conversation going, and gently correct any grammar or vocabulary mistakes. When correcting, do so naturally within your response.`;
-}
-
-function extractCorrections(
-	_userMessage: string,
-	_aiResponse: string,
-): Array<{
-	original: string;
-	corrected: string;
-	explanation: string;
-	type: "grammar" | "vocabulary" | "pronunciation" | "fluency";
-}> | null {
-	// Simple extraction - in production, this would use AI to extract corrections
-	// For now, return null - corrections will be embedded in the AI response
-	return null;
-}
 
 export default conversation;

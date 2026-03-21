@@ -8,6 +8,8 @@ import * as sdk from "microsoft-cognitiveservices-speech-sdk";
 export type PhonemeResult = {
 	phoneme: string;
 	accuracyScore: number;
+	offset?: number;
+	duration?: number;
 };
 
 export type WordResult = {
@@ -22,6 +24,8 @@ export type WordResult = {
 		| "MissingBreak"
 		| "Monotone";
 	phonemes: PhonemeResult[];
+	offset?: number;
+	duration?: number;
 };
 
 export type PronunciationAssessmentResult = {
@@ -36,6 +40,8 @@ export type PronunciationAssessmentResult = {
 
 type AzurePhoneme = {
 	Phoneme: string;
+	Offset?: number;
+	Duration?: number;
 	PronunciationAssessment: { AccuracyScore: number };
 };
 
@@ -194,9 +200,13 @@ function toWordResult(w: AzureWord): WordResult {
 		accuracyScore: w.PronunciationAssessment?.AccuracyScore ?? 0,
 		errorType: (w.PronunciationAssessment?.ErrorType ??
 			"None") as WordResult["errorType"],
+		offset: w.Offset,
+		duration: w.Duration,
 		phonemes: (w.Phonemes ?? []).map((p) => ({
 			phoneme: p.Phoneme,
 			accuracyScore: p.PronunciationAssessment?.AccuracyScore ?? 0,
+			offset: p.Offset,
+			duration: p.Duration,
 		})),
 	};
 }

@@ -14,6 +14,11 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure, rateLimitedProcedure, router } from "../index";
 import { getConversationReviewData } from "../services/conversation-review";
+import { getConversationSessionMeta } from "../services/conversation-mode";
+import {
+	buildConversationHintSystemPrompt,
+	buildConversationSessionFromActivity,
+} from "../services/conversation-prompt";
 import {
 	getTodayPracticePlanRecord,
 	markDailyPracticeActivityStarted,
@@ -26,6 +31,31 @@ import { recordDailyFeatureUsage } from "../services/feature-usage";
 import { generateSuggestions } from "../services/generate-suggestions";
 
 const openai = createOpenAI({ apiKey: env.OPENAI_API_KEY });
+const conversationHintSchema = z.object({
+	text: z.string(),
+	translation: z.string(),
+});
+const LANGUAGE_NAMES: Record<string, string> = {
+	uk: "Ukrainian",
+	en: "English",
+	fr: "French",
+	es: "Spanish",
+	de: "German",
+	pt: "Portuguese",
+	it: "Italian",
+	pl: "Polish",
+	ja: "Japanese",
+	ko: "Korean",
+	zh: "Chinese",
+	ar: "Arabic",
+	hi: "Hindi",
+	tr: "Turkish",
+};
+
+function getLanguageName(language: string | null | undefined): string {
+	if (!language) return "Spanish";
+	return LANGUAGE_NAMES[language.toLowerCase()] ?? language;
+}
 
 export const conversationRouter = router({
 	getSuggestions: protectedProcedure.query(async ({ ctx }) => {
@@ -176,35 +206,15 @@ export const conversationRouter = router({
 			}
 
 			const level = profile[0]?.level ?? "beginner";
-			const scenarioName = activity.payload.scenarioName;
-			const scenarioDescription = activity.payload.scenarioDescription;
-			const aiRole = activity.payload.aiRole ?? "conversation partner";
-			const goals = [
-				`Practice ${scenarioName}-related vocabulary`,
-				"Build conversational confidence",
-				"Learn natural expressions",
-			];
-			const systemPrompt = `You are a ${aiRole} in a ${scenarioName} scenario. ${scenarioDescription}.
-The person you're talking to is learning English at a ${level} level.
-- Keep your language appropriate for their level
-- Be encouraging and supportive
-- After they respond, provide helpful corrections for any grammar or vocabulary mistakes
-- Ask follow-up questions to keep the conversation flowing
-- Use natural, authentic language for this scenario`;
-			const greeting = generateDynamicGreeting(scenarioName, aiRole, level);
+			const sessionConfig = buildConversationSessionFromActivity(activity, level);
 
 			const newSession = {
 				id: sessionId,
 				userId,
-				scenario: scenarioName,
+				scenario: sessionConfig.sessionLabel,
+				mode: sessionConfig.mode,
 				level: level,
-				context: {
-					systemPrompt,
-					scenarioDescription,
-					goals,
-					scenarioType: activity.payload.scenarioType,
-					aiRole,
-				},
+				context: sessionConfig.context,
 				status: "active",
 				createdAt: new Date(),
 				updatedAt: new Date(),
@@ -217,7 +227,7 @@ The person you're talking to is learning English at a ${level} level.
 				id: messageId,
 				sessionId,
 				role: "assistant",
-				content: greeting,
+				content: sessionConfig.greeting,
 				createdAt: new Date(),
 			});
 
@@ -240,22 +250,18 @@ The person you're talking to is learning English at a ${level} level.
 				metadata: {
 					activityId: activity.id,
 					scenario: activity.payload.scenario,
+					mode: sessionConfig.mode,
 				},
 			});
 
 			return {
 				sessionId,
-				scenario: {
-					id: activity.payload.scenario,
-					name: scenarioName,
-					description: scenarioDescription,
-					goals,
-				},
+				scenario: sessionConfig.scenario,
 				level: level,
 				initialMessage: {
 					id: messageId,
 					role: "assistant" as const,
-					content: greeting,
+					content: sessionConfig.greeting,
 				},
 			};
 		}),
@@ -419,7 +425,7 @@ The person you're talking to is learning English at a ${level} level.
 				.where(eq(userProfile.userId, ctx.session.user.id))
 				.limit(1);
 
-			const nativeLanguage = profile[0]?.nativeLanguage ?? "Spanish";
+			const nativeLanguage = getLanguageName(profile[0]?.nativeLanguage);
 
 			const { output } = await generateText({
 				model: openai("gpt-4o-mini"),
@@ -455,8 +461,9 @@ The person you're talking to is learning English at a ${level} level.
 				.where(eq(userProfile.userId, ctx.session.user.id))
 				.limit(1);
 
-			const nativeLanguage = profile[0]?.nativeLanguage ?? "Spanish";
+			const nativeLanguage = getLanguageName(profile[0]?.nativeLanguage);
 			const level = session[0].level ?? "beginner";
+			const sessionMeta = getConversationSessionMeta(session[0]);
 
 			const history = await db
 				.select()
@@ -473,21 +480,22 @@ The person you're talking to is learning English at a ${level} level.
 
 			const { output } = await generateText({
 				model: openai("gpt-4o-mini"),
-				output: Output.text(),
-				system: `You help English learners figure out what to say next in a conversation.
-The learner speaks ${nativeLanguage} and is at a ${level} English level.
-Based on the conversation so far, suggest 2-3 short response options the user could say (in English).
-Keep suggestions appropriate for their level.
-Format each suggestion on its own line, prefixed with "•". Do NOT add explanations — just the suggestions.`,
+				output: Output.object({ schema: conversationHintSchema }),
+				system: buildConversationHintSystemPrompt({
+					meta: sessionMeta,
+					level,
+					nativeLanguage,
+				}),
 				prompt: conversationHistory,
 				temperature: 0.7,
 			});
 
+			if (!output) {
+				throw new Error("Failed to generate hint");
+			}
+
 			return {
-				suggestions: (output ?? "")
-					.split("\n")
-					.map((line) => line.replace(/^•\s*/, "").trim())
-					.filter(Boolean),
+				suggestion: output,
 			};
 		}),
 
@@ -512,19 +520,3 @@ Format each suggestion on its own line, prefixed with "•". Do NOT add explanat
 			return { success: true };
 		}),
 });
-
-function generateDynamicGreeting(
-	scenarioName: string,
-	aiRole: string,
-	level: string,
-): string {
-	const greetings: Record<string, string> = {
-		beginner: `Hello! I'm your ${aiRole} today. Let's talk about ${scenarioName}. Are you ready to start?`,
-		intermediate: `Hi there! Welcome to our ${scenarioName} session. I'll be your ${aiRole} today. How are you doing? Let's get started!`,
-		advanced: `Good to meet you! I'll be acting as your ${aiRole} for this ${scenarioName} scenario. Feel free to jump right in — I'm here to make this feel as natural and engaging as possible. What's on your mind?`,
-	};
-	return (
-		greetings[level] ??
-		`Hello! I'm your ${aiRole} today. Let's talk about ${scenarioName}. Are you ready to start?`
-	);
-}

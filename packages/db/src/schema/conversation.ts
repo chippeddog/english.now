@@ -23,6 +23,74 @@ export type ConversationRoleplay = {
 	aiRole: string;
 };
 
+export type ConversationScenarioType = "topic" | "roleplay";
+
+export type ConversationPracticeMode =
+	| "general-conversation"
+	| "roleplay"
+	| "mini-class";
+
+export type ConversationSessionDisplay = {
+	title: string;
+	subtitle: string;
+};
+
+export type ConversationSessionParticipants = {
+	aiRole: string;
+	userRole?: string | null;
+};
+
+export type ConversationGeneralConversationModeConfig = {
+	kind: "general-conversation";
+	topicId: string;
+	suggestedSubtopics?: string[];
+};
+
+export type ConversationRoleplayModeConfig = {
+	kind: "roleplay";
+	scenarioId: string;
+	objective: string;
+	successCriteria: string[];
+	suggestedIntents: string[];
+};
+
+export type ConversationMiniClassModeConfig = {
+	kind: "mini-class";
+	lessonId?: string;
+	objective: string;
+	steps: string[];
+};
+
+export type ConversationSessionModeConfig =
+	| ConversationGeneralConversationModeConfig
+	| ConversationRoleplayModeConfig
+	| ConversationMiniClassModeConfig;
+
+export type ConversationSessionContext = {
+	mode: ConversationPracticeMode;
+	display: ConversationSessionDisplay;
+	goals: string[];
+	participants: ConversationSessionParticipants;
+	modeConfig: ConversationSessionModeConfig;
+	systemPrompt: string;
+	// Legacy fields kept during rollout so older UI/API reads remain valid.
+	scenarioDescription?: string;
+	scenarioType?: ConversationScenarioType;
+	aiRole?: string;
+};
+
+export function conversationScenarioTypeToMode(
+	scenarioType?: ConversationScenarioType | null,
+): ConversationPracticeMode {
+	return scenarioType === "roleplay" ? "roleplay" : "general-conversation";
+}
+
+export function conversationModeToScenarioType(
+	mode?: ConversationPracticeMode | null,
+): ConversationScenarioType {
+	return mode === "roleplay" ? "roleplay" : "topic";
+}
+
 export type ConversationReviewProblemType =
 	| "grammar"
 	| "vocabulary"
@@ -35,6 +103,50 @@ export type ConversationReviewStatus =
 	| "failed";
 
 export type ConversationReviewSeverity = "low" | "medium" | "high";
+
+/** UTF-16 code unit offsets into `conversation_message.content` for transcript highlighting. */
+export type ConversationReviewTranscriptSpan = {
+	messageId: string;
+	start: number;
+	end: number;
+};
+
+/** Optional practice UX variant for grammar/vocabulary cards. */
+export type ConversationReviewPracticeVariant =
+	| "repeat"
+	| "question-transform"
+	| "fill-blank"
+	| "choose-option"
+	| "personalize";
+
+/** Extended pronunciation target (one weak word / sound). */
+export type ConversationReviewPronunciationTarget = {
+	text: string;
+	score: number;
+	errorType?: string;
+	messageId?: string;
+	/** Full learner utterance this word came from (voice assessment reference). */
+	sentenceContext?: string;
+	/** Human label e.g. "Sound /θ/" */
+	soundLabel?: string;
+	/** UTF-16 start index inside `text` for UI highlight (weak phoneme). */
+	highlightIndex?: number;
+	/** Inclusive UTF-16 end index; when set, weak sound may span multiple graphemes. */
+	highlightEndIndex?: number;
+	/** When bundled with other targets, anchor this word in the transcript. */
+	transcriptSpan?: ConversationReviewTranscriptSpan;
+};
+
+/** Inline sentence fragments: plain text or wrong→right pair for review UI. */
+export type ConversationReviewInlineSegment =
+	| { type: "text"; text: string }
+	| {
+			type: "pair";
+			wrong: string;
+			right: string;
+			/** Default: show correction then error. Use `wrong-first` when strike should lead (e.g. ~~our~~ your). */
+			order?: "right-first" | "wrong-first";
+	  };
 
 export type ConversationReviewTaskType =
 	| "repeat-correction"
@@ -57,11 +169,20 @@ export type ConversationReviewProblem = {
 	severity: ConversationReviewSeverity;
 	messageId?: string;
 	vocabularyItems?: string[];
-	pronunciationTargets?: Array<{
-		text: string;
-		score: number;
-		errorType?: string;
-	}>;
+	pronunciationTargets?: ConversationReviewPronunciationTarget[];
+	/** e.g. Grammar → "Articles"; Vocabulary → "Word choice"; Pronunciation → "Weak sounds". */
+	skillSubtype?: string;
+	/** Ordered fragments for inline strike + correction UI (grammar & vocabulary). */
+	inlineSegments?: ConversationReviewInlineSegment[];
+	/** Precise highlight range in the transcript when available. */
+	transcriptSpan?: ConversationReviewTranscriptSpan;
+	/** Short line shown on cards (truncated utterance). */
+	contextSnippet?: string;
+	practiceVariant?: ConversationReviewPracticeVariant;
+	/** Vocabulary: extra rephrases (1–2). */
+	alternatives?: string[];
+	/** Pronunciation: short articulation hint. */
+	articulationTip?: string;
 };
 
 export type ConversationReviewTask = {
@@ -79,6 +200,17 @@ export type ConversationReviewTask = {
 		pronunciationTarget?: string;
 		targetScore?: number;
 		hint?: string;
+		/** Azure-style weak phoneme groups with words to drill (pronunciation review). */
+		phonemeGroups?: Array<{
+			phoneme: string;
+			displayLabel?: string;
+			words: Array<{
+				word: string;
+				score: number;
+				highlightIndex: number;
+				highlightEndIndex?: number;
+			}>;
+		}>;
 	};
 };
 
@@ -104,14 +236,12 @@ export const conversationSession = pgTable("conversation_session", {
 		.notNull()
 		.references(() => user.id, { onDelete: "cascade" }),
 	scenario: text("scenario").notNull(),
+	mode: text("mode")
+		.$type<ConversationPracticeMode>()
+		.notNull()
+		.default("general-conversation"),
 	level: text("level").notNull(), // beginner, intermediate, advanced
-	context: jsonb("context").$type<{
-		systemPrompt: string;
-		scenarioDescription: string;
-		goals: string[];
-		scenarioType?: "topic" | "roleplay";
-		aiRole?: string;
-	}>(),
+	context: jsonb("context").$type<ConversationSessionContext>(),
 	status: text("status").notNull().default("active"), // active, completed, abandoned
 	reviewStatus: text("review_status")
 		.$type<ConversationReviewStatus>()

@@ -1,5 +1,10 @@
 import { jsonb, pgTable, text, timestamp, unique } from "drizzle-orm/pg-core";
 import { user } from "./auth";
+import type {
+	ConversationPracticeMode,
+	ConversationScenarioType,
+	ConversationSessionModeConfig,
+} from "./conversation";
 import type { ParagraphItem } from "./pronunciation";
 
 export type DailyPracticePlanStatus =
@@ -39,7 +44,11 @@ export type DailyConversationActivity = DailyPracticeActivityBase & {
 		scenarioName: string;
 		scenarioDescription: string;
 		aiRole?: string;
-		scenarioType: "topic" | "roleplay";
+		userRole?: string | null;
+		goals?: string[];
+		mode?: ConversationPracticeMode;
+		modeConfig?: ConversationSessionModeConfig;
+		scenarioType?: ConversationScenarioType;
 	};
 };
 

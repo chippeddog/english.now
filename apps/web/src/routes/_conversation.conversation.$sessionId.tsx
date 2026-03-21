@@ -1,29 +1,30 @@
+import {
+	getConversationModeLabel,
+	getConversationSessionMeta,
+} from "@english.now/api/services/conversation-mode";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, ChevronLeft, Loader, Settings } from "lucide-react";
+import {
+	ArrowLeft,
+	ChevronLeft,
+	InfoIcon,
+	Loader,
+	MessageCircleQuestionIcon,
+	Settings,
+} from "lucide-react";
 import { type MouseEvent, useEffect, useMemo, useState } from "react";
+import LeavePracticeDialog from "@/components/conversation/practice/leave-practice-dialog";
 import PracticeView from "@/components/conversation/practice-view";
 import ReportIssueDialog from "@/components/conversation/report-issue-dialog";
-import ReviewView, {
-	LoadingState,
-} from "@/components/conversation/review-view";
+import { ConversationReviewScreen } from "@/components/conversation/review/conversation-review-screen";
+import { LoadingState } from "@/components/conversation/review-view";
 import Logo from "@/components/logo";
 import SessionLoader from "@/components/session/loader";
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
 	Popover,
-	PopoverAnchor,
 	PopoverContent,
+	PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/utils/trpc";
@@ -38,8 +39,6 @@ function ConversationPage() {
 	const trpc = useTRPC();
 	const [settingsOpen, setSettingsOpen] = useState(false);
 	const [instructionsOpen, setInstructionsOpen] = useState(false);
-	const [hasDismissedInstructions, setHasDismissedInstructions] =
-		useState(false);
 	const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
 
 	const {
@@ -55,23 +54,25 @@ function ConversationPage() {
 	});
 
 	const isCompleted = sessionData?.session.status === "completed";
+	const sessionMeta = useMemo(
+		() =>
+			sessionData?.session
+				? getConversationSessionMeta(sessionData.session)
+				: null,
+		[sessionData?.session],
+	);
 	const instructions = useMemo(() => {
-		const context = sessionData?.session.context as
-			| {
-					scenarioDescription?: string;
-					scenarioType?: string;
-					aiRole?: string;
-			  }
-			| undefined;
+		if (!sessionMeta?.subtitle) return null;
 
-		if (!context?.scenarioDescription) return null;
-
-		if (context.scenarioType === "roleplay" && context.aiRole) {
-			return `You are speaking with ${context.aiRole}. ${context.scenarioDescription}`;
-		}
-
-		return context.scenarioDescription;
-	}, [sessionData?.session.context]);
+		return {
+			badge: getConversationModeLabel(sessionMeta.mode),
+			title: sessionMeta.title,
+			subtitle: sessionMeta.subtitle,
+			goals: sessionMeta.goals.slice(0, 3),
+			aiRole: sessionMeta.participants.aiRole,
+			mode: sessionMeta.mode,
+		};
+	}, [sessionMeta]);
 
 	const { data: feedbackData, isLoading: isFeedbackLoading } = useQuery({
 		...trpc.conversation.getReview.queryOptions({ sessionId }),
@@ -96,37 +97,9 @@ function ConversationPage() {
 		}
 	}, [sessionError, navigate]);
 
-	useEffect(() => {
-		if (instructions && !hasDismissedInstructions) {
-			setInstructionsOpen(true);
-		}
-	}, [instructions, hasDismissedInstructions]);
-
-	const handleInstructionsOpenChange = (open: boolean) => {
-		setInstructionsOpen(open);
-		if (!open && instructions) {
-			setHasDismissedInstructions(true);
-		}
-	};
-
 	const handleLogoClick = (event: MouseEvent<HTMLAnchorElement>) => {
-		if (!instructions) {
-			event.preventDefault();
-			setLeaveDialogOpen(true);
-			return;
-		}
-
-		if (instructionsOpen) {
-			event.preventDefault();
-			setInstructionsOpen(false);
-			setHasDismissedInstructions(true);
-			return;
-		}
-
-		if (hasDismissedInstructions) {
-			event.preventDefault();
-			setLeaveDialogOpen(true);
-		}
+		event.preventDefault();
+		setLeaveDialogOpen(true);
 	};
 
 	if (isSessionLoading) {
@@ -181,7 +154,7 @@ function ConversationPage() {
 						</nav>
 					</div>
 				</div>
-				<ReviewView
+				<ConversationReviewScreen
 					attempts={feedbackData.attempts}
 					messages={feedbackData.messages}
 					practiceProgress={feedbackData.practiceProgress}
@@ -199,33 +172,17 @@ function ConversationPage() {
 			<div className="sticky top-0 z-20 shrink-0 border-black/5 border-b bg-white/95 backdrop-blur">
 				<div className="container relative z-10 mx-auto max-w-3xl px-4">
 					<nav className="flex grid-cols-2 items-center justify-between py-5 md:grid-cols-5">
-						<div className="flex items-center gap-2">
-							<Popover
-								open={instructions ? instructionsOpen : false}
-								onOpenChange={handleInstructionsOpenChange}
-							>
-								<PopoverAnchor asChild>
-									<div className="inline-flex">
-										<Logo link="/practice" onClick={handleLogoClick} />
-									</div>
-								</PopoverAnchor>
+						<div className="flex items-center gap-1">
+							<div className="relative inline-flex">
+								<Logo link="/practice" onClick={handleLogoClick} />
 								{instructions ? (
-									<PopoverContent
-										align="start"
-										sideOffset={10}
-										className="w-80 rounded-xl border-0 bg-black p-4 text-white shadow-[0_12px_32px_rgba(0,0,0,0.22)]"
+									<Popover
+										open={instructionsOpen}
+										onOpenChange={setInstructionsOpen}
 									>
-										{/* <PopoverArrow
-											className="fill-black"
-											width={10}
-											height={4}
-										/> */}
-										<div className="space-y-2">
-											<div className="flex items-center gap-2">
-												{/* <span className="rounded-md bg-lime-300 px-1.5 py-0.5 font-semibold text-[10px] text-lime-950 uppercase tracking-wide">
-													Info
-												</span> */}
-												<svg
+										<PopoverTrigger asChild>
+											<button className="-top-1.5 absolute right-0 z-10 cursor-pointer text-sm italic">
+												{/* <svg
 													className="size-4"
 													aria-hidden="true"
 													focusable="false"
@@ -239,16 +196,45 @@ function ConversationPage() {
 														fill="currentColor"
 														d="M256 0c-48.7 0-91.4 25.6-115.4 64C62.6 65.9 0 129.6 0 208c0 79.5 64.5 144 144 144c9.4 0 18.7-.9 27.6-2.7C193.3 370.7 223.1 384 256 384s62.7-13.3 84.4-34.7c9 1.7 18.2 2.7 27.6 2.7c79.5 0 144-64.5 144-144c0-78.4-62.6-142.1-140.6-144C347.4 25.6 304.7 0 256 0zM176.3 98.7C190.4 68.7 220.8 48 256 48s65.6 20.7 79.7 50.7c4.3 9.1 13.8 14.6 23.8 13.7c2.8-.2 5.6-.4 8.5-.4c53 0 96 43 96 96s-43 96-96 96c-10 0-19.7-1.5-28.7-4.4c-9.6-3-20 .3-26.2 8.3C299.9 325 279.2 336 256 336s-43.9-11-57.1-28.1c-6.1-8-16.6-11.3-26.2-8.3c-9 2.8-18.7 4.4-28.7 4.4c-53 0-96-43-96-96s43-96 96-96c2.9 0 5.7 .1 8.5 .4c10 .9 19.5-4.6 23.8-13.7zM192 432a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM64 480A32 32 0 1 0 0 480a32 32 0 1 0 64 0z"
 													/>
-												</svg>
-												<span className="font-medium text-sm">
-													Instructions
-												</span>
+												</svg> */}
+												?
+											</button>
+										</PopoverTrigger>
+										<PopoverContent
+											align="start"
+											sideOffset={8}
+											className="w-80 rounded-xl border-0 bg-black p-4 text-white shadow-[0_12px_32px_rgba(0,0,0,0.22)]"
+										>
+											<div className="space-y-3">
+												<div className="flex items-center justify-between gap-2">
+													<span className="font-medium text-sm">
+														{instructions.title}
+													</span>
+													<span className="rounded-md bg-lime-300 px-1.5 py-0.5 font-semibold text-[10px] text-lime-950 uppercase tracking-wide">
+														{instructions.badge}
+													</span>
+												</div>
+												<div className="space-y-3 text-xs">
+													<div className="space-y-1">
+														<p className="text-white/80">
+															{instructions.subtitle}
+														</p>
+													</div>
+													{instructions.mode === "roleplay" ? (
+														<p className="text-white/70">
+															You are speaking with{" "}
+															<span className="font-medium text-white">
+																{instructions.aiRole}
+															</span>
+															.
+														</p>
+													) : null}
+												</div>
 											</div>
-											<p className="text-white/80 text-xs">{instructions}</p>
-										</div>
-									</PopoverContent>
+										</PopoverContent>
+									</Popover>
 								) : null}
-							</Popover>
+							</div>
 						</div>
 						<div className="flex items-center gap-2">
 							<ReportIssueDialog
@@ -277,28 +263,10 @@ function ConversationPage() {
 					onSettingsOpenChange={setSettingsOpen}
 				/>
 			</div>
-			<AlertDialog open={leaveDialogOpen} onOpenChange={setLeaveDialogOpen}>
-				<AlertDialogContent className="w-sm">
-					<AlertDialogHeader>
-						<AlertDialogTitle>Leave practice?</AlertDialogTitle>
-						<AlertDialogDescription>
-							You can leave this conversation now and continue it later from the
-							practice page.
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogCancel className="rounded-xl bg-neutral-100 text-neutral-900 italic hover:bg-neutral-200">
-							Continue
-						</AlertDialogCancel>
-						<AlertDialogAction
-							className="relative flex cursor-pointer items-center justify-center gap-1.5 overflow-hidden whitespace-nowrap rounded-xl bg-linear-to-t from-[#202020] to-[#2F2F2F] font-base text-white italic shadow-[inset_0_1px_4px_0_rgba(255,255,255,0.4)] outline-none backdrop-blur transition-all hover:opacity-90 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-40 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:from-[rgb(192,192,192)] dark:to-[rgb(255,255,255)] dark:shadow-[inset_0_1px_4px_0_rgba(128,128,128,0.2)] dark:aria-invalid:ring-destructive/40"
-							onClick={() => navigate({ to: "/practice" })}
-						>
-							Leave for now
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
+			<LeavePracticeDialog
+				leaveDialogOpen={leaveDialogOpen}
+				setLeaveDialogOpen={setLeaveDialogOpen}
+			/>
 		</div>
 	);
 }
