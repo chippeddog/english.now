@@ -17,6 +17,7 @@ export default function AddPhraseDialogContent({
 	addDialogOpen,
 	setAddDialogOpen,
 	isPending,
+	helperText,
 }: {
 	newPhrase: string;
 	setNewPhrase: React.Dispatch<React.SetStateAction<string>>;
@@ -24,6 +25,7 @@ export default function AddPhraseDialogContent({
 	isPending: boolean;
 	addDialogOpen: boolean;
 	setAddDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
+	helperText?: string;
 }) {
 	return (
 		<Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
@@ -49,6 +51,9 @@ export default function AddPhraseDialogContent({
 							Meaning, pronunciation, and translation will be added
 							automatically.
 						</p>
+						{helperText ? (
+							<p className="text-muted-foreground text-xs">{helperText}</p>
+						) : null}
 					</div>
 				</div>
 				<div className="flex justify-end gap-2">

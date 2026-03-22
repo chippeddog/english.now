@@ -196,6 +196,9 @@ importers:
       '@english.now/env':
         specifier: workspace:*
         version: link:../../packages/env
+      '@english.now/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@hono/node-server':
         specifier: ^1.14.4
         version: 1.19.5(hono@4.10.3)
@@ -489,6 +492,9 @@ importers:
       '@english.now/env':
         specifier: workspace:*
         version: link:../env
+      '@english.now/shared':
+        specifier: workspace:*
+        version: link:../shared
       '@trpc/client':
         specifier: 'catalog:'
         version: 11.7.0(@trpc/server@11.7.0(typescript@5.8.3))(typescript@5.8.3)
@@ -645,6 +651,16 @@ importers:
       tsx:
         specifier: ^4.19.0
         version: 4.20.6
+
+  packages/shared:
+    dependencies:
+      typescript:
+        specifier: ^5
+        version: 5.8.3
+    devDependencies:
+      tsdown:
+        specifier: 'catalog:'
+        version: 0.15.10(typescript@5.8.3)
 
 packages:
 

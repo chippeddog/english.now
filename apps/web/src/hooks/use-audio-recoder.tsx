@@ -1,9 +1,10 @@
 import { env } from "@english.now/env/client";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const WEBM_AUDIO_MIME_TYPES = ["audio/webm;codecs=opus", "audio/webm"];
 
 const MP4_AUDIO_MIME_TYPES = ["audio/mp4;codecs=mp4a.40.2", "audio/mp4"];
+const MAX_RECORDING_DURATION_MS = 60_000;
 
 function isAppleMobileDevice() {
 	if (typeof navigator === "undefined") return false;
@@ -57,7 +58,11 @@ export default function useAudioRecorder(
 	const audioChunksRef = useRef<Blob[]>([]);
 	const streamRef = useRef<MediaStream | null>(null);
 	const mimeTypeRef = useRef("audio/webm");
+	const recordingStartedAtRef = useRef<number | null>(null);
+	const durationIntervalRef = useRef<number | null>(null);
+	const autoStopTimeoutRef = useRef<number | null>(null);
 	const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
+	const [recordingDurationMs, setRecordingDurationMs] = useState(0);
 	const [recordingState, setRecordingState] = useState<
 		"idle" | "recording" | "transcribing"
 	>("idle");
@@ -70,6 +75,60 @@ export default function useAudioRecorder(
 			streamRef.current = null;
 		}
 	};
+
+	const syncRecordingDuration = () => {
+		if (recordingStartedAtRef.current === null) return;
+
+		setRecordingDurationMs(
+			Math.min(
+				Date.now() - recordingStartedAtRef.current,
+				MAX_RECORDING_DURATION_MS,
+			),
+		);
+	};
+
+	const clearRecordingTimers = () => {
+		if (durationIntervalRef.current !== null) {
+			window.clearInterval(durationIntervalRef.current);
+			durationIntervalRef.current = null;
+		}
+
+		if (autoStopTimeoutRef.current !== null) {
+			window.clearTimeout(autoStopTimeoutRef.current);
+			autoStopTimeoutRef.current = null;
+		}
+	};
+
+	const startRecordingTimers = () => {
+		recordingStartedAtRef.current = Date.now();
+		setRecordingDurationMs(0);
+		clearRecordingTimers();
+
+		durationIntervalRef.current = window.setInterval(() => {
+			syncRecordingDuration();
+		}, 250);
+
+		autoStopTimeoutRef.current = window.setTimeout(() => {
+			setRecordingDurationMs(MAX_RECORDING_DURATION_MS);
+			clearRecordingTimers();
+
+			if (mediaRecorderRef.current?.state === "recording") {
+				mediaRecorderRef.current.stop();
+			}
+		}, MAX_RECORDING_DURATION_MS);
+	};
+
+	const resetRecordingTiming = () => {
+		clearRecordingTimers();
+		recordingStartedAtRef.current = null;
+		setRecordingDurationMs(0);
+	};
+
+	useEffect(() => {
+		return () => {
+			clearRecordingTimers();
+		};
+	}, []);
 
 	const startRecording = async () => {
 		try {
@@ -115,8 +174,10 @@ export default function useAudioRecorder(
 			};
 
 			mediaRecorder.start();
+			startRecordingTimers();
 			setRecordingState("recording");
 		} catch (err) {
+			resetRecordingTiming();
 			stopMediaStream();
 			setAudioStream(null);
 			console.error("Error accessing microphone:", err);
@@ -126,6 +187,9 @@ export default function useAudioRecorder(
 
 	const stopRecording = () => {
 		if (mediaRecorderRef.current && recordingState === "recording") {
+			syncRecordingDuration();
+			clearRecordingTimers();
+			recordingStartedAtRef.current = null;
 			mediaRecorderRef.current.stop();
 		}
 	};
@@ -138,6 +202,7 @@ export default function useAudioRecorder(
 		}
 		audioChunksRef.current = [];
 		mimeTypeRef.current = "audio/webm";
+		resetRecordingTiming();
 		setAudioStream(null);
 		stopMediaStream();
 		setRecordingState("idle");
@@ -172,12 +237,15 @@ export default function useAudioRecorder(
 			console.error("Transcription error:", error);
 			alert("Failed to transcribe audio. Please try again.");
 		} finally {
+			resetRecordingTiming();
 			setRecordingState("idle");
 		}
 	};
 
 	return {
 		recordingState,
+		recordingDurationMs,
+		maxRecordingDurationMs: MAX_RECORDING_DURATION_MS,
 		audioStream,
 		startRecording,
 		stopRecording,

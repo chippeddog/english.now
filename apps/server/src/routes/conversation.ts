@@ -1,7 +1,7 @@
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import {
-	buildFallbackConversationSystemPrompt,
 	buildConversationSessionFromActivity,
+	buildFallbackConversationSystemPrompt,
 } from "@english.now/api/services/conversation-prompt";
 import {
 	getTodayPracticePlanRecord,
@@ -13,7 +13,6 @@ import {
 	getConversationReplyAccessSummary,
 	getVocabularyAccessSummary,
 } from "@english.now/api/services/feature-gating";
-import { FREE_CONVERSATION_MAX_AI_REPLIES } from "@english.now/api/services/feature-limit-config";
 import { recordDailyFeatureUsage } from "@english.now/api/services/feature-usage";
 import { recordActivity } from "@english.now/api/services/record-activity";
 import { auth } from "@english.now/auth";
@@ -25,6 +24,7 @@ import {
 	userProfile,
 } from "@english.now/db";
 import { env } from "@english.now/env/server";
+import { FREE_CONVERSATION_MAX_AI_REPLIES } from "@english.now/shared/feature-limit-config";
 import { generateText, Output } from "ai";
 import type { Context, Next } from "hono";
 import { Hono } from "hono";
@@ -140,7 +140,10 @@ function inferAudioMimeType(audioBuffer: Buffer, mimeType?: string) {
 		return "audio/wav";
 	}
 
-	if (audioBuffer.length >= 4 && audioBuffer.toString("ascii", 0, 4) === "OggS") {
+	if (
+		audioBuffer.length >= 4 &&
+		audioBuffer.toString("ascii", 0, 4) === "OggS"
+	) {
 		return "audio/ogg";
 	}
 
@@ -586,7 +589,8 @@ conversation.post("/transcribe", requireAuth, async (c) => {
 	}
 
 	try {
-		const { audioBuffer, sessionId, mimeType } = await parseTranscribeRequest(c);
+		const { audioBuffer, sessionId, mimeType } =
+			await parseTranscribeRequest(c);
 
 		// Send to Deepgram for transcription
 		const response = await fetch(
@@ -853,6 +857,5 @@ conversation.post("/finish", requireAuth, async (c) => {
 		status: "processing",
 	});
 });
-
 
 export default conversation;

@@ -1,4 +1,11 @@
-import { integer, pgTable, text, timestamp, unique } from "drizzle-orm/pg-core";
+import {
+	integer,
+	pgTable,
+	real,
+	text,
+	timestamp,
+	unique,
+} from "drizzle-orm/pg-core";
 import { user } from "./auth";
 
 export const word = pgTable("word", {
@@ -74,6 +81,12 @@ export const userWord = pgTable(
 		mastery: text("mastery").notNull().default("new"),
 		source: text("source").notNull(),
 		notes: text("notes"),
+		repetition: integer("repetition").notNull().default(0),
+		intervalDays: integer("interval_days").notNull().default(0),
+		easeFactor: real("ease_factor").notNull().default(2.5),
+		lapses: integer("lapses").notNull().default(0),
+		lastReviewedAt: timestamp("last_reviewed_at"),
+		nextReviewAt: timestamp("next_review_at").notNull().defaultNow(),
 		createdAt: timestamp("created_at").notNull().defaultNow(),
 	},
 	(table) => [unique("user_word_user_word").on(table.userId, table.wordId)],
@@ -92,6 +105,12 @@ export const userPhrase = pgTable(
 		mastery: text("mastery").notNull().default("new"),
 		source: text("source").notNull(),
 		notes: text("notes"),
+		repetition: integer("repetition").notNull().default(0),
+		intervalDays: integer("interval_days").notNull().default(0),
+		easeFactor: real("ease_factor").notNull().default(2.5),
+		lapses: integer("lapses").notNull().default(0),
+		lastReviewedAt: timestamp("last_reviewed_at"),
+		nextReviewAt: timestamp("next_review_at").notNull().defaultNow(),
 		createdAt: timestamp("created_at").notNull().defaultNow(),
 	},
 	(table) => [

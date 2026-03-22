@@ -39,9 +39,9 @@ export function TranscriptReviewRail({
 					"0 0 0 1px rgba(0,0,0,.05),0 10px 10px -5px rgba(0,0,0,.04),0 20px 25px -5px rgba(0,0,0,.04),0 20px 32px -12px rgba(0,0,0,.04)",
 			}}
 		>
-			<div className="flex flex-wrap items-center justify-between gap-2 border-neutral-200 border-b px-4 py-3 dark:border-neutral-800">
+			{/* <div className="flex flex-wrap items-center justify-between gap-2 border-neutral-200 border-b px-4 py-3 dark:border-neutral-800">
 				<p className="font-semibold text-sm">Transcript</p>
-			</div>
+			</div> */}
 			<div className="max-h-[calc(100vh-180px)] space-y-4 divide-y divide-dashed divide-neutral-200 overflow-y-auto p-5 dark:divide-neutral-800">
 				{messages.map((msg) => (
 					<TranscriptReviewMessage

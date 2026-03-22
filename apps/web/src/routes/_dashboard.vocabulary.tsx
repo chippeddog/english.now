@@ -1,7 +1,7 @@
-// import Explore from "@/components/vocabulary/explore";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import Explore from "@/components/vocabulary/explore";
 import Phrases from "@/components/vocabulary/phrases";
 import Practice from "@/components/vocabulary/practice";
 import Progress from "@/components/vocabulary/progress";
@@ -99,7 +99,7 @@ function VocabularyPage() {
 
 						<div className="flex gap-3">
 							<Practice />
-							{/* <Explore /> */}
+							<Explore />
 						</div>
 					</div>
 

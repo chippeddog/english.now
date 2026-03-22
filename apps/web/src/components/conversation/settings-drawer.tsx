@@ -7,8 +7,9 @@ import {
 	useTranslation,
 } from "@english.now/i18n";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Loader, Volume2, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Loader, Volume2, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
 	Drawer,
 	DrawerClose,
@@ -25,7 +26,6 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { cn } from "@/lib/utils";
 import { useTRPC } from "@/utils/trpc";
 import { VOICE_OPTIONS } from "@/utils/voice";
 
@@ -86,6 +86,15 @@ export default function ConversationSettingsDrawer({
 			: fallbackLng
 	) as SupportedLanguage;
 	const currentVoice = profile?.voiceModel ?? "aura-2-asteria-en";
+	const voiceSelectValue = useMemo(() => {
+		const match = VOICE_OPTIONS.find((v) => v.id === currentVoice);
+		return match?.id ?? VOICE_OPTIONS[0]?.id ?? currentVoice;
+	}, [currentVoice]);
+	const inputDeviceValue = useMemo(() => {
+		if (!audioDevices.length) return "";
+		const valid = audioDevices.some((d) => d.deviceId === selectedDevice);
+		return valid ? selectedDevice : audioDevices[0].deviceId;
+	}, [audioDevices, selectedDevice]);
 	const [playingVoiceId, setPlayingVoiceId] = useState<string | null>(null);
 	const previewAudioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -204,103 +213,93 @@ export default function ConversationSettingsDrawer({
 
 					<section className="space-y-3">
 						<div>
-							<p className="font-medium text-sm">Input device</p>
+							<Label className="font-medium text-sm" htmlFor="input-device">
+								Input device
+							</Label>
 						</div>
-						<div className="space-y-2">
-							{audioDevices.length > 0 ? (
-								audioDevices.map((device, index) => {
-									const isSelected = selectedDevice === device.deviceId;
-									return (
-										<button
-											key={device.deviceId}
-											type="button"
-											onClick={() => setSelectedDevice(device.deviceId)}
-											className={cn(
-												"flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition-colors",
-												isSelected
-													? "border-lime-200 bg-lime-50"
-													: "border-black/5 hover:bg-muted/60",
-											)}
-										>
-											<span className="font-medium text-sm">
-												{device.label || `Microphone ${index + 1}`}
-											</span>
-											{isSelected ? (
-												<Check className="size-4 text-lime-700" />
-											) : null}
-										</button>
-									);
-								})
-							) : (
-								<p className="rounded-2xl border border-black/10 border-dashed px-4 py-3 text-muted-foreground text-sm">
-									No audio devices found.
-								</p>
-							)}
-						</div>
+						{audioDevices.length > 0 ? (
+							<Select
+								value={inputDeviceValue}
+								onValueChange={(deviceId) => setSelectedDevice(deviceId)}
+							>
+								<SelectTrigger
+									id="input-device"
+									className="h-auto min-h-11 w-full rounded-2xl border-black/5 py-2.5 text-left [&>span]:line-clamp-2"
+								>
+									<SelectValue placeholder="Select microphone" />
+								</SelectTrigger>
+								<SelectContent>
+									{audioDevices.map((device, index) => (
+										<SelectItem key={device.deviceId} value={device.deviceId}>
+											{device.label || `Microphone ${index + 1}`}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						) : (
+							<p className="rounded-2xl border border-black/10 border-dashed px-4 py-3 text-muted-foreground text-sm">
+								No audio devices found. Open settings again after allowing
+								microphone access.
+							</p>
+						)}
 					</section>
 
 					<section className="space-y-3">
 						<div>
-							<p className="font-medium text-sm">Assistant voice</p>
+							<Label className="font-medium text-sm" htmlFor="assistant-voice">
+								Assistant voice
+							</Label>
 						</div>
-						<div className="space-y-2">
-							{VOICE_OPTIONS.map((voice) => {
-								const isSelected = currentVoice === voice.id;
-								return (
-									<div
-										key={voice.id}
-										className={cn(
-											"flex items-center gap-2 rounded-2xl border p-1.5",
-											isSelected
-												? "border-lime-200 bg-lime-50"
-												: "border-black/5",
-										)}
-									>
-										<button
-											type="button"
-											onClick={() =>
-												updateProfile.mutate({ voiceModel: voice.id })
-											}
-											className="flex min-w-0 flex-1 items-center justify-between rounded-xl px-3 py-2 text-left transition-colors hover:bg-white/70"
-										>
-											<div className="min-w-0">
-												<p className="text-muted-foreground text-xs">
-													{voice.flag}
-												</p>
-												<p className="truncate font-medium text-sm">
-													{voice.name}
-												</p>
-											</div>
-											{isSelected ? (
-												<Check className="size-4 shrink-0 text-lime-700" />
-											) : null}
-										</button>
-										<button
-											type="button"
-											disabled={playingVoiceId === voice.id}
-											onClick={() => previewVoice(voice.id)}
-											className="flex size-10 shrink-0 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-white hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
-											aria-label={`Preview ${voice.name}`}
-										>
-											{playingVoiceId === voice.id ? (
-												<Loader className="size-4 animate-spin" />
-											) : (
-												<Volume2 className="size-4" />
-											)}
-										</button>
-									</div>
-								);
-							})}
+						<div className="flex items-stretch gap-2">
+							<Select
+								value={voiceSelectValue}
+								disabled={updateProfile.isPending}
+								onValueChange={(voiceId) =>
+									updateProfile.mutate({ voiceModel: voiceId })
+								}
+							>
+								<SelectTrigger
+									id="assistant-voice"
+									className="h-auto min-h-11 min-w-0 flex-1 rounded-2xl border-black/5 py-2.5 text-left"
+								>
+									<SelectValue placeholder="Select a voice" />
+								</SelectTrigger>
+								<SelectContent>
+									{VOICE_OPTIONS.map((voice) => (
+										<SelectItem key={voice.id} value={voice.id}>
+											<span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+												<span aria-hidden>{voice.flag}</span>
+												<span className="font-medium">{voice.name}</span>
+												<span className="text-muted-foreground text-xs">
+													{voice.accent}
+												</span>
+											</span>
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+							<Button
+								type="button"
+								variant="outline"
+								size="icon"
+								disabled={
+									updateProfile.isPending || playingVoiceId === voiceSelectValue
+								}
+								onClick={() => previewVoice(voiceSelectValue)}
+								className="size-11 shrink-0 rounded-2xl border-black/5"
+								aria-label={`Preview ${VOICE_OPTIONS.find((v) => v.id === voiceSelectValue)?.name ?? "voice"}`}
+							>
+								{playingVoiceId === voiceSelectValue ? (
+									<Loader className="size-4 animate-spin" />
+								) : (
+									<Volume2 className="size-4" />
+								)}
+							</Button>
 						</div>
 					</section>
-
-					<section className="flex items-center justify-between gap-4 rounded-2xl border border-black/5 px-4 py-4">
+					<section className="flex items-center justify-between gap-4">
 						<div>
 							<p className="font-medium text-sm">Auto-translate</p>
-							<p className="mt-1 text-muted-foreground text-xs leading-relaxed">
-								Automatically translate finished assistant messages into your
-								native language.
-							</p>
 						</div>
 						<Switch
 							checked={autoTranslate}

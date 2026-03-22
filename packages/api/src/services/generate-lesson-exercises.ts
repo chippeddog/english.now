@@ -10,8 +10,6 @@ import { z } from "zod";
 
 const openai = createOpenAI({ apiKey: env.OPENAI_API_KEY });
 
-// ─── Exercise Type Config per Lesson Type ────────────────────────────────────
-
 const EXERCISE_TYPES_BY_LESSON: Record<string, LessonExerciseType[]> = {
 	grammar: [
 		"multiple_choice",
@@ -54,8 +52,6 @@ const FALLBACK_TYPES: LessonExerciseType[] = [
 	"fill_in_the_blank",
 ];
 
-// ─── Zod Schema ──────────────────────────────────────────────────────────────
-
 const exercisesOutputSchema = z.object({
 	exercises: z.array(
 		z.object({
@@ -94,8 +90,6 @@ const exercisesOutputSchema = z.object({
 		}),
 	),
 });
-
-// ─── Content Helpers ─────────────────────────────────────────────────────────
 
 function buildContentContext(content: CurriculumLessonContent): string {
 	const parts: string[] = [`Description: ${content.description}`];
@@ -174,8 +168,6 @@ function getExerciseCount(content: CurriculumLessonContent): number {
 	return Math.min(12, Math.max(6, base));
 }
 
-// ─── Main Generator ──────────────────────────────────────────────────────────
-
 export async function generateLessonExercises(
 	lessonTitle: string,
 	lessonType: string,
@@ -245,7 +237,7 @@ ${contentContext}
 Generate a good variety of exercise types from: ${allowedTypesStr}`;
 
 	const { output } = await generateText({
-		model: openai("gpt-4o-mini"),
+		model: openai("gpt-5.4-mini"),
 		output: Output.object({ schema: exercisesOutputSchema }),
 		system: systemPrompt,
 		prompt: userPrompt,

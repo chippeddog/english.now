@@ -250,14 +250,6 @@ export function ConversationReviewScreen({
 								{review?.overallScore ?? 0}
 							</span>
 						</div>
-						<Button
-							type="button"
-							variant="outline"
-							className="rounded-xl border border-[#C6F64D] bg-[radial-gradient(100%_100%_at_50%_0%,#EFFF9B_0%,#D8FF76_60%,#C6F64D_100%)] font-medium text-lime-900 text-sm dark:text-lime-950"
-							onClick={onPracticeAll}
-						>
-							Practice all
-						</Button>
 					</div>
 				</div>
 

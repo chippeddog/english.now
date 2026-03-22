@@ -1,7 +1,4 @@
-import {
-	getConversationModeLabel,
-	getConversationSessionMeta,
-} from "@english.now/api/services/conversation-mode";
+import { getConversationSessionMeta } from "@english.now/api/services/conversation-mode";
 import { env } from "@english.now/env/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
@@ -140,15 +137,24 @@ export default function PracticeView({
 	}, [stopAudio]);
 
 	useEffect(() => {
+		hasPlayedInitialAudio.current = false;
+		stopAssistantAudio();
+
+		return () => {
+			stopAssistantAudio();
+		};
+	}, [sessionId, stopAssistantAudio]);
+
+	useEffect(() => {
 		return () => {
 			if (streamRef.current) {
 				for (const track of streamRef.current.getTracks()) {
 					track.stop();
 				}
 			}
-			stopAudio();
+			stopAssistantAudio();
 		};
-	}, [stopAudio]);
+	}, [stopAssistantAudio]);
 
 	useEffect(() => {
 		const handler = (e: BeforeUnloadEvent) => {
@@ -486,8 +492,14 @@ export default function PracticeView({
 		}
 	}, [data, generateTTS, playAudio]);
 
-	const { startRecording, stopRecording, cancelRecording, recordingState } =
-		useAudioRecorder(sessionId, sendMessage, selectedDevice);
+	const {
+		startRecording,
+		stopRecording,
+		cancelRecording,
+		recordingState,
+		recordingDurationMs,
+		maxRecordingDurationMs,
+	} = useAudioRecorder(sessionId, sendMessage, selectedDevice);
 	const handleStartRecording = useCallback(async () => {
 		stopAssistantAudio();
 		await startRecording();
@@ -611,7 +623,7 @@ export default function PracticeView({
 									</span>
 								)}
 								{translations[message.id] && (
-									<p className="mt-2 border-black/10 border-t border-dashed pt-2 text-muted-foreground text-xs italic leading-relaxed">
+									<p className="mt-3 border-black/10 border-t border-dashed pt-2 text-muted-foreground text-xs italic leading-relaxed">
 										{translations[message.id]}
 									</p>
 								)}
@@ -683,6 +695,8 @@ export default function PracticeView({
 					fetchHintSuggestion={fetchHintSuggestion}
 					isLoading={isLoading}
 					recordingState={recordingState}
+					recordingDurationMs={recordingDurationMs}
+					maxRecordingDurationMs={maxRecordingDurationMs}
 					startRecording={handleStartRecording}
 					stopRecording={stopRecording}
 					cancelRecording={cancelRecording}

@@ -314,9 +314,6 @@ export default function Explore() {
 					className="group flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-xl border border-neutral-200 bg-linear-to-b from-neutral-50 to-neutral-100 px-2.5 py-1.5 font-medium text-neutral-700 text-sm italic shadow-none transition duration-150 ease-in-out will-change-transform hover:brightness-95 focus:shadow-none focus:outline-none focus-visible:shadow-none"
 				>
 					Explore
-					<span className="-top-px relative font-lyon text-lg text-neutral-700/80 italic group-hover:text-neutral-700">
-						lists
-					</span>
 				</Button>
 			</DialogTrigger>
 			<DialogContent className="flex max-h-[680px] min-w-4xl flex-col overflow-hidden p-0">

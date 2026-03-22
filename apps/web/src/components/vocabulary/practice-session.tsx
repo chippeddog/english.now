@@ -17,13 +17,13 @@ export type FlashcardItem = {
 	detail: string | null;
 	level: string | null;
 	currentMastery: string;
+	intervalDays?: number;
+	nextReviewAt?: string | null;
+	isDue?: boolean;
 };
 
-function advanceMastery(m: string): "learning" | "reviewing" | "mastered" {
-	if (m === "new") return "learning";
-	if (m === "learning") return "reviewing";
-	return "mastered";
-}
+const KNOWN_REVIEW_QUALITY = 4;
+const UNKNOWN_REVIEW_QUALITY = 1;
 
 export default function PracticeSession({
 	cards,
@@ -51,11 +51,11 @@ export default function PracticeSession({
 	const audioRef = useRef<HTMLAudioElement | null>(null);
 	const [isPlaying, setIsPlaying] = useState(false);
 
-	const updateWordMastery = useMutation(
-		trpc.vocabulary.updateWordMastery.mutationOptions({}),
+	const reviewWord = useMutation(
+		trpc.vocabulary.reviewWord.mutationOptions({}),
 	);
-	const updatePhraseMastery = useMutation(
-		trpc.vocabulary.updatePhraseMastery.mutationOptions({}),
+	const reviewPhrase = useMutation(
+		trpc.vocabulary.reviewPhrase.mutationOptions({}),
 	);
 	const recordPracticeTime = useMutation(
 		trpc.practice.recordPracticeTime.mutationOptions({}),
@@ -94,19 +94,17 @@ export default function PracticeSession({
 				unknown: known ? prev.unknown : [...prev.unknown, card.id],
 			}));
 
-			if (known) {
-				const newMastery = advanceMastery(card.currentMastery);
-				if (card.type === "word") {
-					updateWordMastery.mutate({
-						userWordId: card.id,
-						mastery: newMastery,
-					});
-				} else {
-					updatePhraseMastery.mutate({
-						userPhraseId: card.id,
-						mastery: newMastery,
-					});
-				}
+			const quality = known ? KNOWN_REVIEW_QUALITY : UNKNOWN_REVIEW_QUALITY;
+			if (card.type === "word") {
+				reviewWord.mutate({
+					userWordId: card.id,
+					quality,
+				});
+			} else {
+				reviewPhrase.mutate({
+					userPhraseId: card.id,
+					quality,
+				});
 			}
 
 			if (currentIndex + 1 >= cards.length) {
@@ -132,8 +130,8 @@ export default function PracticeSession({
 			currentIndex,
 			queryClient,
 			trpc,
-			updateWordMastery,
-			updatePhraseMastery,
+			reviewWord,
+			reviewPhrase,
 			onComplete,
 		],
 	);

@@ -1,4 +1,5 @@
 import type { CurriculumLessonContent, ExerciseItem } from "@english.now/db";
+import { FREE_LESSON_FREE_UNIT_COUNT } from "@english.now/shared/feature-limit-config";
 import {
 	and,
 	asc,
@@ -18,9 +19,6 @@ import {
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure, router } from "../index";
-import {
-	FREE_LESSON_FREE_UNIT_COUNT,
-} from "../services/feature-limit-config";
 import { getLessonAccessSummary } from "../services/feature-gating";
 import { generateLessonExercises } from "../services/generate-lesson-exercises";
 import { recordDailyFeatureUsage } from "../services/feature-usage";

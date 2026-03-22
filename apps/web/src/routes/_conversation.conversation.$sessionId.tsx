@@ -183,7 +183,7 @@ function ConversationPage() {
 										<PopoverTrigger asChild>
 											<button
 												type="button"
-												className="-top-1.5 absolute right-0 z-10 cursor-pointer text-lime-900 text-sm italic"
+												className="-top-1.5 absolute right-0 z-10 cursor-pointer font-semibold text-lime-900 text-sm italic"
 											>
 												{/* <svg
 													className="size-4"
@@ -205,15 +205,15 @@ function ConversationPage() {
 										</PopoverTrigger>
 										<PopoverContent
 											align="start"
-											sideOffset={8}
-											className="w-80 rounded-xl border-0 bg-black p-4 text-white shadow-[0_12px_32px_rgba(0,0,0,0.22)]"
+											sideOffset={0}
+											className="w-80 rounded-xl border-0 bg-black p-3 text-white shadow-[0_12px_32px_rgba(0,0,0,0.22)]"
 										>
 											<div className="space-y-3">
 												<div className="flex items-center justify-between gap-2">
-													<span className="font-medium text-sm">
+													<span className="font-semibold text-xs">
 														{instructions.title}
 													</span>
-													<span className="rounded-md bg-lime-300 px-1.5 py-0.5 font-semibold text-[10px] text-lime-950 uppercase tracking-wide">
+													<span className="rounded-md bg-lime-300 px-1.5 py-0.5 font-semibold text-[9px] text-lime-950 uppercase tracking-wide">
 														{instructions.badge}
 													</span>
 												</div>

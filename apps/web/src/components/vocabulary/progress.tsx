@@ -3,10 +3,8 @@ import {
 	BookOpen,
 	GraduationCap,
 	Loader,
-	MessageSquareText,
 	Sparkles,
 	Target,
-	Type,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -35,7 +33,6 @@ import {
 	ChartLegendContent,
 	ChartTooltipContent,
 } from "@/components/ui/chart";
-import { Progress as ProgressBar } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/utils/trpc";
 
@@ -140,13 +137,17 @@ function VocabularyProgressContent() {
 
 	const wordStats = useMemo(() => countByMastery(words ?? []), [words]);
 	const phraseStats = useMemo(() => countByMastery(phrases ?? []), [phrases]);
+	const dueWords = useMemo(
+		() => words?.filter((word) => word.isDue).length ?? 0,
+		[words],
+	);
+	const duePhrases = useMemo(
+		() => phrases?.filter((phrase) => phrase.isDue).length ?? 0,
+		[phrases],
+	);
 
 	const combinedTotal = wordStats.total + phraseStats.total;
-	const combinedMastered = wordStats.mastered + phraseStats.mastered;
-	const combinedProgress =
-		combinedTotal > 0
-			? Math.round((combinedMastered / combinedTotal) * 100)
-			: 0;
+	const combinedDue = dueWords + duePhrases;
 
 	const donutData = useMemo(() => {
 		const allItems = [...(words ?? []), ...(phrases ?? [])];
@@ -224,9 +225,16 @@ function VocabularyProgressContent() {
 			<div className="space-y-3">
 				<div className="flex items-center justify-between">
 					<h2 className="font-semibold text-lg">Learning Progress</h2>
-					<span className="font-semibold text-muted-foreground text-sm">
-						{combinedTotal} items total
-					</span>
+					<div className="flex items-center gap-3">
+						{combinedDue > 0 ? (
+							<span className="rounded-full bg-lime-100 px-2.5 py-1 font-medium text-[11px] text-lime-800 uppercase tracking-wide">
+								{combinedDue} due now
+							</span>
+						) : null}
+						<span className="font-semibold text-muted-foreground text-sm">
+							{combinedTotal} items total
+						</span>
+					</div>
 				</div>
 			</div>
 
@@ -427,7 +435,7 @@ function VocabularyProgressContent() {
 					<CardContent className="pt-0">
 						<ChartContainer
 							config={levelChartConfig}
-							className="mx-auto aspect-[2/1] max-h-[220px] w-full"
+							className="mx-auto aspect-2/1 max-h-[220px] w-full"
 						>
 							<BarChart
 								data={levelData}

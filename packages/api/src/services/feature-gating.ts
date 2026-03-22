@@ -6,7 +6,7 @@ import {
 	FREE_DAILY_VOCAB_ADDS_LIMIT,
 	FREE_DAILY_VOCAB_REVIEW_LIMIT,
 	FREE_PRONUNCIATION_MAX_ATTEMPTS,
-} from "./feature-limit-config";
+} from "@english.now/shared/feature-limit-config";
 import {
 	getDailyFeatureUsageTotal,
 	getLatestDailyFeatureUsage,

@@ -30,7 +30,7 @@ export default function Words() {
 	const [addDialogOpen, setAddDialogOpen] = useState(false);
 	const [newWord, setNewWord] = useState("");
 	const [masteryFilter, setMasteryFilter] = useState<
-		"all" | "learning" | "reviewing" | "mastered"
+		"all" | "new" | "learning" | "reviewing" | "mastered"
 	>("all");
 
 	const { playAudio, playingId } = usePlaybackFromUrl();
@@ -64,7 +64,11 @@ export default function Words() {
 		}),
 	);
 
-	const filteredWords = useMemo(() => words ?? [], [words]);
+	const filteredWords = useMemo(() => {
+		if (!words) return [];
+		if (masteryFilter === "all") return words;
+		return words.filter((word) => word.mastery === masteryFilter);
+	}, [words, masteryFilter]);
 	const remainingAdds = access?.adds.remaining;
 	const addHelperText =
 		access?.isPro || remainingAdds == null
@@ -179,6 +183,8 @@ export default function Words() {
 						ipa={w.ipa}
 						audioUrl={w.audioUrl}
 						mastery={w.mastery}
+						nextReviewAt={w.nextReviewAt?.toString() ?? null}
+						isDue={w.isDue}
 						playingId={playingId}
 						onPlay={playAudio}
 						onDelete={() =>

@@ -1,4 +1,4 @@
-import { MoreHorizontalIcon, Trash2, Volume2 } from "lucide-react";
+import { MoreHorizontalIcon, Trash2, Volume1, Volume2 } from "lucide-react";
 import { useState } from "react";
 import {
 	AlertDialog,
@@ -31,6 +31,27 @@ export interface ItemRowProps {
 	onPlay: (url: string, id: string) => void;
 	onDelete: () => void;
 	primaryClassName?: string;
+	nextReviewAt?: string | null;
+	isDue?: boolean;
+}
+
+function getReviewLabel(nextReviewAt?: string | null, isDue?: boolean) {
+	if (isDue) return "Due now";
+	if (!nextReviewAt) return null;
+
+	const dueAt = new Date(nextReviewAt);
+	const diffMs = dueAt.getTime() - Date.now();
+
+	if (diffMs <= 0) return "Due now";
+
+	const diffHours = Math.ceil(diffMs / (60 * 60 * 1000));
+	if (diffHours < 24) {
+		return `In ${diffHours}h`;
+	}
+
+	const diffDays = Math.ceil(diffMs / (24 * 60 * 60 * 1000));
+	if (diffDays === 1) return "Tomorrow";
+	return `In ${diffDays}d`;
 }
 
 export default function ItemRow({
@@ -44,8 +65,11 @@ export default function ItemRow({
 	onPlay,
 	onDelete,
 	primaryClassName,
+	nextReviewAt,
+	isDue,
 }: ItemRowProps) {
 	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+	const reviewLabel = getReviewLabel(nextReviewAt, isDue);
 	return (
 		<div className="group flex w-full items-center justify-between gap-3 rounded-2xl border border-border/50 bg-white p-2.5 px-3 text-left transition-colors hover:border-border/80 hover:shadow-xs dark:bg-slate-900">
 			<div className="flex items-center gap-3">
@@ -58,12 +82,21 @@ export default function ItemRow({
 							playingId === id ? "text-primary" : "text-muted-foreground",
 						)}
 					>
-						<Volume2 className="size-4" />
+						{playingId === id ? (
+							<Volume2 className="size-4" />
+						) : (
+							<Volume1 className="size-4" />
+						)}
 					</button>
 				) : null}
 				<div>
 					<div className="flex items-center gap-2">
-						<span className={cn("truncate text-left font-semibold text-sm")}>
+						<span
+							className={cn(
+								"truncate text-left font-semibold text-sm",
+								primaryClassName,
+							)}
+						>
 							{primaryText}
 						</span>
 						{ipa ? (
@@ -78,7 +111,14 @@ export default function ItemRow({
 				</div>
 			</div>
 			<div className="flex shrink-0 items-center gap-2">
-				<MasteryIndicator mastery={mastery} />
+				<div className="flex flex-col items-end gap-1">
+					<MasteryIndicator mastery={mastery} />
+					{reviewLabel ? (
+						<span className="text-[11px] text-muted-foreground">
+							{reviewLabel}
+						</span>
+					) : null}
+				</div>
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
 						<Button

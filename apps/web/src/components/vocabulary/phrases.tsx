@@ -145,6 +145,8 @@ export default function Phrases() {
 						ipa={p.ipa}
 						audioUrl={p.audioUrl}
 						mastery={p.mastery}
+						nextReviewAt={p.nextReviewAt?.toString() ?? null}
+						isDue={p.isDue}
 						playingId={playingId}
 						onPlay={playAudio}
 						onDelete={() =>

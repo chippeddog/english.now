@@ -27,6 +27,7 @@
     "@english.now/auth": "workspace:*",
     "@english.now/db": "workspace:*",
     "@english.now/env": "workspace:*",
+    "@english.now/shared": "workspace:*",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "ai": "^6.0.85",

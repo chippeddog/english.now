@@ -22,23 +22,17 @@ import {
 	word,
 	wordTranslation,
 } from "@english.now/db";
-import { FREE_DAILY_VOCAB_REVIEW_LIMIT } from "./feature-limit-config";
-import { getDailyFeatureUsageTotal } from "./feature-usage";
+import { FREE_DAILY_VOCAB_REVIEW_LIMIT } from "@english.now/shared/feature-limit-config";
 import { profileLevelToCefr } from "../lib/cefr";
 import {
 	buildDefaultConversationGoals,
 	buildDefaultConversationModeConfig,
 } from "./conversation-mode";
+import { getDailyFeatureUsageTotal } from "./feature-usage";
 import { generateParagraph } from "./generate-paragraph";
 import { generateSuggestions } from "./generate-suggestions";
+import { isVocabularyItemDue } from "./sm-2";
 import { getSubscriptionSummaryForUser } from "./subscription";
-
-const MASTERY_PRIORITY: Record<string, number> = {
-	new: 0,
-	learning: 1,
-	reviewing: 2,
-	mastered: 3,
-};
 
 type PracticeProfile = {
 	level: string | null;
@@ -329,12 +323,28 @@ async function createPronunciationActivities(
 	}));
 }
 
-function sortCardsByMastery(cards: DailyVocabularyCard[]) {
-	return [...cards].sort(
-		(a, b) =>
-			(MASTERY_PRIORITY[a.currentMastery] ?? 4) -
-			(MASTERY_PRIORITY[b.currentMastery] ?? 4),
-	);
+type ScheduledVocabularyCard = DailyVocabularyCard & {
+	createdAt: Date;
+	intervalDays: number;
+	nextReviewAt: string | null;
+	isDue: boolean;
+};
+
+function sortDueVocabularyCards(cards: ScheduledVocabularyCard[]) {
+	return [...cards].sort((a, b) => {
+		const aDueTime = a.nextReviewAt ? new Date(a.nextReviewAt).getTime() : 0;
+		const bDueTime = b.nextReviewAt ? new Date(b.nextReviewAt).getTime() : 0;
+
+		if (aDueTime !== bDueTime) {
+			return aDueTime - bDueTime;
+		}
+
+		if (a.intervalDays !== b.intervalDays) {
+			return a.intervalDays - b.intervalDays;
+		}
+
+		return a.createdAt.getTime() - b.createdAt.getTime();
+	});
 }
 
 async function createVocabularyActivities(
@@ -347,6 +357,7 @@ async function createVocabularyActivities(
 	}
 
 	const translationLanguage = language ?? "uk";
+	const now = new Date();
 
 	const [wordRows, phraseRows] = await Promise.all([
 		db
@@ -360,6 +371,10 @@ async function createVocabularyActivities(
 				level: word.level,
 				translation: wordTranslation.translation,
 				mastery: userWord.mastery,
+				intervalDays: userWord.intervalDays,
+				lastReviewedAt: userWord.lastReviewedAt,
+				nextReviewAt: userWord.nextReviewAt,
+				createdAt: userWord.createdAt,
 			})
 			.from(userWord)
 			.innerJoin(word, eq(userWord.wordId, word.id))
@@ -382,6 +397,10 @@ async function createVocabularyActivities(
 				level: phrase.level,
 				translation: phraseTranslation.translation,
 				mastery: userPhrase.mastery,
+				intervalDays: userPhrase.intervalDays,
+				lastReviewedAt: userPhrase.lastReviewedAt,
+				nextReviewAt: userPhrase.nextReviewAt,
+				createdAt: userPhrase.createdAt,
 			})
 			.from(userPhrase)
 			.innerJoin(phrase, eq(userPhrase.phraseId, phrase.id))
@@ -395,10 +414,13 @@ async function createVocabularyActivities(
 			.where(eq(userPhrase.userId, userId)),
 	]);
 
-	const wordCards = sortCardsByMastery(
+	const wordCards = sortDueVocabularyCards(
 		wordRows
-			.filter((row) => row.mastery !== "mastered")
-			.map<DailyVocabularyCard>((row) => ({
+			.filter(
+				(row) =>
+					!row.lastReviewedAt || isVocabularyItemDue(row.nextReviewAt, now),
+			)
+			.map<ScheduledVocabularyCard>((row) => ({
 				id: row.id,
 				type: "word",
 				prompt: row.translation ?? row.definition,
@@ -408,12 +430,19 @@ async function createVocabularyActivities(
 				detail: row.exampleSentence,
 				level: row.level,
 				currentMastery: row.mastery,
+				intervalDays: row.intervalDays,
+				nextReviewAt: row.nextReviewAt?.toISOString() ?? null,
+				isDue: true,
+				createdAt: row.createdAt,
 			})),
 	);
-	const phraseCards = sortCardsByMastery(
+	const phraseCards = sortDueVocabularyCards(
 		phraseRows
-			.filter((row) => row.mastery !== "mastered")
-			.map<DailyVocabularyCard>((row) => ({
+			.filter(
+				(row) =>
+					!row.lastReviewedAt || isVocabularyItemDue(row.nextReviewAt, now),
+			)
+			.map<ScheduledVocabularyCard>((row) => ({
 				id: row.id,
 				type: "phrase",
 				prompt: row.translation ?? row.meaning,
@@ -423,6 +452,10 @@ async function createVocabularyActivities(
 				detail: row.exampleUsage,
 				level: row.level,
 				currentMastery: row.mastery,
+				intervalDays: row.intervalDays,
+				nextReviewAt: row.nextReviewAt?.toISOString() ?? null,
+				isDue: true,
+				createdAt: row.createdAt,
 			})),
 	);
 
@@ -432,12 +465,12 @@ async function createVocabularyActivities(
 	if (wordCards.length > 0 && remainingReviewCards > 0) {
 		const cards = shuffle(
 			wordCards.slice(0, Math.min(wordCards.length, 8, remainingReviewCards)),
-		);
+		).map(({ createdAt, ...card }) => card);
 		activities.push({
 			id: "vocabulary-words",
 			emoji: "📘",
 			title: "Word Recall",
-			description: "Review your highest-priority vocabulary words.",
+			description: "Review the vocabulary words that are due now.",
 			duration: getDurationFromCardCount(cards.length),
 			type: "vocabulary",
 			typeLabel: "Vocabulary",
@@ -454,13 +487,16 @@ async function createVocabularyActivities(
 
 	if (phraseCards.length > 0 && remainingReviewCards > 0) {
 		const cards = shuffle(
-			phraseCards.slice(0, Math.min(phraseCards.length, 6, remainingReviewCards)),
-		);
+			phraseCards.slice(
+				0,
+				Math.min(phraseCards.length, 6, remainingReviewCards),
+			),
+		).map(({ createdAt, ...card }) => card);
 		activities.push({
 			id: "vocabulary-phrases",
 			emoji: "✨",
 			title: "Phrase Builder",
-			description: "Practice useful expressions you are still learning.",
+			description: "Practice the phrases that are ready for review.",
 			duration: getDurationFromCardCount(cards.length),
 			type: "vocabulary",
 			typeLabel: "Vocabulary",
@@ -479,7 +515,9 @@ async function createVocabularyActivities(
 		const mixedCards = shuffle([
 			...wordCards.slice(0, 6),
 			...phraseCards.slice(0, 4),
-		]).slice(0, Math.min(10, remainingReviewCards));
+		])
+			.slice(0, Math.min(10, remainingReviewCards))
+			.map(({ createdAt, ...card }) => card);
 
 		if (mixedCards.length > 0) {
 			activities.push({

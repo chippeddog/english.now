@@ -16,6 +16,11 @@ import { protectedProcedure, router } from "../index";
 import { getVocabularyAccessSummary } from "../services/feature-gating";
 import { recordDailyFeatureUsage } from "../services/feature-usage";
 import {
+	applySm2Review,
+	deriveVocabularyMastery,
+	isVocabularyItemDue,
+} from "../services/sm-2";
+import {
 	ensurePhraseTranslation,
 	ensureWordTranslation,
 	getOrCreatePhrase,
@@ -58,6 +63,12 @@ export const vocabularyRouter = router({
 					mastery: userWord.mastery,
 					source: userWord.source,
 					notes: userWord.notes,
+					repetition: userWord.repetition,
+					intervalDays: userWord.intervalDays,
+					easeFactor: userWord.easeFactor,
+					lapses: userWord.lapses,
+					lastReviewedAt: userWord.lastReviewedAt,
+					nextReviewAt: userWord.nextReviewAt,
 					addedAt: userWord.createdAt,
 					wordId: word.id,
 					lemma: word.lemma,
@@ -99,7 +110,10 @@ export const vocabularyRouter = router({
 				);
 			}
 
-			return filtered;
+			return filtered.map((row) => ({
+				...row,
+				isDue: isVocabularyItemDue(row.nextReviewAt),
+			}));
 		}),
 
 	addWord: protectedProcedure
@@ -178,24 +192,73 @@ export const vocabularyRouter = router({
 			return { success: true };
 		}),
 
-	updateWordMastery: protectedProcedure
+	reviewWord: protectedProcedure
 		.input(
 			z.object({
 				userWordId: z.string(),
-				mastery: z.enum(["new", "learning", "reviewing", "mastered"]),
+				quality: z.number().int().min(0).max(5),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
+			const [existingWord] = await db
+				.select({
+					repetition: userWord.repetition,
+					intervalDays: userWord.intervalDays,
+					easeFactor: userWord.easeFactor,
+					lapses: userWord.lapses,
+				})
+				.from(userWord)
+				.where(
+					and(
+						eq(userWord.id, input.userWordId),
+						eq(userWord.userId, ctx.session.user.id),
+					),
+				)
+				.limit(1);
+
+			if (!existingWord) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Vocabulary word not found.",
+				});
+			}
+
+			const review = applySm2Review({
+				repetition: existingWord.repetition,
+				intervalDays: existingWord.intervalDays,
+				easeFactor: existingWord.easeFactor,
+				lapses: existingWord.lapses,
+				quality: input.quality,
+			});
+			const mastery = deriveVocabularyMastery(review);
+
 			await db
 				.update(userWord)
-				.set({ mastery: input.mastery })
+				.set({
+					mastery,
+					repetition: review.repetition,
+					intervalDays: review.intervalDays,
+					easeFactor: review.easeFactor,
+					lapses: review.lapses,
+					lastReviewedAt: review.lastReviewedAt,
+					nextReviewAt: review.nextReviewAt,
+				})
 				.where(
 					and(
 						eq(userWord.id, input.userWordId),
 						eq(userWord.userId, ctx.session.user.id),
 					),
 				);
-			return { success: true };
+			return {
+				success: true,
+				mastery,
+				repetition: review.repetition,
+				intervalDays: review.intervalDays,
+				easeFactor: review.easeFactor,
+				lapses: review.lapses,
+				lastReviewedAt: review.lastReviewedAt,
+				nextReviewAt: review.nextReviewAt,
+			};
 		}),
 
 	getPhrases: protectedProcedure
@@ -217,6 +280,12 @@ export const vocabularyRouter = router({
 					mastery: userPhrase.mastery,
 					source: userPhrase.source,
 					notes: userPhrase.notes,
+					repetition: userPhrase.repetition,
+					intervalDays: userPhrase.intervalDays,
+					easeFactor: userPhrase.easeFactor,
+					lapses: userPhrase.lapses,
+					lastReviewedAt: userPhrase.lastReviewedAt,
+					nextReviewAt: userPhrase.nextReviewAt,
 					addedAt: userPhrase.createdAt,
 					phraseId: phrase.id,
 					text: phrase.text,
@@ -249,7 +318,10 @@ export const vocabularyRouter = router({
 				filtered = filtered.filter((r) => r.mastery === input.mastery);
 			}
 
-			return filtered;
+			return filtered.map((row) => ({
+				...row,
+				isDue: isVocabularyItemDue(row.nextReviewAt),
+			}));
 		}),
 
 	addPhrase: protectedProcedure
@@ -328,24 +400,73 @@ export const vocabularyRouter = router({
 			return { success: true };
 		}),
 
-	updatePhraseMastery: protectedProcedure
+	reviewPhrase: protectedProcedure
 		.input(
 			z.object({
 				userPhraseId: z.string(),
-				mastery: z.enum(["new", "learning", "reviewing", "mastered"]),
+				quality: z.number().int().min(0).max(5),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
+			const [existingPhrase] = await db
+				.select({
+					repetition: userPhrase.repetition,
+					intervalDays: userPhrase.intervalDays,
+					easeFactor: userPhrase.easeFactor,
+					lapses: userPhrase.lapses,
+				})
+				.from(userPhrase)
+				.where(
+					and(
+						eq(userPhrase.id, input.userPhraseId),
+						eq(userPhrase.userId, ctx.session.user.id),
+					),
+				)
+				.limit(1);
+
+			if (!existingPhrase) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Vocabulary phrase not found.",
+				});
+			}
+
+			const review = applySm2Review({
+				repetition: existingPhrase.repetition,
+				intervalDays: existingPhrase.intervalDays,
+				easeFactor: existingPhrase.easeFactor,
+				lapses: existingPhrase.lapses,
+				quality: input.quality,
+			});
+			const mastery = deriveVocabularyMastery(review);
+
 			await db
 				.update(userPhrase)
-				.set({ mastery: input.mastery })
+				.set({
+					mastery,
+					repetition: review.repetition,
+					intervalDays: review.intervalDays,
+					easeFactor: review.easeFactor,
+					lapses: review.lapses,
+					lastReviewedAt: review.lastReviewedAt,
+					nextReviewAt: review.nextReviewAt,
+				})
 				.where(
 					and(
 						eq(userPhrase.id, input.userPhraseId),
 						eq(userPhrase.userId, ctx.session.user.id),
 					),
 				);
-			return { success: true };
+			return {
+				success: true,
+				mastery,
+				repetition: review.repetition,
+				intervalDays: review.intervalDays,
+				easeFactor: review.easeFactor,
+				lapses: review.lapses,
+				lastReviewedAt: review.lastReviewedAt,
+				nextReviewAt: review.nextReviewAt,
+			};
 		}),
 });
 

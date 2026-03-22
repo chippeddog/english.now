@@ -23,6 +23,9 @@ export type DailyVocabularyCard = {
 	detail: string | null;
 	level: string | null;
 	currentMastery: string;
+	intervalDays?: number;
+	nextReviewAt?: string | null;
+	isDue?: boolean;
 };
 
 type DailyPracticeActivityBase = {
