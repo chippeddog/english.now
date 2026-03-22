@@ -54,10 +54,11 @@ const sendMessageSchema = z.object({
 	audioUrl: z.string().optional(),
 });
 
-// Schema for transcribe request (Deepgram integration)
-const transcribeSchema = z.object({
+// Schema for legacy JSON transcribe request (Deepgram integration)
+const transcribeJsonSchema = z.object({
 	audio: z.string(), // base64 encoded audio
 	sessionId: z.string(),
+	mimeType: z.string().optional(),
 });
 
 // Schema for TTS request
@@ -80,6 +81,137 @@ function getSseEventData(event: string) {
 		.join("\n");
 
 	return data.trim();
+}
+
+function normalizeAudioMimeType(mimeType?: string) {
+	const normalized = mimeType?.split(";")[0]?.trim().toLowerCase();
+
+	switch (normalized) {
+		case "audio/mp4":
+		case "audio/m4a":
+		case "audio/x-m4a":
+		case "video/mp4":
+			return "audio/mp4";
+		case "audio/webm":
+		case "video/webm":
+			return "audio/webm";
+		case "audio/ogg":
+			return "audio/ogg";
+		case "audio/wav":
+		case "audio/wave":
+		case "audio/x-wav":
+			return "audio/wav";
+		case "audio/mpeg":
+		case "audio/mp3":
+			return "audio/mpeg";
+		case "audio/aac":
+			return "audio/aac";
+		default:
+			return undefined;
+	}
+}
+
+function inferAudioMimeType(audioBuffer: Buffer, mimeType?: string) {
+	const normalizedMimeType = normalizeAudioMimeType(mimeType);
+	if (normalizedMimeType) return normalizedMimeType;
+
+	if (
+		audioBuffer.length >= 12 &&
+		audioBuffer.toString("ascii", 4, 8) === "ftyp"
+	) {
+		return "audio/mp4";
+	}
+
+	if (
+		audioBuffer.length >= 4 &&
+		audioBuffer[0] === 0x1a &&
+		audioBuffer[1] === 0x45 &&
+		audioBuffer[2] === 0xdf &&
+		audioBuffer[3] === 0xa3
+	) {
+		return "audio/webm";
+	}
+
+	if (
+		audioBuffer.length >= 12 &&
+		audioBuffer.toString("ascii", 0, 4) === "RIFF" &&
+		audioBuffer.toString("ascii", 8, 12) === "WAVE"
+	) {
+		return "audio/wav";
+	}
+
+	if (audioBuffer.length >= 4 && audioBuffer.toString("ascii", 0, 4) === "OggS") {
+		return "audio/ogg";
+	}
+
+	if (
+		audioBuffer.length >= 3 &&
+		audioBuffer.toString("ascii", 0, 3) === "ID3"
+	) {
+		return "audio/mpeg";
+	}
+
+	return "audio/webm";
+}
+
+function getAudioFileExtension(mimeType: string) {
+	switch (mimeType) {
+		case "audio/mp4":
+			return "mp4";
+		case "audio/webm":
+			return "webm";
+		case "audio/ogg":
+			return "ogg";
+		case "audio/wav":
+		case "audio/wave":
+		case "audio/x-wav":
+			return "wav";
+		case "audio/mpeg":
+			return "mp3";
+		case "audio/aac":
+			return "aac";
+		default:
+			return "bin";
+	}
+}
+
+async function parseTranscribeRequest(c: Context<{ Variables: Variables }>) {
+	const contentType = c.req.header("content-type") ?? "";
+
+	if (contentType.includes("multipart/form-data")) {
+		const formData = await c.req.formData();
+		const sessionId = z.string().min(1).parse(formData.get("sessionId"));
+		const audioEntry = formData.get("audio");
+
+		if (!audioEntry || typeof audioEntry === "string") {
+			throw new Error("Missing audio file");
+		}
+
+		const requestedMimeType = formData.get("mimeType");
+		const audioBuffer = Buffer.from(await audioEntry.arrayBuffer());
+		const mimeType = inferAudioMimeType(
+			audioBuffer,
+			typeof requestedMimeType === "string" && requestedMimeType
+				? requestedMimeType
+				: audioEntry.type,
+		);
+
+		return {
+			audioBuffer,
+			sessionId,
+			mimeType,
+		};
+	}
+
+	const body = await c.req.json();
+	const { audio, sessionId, mimeType } = transcribeJsonSchema.parse(body);
+	const audioBuffer = Buffer.from(audio, "base64");
+
+	return {
+		audioBuffer,
+		sessionId,
+		mimeType: inferAudioMimeType(audioBuffer, mimeType),
+	};
 }
 
 // Middleware to check auth
@@ -453,11 +585,8 @@ conversation.post("/transcribe", requireAuth, async (c) => {
 		return c.json({ error: "Unauthorized" }, 401);
 	}
 
-	const body = await c.req.json();
-	const { audio, sessionId } = transcribeSchema.parse(body);
-
 	try {
-		const audioBuffer = Buffer.from(audio, "base64");
+		const { audioBuffer, sessionId, mimeType } = await parseTranscribeRequest(c);
 
 		// Send to Deepgram for transcription
 		const response = await fetch(
@@ -466,7 +595,7 @@ conversation.post("/transcribe", requireAuth, async (c) => {
 				method: "POST",
 				headers: {
 					Authorization: `Token ${env.DEEPGRAM_API_KEY}`,
-					"Content-Type": "audio/webm",
+					"Content-Type": mimeType,
 				},
 				body: audioBuffer,
 			},
@@ -495,14 +624,15 @@ conversation.post("/transcribe", requireAuth, async (c) => {
 		let audioUrl: string | undefined;
 		try {
 			const messageId = crypto.randomUUID();
-			const key = `${session.user.id}/${sessionId}/${messageId}.webm`;
+			const extension = getAudioFileExtension(mimeType);
+			const key = `${session.user.id}/${sessionId}/${messageId}.${extension}`;
 
 			await s3Client.send(
 				new PutObjectCommand({
 					Bucket: "_audio",
 					Key: key,
 					Body: audioBuffer,
-					ContentType: "audio/webm",
+					ContentType: mimeType,
 				}),
 			);
 

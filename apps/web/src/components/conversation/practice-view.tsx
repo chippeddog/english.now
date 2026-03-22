@@ -118,8 +118,8 @@ export default function PracticeView({
 			: [];
 	const hintHeading = isRoleplay ? "Try this line" : "You can say";
 	const hintLoadingText = isRoleplay
-		? "Thinking of a realistic line for this roleplay..."
-		: "Thinking of something natural to say...";
+		? "Thinking of a realistic line..."
+		: "Thinking of something...";
 	const hintEmptyText = isRoleplay
 		? "Tap regenerate to get another realistic line."
 		: "Tap regenerate to get a fresh response idea.";
@@ -543,7 +543,7 @@ export default function PracticeView({
 											className={cn(
 												"rounded-lg text-xs",
 												isPlaying === message.id &&
-													"border-lime-300 bg-lime-100",
+													"border-lime-300 bg-lime-100 text-lime-700",
 											)}
 											onClick={() => {
 												if (generatingTTS.has(message.id)) return;
@@ -590,7 +590,7 @@ export default function PracticeView({
 											className={cn(
 												"rounded-lg text-xs",
 												translations[message.id] &&
-													"border-blue-300 bg-blue-100",
+													"border-lime-300 bg-lime-100 text-lime-700",
 											)}
 											onClick={() =>
 												translateMessage(message.id, message.content)

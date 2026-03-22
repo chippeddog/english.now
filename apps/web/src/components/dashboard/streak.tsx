@@ -70,38 +70,35 @@ export default function Streak({
 			}}
 		>
 			<div className="mb-2.5 flex gap-2 pl-1.5 font-medium">
-				<div>
+				<div className="relative flex items-center gap-1.5">
 					<h3 className="flex items-center gap-2 font-lyon font-semibold text-xl">
 						<Trans>{t("streak.title", { count: streak })}</Trans>
-						<Tooltip>
-							<TooltipTrigger>
-								<svg
-									className="size-4 text-neutral-300"
-									aria-hidden="true"
-									focusable="false"
-									data-prefix="fas"
-									data-icon="circle-info"
-									role="img"
-									xmlns="http://www.w3.org/2000/svg"
-									viewBox="0 0 512 512"
-								>
-									<path
-										fill="currentColor"
-										d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336l24 0 0-64-24 0c-13.3 0-24-10.7-24-24s10.7-24 24-24l48 0c13.3 0 24 10.7 24 24l0 88 8 0c13.3 0 24 10.7 24 24s-10.7 24-24 24l-80 0c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"
-									/>
-								</svg>
-							</TooltipTrigger>
-							<TooltipContent>
-								<p>
-									<Trans>{t("streak.currentStreak", { count: streak })}</Trans>
-									<br />
-									<Trans>
-										{t("streak.longestStreak", { count: longestStreak })}
-									</Trans>
-								</p>
-							</TooltipContent>
-						</Tooltip>
 					</h3>
+					<Tooltip>
+						<TooltipTrigger>
+							<svg
+								className="size-3.5 text-neutral-300"
+								aria-hidden="true"
+								role="img"
+								xmlns="http://www.w3.org/2000/svg"
+								viewBox="0 0 512 512"
+							>
+								<path
+									fill="currentColor"
+									d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336l24 0 0-64-24 0c-13.3 0-24-10.7-24-24s10.7-24 24-24l48 0c13.3 0 24 10.7 24 24l0 88 8 0c13.3 0 24 10.7 24 24s-10.7 24-24 24l-80 0c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"
+								/>
+							</svg>
+						</TooltipTrigger>
+						<TooltipContent>
+							<p>
+								<Trans>{t("streak.currentStreak", { count: streak })}</Trans>
+								<br />
+								<Trans>
+									{t("streak.longestStreak", { count: longestStreak })}
+								</Trans>
+							</p>
+						</TooltipContent>
+					</Tooltip>
 					{/* <p className="text-muted-foreground text-sm">
 						Time to start your first lesson!
 					</p> */}

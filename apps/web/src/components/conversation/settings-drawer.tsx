@@ -1,3 +1,11 @@
+import {
+	changeLanguage,
+	fallbackLng,
+	languageNames,
+	type SupportedLanguage,
+	supportedLanguages,
+	useTranslation,
+} from "@english.now/i18n";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Loader, Volume2, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -5,14 +13,38 @@ import {
 	Drawer,
 	DrawerClose,
 	DrawerContent,
-	DrawerDescription,
 	DrawerHeader,
 	DrawerTitle,
 } from "@/components/ui/drawer";
+import { Label } from "@/components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/utils/trpc";
 import { VOICE_OPTIONS } from "@/utils/voice";
+
+const NATIVE_LANGUAGES = [
+	{ id: "uk", name: "Ukrainian", flag: "🇺🇦" },
+	{ id: "en", name: "English", flag: "🇬🇧" },
+	{ id: "fr", name: "French", flag: "🇫🇷" },
+	{ id: "es", name: "Spanish", flag: "🇪🇸" },
+	{ id: "de", name: "German", flag: "🇩🇪" },
+	{ id: "pt", name: "Portuguese", flag: "🇵🇹" },
+	{ id: "it", name: "Italian", flag: "🇮🇹" },
+	{ id: "pl", name: "Polish", flag: "🇵🇱" },
+	{ id: "ja", name: "Japanese", flag: "🇯🇵" },
+	{ id: "ko", name: "Korean", flag: "🇰🇷" },
+	{ id: "zh", name: "Chinese", flag: "🇨🇳" },
+	{ id: "ar", name: "Arabic", flag: "🇸🇦" },
+	{ id: "hi", name: "Hindi", flag: "🇮🇳" },
+	{ id: "tr", name: "Turkish", flag: "🇹🇷" },
+] as const;
 
 type ConversationSettingsDrawerProps = {
 	open: boolean;
@@ -35,8 +67,9 @@ export default function ConversationSettingsDrawer({
 }: ConversationSettingsDrawerProps) {
 	const trpc = useTRPC();
 	const queryClient = useQueryClient();
+	const { i18n } = useTranslation();
 	const { data: profile } = useQuery(trpc.profile.get.queryOptions());
-	const updateVoice = useMutation(
+	const updateProfile = useMutation(
 		trpc.profile.updateProfile.mutationOptions({
 			onSuccess: () => {
 				queryClient.invalidateQueries({
@@ -45,6 +78,13 @@ export default function ConversationSettingsDrawer({
 			},
 		}),
 	);
+
+	const rawInterfaceLang = i18n.resolvedLanguage || i18n.language;
+	const interfaceLang = (
+		supportedLanguages.includes(rawInterfaceLang as SupportedLanguage)
+			? rawInterfaceLang
+			: fallbackLng
+	) as SupportedLanguage;
 	const currentVoice = profile?.voiceModel ?? "aura-2-asteria-en";
 	const [playingVoiceId, setPlayingVoiceId] = useState<string | null>(null);
 	const previewAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -114,10 +154,57 @@ export default function ConversationSettingsDrawer({
 				<div className="flex-1 space-y-6 overflow-y-auto px-6 py-5">
 					<section className="space-y-3">
 						<div>
+							<Label className="font-medium text-sm">Interface language</Label>
+						</div>
+						<Select
+							value={interfaceLang}
+							onValueChange={(value) => {
+								void changeLanguage(value as SupportedLanguage);
+							}}
+						>
+							<SelectTrigger className="w-full rounded-2xl border-black/5">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								{supportedLanguages.map((code) => (
+									<SelectItem key={code} value={code}>
+										{languageNames[code]}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</section>
+
+					<section className="space-y-3">
+						<div>
+							<Label className="font-medium text-sm">Native language</Label>
+						</div>
+						<Select
+							value={profile?.nativeLanguage ?? ""}
+							disabled={updateProfile.isPending}
+							onValueChange={(value) =>
+								updateProfile.mutate({ nativeLanguage: value })
+							}
+						>
+							<SelectTrigger className="w-full rounded-2xl border-black/5">
+								<SelectValue placeholder="Select language" />
+							</SelectTrigger>
+							<SelectContent>
+								{NATIVE_LANGUAGES.map((lang) => (
+									<SelectItem key={lang.id} value={lang.id}>
+										<span className="flex items-center gap-2">
+											<span>{lang.flag}</span>
+											<span>{lang.name}</span>
+										</span>
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</section>
+
+					<section className="space-y-3">
+						<div>
 							<p className="font-medium text-sm">Input device</p>
-							<p className="text-muted-foreground text-xs">
-								Choose which microphone to use for recording.
-							</p>
 						</div>
 						<div className="space-y-2">
 							{audioDevices.length > 0 ? (
@@ -155,9 +242,6 @@ export default function ConversationSettingsDrawer({
 					<section className="space-y-3">
 						<div>
 							<p className="font-medium text-sm">Assistant voice</p>
-							<p className="text-muted-foreground text-xs">
-								Pick the voice used when the assistant speaks replies aloud.
-							</p>
 						</div>
 						<div className="space-y-2">
 							{VOICE_OPTIONS.map((voice) => {
@@ -175,7 +259,7 @@ export default function ConversationSettingsDrawer({
 										<button
 											type="button"
 											onClick={() =>
-												updateVoice.mutate({ voiceModel: voice.id })
+												updateProfile.mutate({ voiceModel: voice.id })
 											}
 											className="flex min-w-0 flex-1 items-center justify-between rounded-xl px-3 py-2 text-left transition-colors hover:bg-white/70"
 										>
