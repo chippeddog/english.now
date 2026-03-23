@@ -1,6 +1,8 @@
+import { useTranslation } from "@english.now/i18n";
 import { useForm } from "@tanstack/react-form";
 import { Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
+import { useMemo } from "react";
 import { toast } from "sonner";
 import z from "zod";
 import { authClient } from "@/lib/auth-client";
@@ -9,6 +11,14 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 
 export default function ForgotPassForm() {
+	const { t } = useTranslation("common");
+	const forgotSchema = useMemo(
+		() =>
+			z.object({
+				email: z.email(t("auth.validation.invalidEmail")),
+			}),
+		[t],
+	);
 	const form = useForm({
 		defaultValues: {
 			email: "",
@@ -21,7 +31,7 @@ export default function ForgotPassForm() {
 				},
 				{
 					onSuccess: () => {
-						toast.success("Password reset email sent");
+						toast.success(t("auth.toast.passwordResetSent"));
 					},
 					onError: (error) => {
 						toast.error(error.error.message || error.error.statusText);
@@ -30,9 +40,7 @@ export default function ForgotPassForm() {
 			);
 		},
 		validators: {
-			onSubmit: z.object({
-				email: z.email("Invalid email address"),
-			}),
+			onSubmit: forgotSchema,
 		},
 	});
 
@@ -49,10 +57,11 @@ export default function ForgotPassForm() {
 		>
 			<Logo />
 			<div className="mt-3 mb-6">
-				<h1 className="mb-1 font-bold font-lyon text-3xl">Forgot Password</h1>
+				<h1 className="mb-1 font-bold font-lyon text-3xl">
+					{t("auth.forgot.title")}
+				</h1>
 				<p className="text-neutral-500 text-sm">
-					Enter your email address and we will send you a code to reset your
-					password.
+					{t("auth.forgot.description")}
 				</p>
 			</div>
 
@@ -69,7 +78,8 @@ export default function ForgotPassForm() {
 						{(field) => (
 							<div className="space-y-2">
 								<Label className="gap-0" htmlFor={field.name}>
-									Email<span className="text-rose-500">&nbsp;*</span>
+									{t("auth.fields.email")}
+									<span className="text-rose-500">&nbsp;*</span>
 								</Label>
 								<Input
 									id={field.name}
@@ -96,7 +106,9 @@ export default function ForgotPassForm() {
 							className="flex h-10 w-full cursor-pointer items-center justify-center rounded-lg border border-[#C6F64D] bg-[radial-gradient(100%_100%_at_50%_0%,#EFFF9B_0%,#D8FF76_60%,#C6F64D_100%)] px-3 py-1 font-semibold text-lime-900 text-sm transition-all duration-150 ease-in-out hover:brightness-95"
 							disabled={!state.canSubmit || state.isSubmitting}
 						>
-							{state.isSubmitting ? "Submitting..." : "Reset Password"}
+							{state.isSubmitting
+								? t("auth.forgot.submitting")
+								: t("auth.forgot.sendResetLink")}
 						</button>
 					)}
 				</form.Subscribe>
@@ -104,13 +116,12 @@ export default function ForgotPassForm() {
 
 			<div className="mt-3 text-center">
 				<p className="text-neutral-500 text-sm">
-					Remember your password?{" "}
+					{t("auth.forgot.rememberPassword")}{" "}
 					<Link
 						to="/login"
 						className="cursor-pointer text-lime-600 underline hover:text-lime-600/80"
 					>
-						{" "}
-						Back to Login
+						{t("auth.forgot.backToLogin")}
 					</Link>
 				</p>
 			</div>

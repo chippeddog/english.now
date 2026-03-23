@@ -25,7 +25,59 @@
     "signOut": "登出",
     "forgotPassword": "忘记密码？",
     "resetPassword": "重置密码",
-    "alreadyHaveAccount": "我已有账户"
+    "alreadyHaveAccount": "我已有账户",
+    "createAccountTitle": "创建您的账户",
+    "alreadyHaveAccountPrompt": "已经有账户？",
+    "welcomeBack": "欢迎回来",
+    "dontHaveAccount": "没有账户？",
+    "continueWithGoogle": "使用 Google 继续",
+    "signInWithGoogle": "使用 Google 登录",
+    "continueWithApple": "使用 Apple 继续",
+    "orContinueWith": "或继续使用",
+    "fields": {
+      "name": "姓名",
+      "email": "电子邮件",
+      "password": "密码",
+      "confirmPassword": "确认密码"
+    },
+    "submitSignUp": "注册",
+    "submitSignIn": "登录",
+    "legal": "通过创建或进入账户，您同意 <br /><terms>服务条款</terms> 和 <privacy>隐私政策</privacy>。",
+    "toast": {
+      "signUpSuccess": "注册成功",
+      "signInSuccess": "登录成功",
+      "verificationSent": "验证邮件已发送",
+      "passwordResetSent": "密码重置邮件已发送",
+      "passwordUpdated": "密码更新成功"
+    },
+    "validation": {
+      "nameMin": "姓名至少需要 2 个字符",
+      "invalidEmail": "无效的电子邮件地址",
+      "passwordMin": "密码至少需要 8 个字符"
+    },
+    "verify": {
+      "title": "确认您的电子邮件",
+      "sentTo": "我们已发送验证链接到",
+      "resend": "重新发送验证邮件",
+      "sending": "发送中...",
+      "changeEmail": "更改电子邮件",
+      "spamHint": "找不到邮件？检查您的垃圾邮件文件夹或重新发送新链接。",
+      "logoAlt": "English Now 标志"
+    },
+    "reset": {
+      "title": "重置密码",
+      "description": "输入您的新密码并确认以更新您的密码。",
+      "submitting": "提交中...",
+      "updatePassword": "更新密码"
+    },
+    "forgot": {
+      "title": "忘记密码",
+      "description": "输入您的电子邮件地址，我们将发送一个代码以重置您的密码。",
+      "rememberPassword": "记得您的密码？",
+      "backToLogin": "返回登录",
+      "submitting": "提交中...",
+      "sendResetLink": "重置密码"
+    }
   },
   "nav": {
     "home": "首页",

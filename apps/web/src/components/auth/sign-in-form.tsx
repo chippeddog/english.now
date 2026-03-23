@@ -1,8 +1,9 @@
+import { Trans, useTranslation } from "@english.now/i18n";
 import { useForm } from "@tanstack/react-form";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { motion } from "motion/react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import z from "zod";
 import { authClient } from "@/lib/auth-client";
@@ -11,10 +12,19 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 export default function SignInForm() {
+	const { t } = useTranslation("common");
 	const navigate = useNavigate({
 		from: "/",
 	});
 	const [showPassword, setShowPassword] = useState(false);
+	const signInSchema = useMemo(
+		() =>
+			z.object({
+				email: z.email(t("auth.validation.invalidEmail")),
+				password: z.string().min(8, t("auth.validation.passwordMin")),
+			}),
+		[t],
+	);
 	const form = useForm({
 		defaultValues: {
 			email: "",
@@ -31,7 +41,7 @@ export default function SignInForm() {
 						navigate({
 							to: "/home",
 						});
-						toast.success("Sign in successful");
+						toast.success(t("auth.toast.signInSuccess"));
 					},
 					onError: (error) => {
 						if (error.error.status === 403) {
@@ -52,10 +62,7 @@ export default function SignInForm() {
 			);
 		},
 		validators: {
-			onSubmit: z.object({
-				email: z.email("Invalid email address"),
-				password: z.string().min(8, "Password must be at least 8 characters"),
-			}),
+			onSubmit: signInSchema,
 		},
 	});
 
@@ -72,14 +79,16 @@ export default function SignInForm() {
 		>
 			<Logo />
 			<div className="mt-4 mb-6">
-				<h1 className="mb-1 font-bold font-lyon text-3xl">Welcome Back</h1>
+				<h1 className="mb-1 font-bold font-lyon text-3xl">
+					{t("auth.welcomeBack")}
+				</h1>
 				<p className="text-neutral-500 text-sm">
-					Don't have an account?{" "}
+					{t("auth.dontHaveAccount")}{" "}
 					<Link
 						to="/signup"
 						className="cursor-pointer text-lime-600 underline hover:text-lime-600/80"
 					>
-						Sign Up
+						{t("auth.submitSignUp")}
 					</Link>
 				</p>
 			</div>
@@ -129,7 +138,7 @@ export default function SignInForm() {
 							/>
 						</g>
 					</svg>
-					Sign in with Google
+					{t("auth.signInWithGoogle")}
 				</Button>
 				<Button
 					style={{
@@ -155,7 +164,7 @@ export default function SignInForm() {
 					>
 						<path d="M213.803 167.03c.442 47.58 41.74 63.413 42.197 63.615c-.35 1.116-6.599 22.563-21.757 44.716c-13.104 19.153-26.705 38.235-48.13 38.63c-21.05.388-27.82-12.483-51.888-12.483c-24.061 0-31.582 12.088-51.51 12.871c-20.68.783-36.428-20.71-49.64-39.793c-27-39.033-47.633-110.3-19.928-158.406c13.763-23.89 38.36-39.017 65.056-39.405c20.307-.387 39.475 13.662 51.889 13.662c12.406 0 35.699-16.895 60.186-14.414c10.25.427 39.026 4.14 57.503 31.186c-1.49.923-34.335 20.044-33.978 59.822M174.24 50.199c10.98-13.29 18.369-31.79 16.353-50.199c-15.826.636-34.962 10.546-46.314 23.828c-10.173 11.763-19.082 30.589-16.678 48.633c17.64 1.365 35.66-8.964 46.64-22.262" />
 					</svg>
-					Continue with Apple
+					{t("auth.continueWithApple")}
 				</Button>
 			</div>
 			<div className="mt-4 mb-4">
@@ -168,7 +177,7 @@ export default function SignInForm() {
 					</div>
 					<div className="relative flex justify-center text-xs">
 						<span className="bg-white px-2 text-neutral-500">
-							or continue with
+							{t("auth.orContinueWith")}
 						</span>
 					</div>
 				</div>
@@ -187,7 +196,8 @@ export default function SignInForm() {
 						{(field) => (
 							<div className="space-y-2">
 								<Label className="gap-0" htmlFor={field.name}>
-									Email<span className="text-rose-500">&nbsp;*</span>
+									{t("auth.fields.email")}
+									<span className="text-rose-500">&nbsp;*</span>
 								</Label>
 								<Input
 									id={field.name}
@@ -213,13 +223,14 @@ export default function SignInForm() {
 							<div className="space-y-2">
 								<div className="flex items-center justify-between">
 									<Label className="gap-0" htmlFor={field.name}>
-										Password <span className="text-rose-500">&nbsp;*</span>
+										{t("auth.fields.password")}{" "}
+										<span className="text-rose-500">&nbsp;*</span>
 									</Label>
 									<Link
 										to="/forgot-password"
 										className="cursor-pointer text-lime-600 text-sm hover:text-lime-600/80"
 									>
-										Forgot password?
+										{t("auth.forgotPassword")}
 									</Link>
 								</div>
 								<div className="relative">
@@ -273,30 +284,34 @@ export default function SignInForm() {
 									/>
 								</svg>
 							) : (
-								"Sign In"
+								t("auth.submitSignIn")
 							)}
 						</button>
 					)}
 				</form.Subscribe>
 			</form>
 			<p className="mt-4 text-center text-neutral-500 text-xs">
-				By creating or entering an account, you agree to the <br />
-				<Link
-					to="/terms"
-					target="_blank"
-					className="cursor-pointer text-lime-600 underline hover:text-lime-600/80"
-				>
-					Terms of Service
-				</Link>{" "}
-				and{" "}
-				<Link
-					to="/privacy"
-					target="_blank"
-					className="cursor-pointer text-lime-600 underline hover:text-lime-600/80"
-				>
-					Privacy Policy
-				</Link>
-				.
+				<Trans
+					i18nKey="auth.legal"
+					ns="common"
+					components={{
+						br: <br />,
+						terms: (
+							<Link
+								to="/terms"
+								target="_blank"
+								className="cursor-pointer text-lime-600 underline hover:text-lime-600/80"
+							/>
+						),
+						privacy: (
+							<Link
+								to="/privacy"
+								target="_blank"
+								className="cursor-pointer text-lime-600 underline hover:text-lime-600/80"
+							/>
+						),
+					}}
+				/>
 			</p>
 		</motion.div>
 	);

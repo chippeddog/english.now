@@ -25,7 +25,59 @@
     "signOut": "تسجيل الخروج",
     "forgotPassword": "نسيت كلمة المرور؟",
     "resetPassword": "إعادة تعيين كلمة المرور",
-    "alreadyHaveAccount": "لدي حساب بالفعل"
+    "alreadyHaveAccount": "لدي حساب بالفعل",
+    "createAccountTitle": "إنشاء حسابك",
+    "alreadyHaveAccountPrompt": "هل لديك حساب بالفعل؟",
+    "welcomeBack": "مرحبًا بعودتك",
+    "dontHaveAccount": "ليس لديك حساب؟",
+    "continueWithGoogle": "تابع مع جوجل",
+    "signInWithGoogle": "تسجيل الدخول باستخدام جوجل",
+    "continueWithApple": "تابع مع أبل",
+    "orContinueWith": "أو تابع مع",
+    "fields": {
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
+      "password": "كلمة المرور",
+      "confirmPassword": "تأكيد كلمة المرور"
+    },
+    "submitSignUp": "تسجيل",
+    "submitSignIn": "تسجيل الدخول",
+    "legal": "بإنشاء أو دخول حساب، فإنك توافق على <br /><terms>شروط الخدمة</terms> و<privacy>سياسة الخصوصية</privacy>.",
+    "toast": {
+      "signUpSuccess": "تم التسجيل بنجاح",
+      "signInSuccess": "تم تسجيل الدخول بنجاح",
+      "verificationSent": "تم إرسال بريد التحقق",
+      "passwordResetSent": "تم إرسال بريد إعادة تعيين كلمة المرور",
+      "passwordUpdated": "تم تحديث كلمة المرور بنجاح"
+    },
+    "validation": {
+      "nameMin": "يجب أن يكون الاسم على الأقل 2 حروف",
+      "invalidEmail": "عنوان البريد الإلكتروني غير صالح",
+      "passwordMin": "يجب أن تكون كلمة المرور على الأقل 8 حروف"
+    },
+    "verify": {
+      "title": "تأكيد بريدك الإلكتروني",
+      "sentTo": "لقد أرسلنا رابط التحقق إلى",
+      "resend": "إعادة إرسال بريد التحقق",
+      "sending": "جارٍ الإرسال...",
+      "changeEmail": "تغيير البريد الإلكتروني",
+      "spamHint": "لا يمكنك العثور على البريد الإلكتروني؟ تحقق من مجلد الرسائل غير المرغوب فيها أو أعد إرسال رابط جديد.",
+      "logoAlt": "شعار إنجليش ناو"
+    },
+    "reset": {
+      "title": "إعادة تعيين كلمة المرور",
+      "description": "أدخل كلمة المرور الجديدة وقم بتأكيدها لتحديث كلمة المرور الخاصة بك.",
+      "submitting": "جارٍ الإرسال...",
+      "updatePassword": "تحديث كلمة المرور"
+    },
+    "forgot": {
+      "title": "نسيت كلمة المرور",
+      "description": "أدخل عنوان بريدك الإلكتروني وسنرسل لك رمزًا لإعادة تعيين كلمة المرور.",
+      "rememberPassword": "تذكرت كلمة المرور؟",
+      "backToLogin": "العودة إلى تسجيل الدخول",
+      "submitting": "جارٍ الإرسال...",
+      "sendResetLink": "إعادة تعيين كلمة المرور"
+    }
   },
   "nav": {
     "home": "الرئيسية",

@@ -25,7 +25,59 @@
     "signOut": "Sign out",
     "forgotPassword": "Forgot password?",
     "resetPassword": "Reset password",
-    "alreadyHaveAccount": "I already have an account"
+    "alreadyHaveAccount": "I already have an account",
+    "createAccountTitle": "Create your account",
+    "alreadyHaveAccountPrompt": "Already have an account?",
+    "welcomeBack": "Welcome Back",
+    "dontHaveAccount": "Don't have an account?",
+    "continueWithGoogle": "Continue with Google",
+    "signInWithGoogle": "Sign in with Google",
+    "continueWithApple": "Continue with Apple",
+    "orContinueWith": "or continue with",
+    "fields": {
+      "name": "Name",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm Password"
+    },
+    "submitSignUp": "Sign Up",
+    "submitSignIn": "Sign In",
+    "legal": "By creating or entering an account, you agree to the <br /><terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>.",
+    "toast": {
+      "signUpSuccess": "Sign up successful",
+      "signInSuccess": "Sign in successful",
+      "verificationSent": "Verification email sent",
+      "passwordResetSent": "Password reset email sent",
+      "passwordUpdated": "Password updated successfully"
+    },
+    "validation": {
+      "nameMin": "Name must be at least 2 characters",
+      "invalidEmail": "Invalid email address",
+      "passwordMin": "Password must be at least 8 characters"
+    },
+    "verify": {
+      "title": "Confirm your email",
+      "sentTo": "We sent a verification link to",
+      "resend": "Resend verification email",
+      "sending": "Sending...",
+      "changeEmail": "Change Email",
+      "spamHint": "Can't find the email? Check your spam folder or resend a new link.",
+      "logoAlt": "English Now Logo"
+    },
+    "reset": {
+      "title": "Reset Password",
+      "description": "Enter your new password and confirm it to update your password.",
+      "submitting": "Submitting...",
+      "updatePassword": "Update Password"
+    },
+    "forgot": {
+      "title": "Forgot Password",
+      "description": "Enter your email address and we will send you a code to reset your password.",
+      "rememberPassword": "Remember your password?",
+      "backToLogin": "Back to Login",
+      "submitting": "Submitting...",
+      "sendResetLink": "Reset Password"
+    }
   },
   "nav": {
     "home": "Home",

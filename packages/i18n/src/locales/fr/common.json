@@ -25,7 +25,59 @@
     "signOut": "Se déconnecter",
     "forgotPassword": "Mot de passe oublié ?",
     "resetPassword": "Réinitialiser le mot de passe",
-    "alreadyHaveAccount": "J'ai déjà un compte"
+    "alreadyHaveAccount": "J'ai déjà un compte",
+    "createAccountTitle": "Créez votre compte",
+    "alreadyHaveAccountPrompt": "Vous avez déjà un compte ?",
+    "welcomeBack": "Bon retour",
+    "dontHaveAccount": "Vous n'avez pas de compte ?",
+    "continueWithGoogle": "Continuer avec Google",
+    "signInWithGoogle": "Se connecter avec Google",
+    "continueWithApple": "Continuer avec Apple",
+    "orContinueWith": "ou continuer avec",
+    "fields": {
+      "name": "Nom",
+      "email": "Email",
+      "password": "Mot de passe",
+      "confirmPassword": "Confirmer le mot de passe"
+    },
+    "submitSignUp": "S'inscrire",
+    "submitSignIn": "Se connecter",
+    "legal": "En créant ou en entrant dans un compte, vous acceptez les <br /><terms>Conditions d'utilisation</terms> et la <privacy>Politique de confidentialité</privacy>.",
+    "toast": {
+      "signUpSuccess": "Inscription réussie",
+      "signInSuccess": "Connexion réussie",
+      "verificationSent": "Email de vérification envoyé",
+      "passwordResetSent": "Email de réinitialisation du mot de passe envoyé",
+      "passwordUpdated": "Mot de passe mis à jour avec succès"
+    },
+    "validation": {
+      "nameMin": "Le nom doit comporter au moins 2 caractères",
+      "invalidEmail": "Adresse email invalide",
+      "passwordMin": "Le mot de passe doit comporter au moins 8 caractères"
+    },
+    "verify": {
+      "title": "Confirmez votre email",
+      "sentTo": "Nous avons envoyé un lien de vérification à",
+      "resend": "Renvoyer l'email de vérification",
+      "sending": "Envoi en cours...",
+      "changeEmail": "Changer d'email",
+      "spamHint": "Vous ne trouvez pas l'email ? Vérifiez votre dossier spam ou renvoyez un nouveau lien.",
+      "logoAlt": "Logo English Now"
+    },
+    "reset": {
+      "title": "Réinitialiser le mot de passe",
+      "description": "Entrez votre nouveau mot de passe et confirmez-le pour mettre à jour votre mot de passe.",
+      "submitting": "Soumission en cours...",
+      "updatePassword": "Mettre à jour le mot de passe"
+    },
+    "forgot": {
+      "title": "Mot de passe oublié",
+      "description": "Entrez votre adresse email et nous vous enverrons un code pour réinitialiser votre mot de passe.",
+      "rememberPassword": "Vous vous souvenez de votre mot de passe ?",
+      "backToLogin": "Retour à la connexion",
+      "submitting": "Soumission en cours...",
+      "sendResetLink": "Réinitialiser le mot de passe"
+    }
   },
   "nav": {
     "home": "Accueil",

@@ -25,7 +25,59 @@
     "signOut": "Çıkış yap",
     "forgotPassword": "Şifrenizi mi unuttunuz?",
     "resetPassword": "Şifreyi sıfırla",
-    "alreadyHaveAccount": "Zaten bir hesabım var"
+    "alreadyHaveAccount": "Zaten bir hesabım var",
+    "createAccountTitle": "Hesabınızı oluşturun",
+    "alreadyHaveAccountPrompt": "Zaten bir hesabınız var mı?",
+    "welcomeBack": "Tekrar Hoş Geldiniz",
+    "dontHaveAccount": "Hesabınız yok mu?",
+    "continueWithGoogle": "Google ile devam et",
+    "signInWithGoogle": "Google ile giriş yap",
+    "continueWithApple": "Apple ile devam et",
+    "orContinueWith": "veya devam et",
+    "fields": {
+      "name": "İsim",
+      "email": "E-posta",
+      "password": "Şifre",
+      "confirmPassword": "Şifreyi Onayla"
+    },
+    "submitSignUp": "Kaydol",
+    "submitSignIn": "Giriş Yap",
+    "legal": "Bir hesap oluşturarak veya giriş yaparak <br /><terms>Hizmet Şartları</terms> ve <privacy>Gizlilik Politikası</privacy>'nı kabul etmiş olursunuz.",
+    "toast": {
+      "signUpSuccess": "Kayıt başarılı",
+      "signInSuccess": "Giriş başarılı",
+      "verificationSent": "Doğrulama e-postası gönderildi",
+      "passwordResetSent": "Şifre sıfırlama e-postası gönderildi",
+      "passwordUpdated": "Şifre başarıyla güncellendi"
+    },
+    "validation": {
+      "nameMin": "İsim en az 2 karakter olmalıdır",
+      "invalidEmail": "Geçersiz e-posta adresi",
+      "passwordMin": "Şifre en az 8 karakter olmalıdır"
+    },
+    "verify": {
+      "title": "E-postanızı doğrulayın",
+      "sentTo": "Doğrulama bağlantısını şu adrese gönderdik",
+      "resend": "Doğrulama e-postasını tekrar gönder",
+      "sending": "Gönderiliyor...",
+      "changeEmail": "E-postayı Değiştir",
+      "spamHint": "E-postayı bulamıyor musunuz? Spam klasörünüzü kontrol edin veya yeni bir bağlantı gönderin.",
+      "logoAlt": "English Now Logosu"
+    },
+    "reset": {
+      "title": "Şifreyi Sıfırla",
+      "description": "Yeni şifrenizi girin ve güncellemek için onaylayın.",
+      "submitting": "Gönderiliyor...",
+      "updatePassword": "Şifreyi Güncelle"
+    },
+    "forgot": {
+      "title": "Şifremi Unuttum",
+      "description": "E-posta adresinizi girin, şifrenizi sıfırlamak için size bir kod göndereceğiz.",
+      "rememberPassword": "Şifrenizi hatırlıyor musunuz?",
+      "backToLogin": "Girişe Dön",
+      "submitting": "Gönderiliyor...",
+      "sendResetLink": "Şifreyi Sıfırla"
+    }
   },
   "nav": {
     "home": "Ana Sayfa",

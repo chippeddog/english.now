@@ -54,6 +54,8 @@ type ConversationSettingsDrawerProps = {
 	setSelectedDevice: (deviceId: string) => void;
 	autoTranslate: boolean;
 	onAutoTranslateChange: (enabled: boolean) => void;
+	autoPlay: boolean;
+	onAutoPlayChange: (enabled: boolean) => void;
 };
 
 export default function ConversationSettingsDrawer({
@@ -64,6 +66,8 @@ export default function ConversationSettingsDrawer({
 	setSelectedDevice,
 	autoTranslate,
 	onAutoTranslateChange,
+	autoPlay,
+	onAutoPlayChange,
 }: ConversationSettingsDrawerProps) {
 	const trpc = useTRPC();
 	const queryClient = useQueryClient();
@@ -144,11 +148,13 @@ export default function ConversationSettingsDrawer({
 	return (
 		<Drawer open={open} onOpenChange={onOpenChange} direction="right">
 			<DrawerContent
-				className="flex h-dvh w-full max-w-sm flex-col gap-0 overflow-hidden rounded-none rounded-l-[28px] border-black/5 p-0 shadow-2xl sm:max-w-md"
+				className="flex h-dvh w-full max-w-sm flex-col gap-0 overflow-hidden rounded-none rounded-l-3xl border-black/5 p-0 shadow-2xl sm:max-w-md"
 				aria-describedby="conversation-settings-description"
 			>
 				<DrawerHeader className="gap-1.5 border-black/5 border-b px-6 py-5 text-left">
-					<DrawerTitle>Settings</DrawerTitle>
+					<DrawerTitle className="font-bold font-lyon text-xl">
+						Settings
+					</DrawerTitle>
 					<DrawerClose asChild>
 						<button
 							type="button"
@@ -297,6 +303,7 @@ export default function ConversationSettingsDrawer({
 							</Button>
 						</div>
 					</section>
+					<hr className="my-5 border-neutral-200 border-dashed" />
 					<section className="flex items-center justify-between gap-4">
 						<div>
 							<p className="font-medium text-sm">Auto-translate</p>
@@ -305,6 +312,12 @@ export default function ConversationSettingsDrawer({
 							checked={autoTranslate}
 							onCheckedChange={onAutoTranslateChange}
 						/>
+					</section>
+					<section className="flex items-center justify-between gap-4">
+						<div>
+							<p className="font-medium text-sm">Auto-play</p>
+						</div>
+						<Switch checked={autoPlay} onCheckedChange={onAutoPlayChange} />
 					</section>
 				</div>
 			</DrawerContent>

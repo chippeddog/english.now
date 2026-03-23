@@ -25,7 +25,59 @@
     "signOut": "Esci",
     "forgotPassword": "Password dimenticata?",
     "resetPassword": "Reimposta password",
-    "alreadyHaveAccount": "Ho già un account"
+    "alreadyHaveAccount": "Ho già un account",
+    "createAccountTitle": "Crea il tuo account",
+    "alreadyHaveAccountPrompt": "Hai già un account?",
+    "welcomeBack": "Bentornato",
+    "dontHaveAccount": "Non hai un account?",
+    "continueWithGoogle": "Continua con Google",
+    "signInWithGoogle": "Accedi con Google",
+    "continueWithApple": "Continua con Apple",
+    "orContinueWith": "o continua con",
+    "fields": {
+      "name": "Nome",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Conferma Password"
+    },
+    "submitSignUp": "Registrati",
+    "submitSignIn": "Accedi",
+    "legal": "Creando o accedendo a un account, accetti i <br /><terms>Termini di Servizio</terms> e la <privacy>Politica sulla Privacy</privacy>.",
+    "toast": {
+      "signUpSuccess": "Registrazione avvenuta con successo",
+      "signInSuccess": "Accesso avvenuto con successo",
+      "verificationSent": "Email di verifica inviata",
+      "passwordResetSent": "Email per il reset della password inviata",
+      "passwordUpdated": "Password aggiornata con successo"
+    },
+    "validation": {
+      "nameMin": "Il nome deve essere di almeno 2 caratteri",
+      "invalidEmail": "Indirizzo email non valido",
+      "passwordMin": "La password deve essere di almeno 8 caratteri"
+    },
+    "verify": {
+      "title": "Conferma la tua email",
+      "sentTo": "Abbiamo inviato un link di verifica a",
+      "resend": "Reinvia email di verifica",
+      "sending": "Invio in corso...",
+      "changeEmail": "Cambia Email",
+      "spamHint": "Non trovi l'email? Controlla la cartella spam o reinvia un nuovo link.",
+      "logoAlt": "Logo English Now"
+    },
+    "reset": {
+      "title": "Reimposta Password",
+      "description": "Inserisci la tua nuova password e confermala per aggiornare la tua password.",
+      "submitting": "Invio in corso...",
+      "updatePassword": "Aggiorna Password"
+    },
+    "forgot": {
+      "title": "Password Dimenticata",
+      "description": "Inserisci il tuo indirizzo email e ti invieremo un codice per reimpostare la tua password.",
+      "rememberPassword": "Ricordi la tua password?",
+      "backToLogin": "Torna al Login",
+      "submitting": "Invio in corso...",
+      "sendResetLink": "Reimposta Password"
+    }
   },
   "nav": {
     "home": "Home",

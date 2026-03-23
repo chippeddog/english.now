@@ -25,7 +25,59 @@
     "signOut": "Cerrar sesión",
     "forgotPassword": "¿Olvidó su contraseña?",
     "resetPassword": "Restablecer contraseña",
-    "alreadyHaveAccount": "Ya tengo una cuenta"
+    "alreadyHaveAccount": "Ya tengo una cuenta",
+    "createAccountTitle": "Crea tu cuenta",
+    "alreadyHaveAccountPrompt": "¿Ya tienes una cuenta?",
+    "welcomeBack": "Bienvenido de nuevo",
+    "dontHaveAccount": "¿No tienes una cuenta?",
+    "continueWithGoogle": "Continuar con Google",
+    "signInWithGoogle": "Iniciar sesión con Google",
+    "continueWithApple": "Continuar con Apple",
+    "orContinueWith": "o continuar con",
+    "fields": {
+      "name": "Nombre",
+      "email": "Correo electrónico",
+      "password": "Contraseña",
+      "confirmPassword": "Confirmar contraseña"
+    },
+    "submitSignUp": "Regístrate",
+    "submitSignIn": "Iniciar sesión",
+    "legal": "Al crear o ingresar a una cuenta, aceptas los <br /><terms>Términos de servicio</terms> y la <privacy>Política de privacidad</privacy>.",
+    "toast": {
+      "signUpSuccess": "Registro exitoso",
+      "signInSuccess": "Inicio de sesión exitoso",
+      "verificationSent": "Correo de verificación enviado",
+      "passwordResetSent": "Correo de restablecimiento de contraseña enviado",
+      "passwordUpdated": "Contraseña actualizada con éxito"
+    },
+    "validation": {
+      "nameMin": "El nombre debe tener al menos 2 caracteres",
+      "invalidEmail": "Dirección de correo electrónico no válida",
+      "passwordMin": "La contraseña debe tener al menos 8 caracteres"
+    },
+    "verify": {
+      "title": "Confirma tu correo electrónico",
+      "sentTo": "Enviamos un enlace de verificación a",
+      "resend": "Reenviar correo de verificación",
+      "sending": "Enviando...",
+      "changeEmail": "Cambiar correo electrónico",
+      "spamHint": "¿No encuentras el correo? Revisa tu carpeta de spam o reenvía un nuevo enlace.",
+      "logoAlt": "Logo de English Now"
+    },
+    "reset": {
+      "title": "Restablecer contraseña",
+      "description": "Ingresa tu nueva contraseña y confírmala para actualizar tu contraseña.",
+      "submitting": "Enviando...",
+      "updatePassword": "Actualizar contraseña"
+    },
+    "forgot": {
+      "title": "Olvidé mi contraseña",
+      "description": "Ingresa tu dirección de correo electrónico y te enviaremos un código para restablecer tu contraseña.",
+      "rememberPassword": "¿Recuerdas tu contraseña?",
+      "backToLogin": "Volver al inicio de sesión",
+      "submitting": "Enviando...",
+      "sendResetLink": "Restablecer contraseña"
+    }
   },
   "nav": {
     "home": "Inicio",

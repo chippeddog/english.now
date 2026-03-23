@@ -25,7 +25,59 @@
     "signOut": "Вийти",
     "forgotPassword": "Забули пароль?",
     "resetPassword": "Скинути пароль",
-    "alreadyHaveAccount": "У мене вже є акаунт"
+    "alreadyHaveAccount": "У мене вже є акаунт",
+    "createAccountTitle": "Створіть свій обліковий запис",
+    "alreadyHaveAccountPrompt": "Вже маєте обліковий запис?",
+    "welcomeBack": "Ласкаво просимо",
+    "dontHaveAccount": "Не маєте облікового запису?",
+    "continueWithGoogle": "Продовжити з Google",
+    "signInWithGoogle": "Увійти через Google",
+    "continueWithApple": "Продовжити з Apple",
+    "orContinueWith": "або продовжити з",
+    "fields": {
+      "name": "Ім'я",
+      "email": "Email",
+      "password": "Пароль",
+      "confirmPassword": "Підтвердьте пароль"
+    },
+    "submitSignUp": "Зареєструватися",
+    "submitSignIn": "Увійти",
+    "legal": "Створюючи або входячи в обліковий запис, ви погоджуєтеся з <br /><terms>Умовами обслуговування</terms> та <privacy>Політикою конфіденційності</privacy>.",
+    "toast": {
+      "signUpSuccess": "Реєстрація успішна",
+      "signInSuccess": "Вхід успішний",
+      "verificationSent": "Лист для підтвердження надіслано",
+      "passwordResetSent": "Лист для скидання пароля надіслано",
+      "passwordUpdated": "Пароль успішно оновлено"
+    },
+    "validation": {
+      "nameMin": "Ім'я повинно містити щонайменше 2 символи",
+      "invalidEmail": "Неправильна електронна адреса",
+      "passwordMin": "Пароль повинен містити щонайменше 8 символів"
+    },
+    "verify": {
+      "title": "Підтвердіть вашу електронну пошту",
+      "sentTo": "Ми надіслали посилання для підтвердження на",
+      "resend": "Надіслати лист для підтвердження ще раз",
+      "sending": "Надсилання...",
+      "changeEmail": "Змінити електронну пошту",
+      "spamHint": "Не можете знайти лист? Перевірте папку зі спамом або надішліть нове посилання.",
+      "logoAlt": "Логотип English Now"
+    },
+    "reset": {
+      "title": "Скидання пароля",
+      "description": "Введіть новий пароль і підтвердьте його, щоб оновити пароль.",
+      "submitting": "Надсилання...",
+      "updatePassword": "Оновити пароль"
+    },
+    "forgot": {
+      "title": "Забули пароль",
+      "description": "Введіть вашу електронну адресу, і ми надішлемо вам код для скидання пароля.",
+      "rememberPassword": "Згадали пароль?",
+      "backToLogin": "Повернутися до входу",
+      "submitting": "Надсилання...",
+      "sendResetLink": "Скинути пароль"
+    }
   },
   "nav": {
     "home": "Головна",

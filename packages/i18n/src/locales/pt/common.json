@@ -25,7 +25,59 @@
     "signOut": "Sair",
     "forgotPassword": "Esqueceu a senha?",
     "resetPassword": "Redefinir senha",
-    "alreadyHaveAccount": "Já tenho uma conta"
+    "alreadyHaveAccount": "Já tenho uma conta",
+    "createAccountTitle": "Crie sua conta",
+    "alreadyHaveAccountPrompt": "Já tem uma conta?",
+    "welcomeBack": "Bem-vindo de volta",
+    "dontHaveAccount": "Não tem uma conta?",
+    "continueWithGoogle": "Continuar com o Google",
+    "signInWithGoogle": "Entrar com o Google",
+    "continueWithApple": "Continuar com a Apple",
+    "orContinueWith": "ou continuar com",
+    "fields": {
+      "name": "Nome",
+      "email": "Email",
+      "password": "Senha",
+      "confirmPassword": "Confirmar Senha"
+    },
+    "submitSignUp": "Cadastrar-se",
+    "submitSignIn": "Entrar",
+    "legal": "Ao criar ou entrar em uma conta, você concorda com os <br /><terms>Termos de Serviço</terms> e a <privacy>Política de Privacidade</privacy>.",
+    "toast": {
+      "signUpSuccess": "Cadastro realizado com sucesso",
+      "signInSuccess": "Login realizado com sucesso",
+      "verificationSent": "Email de verificação enviado",
+      "passwordResetSent": "Email de redefinição de senha enviado",
+      "passwordUpdated": "Senha atualizada com sucesso"
+    },
+    "validation": {
+      "nameMin": "O nome deve ter pelo menos 2 caracteres",
+      "invalidEmail": "Endereço de email inválido",
+      "passwordMin": "A senha deve ter pelo menos 8 caracteres"
+    },
+    "verify": {
+      "title": "Confirme seu email",
+      "sentTo": "Enviamos um link de verificação para",
+      "resend": "Reenviar email de verificação",
+      "sending": "Enviando...",
+      "changeEmail": "Alterar Email",
+      "spamHint": "Não encontrou o email? Verifique sua pasta de spam ou reenvie um novo link.",
+      "logoAlt": "Logo do English Now"
+    },
+    "reset": {
+      "title": "Redefinir Senha",
+      "description": "Digite sua nova senha e confirme-a para atualizar sua senha.",
+      "submitting": "Enviando...",
+      "updatePassword": "Atualizar Senha"
+    },
+    "forgot": {
+      "title": "Esqueceu a Senha",
+      "description": "Digite seu endereço de email e enviaremos um código para redefinir sua senha.",
+      "rememberPassword": "Lembrou sua senha?",
+      "backToLogin": "Voltar para Login",
+      "submitting": "Enviando...",
+      "sendResetLink": "Redefinir Senha"
+    }
   },
   "nav": {
     "home": "Início",

@@ -1,6 +1,8 @@
+import { useTranslation } from "@english.now/i18n";
 import { useForm } from "@tanstack/react-form";
 import { useNavigate } from "@tanstack/react-router";
 import { motion } from "motion/react";
+import { useMemo } from "react";
 import { toast } from "sonner";
 import z from "zod";
 import { authClient } from "@/lib/auth-client";
@@ -13,7 +15,16 @@ type ResetPassFormProps = {
 };
 
 export default function ResetPassForm({ token }: ResetPassFormProps) {
+	const { t } = useTranslation("common");
 	const navigate = useNavigate();
+	const resetSchema = useMemo(
+		() =>
+			z.object({
+				password: z.string().min(8, t("auth.validation.passwordMin")),
+				confirmPassword: z.string().min(8, t("auth.validation.passwordMin")),
+			}),
+		[t],
+	);
 	const form = useForm({
 		defaultValues: {
 			password: "",
@@ -27,7 +38,7 @@ export default function ResetPassForm({ token }: ResetPassFormProps) {
 				},
 				{
 					onSuccess: () => {
-						toast.success("Password updated successfully");
+						toast.success(t("auth.toast.passwordUpdated"));
 						navigate({
 							to: "/login",
 						});
@@ -39,12 +50,7 @@ export default function ResetPassForm({ token }: ResetPassFormProps) {
 			);
 		},
 		validators: {
-			onSubmit: z.object({
-				password: z.string().min(8, "Password must be at least 8 characters"),
-				confirmPassword: z
-					.string()
-					.min(8, "Password must be at least 8 characters"),
-			}),
+			onSubmit: resetSchema,
 		},
 	});
 
@@ -61,9 +67,11 @@ export default function ResetPassForm({ token }: ResetPassFormProps) {
 		>
 			<Logo />
 			<div className="mt-3 mb-6">
-				<h1 className="mb-1 font-bold font-lyon text-3xl">Reset Password</h1>
+				<h1 className="mb-1 font-bold font-lyon text-3xl">
+					{t("auth.reset.title")}
+				</h1>
 				<p className="text-neutral-500 text-sm">
-					Enter your new password and confirm it to update your password.
+					{t("auth.reset.description")}
 				</p>
 			</div>
 
@@ -80,7 +88,8 @@ export default function ResetPassForm({ token }: ResetPassFormProps) {
 						{(field) => (
 							<div className="space-y-2">
 								<Label className="gap-0" htmlFor={field.name}>
-									Password<span className="text-rose-500">&nbsp;*</span>
+									{t("auth.fields.password")}
+									<span className="text-rose-500">&nbsp;*</span>
 								</Label>
 								<Input
 									id={field.name}
@@ -105,7 +114,8 @@ export default function ResetPassForm({ token }: ResetPassFormProps) {
 						{(field) => (
 							<div className="space-y-2">
 								<Label className="gap-0" htmlFor={field.name}>
-									Confirm Password<span className="text-rose-500">&nbsp;*</span>
+									{t("auth.fields.confirmPassword")}
+									<span className="text-rose-500">&nbsp;*</span>
 								</Label>
 								<Input
 									id={field.name}
@@ -131,7 +141,9 @@ export default function ResetPassForm({ token }: ResetPassFormProps) {
 							className="flex h-10 w-full cursor-pointer items-center justify-center rounded-lg border border-[#C6F64D] bg-[radial-gradient(100%_100%_at_50%_0%,#EFFF9B_0%,#D8FF76_60%,#C6F64D_100%)] px-3 py-1 font-semibold text-lime-900 text-sm transition-all duration-150 ease-in-out hover:brightness-95"
 							disabled={!state.canSubmit || state.isSubmitting}
 						>
-							{state.isSubmitting ? "Submitting..." : "Update Password"}
+							{state.isSubmitting
+								? t("auth.reset.submitting")
+								: t("auth.reset.updatePassword")}
 						</button>
 					)}
 				</form.Subscribe>

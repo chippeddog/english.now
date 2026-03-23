@@ -25,7 +25,59 @@
     "signOut": "サインアウト",
     "forgotPassword": "パスワードをお忘れですか？",
     "resetPassword": "パスワードをリセット",
-    "alreadyHaveAccount": "すでにアカウントをお持ちです"
+    "alreadyHaveAccount": "すでにアカウントをお持ちです",
+    "createAccountTitle": "アカウントを作成",
+    "alreadyHaveAccountPrompt": "すでにアカウントをお持ちですか？",
+    "welcomeBack": "お帰りなさい",
+    "dontHaveAccount": "アカウントをお持ちでないですか？",
+    "continueWithGoogle": "Googleで続行",
+    "signInWithGoogle": "Googleでサインイン",
+    "continueWithApple": "Appleで続行",
+    "orContinueWith": "または続行",
+    "fields": {
+      "name": "名前",
+      "email": "メールアドレス",
+      "password": "パスワード",
+      "confirmPassword": "パスワード確認"
+    },
+    "submitSignUp": "サインアップ",
+    "submitSignIn": "サインイン",
+    "legal": "アカウントを作成またはログインすることで、<br /><terms>利用規約</terms>および<privacy>プライバシーポリシー</privacy>に同意したものとみなされます。",
+    "toast": {
+      "signUpSuccess": "サインアップに成功しました",
+      "signInSuccess": "サインインに成功しました",
+      "verificationSent": "確認メールを送信しました",
+      "passwordResetSent": "パスワードリセットメールを送信しました",
+      "passwordUpdated": "パスワードが正常に更新されました"
+    },
+    "validation": {
+      "nameMin": "名前は2文字以上である必要があります",
+      "invalidEmail": "無効なメールアドレスです",
+      "passwordMin": "パスワードは8文字以上である必要があります"
+    },
+    "verify": {
+      "title": "メールを確認",
+      "sentTo": "確認リンクを送信しました",
+      "resend": "確認メールを再送信",
+      "sending": "送信中...",
+      "changeEmail": "メールアドレスを変更",
+      "spamHint": "メールが見つかりませんか？スパムフォルダを確認するか、新しいリンクを再送信してください。",
+      "logoAlt": "English Now ロゴ"
+    },
+    "reset": {
+      "title": "パスワードをリセット",
+      "description": "新しいパスワードを入力し、確認してパスワードを更新してください。",
+      "submitting": "送信中...",
+      "updatePassword": "パスワードを更新"
+    },
+    "forgot": {
+      "title": "パスワードを忘れた",
+      "description": "メールアドレスを入力すると、パスワードをリセットするためのコードを送信します。",
+      "rememberPassword": "パスワードを覚えていますか？",
+      "backToLogin": "ログインに戻る",
+      "submitting": "送信中...",
+      "sendResetLink": "パスワードをリセット"
+    }
   },
   "nav": {
     "home": "ホーム",

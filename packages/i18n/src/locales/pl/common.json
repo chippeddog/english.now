@@ -25,7 +25,59 @@
     "signOut": "Wyloguj się",
     "forgotPassword": "Zapomniałeś hasła?",
     "resetPassword": "Zresetuj hasło",
-    "alreadyHaveAccount": "Mam już konto"
+    "alreadyHaveAccount": "Mam już konto",
+    "createAccountTitle": "Utwórz swoje konto",
+    "alreadyHaveAccountPrompt": "Masz już konto?",
+    "welcomeBack": "Witamy ponownie",
+    "dontHaveAccount": "Nie masz konta?",
+    "continueWithGoogle": "Kontynuuj z Google",
+    "signInWithGoogle": "Zaloguj się przez Google",
+    "continueWithApple": "Kontynuuj z Apple",
+    "orContinueWith": "lub kontynuuj z",
+    "fields": {
+      "name": "Imię",
+      "email": "Email",
+      "password": "Hasło",
+      "confirmPassword": "Potwierdź hasło"
+    },
+    "submitSignUp": "Zarejestruj się",
+    "submitSignIn": "Zaloguj się",
+    "legal": "Tworząc lub wchodząc na konto, zgadzasz się na <br /><terms>Warunki usługi</terms> i <privacy>Politykę prywatności</privacy>.",
+    "toast": {
+      "signUpSuccess": "Rejestracja zakończona sukcesem",
+      "signInSuccess": "Logowanie zakończone sukcesem",
+      "verificationSent": "Email weryfikacyjny wysłany",
+      "passwordResetSent": "Email do resetowania hasła wysłany",
+      "passwordUpdated": "Hasło zaktualizowane pomyślnie"
+    },
+    "validation": {
+      "nameMin": "Imię musi mieć co najmniej 2 znaki",
+      "invalidEmail": "Nieprawidłowy adres email",
+      "passwordMin": "Hasło musi mieć co najmniej 8 znaków"
+    },
+    "verify": {
+      "title": "Potwierdź swój email",
+      "sentTo": "Wysłaliśmy link weryfikacyjny na",
+      "resend": "Wyślij ponownie email weryfikacyjny",
+      "sending": "Wysyłanie...",
+      "changeEmail": "Zmień email",
+      "spamHint": "Nie możesz znaleźć emaila? Sprawdź folder spam lub wyślij nowy link.",
+      "logoAlt": "Logo English Now"
+    },
+    "reset": {
+      "title": "Zresetuj hasło",
+      "description": "Wprowadź nowe hasło i potwierdź je, aby zaktualizować swoje hasło.",
+      "submitting": "Przesyłanie...",
+      "updatePassword": "Zaktualizuj hasło"
+    },
+    "forgot": {
+      "title": "Zapomniałeś hasła",
+      "description": "Wprowadź swój adres email, a my wyślemy Ci kod do zresetowania hasła.",
+      "rememberPassword": "Pamiętasz swoje hasło?",
+      "backToLogin": "Powrót do logowania",
+      "submitting": "Przesyłanie...",
+      "sendResetLink": "Zresetuj hasło"
+    }
   },
   "nav": {
     "home": "Strona główna",

@@ -25,7 +25,59 @@
     "signOut": "साइन आउट करें",
     "forgotPassword": "पासवर्ड भूल गए?",
     "resetPassword": "पासवर्ड रीसेट करें",
-    "alreadyHaveAccount": "मेरे पास पहले से एक खाता है"
+    "alreadyHaveAccount": "मेरे पास पहले से एक खाता है",
+    "createAccountTitle": "अपना खाता बनाएँ",
+    "alreadyHaveAccountPrompt": "पहले से खाता है?",
+    "welcomeBack": "वापसी पर स्वागत है",
+    "dontHaveAccount": "खाता नहीं है?",
+    "continueWithGoogle": "Google के साथ जारी रखें",
+    "signInWithGoogle": "Google के साथ साइन इन करें",
+    "continueWithApple": "Apple के साथ जारी रखें",
+    "orContinueWith": "या इसके साथ जारी रखें",
+    "fields": {
+      "name": "नाम",
+      "email": "ईमेल",
+      "password": "पासवर्ड",
+      "confirmPassword": "पासवर्ड की पुष्टि करें"
+    },
+    "submitSignUp": "साइन अप करें",
+    "submitSignIn": "साइन इन करें",
+    "legal": "खाता बनाने या प्रवेश करने पर, आप <br /><terms>सेवा की शर्तों</terms> और <privacy>गोपनीयता नीति</privacy> से सहमत होते हैं।",
+    "toast": {
+      "signUpSuccess": "साइन अप सफल",
+      "signInSuccess": "साइन इन सफल",
+      "verificationSent": "सत्यापन ईमेल भेजा गया",
+      "passwordResetSent": "पासवर्ड रीसेट ईमेल भेजा गया",
+      "passwordUpdated": "पासवर्ड सफलतापूर्वक अपडेट किया गया"
+    },
+    "validation": {
+      "nameMin": "नाम कम से कम 2 अक्षरों का होना चाहिए",
+      "invalidEmail": "अमान्य ईमेल पता",
+      "passwordMin": "पासवर्ड कम से कम 8 अक्षरों का होना चाहिए"
+    },
+    "verify": {
+      "title": "अपना ईमेल पुष्टि करें",
+      "sentTo": "हमने सत्यापन लिंक भेजा है",
+      "resend": "सत्यापन ईमेल पुनः भेजें",
+      "sending": "भेजा जा रहा है...",
+      "changeEmail": "ईमेल बदलें",
+      "spamHint": "ईमेल नहीं मिल रहा है? अपने स्पैम फ़ोल्डर की जाँच करें या नया लिंक पुनः भेजें।",
+      "logoAlt": "इंग्लिश नाउ लोगो"
+    },
+    "reset": {
+      "title": "पासवर्ड रीसेट करें",
+      "description": "अपना नया पासवर्ड दर्ज करें और उसे अपडेट करने के लिए पुष्टि करें।",
+      "submitting": "प्रस्तुत कर रहे हैं...",
+      "updatePassword": "पासवर्ड अपडेट करें"
+    },
+    "forgot": {
+      "title": "पासवर्ड भूल गए",
+      "description": "अपना ईमेल पता दर्ज करें और हम आपको पासवर्ड रीसेट करने के लिए एक कोड भेजेंगे।",
+      "rememberPassword": "क्या आपको अपना पासवर्ड याद है?",
+      "backToLogin": "लॉगिन पर वापस जाएँ",
+      "submitting": "प्रस्तुत कर रहे हैं...",
+      "sendResetLink": "पासवर्ड रीसेट करें"
+    }
   },
   "nav": {
     "home": "मुख्य पृष्ठ",

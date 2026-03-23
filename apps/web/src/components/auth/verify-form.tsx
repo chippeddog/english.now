@@ -1,3 +1,4 @@
+import { useTranslation } from "@english.now/i18n";
 import { useNavigate } from "@tanstack/react-router";
 import { Loader } from "lucide-react";
 import { motion } from "motion/react";
@@ -11,6 +12,7 @@ type VerifyFormProps = {
 };
 
 export default function VerifyForm({ email }: VerifyFormProps) {
+	const { t } = useTranslation("common");
 	const navigate = useNavigate();
 	const [isResending, setIsResending] = useState(false);
 
@@ -25,7 +27,7 @@ export default function VerifyForm({ email }: VerifyFormProps) {
 				},
 				{
 					onSuccess: () => {
-						toast.success("Verification email sent");
+						toast.success(t("auth.toast.verificationSent"));
 					},
 					onError: (error) => {
 						toast.error(error.error.message || error.error.statusText);
@@ -63,18 +65,16 @@ export default function VerifyForm({ email }: VerifyFormProps) {
 						<img
 							className="absolute bottom-[-10px] h-full w-full object-contain"
 							src="/logo-404.svg"
-							alt="English Now Logo"
+							alt={t("auth.verify.logoAlt")}
 							width={62}
 							height={62}
 						/>
 					</div>
 				</div>
 				<h1 className="mb-2 font-bold font-lyon text-3xl">
-					Confirm your email
+					{t("auth.verify.title")}
 				</h1>
-				<p className="text-neutral-500 text-sm">
-					We sent a verification link to
-				</p>
+				<p className="text-neutral-500 text-sm">{t("auth.verify.sentTo")}</p>
 				<p className="mt-2 break-all font-medium text-neutral-900 text-sm italic">
 					{email}
 				</p>
@@ -90,10 +90,10 @@ export default function VerifyForm({ email }: VerifyFormProps) {
 					{isResending ? (
 						<>
 							<Loader className="size-4 animate-spin" />
-							Sending...
+							{t("auth.verify.sending")}
 						</>
 					) : (
-						"Resend verification email"
+						t("auth.verify.resend")
 					)}
 				</Button>
 				<Button
@@ -102,12 +102,12 @@ export default function VerifyForm({ email }: VerifyFormProps) {
 					onClick={handleChangeEmail}
 					className="h-10 w-full cursor-pointer"
 				>
-					Change Email
+					{t("auth.verify.changeEmail")}
 				</Button>
 			</div>
 
 			<p className="mt-4 text-center text-neutral-500 text-sm">
-				Can't find the email? Check your spam folder or resend a new link.
+				{t("auth.verify.spamHint")}
 			</p>
 		</motion.div>
 	);
