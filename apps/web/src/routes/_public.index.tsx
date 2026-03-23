@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Compare } from "@/components/home/compare";
 import FAQ from "@/components/home/faq";
 import { Features } from "@/components/home/features";
-import { Features as FeaturesA } from "@/components/home/features_a";
+// import { Features as FeaturesA } from "@/components/home/features_a";
 import Hero from "@/components/home/hero";
 import { Letter } from "@/components/home/letter";
 import { Pricing } from "@/components/home/pricing";
