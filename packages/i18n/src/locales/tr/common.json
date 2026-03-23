@@ -89,5 +89,20 @@
     "about": "Hakkında",
     "features": "Özellikler",
     "blog": "Blog"
+  },
+  "contact": {
+    "title": "İletişime geçin",
+    "subtitle": "Bize ulaşın - saatler içinde yanıt veriyoruz, günler değil.",
+    "toastFillAll": "Lütfen tüm alanları doldurun.",
+    "toastSuccess": "Mesaj gönderildi. Size yakında geri döneceğiz.",
+    "nameLabel": "Adınız",
+    "namePlaceholder": "Adınız",
+    "emailLabel": "E-posta adresiniz",
+    "emailPlaceholder": "sizin@email.com",
+    "messageLabel": "Mesaj",
+    "messagePlaceholder": "Ne hakkında konuşmak istersiniz? (örneğin, geri bildirim, sorular, iş birliği fikirleri, herhangi bir şey.)",
+    "legal": "Formu göndererek <terms>Hizmet Şartlarımızı</terms> ve <privacy>Gizlilik Politikamızı</privacy> kabul etmiş olursunuz.",
+    "sending": "Gönderiliyor...",
+    "sendMessage": "Mesaj gönder"
   }
 }

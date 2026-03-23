@@ -89,5 +89,20 @@
     "about": "소개",
     "features": "기능",
     "blog": "블로그"
+  },
+  "contact": {
+    "title": "연락하기",
+    "subtitle": "연락하세요 - 우리는 며칠이 아닌 몇 시간 내에 응답합니다.",
+    "toastFillAll": "모든 필드를 작성해 주세요.",
+    "toastSuccess": "메시지가 전송되었습니다. 곧 연락드리겠습니다.",
+    "nameLabel": "귀하의 이름",
+    "namePlaceholder": "귀하의 이름",
+    "emailLabel": "귀하의 이메일",
+    "emailPlaceholder": "your@email.com",
+    "messageLabel": "메시지",
+    "messagePlaceholder": "무엇을 논의하고 싶으신가요? (예: 피드백, 질문, 파트너십 아이디어 등)",
+    "legal": "양식을 제출함으로써 귀하는 우리의 <terms>서비스 약관</terms> 및 <privacy>개인정보 보호정책</privacy>에 동의하는 것입니다.",
+    "sending": "전송 중...",
+    "sendMessage": "메시지 보내기"
   }
 }

@@ -37,6 +37,7 @@ export const env = createEnv({
 		AUTOSEND_RESET_PASSWORD_TEMPLATE_ID: z.string().min(1),
 		AUTOSEND_VERIFY_EMAIL_TEMPLATE_ID: z.string().min(1),
 		EMAIL_FROM: z.email().default("noreply@english.now"),
+		CONTACT_INBOX_EMAIL: z.email().default("hello@english.now"),
 
 		// Paddle Payments
 		PADDLE_API_KEY: z.string().min(1),

@@ -89,5 +89,20 @@
     "about": "حول",
     "features": "الميزات",
     "blog": "مدونة"
+  },
+  "contact": {
+    "title": "تواصل معنا",
+    "subtitle": "اتصل بنا - نرد في غضون ساعات، وليس أيام.",
+    "toastFillAll": "يرجى ملء جميع الحقول.",
+    "toastSuccess": "تم إرسال الرسالة. سنعود إليك قريبًا.",
+    "nameLabel": "اسمك",
+    "namePlaceholder": "اسمك",
+    "emailLabel": "بريدك الإلكتروني",
+    "emailPlaceholder": "your@email.com",
+    "messageLabel": "رسالة",
+    "messagePlaceholder": "ما الذي ترغب في مناقشته؟ (مثل، ملاحظات، أسئلة، أفكار شراكة، أي شيء.)",
+    "legal": "بإرسال النموذج، فإنك توافق على <terms>شروط الخدمة</terms> و<privacy>سياسة الخصوصية</privacy> الخاصة بنا.",
+    "sending": "جارٍ الإرسال...",
+    "sendMessage": "إرسال الرسالة"
   }
 }

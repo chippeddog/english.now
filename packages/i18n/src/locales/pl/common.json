@@ -89,5 +89,20 @@
     "about": "O nas",
     "blog": "Blog",
     "features": "Funkcje"
+  },
+  "contact": {
+    "title": "Skontaktuj się z nami",
+    "subtitle": "Skontaktuj się - odpowiadamy w ciągu godzin, nie dni.",
+    "toastFillAll": "Proszę wypełnić wszystkie pola.",
+    "toastSuccess": "Wiadomość wysłana. Skontaktujemy się z Tobą wkrótce.",
+    "nameLabel": "Twoje imię",
+    "namePlaceholder": "Twoje imię",
+    "emailLabel": "Twój email",
+    "emailPlaceholder": "twoj@email.com",
+    "messageLabel": "Wiadomość",
+    "messagePlaceholder": "O czym chciałbyś porozmawiać? (np. opinie, pytania, pomysły na współpracę, cokolwiek.)",
+    "legal": "Wysyłając formularz, zgadzasz się na nasze <terms>Warunki Usługi</terms> i <privacy>Politykę Prywatności</privacy>.",
+    "sending": "Wysyłanie...",
+    "sendMessage": "Wyślij wiadomość"
   }
 }

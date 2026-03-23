@@ -89,5 +89,20 @@
     "about": "Acerca de",
     "features": "Características",
     "blog": "Blog"
+  },
+  "contact": {
+    "title": "Ponte en contacto",
+    "subtitle": "Contáctanos - respondemos en horas, no en días.",
+    "toastFillAll": "Por favor, completa todos los campos.",
+    "toastSuccess": "Mensaje enviado. Nos pondremos en contacto contigo pronto.",
+    "nameLabel": "Tu nombre",
+    "namePlaceholder": "Tu nombre",
+    "emailLabel": "Tu correo electrónico",
+    "emailPlaceholder": "tu@correo.com",
+    "messageLabel": "Mensaje",
+    "messagePlaceholder": "¿Sobre qué te gustaría hablar? (por ejemplo, comentarios, preguntas, ideas de colaboración, cualquier cosa.)",
+    "legal": "Al enviar el formulario, aceptas nuestros <terms>Términos de Servicio</terms> y <privacy>Política de Privacidad</privacy>.",
+    "sending": "Enviando...",
+    "sendMessage": "Enviar mensaje"
   }
 }

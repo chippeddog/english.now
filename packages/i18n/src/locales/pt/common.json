@@ -89,5 +89,20 @@
     "about": "Sobre",
     "blog": "Blog",
     "features": "Recursos"
+  },
+  "contact": {
+    "title": "Entre em contato",
+    "subtitle": "Entre em contato - respondemos em horas, não dias.",
+    "toastFillAll": "Por favor, preencha todos os campos.",
+    "toastSuccess": "Mensagem enviada. Entraremos em contato em breve.",
+    "nameLabel": "Seu nome",
+    "namePlaceholder": "Seu nome",
+    "emailLabel": "Seu e-mail",
+    "emailPlaceholder": "seu@email.com",
+    "messageLabel": "Mensagem",
+    "messagePlaceholder": "Sobre o que você gostaria de discutir? (por exemplo, feedback, perguntas, ideias de parceria, qualquer coisa.)",
+    "legal": "Ao enviar o formulário, você concorda com nossos <terms>Termos de Serviço</terms> e <privacy>Política de Privacidade</privacy>.",
+    "sending": "Enviando...",
+    "sendMessage": "Enviar mensagem"
   }
 }

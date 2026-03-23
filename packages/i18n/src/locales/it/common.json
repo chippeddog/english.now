@@ -89,5 +89,20 @@
     "about": "Informazioni",
     "features": "Caratteristiche",
     "blog": "Blog"
+  },
+  "contact": {
+    "title": "Contattaci",
+    "subtitle": "Contattaci - rispondiamo entro ore, non giorni.",
+    "toastFillAll": "Per favore, compila tutti i campi.",
+    "toastSuccess": "Messaggio inviato. Ti risponderemo presto.",
+    "nameLabel": "Il tuo nome",
+    "namePlaceholder": "Il tuo nome",
+    "emailLabel": "La tua email",
+    "emailPlaceholder": "tuo@email.com",
+    "messageLabel": "Messaggio",
+    "messagePlaceholder": "Di cosa vorresti discutere? (es. feedback, domande, idee di collaborazione, qualsiasi cosa.)",
+    "legal": "Inviando il modulo, accetti i nostri <terms>Termini di Servizio</terms> e la <privacy>Politica sulla Privacy</privacy>.",
+    "sending": "Invio...",
+    "sendMessage": "Invia messaggio"
   }
 }

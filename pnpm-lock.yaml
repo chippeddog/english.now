@@ -489,6 +489,9 @@ importers:
       '@english.now/db':
         specifier: workspace:*
         version: link:../db
+      '@english.now/email':
+        specifier: workspace:*
+        version: link:../email
       '@english.now/env':
         specifier: workspace:*
         version: link:../env

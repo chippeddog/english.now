@@ -108,7 +108,7 @@ export function Start() {
 					{/* <div className="mt-4 text-neutral-600 text-sm">
 						{t("start.subtitle")}
 					</div> */}
-					<div className="mt-5 flex flex-col items-center justify-center gap-3 text-neutral-600 text-xs sm:flex-row sm:gap-5">
+					<div className="mt-5 flex items-center justify-center gap-3 text-neutral-600 text-xs sm:flex-row sm:gap-5 md:flex-col">
 						<span className="flex items-center gap-1.5">
 							<CheckIcon
 								aria-hidden="true"

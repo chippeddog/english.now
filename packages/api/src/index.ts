@@ -51,3 +51,31 @@ export const rateLimitedProcedure = (max: number, windowMs: number) =>
 
 		return next();
 	});
+
+export const publicRateLimitedProcedure = (max: number, windowMs: number) =>
+	publicProcedure.use(async ({ ctx, next, path }) => {
+		const clientIp = ctx.clientIp ?? "unknown";
+		const key = `ip:${clientIp}:trpc:${path}`;
+		const now = Date.now();
+		const windowStart = new Date(now - (now % windowMs));
+
+		const result = await db
+			.insert(rateLimits)
+			.values({ key, windowStart, count: 1 })
+			.onConflictDoUpdate({
+				target: [rateLimits.key, rateLimits.windowStart],
+				set: { count: sql`${rateLimits.count} + 1` },
+			})
+			.returning({ count: rateLimits.count });
+
+		const count = result[0]?.count ?? 1;
+
+		if (count > max) {
+			throw new TRPCError({
+				code: "TOO_MANY_REQUESTS",
+				message: "Rate limit exceeded",
+			});
+		}
+
+		return next();
+	});

@@ -89,5 +89,20 @@
     "about": "概要",
     "features": "特徴",
     "blog": "ブログ"
+  },
+  "contact": {
+    "title": "お問い合わせ",
+    "subtitle": "ご連絡ください - 数日ではなく、数時間以内にお返事します。",
+    "toastFillAll": "すべての項目を入力してください。",
+    "toastSuccess": "メッセージが送信されました。すぐにご連絡いたします。",
+    "nameLabel": "お名前",
+    "namePlaceholder": "お名前",
+    "emailLabel": "メールアドレス",
+    "emailPlaceholder": "your@email.com",
+    "messageLabel": "メッセージ",
+    "messagePlaceholder": "何について話し合いたいですか？（例：フィードバック、質問、パートナーシップのアイデア、何でも。）",
+    "legal": "フォームを送信することで、<terms>利用規約</terms>および<privacy>プライバシーポリシー</privacy>に同意したことになります。",
+    "sending": "送信中...",
+    "sendMessage": "メッセージを送信"
   }
 }

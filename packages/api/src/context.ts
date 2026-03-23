@@ -16,9 +16,15 @@ export async function createContext({
 	const session = await auth.api.getSession({
 		headers: context.req.raw.headers,
 	});
+	const forwarded = context.req.header("x-forwarded-for");
+	const clientIp =
+		forwarded?.split(",")[0]?.trim() ??
+		context.req.header("cf-connecting-ip") ??
+		"unknown";
 	return {
 		session,
 		enqueueDailyPracticePlan,
+		clientIp,
 	};
 }
 

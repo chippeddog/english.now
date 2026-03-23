@@ -89,5 +89,20 @@
     "about": "关于",
     "features": "功能",
     "blog": "博客"
+  },
+  "contact": {
+    "title": "联系我们",
+    "subtitle": "随时联系 - 我们会在数小时内回复，而不是几天。",
+    "toastFillAll": "请填写所有字段。",
+    "toastSuccess": "消息已发送。我们会尽快回复您。",
+    "nameLabel": "您的姓名",
+    "namePlaceholder": "您的姓名",
+    "emailLabel": "您的邮箱",
+    "emailPlaceholder": "your@email.com",
+    "messageLabel": "留言",
+    "messagePlaceholder": "您想讨论什么？（例如，反馈、问题、合作想法，任何事情。）",
+    "legal": "通过发送表单，您同意我们的<terms>服务条款</terms>和<privacy>隐私政策</privacy>。",
+    "sending": "发送中...",
+    "sendMessage": "发送消息"
   }
 }

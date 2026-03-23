@@ -2,11 +2,11 @@
   "name": "@english.now/api",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./src/index.ts",
       "default": "./src/index.ts"
     },
     "./*": {
-      "types": "./dist/*.d.ts",
+      "types": "./src/*.ts",
       "default": "./src/*.ts"
     }
   },
@@ -26,6 +26,7 @@
     "@aws-sdk/client-s3": "^3.705.0",
     "@english.now/auth": "workspace:*",
     "@english.now/db": "workspace:*",
+    "@english.now/email": "workspace:*",
     "@english.now/env": "workspace:*",
     "@english.now/shared": "workspace:*",
     "@trpc/client": "catalog:",

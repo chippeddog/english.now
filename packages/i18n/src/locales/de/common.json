@@ -25,7 +25,59 @@
     "signOut": "Abmelden",
     "forgotPassword": "Passwort vergessen?",
     "resetPassword": "Passwort zurücksetzen",
-    "alreadyHaveAccount": "Ich habe bereits ein Konto"
+    "alreadyHaveAccount": "Ich habe bereits ein Konto",
+    "createAccountTitle": "Erstellen Sie Ihr Konto",
+    "alreadyHaveAccountPrompt": "Haben Sie bereits ein Konto?",
+    "welcomeBack": "Willkommen zurück",
+    "dontHaveAccount": "Haben Sie kein Konto?",
+    "continueWithGoogle": "Mit Google fortfahren",
+    "signInWithGoogle": "Mit Google anmelden",
+    "continueWithApple": "Mit Apple fortfahren",
+    "orContinueWith": "oder fortfahren mit",
+    "fields": {
+      "name": "Name",
+      "email": "E-Mail",
+      "password": "Passwort",
+      "confirmPassword": "Passwort bestätigen"
+    },
+    "submitSignUp": "Registrieren",
+    "submitSignIn": "Anmelden",
+    "legal": "Durch das Erstellen oder Eingeben eines Kontos stimmen Sie den <br /><terms>Nutzungsbedingungen</terms> und der <privacy>Datenschutzrichtlinie</privacy> zu.",
+    "toast": {
+      "signUpSuccess": "Registrierung erfolgreich",
+      "signInSuccess": "Anmeldung erfolgreich",
+      "verificationSent": "Bestätigungs-E-Mail gesendet",
+      "passwordResetSent": "E-Mail zum Zurücksetzen des Passworts gesendet",
+      "passwordUpdated": "Passwort erfolgreich aktualisiert"
+    },
+    "validation": {
+      "nameMin": "Der Name muss mindestens 2 Zeichen lang sein",
+      "invalidEmail": "Ungültige E-Mail-Adresse",
+      "passwordMin": "Das Passwort muss mindestens 8 Zeichen lang sein"
+    },
+    "verify": {
+      "title": "Bestätigen Sie Ihre E-Mail",
+      "sentTo": "Wir haben einen Bestätigungslink gesendet an",
+      "resend": "Bestätigungs-E-Mail erneut senden",
+      "sending": "Senden...",
+      "changeEmail": "E-Mail ändern",
+      "spamHint": "E-Mail nicht gefunden? Überprüfen Sie Ihren Spam-Ordner oder senden Sie einen neuen Link.",
+      "logoAlt": "English Now Logo"
+    },
+    "reset": {
+      "title": "Passwort zurücksetzen",
+      "description": "Geben Sie Ihr neues Passwort ein und bestätigen Sie es, um Ihr Passwort zu aktualisieren.",
+      "submitting": "Einreichen...",
+      "updatePassword": "Passwort aktualisieren"
+    },
+    "forgot": {
+      "title": "Passwort vergessen",
+      "description": "Geben Sie Ihre E-Mail-Adresse ein, und wir senden Ihnen einen Code, um Ihr Passwort zurückzusetzen.",
+      "rememberPassword": "Erinnern Sie sich an Ihr Passwort?",
+      "backToLogin": "Zurück zur Anmeldung",
+      "submitting": "Einreichen...",
+      "sendResetLink": "Passwort zurücksetzen"
+    }
   },
   "nav": {
     "home": "Startseite",
@@ -37,5 +89,20 @@
     "about": "Über uns",
     "features": "Funktionen",
     "blog": "Blog"
+  },
+  "contact": {
+    "title": "Kontakt aufnehmen",
+    "subtitle": "Kontaktieren Sie uns - wir antworten innerhalb von Stunden, nicht Tagen.",
+    "toastFillAll": "Bitte füllen Sie alle Felder aus.",
+    "toastSuccess": "Nachricht gesendet. Wir melden uns bald bei Ihnen.",
+    "nameLabel": "Ihr Name",
+    "namePlaceholder": "Ihr Name",
+    "emailLabel": "Ihre E-Mail",
+    "emailPlaceholder": "ihre@email.com",
+    "messageLabel": "Nachricht",
+    "messagePlaceholder": "Worüber möchten Sie sprechen? (z.B. Feedback, Fragen, Partnerschaftsideen, alles.)",
+    "legal": "Durch das Absenden des Formulars stimmen Sie unseren <terms>Nutzungsbedingungen</terms> und der <privacy>Datenschutzrichtlinie</privacy> zu.",
+    "sending": "Senden...",
+    "sendMessage": "Nachricht senden"
   }
 }

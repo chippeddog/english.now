@@ -61,7 +61,7 @@ export default function Hero() {
 				<div className="mb-16 flex flex-1 flex-col items-start gap-6 text-center sm:mb-6 md:mb-0 md:text-left">
 					<h1
 						className={cn(
-							"font-bold font-lyon text-6xl text-neutral-900 tracking-tight lg:text-6xl dark:text-white",
+							"font-bold font-lyon text-5xl text-neutral-900 tracking-tight lg:text-6xl dark:text-white",
 							{
 								"text-4xl leading-tight sm:text-4xl lg:text-5xl":
 									i18n.language === "uk",

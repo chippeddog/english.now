@@ -1,4 +1,5 @@
 import { publicProcedure, router } from "../index";
+import { contactRouter } from "./contact";
 import { contentRouter } from "./content";
 import { conversationRouter } from "./conversation";
 import { feedbackRouter } from "./feedback";
@@ -12,6 +13,7 @@ export const appRouter = router({
 	healthCheck: publicProcedure.query(() => {
 		return "OK";
 	}),
+	contact: contactRouter,
 	content: contentRouter,
 	vocabulary: vocabularyRouter,
 	pronunciation: pronunciationRouter,
