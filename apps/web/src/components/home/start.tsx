@@ -109,27 +109,27 @@ export function Start() {
 						{t("start.subtitle")}
 					</div> */}
 					<div className="mt-5 flex items-center justify-center gap-3 text-neutral-600 text-xs sm:flex-row sm:gap-5">
-						<span className="flex items-center gap-1.5">
+						<span className="flex items-center sm:gap-1.5">
 							<CheckIcon
 								aria-hidden="true"
 								aria-label="No credit card required"
-								className="size-4"
+								className="hidden h-4 sm:block"
 							/>
 							{t("hero.noCard")}
 						</span>
-						<span className="flex items-center gap-1.5">
+						<span className="flex items-center sm:gap-1.5">
 							<CheckIcon
 								aria-hidden="true"
 								aria-label="7-day free trial"
-								className="size-4"
+								className="hidden h-4 sm:block"
 							/>
 							7-day free trial
 						</span>
-						<span className="flex items-center gap-1.5">
+						<span className="flex items-center sm:gap-1.5">
 							<CheckIcon
 								aria-hidden="true"
 								aria-label="Cancel anytime"
-								className="size-4"
+								className="hidden h-4 sm:block"
 							/>
 							Cancel anytime
 						</span>

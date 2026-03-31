@@ -1,11 +1,17 @@
 import {
 	Circle,
+	CornerDownRight,
 	Lightbulb,
 	Loader,
 	LogOutIcon,
 	Mic,
 	MicOff,
+	MousePointer2,
+	MousePointerClick,
 	SearchIcon,
+	SquareArrowRight,
+	SquareDashedMousePointer,
+	TextSelect,
 	Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -109,7 +115,7 @@ export function ControlToolbar({
 										)}
 									>
 										<div className="relative">
-											<SearchIcon className="size-5" />
+											<MousePointer2 className="size-5" />
 											{vocabMode === "phrase" ? (
 												<Circle className="-right-1 -top-1 absolute size-2.5 fill-current" />
 											) : null}
@@ -127,9 +133,7 @@ export function ControlToolbar({
 									setVocabMode(value as "off" | "word" | "phrase")
 								}
 							>
-								<DropdownMenuRadioItem value="off">
-									Off
-								</DropdownMenuRadioItem>
+								<DropdownMenuRadioItem value="off">Off</DropdownMenuRadioItem>
 								<DropdownMenuRadioItem value="word">
 									Word mode
 								</DropdownMenuRadioItem>
@@ -220,7 +224,7 @@ export function ControlToolbar({
 								onClick={() => setShowFinishDialog(true)}
 								disabled={isLoading || isFinishing}
 							>
-								<LogOutIcon className="size-5" />
+								<CornerDownRight className="size-5" />
 							</Button>
 						</TooltipTrigger>
 						<TooltipContent>Finish session</TooltipContent>

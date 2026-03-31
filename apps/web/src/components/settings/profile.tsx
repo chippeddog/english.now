@@ -137,7 +137,7 @@ export const Profile = () => {
 		<>
 			<div className="space-y-6">
 				<div>
-					<div className="mt-2">
+					<div>
 						<button
 							type="button"
 							onClick={handleAvatarClick}
@@ -184,13 +184,13 @@ export const Profile = () => {
 							value={name || session?.user?.name || ""}
 							onChange={(e) => setName(e.target.value)}
 							placeholder="Your name"
-							className="h-11 max-w-md rounded-xl"
+							className="max-w-md rounded-xl"
 						/>
 						{name && name !== session?.user?.name && (
 							<Button
 								onClick={handleUpdateProfile}
 								disabled={isUpdatingProfile}
-								className="h-11 rounded-xl"
+								className="rounded-xl"
 							>
 								{isUpdatingProfile ? (
 									<Loader2 className="size-4 animate-spin" />
@@ -213,7 +213,7 @@ export const Profile = () => {
 							id="email"
 							value={session?.user?.email ?? ""}
 							disabled
-							className="h-11 max-w-md rounded-xl bg-muted/50"
+							className="max-w-md rounded-xl bg-muted/50"
 						/>
 						<p className="mt-2 text-muted-foreground text-sm">
 							If you need to change your email, please contact support.

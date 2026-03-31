@@ -1,24 +1,22 @@
 import { useTranslation } from "@english.now/i18n";
 import { Link } from "@tanstack/react-router";
 import {
-	ArrowRight,
 	ArrowUpRightIcon,
 	Bookmark,
 	CheckIcon,
-	CircleDot,
 	ClockIcon,
 	Flag,
-	KeyboardIcon,
+	FlagIcon,
 	Lightbulb,
 	Lock,
 	Mic,
-	PanelRight,
 	PlayIcon,
 	Settings,
+	SquareDashedMousePointer,
+	TextSelect,
+	Trash2,
 	Volume2,
-	X,
 } from "lucide-react";
-import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { GrammarIcon } from "../icons/grammar";
 import { ReviewIcon } from "../icons/review";
@@ -27,7 +25,6 @@ import { VocabularyIcon } from "../icons/vocabulary";
 import { Button } from "../ui/button";
 
 function PracticeSpeakingDemo() {
-	const [showFeedback, setShowFeedback] = useState(true);
 	return (
 		<div className="relative flex h-full w-full gap-4">
 			<div
@@ -51,14 +48,20 @@ function PracticeSpeakingDemo() {
 							</div>
 							<span className="font-semibold text-sm">Conversation</span>
 						</div>
-						<div>
+						<div className="flex items-center gap-2">
 							<Button
 								variant="outline"
 								size="icon"
 								className="size-7 rounded-lg"
-								onClick={() => setShowFeedback(!showFeedback)}
 							>
-								<PanelRight className="size-3.5" />
+								<FlagIcon className="size-3.5" />
+							</Button>
+							<Button
+								variant="outline"
+								size="icon"
+								className="size-7 rounded-lg"
+							>
+								<Settings className="size-3.5" />
 							</Button>
 						</div>
 					</div>
@@ -156,6 +159,14 @@ function PracticeSpeakingDemo() {
 								className="size-7 rounded-lg"
 								size="sm"
 							>
+								<SquareDashedMousePointer className="size-3.5" />
+							</Button>
+							<Button
+								type="button"
+								variant="ghost"
+								className="size-7 rounded-lg"
+								size="sm"
+							>
 								<Lightbulb className="size-3.5" />
 							</Button>
 							<Button
@@ -173,7 +184,15 @@ function PracticeSpeakingDemo() {
 								className="size-7 rounded-lg"
 								size="sm"
 							>
-								<Settings className="size-3.5" />
+								<Trash2 className="size-3.5" />
+							</Button>
+							<Button
+								type="button"
+								variant="ghost"
+								className="size-7 rounded-lg"
+								size="sm"
+							>
+								<TextSelect className="size-3.5" />
 							</Button>
 						</div>
 					</div>

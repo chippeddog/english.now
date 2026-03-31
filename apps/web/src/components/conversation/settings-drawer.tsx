@@ -177,10 +177,10 @@ export default function ConversationSettingsDrawer({
 								void changeLanguage(value as SupportedLanguage);
 							}}
 						>
-							<SelectTrigger className="w-full rounded-2xl border-black/5">
+							<SelectTrigger className="w-full rounded-xl border-black/5">
 								<SelectValue />
 							</SelectTrigger>
-							<SelectContent>
+							<SelectContent side="bottom" position="popper">
 								{supportedLanguages.map((code) => (
 									<SelectItem key={code} value={code}>
 										{languageNames[code]}
@@ -201,10 +201,10 @@ export default function ConversationSettingsDrawer({
 								updateProfile.mutate({ nativeLanguage: value })
 							}
 						>
-							<SelectTrigger className="w-full rounded-2xl border-black/5">
+							<SelectTrigger className="w-full rounded-xl border-black/5">
 								<SelectValue placeholder="Select language" />
 							</SelectTrigger>
-							<SelectContent>
+							<SelectContent side="bottom" position="popper">
 								{NATIVE_LANGUAGES.map((lang) => (
 									<SelectItem key={lang.id} value={lang.id}>
 										<span className="flex items-center gap-2">
@@ -230,11 +230,11 @@ export default function ConversationSettingsDrawer({
 							>
 								<SelectTrigger
 									id="input-device"
-									className="h-auto min-h-11 w-full rounded-2xl border-black/5 py-2.5 text-left [&>span]:line-clamp-2"
+									className="h-auto w-full rounded-xl border-black/5 py-2.5 text-left [&>span]:line-clamp-2"
 								>
 									<SelectValue placeholder="Select microphone" />
 								</SelectTrigger>
-								<SelectContent>
+								<SelectContent side="bottom" position="popper">
 									{audioDevices.map((device, index) => (
 										<SelectItem key={device.deviceId} value={device.deviceId}>
 											{device.label || `Microphone ${index + 1}`}
@@ -266,11 +266,11 @@ export default function ConversationSettingsDrawer({
 							>
 								<SelectTrigger
 									id="assistant-voice"
-									className="h-auto min-h-11 min-w-0 flex-1 rounded-2xl border-black/5 py-2.5 text-left"
+									className="h-auto min-w-0 flex-1 rounded-xl border-black/5 py-2.5 text-left"
 								>
 									<SelectValue placeholder="Select a voice" />
 								</SelectTrigger>
-								<SelectContent>
+								<SelectContent side="bottom" position="popper">
 									{VOICE_OPTIONS.map((voice) => (
 										<SelectItem key={voice.id} value={voice.id}>
 											<span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
@@ -292,7 +292,7 @@ export default function ConversationSettingsDrawer({
 									updateProfile.isPending || playingVoiceId === voiceSelectValue
 								}
 								onClick={() => previewVoice(voiceSelectValue)}
-								className="size-11 shrink-0 rounded-2xl border-black/5"
+								className="shrink-0 rounded-xl border-black/5"
 								aria-label={`Preview ${VOICE_OPTIONS.find((v) => v.id === voiceSelectValue)?.name ?? "voice"}`}
 							>
 								{playingVoiceId === voiceSelectValue ? (
@@ -304,7 +304,7 @@ export default function ConversationSettingsDrawer({
 						</div>
 					</section>
 					<hr className="my-5 border-neutral-200 border-dashed" />
-					<section className="flex items-center justify-between gap-4">
+					<section className="flex items-center justify-between">
 						<div>
 							<p className="font-medium text-sm">Auto-translate</p>
 						</div>
@@ -313,9 +313,9 @@ export default function ConversationSettingsDrawer({
 							onCheckedChange={onAutoTranslateChange}
 						/>
 					</section>
-					<section className="flex items-center justify-between gap-4">
+					<section className="flex items-center justify-between">
 						<div>
-							<p className="font-medium text-sm">Auto-play</p>
+							<p className="font-medium text-sm">Auto-play audio</p>
 						</div>
 						<Switch checked={autoPlay} onCheckedChange={onAutoPlayChange} />
 					</section>

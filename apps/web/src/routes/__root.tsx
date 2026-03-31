@@ -47,6 +47,26 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 				content: "English Now",
 			},
 			{
+				property: "og:type",
+				content: "website",
+			},
+			{
+				property: "og:image",
+				content: "/og-image.png",
+			},
+			{
+				property: "og:image:alt",
+				content: "English Now — Learn English with AI",
+			},
+			{
+				name: "twitter:card",
+				content: "summary_large_image",
+			},
+			{
+				name: "twitter:image",
+				content: "/og-image.png",
+			},
+			{
 				title: "English Now - Learn English with AI",
 			},
 		],

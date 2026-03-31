@@ -73,7 +73,7 @@ export default function Hero() {
 						</Trans>
 					</h1>
 
-					<p className="max-w-md text-base text-muted-foreground leading-relaxed lg:text-lg">
+					<p className="mx-auto max-w-xs text-base text-muted-foreground leading-relaxed md:mx-0 md:max-w-md lg:text-lg">
 						{t("hero.subtitle")}
 					</p>
 

@@ -72,39 +72,78 @@ function RouteComponent() {
 		},
 	];
 
+	const tabButtonClass = (isActive: boolean, fullWidth: boolean) =>
+		cn(
+			"flex h-[34px] shrink-0 cursor-pointer items-center gap-1.5 rounded-xl px-2.5 font-medium text-muted-foreground text-sm italic transition-all",
+			fullWidth && "md:w-full",
+			isActive && "bg-background text-foreground shadow-sm",
+		);
+
 	return (
-		<div className="container relative z-10 mx-auto max-w-5xl px-4 py-6 pt-8">
-			<div className="mb-6 flex flex-col gap-1">
-				<div>
-					<h1 className="font-bold font-lyon text-3xl tracking-tight md:text-3xl">
-						{t("settings.title")}
-					</h1>
+		<div className="container relative z-10 mx-auto max-w-5xl px-4 pb-8">
+			{/* Mobile / tablet: sticky tab strip (sidebar is lg+ only) */}
+			<div className="-mx-4 sticky top-[4.75rem] z-10 mb-4 border-border/50 border-b bg-neutral-50/95 px-4 py-3 backdrop-blur-md lg:hidden dark:bg-neutral-900/95">
+				<h1 className="mb-3 font-bold font-lyon text-2xl tracking-tight">
+					{t("settings.title")}
+				</h1>
+				<div className="-mx-1 flex gap-1 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+					{TABS.map((tabItem) => (
+						<button
+							key={tabItem.value}
+							type="button"
+							disabled={activeTab === tabItem.value}
+							className={tabButtonClass(activeTab === tabItem.value, false)}
+							onClick={() => handleTabChange(tabItem.value as SettingsTab)}
+						>
+							{tabItem.icon && <tabItem.icon className="size-4 shrink-0" />}
+							<span className="whitespace-nowrap">{tabItem.label}</span>
+						</button>
+					))}
+					<button
+						type="button"
+						className="flex h-[34px] shrink-0 cursor-pointer items-center gap-1.5 rounded-xl px-2.5 font-medium text-muted-foreground text-sm italic transition-all hover:text-foreground"
+						onClick={() => {
+							authClient.signOut({
+								fetchOptions: {
+									onSuccess: () => {
+										navigate({
+											to: "/",
+										});
+									},
+								},
+							});
+						}}
+					>
+						<LogOutIcon className="size-4 shrink-0" />
+						<span className="whitespace-nowrap">Sign Out</span>
+					</button>
 				</div>
 			</div>
-			<div className="grid grid-cols-1 items-start gap-6 md:grid-cols-4 md:gap-10">
-				<div className="col-span-1 flex h-fit w-full flex-col gap-0.5 rounded-2xl border border-border/50 bg-muted/50 p-0.5 md:items-stretch">
-					{/* One scrollable row on mobile (tabs + sign out), vertical on desktop */}
-					<div className="flex flex-row gap-1 overflow-x-auto pb-1 md:flex-col md:overflow-visible md:pb-0">
-						{TABS.map((tab) => (
+
+			{/* min-h aligns with viewport below navbar so border-r spans full height on desktop */}
+			<div className="flex w-full flex-col lg:min-h-[calc(100dvh-5.75rem)] lg:flex-row lg:items-stretch">
+				<aside className="hidden flex-col border-border/50 border-r pt-6 pr-5 lg:flex lg:w-[25%] lg:shrink-0 lg:self-stretch">
+					<div className="mb-6 flex flex-col gap-1">
+						<h1 className="font-bold font-lyon text-3xl tracking-tight md:text-3xl">
+							{t("settings.title")}
+						</h1>
+					</div>
+					<nav className="flex w-full flex-col gap-0.5">
+						{TABS.map((tabItem) => (
 							<button
-								key={tab.value}
+								key={tabItem.value}
 								type="button"
-								disabled={activeTab === tab.value}
-								className={cn(
-									"flex h-[34px] shrink-0 cursor-pointer items-center gap-1.5 rounded-xl px-2.5 font-medium text-muted-foreground text-sm italic transition-all md:w-full",
-									activeTab === tab.value &&
-										"bg-background text-foreground shadow-sm",
-								)}
-								onClick={() => handleTabChange(tab.value as SettingsTab)}
+								disabled={activeTab === tabItem.value}
+								className={tabButtonClass(activeTab === tabItem.value, true)}
+								onClick={() => handleTabChange(tabItem.value as SettingsTab)}
 							>
-								{tab.icon && <tab.icon className="size-4 shrink-0" />}
-								<span className="whitespace-nowrap">{tab.label}</span>
+								{tabItem.icon && <tabItem.icon className="size-4 shrink-0" />}
+								<span className="whitespace-nowrap">{tabItem.label}</span>
 							</button>
 						))}
-						<hr className="mx-1 hidden border-border/50 border-dashed md:block" />
 						<button
 							type="button"
-							className="flex h-[34px] shrink-0 cursor-pointer items-center gap-1.5 rounded-xl px-2.5 font-medium text-muted-foreground text-sm italic transition-all hover:text-foreground md:mb-1 md:w-full"
+							className="mt-1 flex h-[34px] w-full cursor-pointer items-center gap-1.5 rounded-xl px-2.5 font-medium text-muted-foreground text-sm italic transition-all hover:text-foreground"
 							onClick={() => {
 								authClient.signOut({
 									fetchOptions: {
@@ -120,10 +159,10 @@ function RouteComponent() {
 							<LogOutIcon className="size-4 shrink-0" />
 							<span className="whitespace-nowrap">Sign Out</span>
 						</button>
-					</div>
-				</div>
+					</nav>
+				</aside>
 
-				<div className="col-span-3">
+				<div className="lg:-mr-8 block min-h-0 w-full flex-1 pt-6 pl-6 lg:min-h-full lg:min-w-0 lg:overflow-y-auto">
 					<section hidden={activeTab !== "profile"}>
 						<Profile />
 					</section>

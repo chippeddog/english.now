@@ -20,6 +20,7 @@ import { useUpgradeDialog } from "@/components/dashboard/upgrade-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/utils/trpc";
 
@@ -774,8 +775,11 @@ function RouteComponent() {
 			}),
 			lockReason: (u as typeof u & { lockReason?: string | null }).lockReason,
 			unlockMessage:
-				(u as typeof u & { unlockMessage?: string | undefined }).unlockMessage ??
-				(u.status === "locked" ? "Complete previous units to unlock" : undefined),
+				(u as typeof u & { unlockMessage?: string | undefined })
+					.unlockMessage ??
+				(u.status === "locked"
+					? "Complete previous units to unlock"
+					: undefined),
 		}));
 	}, [courseData]);
 
@@ -786,6 +790,7 @@ function RouteComponent() {
 
 	// Completed units start collapsed by default
 	const [collapsedUnits, setCollapsedUnits] = useState<Set<string>>(new Set());
+	const [showCompletedUnits, setShowCompletedUnits] = useState(false);
 
 	// Set initial collapsed state when data loads
 	useMemo(() => {
@@ -795,6 +800,19 @@ function RouteComponent() {
 			);
 		}
 	}, [units]);
+
+	const visibleUnits = useMemo(
+		() => units.filter((unit) => unit.status !== "completed"),
+		[units],
+	);
+	const completedUnits = useMemo(
+		() => units.filter((unit) => unit.status === "completed"),
+		[units],
+	);
+	const displayedUnits = useMemo(
+		() => (showCompletedUnits ? units : visibleUnits),
+		[showCompletedUnits, units, visibleUnits],
+	);
 
 	const handleSelectLesson = (lesson: Lesson) => {
 		if (
@@ -860,7 +878,7 @@ function RouteComponent() {
 				</div>
 				<div className="grid grid-cols-1 gap-5 md:grid-cols-3">
 					<div className="order-2 space-y-4 lg:order-first lg:col-span-2">
-						{units.map((u) => (
+						{displayedUnits.map((u) => (
 							<UnitCard
 								key={u.id}
 								unit={u}
@@ -872,8 +890,23 @@ function RouteComponent() {
 						<FooterMessage message="Finish these lessons to receive new material." />
 					</div>
 
-					<div>
+					<div className="flex flex-col gap-2">
 						<LevelHeader level={levelInfo} />
+						{completedUnits.length > 0 && (
+							<section className="flex items-center justify-between px-4 py-3">
+								<div>
+									<p className="font-medium text-sm">Show completed units</p>
+									{/* <p className="text-muted-foreground text-xs">
+										{completedUnits.length} completed
+									</p> */}
+								</div>
+								<Switch
+									checked={showCompletedUnits}
+									onCheckedChange={setShowCompletedUnits}
+									aria-label="Show completed units"
+								/>
+							</section>
+						)}
 					</div>
 				</div>
 			</div>

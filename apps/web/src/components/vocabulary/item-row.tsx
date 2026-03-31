@@ -111,13 +111,13 @@ export default function ItemRow({
 				</div>
 			</div>
 			<div className="flex shrink-0 items-center gap-2">
-				<div className="flex flex-col items-end gap-1">
-					<MasteryIndicator mastery={mastery} />
+				<div className="flex items-center gap-1">
 					{reviewLabel ? (
 						<span className="text-[11px] text-muted-foreground">
 							{reviewLabel}
 						</span>
 					) : null}
+					<MasteryIndicator mastery={mastery} />
 				</div>
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>

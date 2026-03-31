@@ -6,13 +6,18 @@ import {
 	CheckIcon,
 	ClockIcon,
 	Flame,
+	GraduationCap,
 	Lock,
+	type LucideIcon,
+	MessageCircle,
 	Mic,
 	PlayIcon,
+	Sparkles,
 	TrendingUp,
 	Volume2,
 } from "lucide-react";
 import type { ReactNode } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -39,6 +44,7 @@ const features: {
 	title: string;
 	description: string;
 	badge: string;
+	icon: LucideIcon;
 	demo: () => ReactNode;
 }[] = [
 	{
@@ -47,6 +53,7 @@ const features: {
 		description:
 			"Practice speaking with our AI tutor in real-life scenarios. Get instant feedback on your pronunciation and grammar.",
 		badge: "Speaking",
+		icon: MessageCircle,
 		demo: ConversationsDemo,
 	},
 	{
@@ -55,6 +62,7 @@ const features: {
 		description:
 			"Receive detailed corrections and explanations for every mistake. Learn why something is wrong, not just that it's wrong.",
 		badge: "AI-Powered",
+		icon: Sparkles,
 		demo: FeedbackDemo,
 	},
 	{
@@ -63,6 +71,7 @@ const features: {
 		description:
 			"Build your vocabulary with spaced repetition. Words are introduced in context and reviewed at optimal intervals.",
 		badge: "Learning",
+		icon: BookOpen,
 		demo: VocabularyDemo,
 	},
 	{
@@ -71,6 +80,7 @@ const features: {
 		description:
 			"See your improvement over time with detailed analytics. Track streaks, accuracy, and areas that need work.",
 		badge: "Analytics",
+		icon: BarChart3,
 		demo: ProgressDemo,
 	},
 	{
@@ -79,6 +89,7 @@ const features: {
 		description:
 			"Perfect your accent with our speech recognition technology. Get word-by-word feedback on how to sound more natural.",
 		badge: "Speaking",
+		icon: Mic,
 		demo: PronunciationDemo,
 	},
 	{
@@ -87,6 +98,7 @@ const features: {
 		description:
 			"Lessons adapt to your level and goals. Whether you're preparing for a job interview or casual conversation.",
 		badge: "Adaptive",
+		icon: GraduationCap,
 		demo: LessonsDemo,
 	},
 ];
@@ -715,71 +727,124 @@ function LessonsDemo() {
 	);
 }
 
-// ---------------------------------------------------------------------------
-// Feature Block (background kept exactly as-is)
-// ---------------------------------------------------------------------------
-
-function FeatureBlock({
-	feature,
-	reverse = false,
-}: {
-	feature: (typeof features)[number];
-	reverse?: boolean;
-}) {
-	return (
-		<div
-			className={`flex w-full flex-col gap-4 md:gap-6 lg:flex-row lg:items-center ${reverse ? "lg:flex-row-reverse" : ""}`}
-		>
-			{/* Content - 1/2 width */}
-			<div className="flex flex-1 shrink-0 flex-col lg:w-1/2 lg:max-w-none">
-				<h2 className="mb-4 font-bold font-lyon text-3xl tracking-tight md:text-4xl">
-					{feature.title}
-				</h2>
-				<p className="text-lg text-muted-foreground leading-relaxed">
-					{feature.description}
-				</p>
-			</div>
-
-			{/* Visual container - 1/2 width (background untouched) */}
-			<div className="relative min-h-[400px] w-full shrink-0 overflow-hidden rounded-t-3xl border border-border/50 lg:w-1/2">
-				<div
-					className="absolute inset-1 h-full w-full rounded-tl-[1.25rem] px-6 py-6 pt-4 pl-4"
-					style={{
-						background:
-							"radial-gradient(92.09% 124.47% at 50% 99.24%, rgba(245, 245, 245, 0.80) 58.91%, rgba(245, 245, 245, 0.40) 100%)",
-						boxShadow:
-							"1.899px 1.77px 8.174px 0 rgba(255, 255, 255, 0.13) inset, 1.007px 0.939px 4.087px 0 rgba(255, 255, 255, 0.13) inset",
-						mixBlendMode: "plus-lighter",
-					}}
-				>
-					<div className="relative z-10">
-						<feature.demo />
-					</div>
-				</div>
-			</div>
-		</div>
-	);
-}
-
 function RouteComponent() {
+	const [activeId, setActiveId] = useState<string>(features[0].id);
+	const active = features.find((f) => f.id === activeId) ?? features[0];
+	const Icon = active.icon;
+
 	return (
 		<div className="container relative z-10 mx-auto max-w-5xl px-4 py-2 pt-10 md:pt-18">
-			<div className="mb-16 flex flex-col items-center gap-4 text-center">
+			<div className="mb-12 flex flex-col items-center gap-4 text-center md:mb-16">
 				<h1 className="font-bold font-lyon text-4xl text-neutral-900 tracking-tight md:text-5xl dark:text-white">
 					Everything you need <br className="md:hidden" /> to master English
 				</h1>
-				<p className="mx-auto text-balance text-muted-foreground md:text-lg">
-					All plans include access to our AI-powered learning tools.
+				<p className="mx-auto max-w-2xl text-balance text-muted-foreground md:text-lg">
+					All plans include access to our AI-powered learning tools. Select a
+					feature to explore.
 				</p>
 			</div>
-			<div className="space-y-24 pb-20 md:space-y-32">
-				{features.map((feature, index) => (
-					<FeatureBlock
-						key={feature.id}
-						feature={feature}
-						reverse={index % 2 === 1}
-					/>
-				))}
+
+			<div className="flex flex-col gap-10 pb-20 lg:flex-row lg:items-stretch lg:gap-12">
+				<div
+					className="flex w-full shrink-0 flex-col lg:max-w-88"
+					role="tablist"
+					aria-label="Product features"
+				>
+					{features.map((feature) => {
+						const isActive = activeId === feature.id;
+						const FeatureIcon = feature.icon;
+						return (
+							<button
+								key={feature.id}
+								type="button"
+								role="tab"
+								id={`features-page-tab-${feature.id}`}
+								aria-selected={isActive}
+								aria-controls="features-page-scene"
+								tabIndex={0}
+								onClick={() => setActiveId(feature.id)}
+								className={cn(
+									"group w-full border-border/60 border-b py-5 text-left transition-colors first:pt-0 last:border-b-0 lg:py-5",
+									"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500/40 focus-visible:ring-offset-2",
+								)}
+							>
+								<div className="flex gap-3.5">
+									<FeatureIcon
+										className={cn(
+											"mt-0.5 size-5 shrink-0 transition-colors",
+											isActive
+												? "text-lime-700"
+												: "text-muted-foreground group-hover:text-foreground",
+										)}
+										aria-hidden
+									/>
+									<div className="min-w-0 flex-1">
+										<div className="mb-1 flex flex-wrap items-center gap-2">
+											<h2
+												className={cn(
+													"font-bold font-lyon text-lg tracking-tight md:text-xl",
+													isActive
+														? "text-lime-800"
+														: "text-foreground group-hover:text-foreground/90",
+												)}
+											>
+												{feature.title}
+											</h2>
+											<span
+												className={cn(
+													"rounded-md px-1.5 py-0.5 font-medium text-[10px] uppercase tracking-wide",
+													isActive
+														? "bg-lime-100 text-lime-800"
+														: "bg-muted text-muted-foreground",
+												)}
+											>
+												{feature.badge}
+											</span>
+										</div>
+										{isActive ? (
+											<p className="text-muted-foreground text-sm leading-relaxed">
+												{feature.description}
+											</p>
+										) : null}
+									</div>
+								</div>
+							</button>
+						);
+					})}
+				</div>
+
+				<div
+					id="features-page-scene"
+					role="tabpanel"
+					aria-labelledby={`features-page-tab-${activeId}`}
+					className="relative min-h-[380px] flex-1 overflow-hidden rounded-3xl border border-border/50"
+				>
+					<div
+						className="absolute inset-1 flex min-h-[360px] flex-col rounded-tl-[1.25rem] px-4 py-5 pl-4 md:px-6 md:py-6"
+						style={{
+							background:
+								"radial-gradient(92.09% 124.47% at 50% 99.24%, rgba(245, 245, 245, 0.80) 58.91%, rgba(245, 245, 245, 0.40) 100%)",
+							boxShadow:
+								"1.899px 1.77px 8.174px 0 rgba(255, 255, 255, 0.13) inset, 1.007px 0.939px 4.087px 0 rgba(255, 255, 255, 0.13) inset",
+							mixBlendMode: "plus-lighter",
+						}}
+					>
+						<div className="mb-3 flex items-center gap-2 border-border/40 border-b pb-3 md:hidden">
+							<Icon className="size-5 shrink-0 text-lime-700" aria-hidden />
+							<span className="font-bold font-lyon text-base">
+								{active.title}
+							</span>
+						</div>
+						<div
+							key={activeId}
+							className="fade-in relative z-10 flex min-h-0 flex-1 animate-in flex-col duration-300"
+						>
+							<div className="relative z-10 flex min-h-0 flex-1 flex-col items-stretch justify-end">
+								{active.demo()}
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 	);

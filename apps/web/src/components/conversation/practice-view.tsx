@@ -78,6 +78,9 @@ export default function PracticeView({
 	const [autoTranslate, setAutoTranslate] = useState(() => {
 		return localStorage.getItem("conversation:autoTranslate") === "true";
 	});
+	const [autoPlay, setAutoPlay] = useState(() => {
+		return localStorage.getItem("conversation:autoPlay") === "true";
+	});
 	const hasPlayedInitialAudio = useRef(false);
 	const audioPlaybackGenerationRef = useRef(0);
 	const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -170,6 +173,10 @@ export default function PracticeView({
 		localStorage.setItem("conversation:autoTranslate", String(autoTranslate));
 	}, [autoTranslate]);
 
+	useEffect(() => {
+		localStorage.setItem("conversation:autoPlay", String(autoPlay));
+	}, [autoPlay]);
+
 	const translateMutation = useMutation(
 		trpc.conversation.translate.mutationOptions({}),
 	);
@@ -199,8 +206,45 @@ export default function PracticeView({
 		[translations, translateMutation],
 	);
 
+	const generateTTS = useCallback(
+		async (text: string, messageId: string) => {
+			setGeneratingTTS((prev) => new Set(prev).add(messageId));
+			try {
+				const response = await fetch(
+					`${env.VITE_SERVER_URL}/api/conversation/speak`,
+					{
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						credentials: "include",
+						body: JSON.stringify({ text, voice }),
+					},
+				);
+				if (!response.ok) return null;
+				const { audio } = await response.json();
+
+				setMessages((prev) =>
+					prev.map((m) => (m.id === messageId ? { ...m, audio } : m)),
+				);
+
+				return audio as string;
+			} catch (err) {
+				console.error("TTS generation error:", err);
+				return null;
+			} finally {
+				setGeneratingTTS((prev) => {
+					const next = new Set(prev);
+					next.delete(messageId);
+					return next;
+				});
+			}
+		},
+		[voice],
+	);
+
 	const autoTranslateRef = useRef(autoTranslate);
 	autoTranslateRef.current = autoTranslate;
+	const autoPlayRef = useRef(autoPlay);
+	autoPlayRef.current = autoPlay;
 
 	const handleAutoTranslateToggle = useCallback(
 		(enabled: boolean) => {
@@ -221,23 +265,68 @@ export default function PracticeView({
 		[messages, translations, translateMessage],
 	);
 
+	const handleAutoPlayToggle = useCallback(
+		(enabled: boolean) => {
+			setAutoPlay(enabled);
+			if (!enabled) {
+				stopAssistantAudio();
+				return;
+			}
+			const lastAssistant = [...messages]
+				.reverse()
+				.find(
+					(m) => m.role === "assistant" && !m.isStreaming && Boolean(m.content),
+				);
+			if (!lastAssistant) return;
+			const audioPlaybackGeneration = audioPlaybackGenerationRef.current;
+			if (lastAssistant.audio) {
+				playAudio(lastAssistant.audio, lastAssistant.id);
+			} else {
+				void generateTTS(lastAssistant.content, lastAssistant.id).then(
+					(audio) => {
+						if (
+							audio &&
+							audioPlaybackGeneration === audioPlaybackGenerationRef.current
+						) {
+							playAudio(audio, lastAssistant.id);
+						}
+					},
+				);
+			}
+		},
+		[messages, playAudio, generateTTS, stopAssistantAudio],
+	);
+
 	const prevMessagesRef = useRef<Message[]>([]);
 
 	useEffect(() => {
-		if (!autoTranslateRef.current) {
-			prevMessagesRef.current = messages;
-			return;
-		}
 		for (const msg of messages) {
 			if (msg.role !== "assistant" || msg.isStreaming || !msg.content) continue;
 			const prev = prevMessagesRef.current.find((m) => m.id === msg.id);
 			const justFinishedStreaming = prev?.isStreaming && !msg.isStreaming;
-			if (justFinishedStreaming && !translations[msg.id]) {
-				translateMessage(msg.id, msg.content);
+			if (justFinishedStreaming) {
+				if (autoTranslateRef.current && !translations[msg.id]) {
+					translateMessage(msg.id, msg.content);
+				}
+				if (autoPlayRef.current) {
+					if (msg.audio) {
+						playAudio(msg.audio, msg.id);
+					} else {
+						const audioPlaybackGeneration = audioPlaybackGenerationRef.current;
+						void generateTTS(msg.content, msg.id).then((audio) => {
+							if (
+								audio &&
+								audioPlaybackGeneration === audioPlaybackGenerationRef.current
+							) {
+								playAudio(audio, msg.id);
+							}
+						});
+					}
+				}
 			}
 		}
 		prevMessagesRef.current = messages;
-	}, [messages, translations, translateMessage]);
+	}, [messages, translations, translateMessage, playAudio, generateTTS]);
 
 	const fetchHintSuggestion = useCallback(async () => {
 		if (!sessionId) return;
@@ -263,7 +352,6 @@ export default function PracticeView({
 			audioUrl?: string,
 		) => {
 			if (!sessionId || !content.trim()) return;
-			const audioPlaybackGeneration = audioPlaybackGenerationRef.current;
 
 			const userMessageId = crypto.randomUUID();
 			setMessages((prev) => [
@@ -354,13 +442,6 @@ export default function PracticeView({
 							: msg,
 					),
 				);
-
-				if (
-					audioBase64 &&
-					audioPlaybackGeneration === audioPlaybackGenerationRef.current
-				) {
-					playAudio(audioBase64, aiMessageId);
-				}
 			} catch (error) {
 				console.error("Error sending message:", error);
 				setMessages((prev) =>
@@ -380,42 +461,7 @@ export default function PracticeView({
 				);
 			}
 		},
-		[sessionId, playAudio, openDialog],
-	);
-
-	const generateTTS = useCallback(
-		async (text: string, messageId: string) => {
-			setGeneratingTTS((prev) => new Set(prev).add(messageId));
-			try {
-				const response = await fetch(
-					`${env.VITE_SERVER_URL}/api/conversation/speak`,
-					{
-						method: "POST",
-						headers: { "Content-Type": "application/json" },
-						credentials: "include",
-						body: JSON.stringify({ text, voice }),
-					},
-				);
-				if (!response.ok) return null;
-				const { audio } = await response.json();
-
-				setMessages((prev) =>
-					prev.map((m) => (m.id === messageId ? { ...m, audio } : m)),
-				);
-
-				return audio as string;
-			} catch (err) {
-				console.error("TTS generation error:", err);
-				return null;
-			} finally {
-				setGeneratingTTS((prev) => {
-					const next = new Set(prev);
-					next.delete(messageId);
-					return next;
-				});
-			}
-		},
-		[voice],
+		[sessionId, openDialog],
 	);
 
 	const handleFinishSession = useCallback(async () => {
@@ -466,6 +512,7 @@ export default function PracticeView({
 
 	useEffect(() => {
 		if (data?.messages && !hasPlayedInitialAudio.current) {
+			hasPlayedInitialAudio.current = true;
 			const loadedMessages = data.messages.map((m) => ({
 				id: m.id,
 				role: m.role,
@@ -473,12 +520,19 @@ export default function PracticeView({
 			}));
 			setMessages(loadedMessages as Message[]);
 
+			if (autoTranslate) {
+				for (const m of data.messages) {
+					if (m.role === "assistant" && m.content.trim()) {
+						translateMessage(m.id, m.content);
+					}
+				}
+			}
+
 			const lastAiMessage = data.messages
 				.filter((m) => m.role === "assistant")
 				.pop();
 
-			if (lastAiMessage) {
-				hasPlayedInitialAudio.current = true;
+			if (lastAiMessage && autoPlay) {
 				const audioPlaybackGeneration = audioPlaybackGenerationRef.current;
 				generateTTS(lastAiMessage.content, lastAiMessage.id).then((audio) => {
 					if (
@@ -490,7 +544,7 @@ export default function PracticeView({
 				});
 			}
 		}
-	}, [data, generateTTS, playAudio]);
+	}, [data, autoTranslate, autoPlay, generateTTS, playAudio, translateMessage]);
 
 	const {
 		startRecording,
@@ -642,6 +696,8 @@ export default function PracticeView({
 				setSelectedDevice={setSelectedDevice}
 				autoTranslate={autoTranslate}
 				onAutoTranslateChange={handleAutoTranslateToggle}
+				autoPlay={autoPlay}
+				onAutoPlayChange={handleAutoPlayToggle}
 			/>
 
 			<div className="sticky bottom-0 z-20 shrink-0 bg-linear-to-t from-neutral-50 via-neutral-50/95 to-transparent pt-3 dark:from-neutral-900 dark:via-neutral-900/95">
