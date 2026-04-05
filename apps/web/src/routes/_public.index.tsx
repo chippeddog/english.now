@@ -3,9 +3,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Compare } from "@/components/home/compare";
 import FAQ from "@/components/home/faq";
 import { Features } from "@/components/home/features";
-// import { Features as FeaturesA } from "@/components/home/features_a";
+//import { Features as FeaturesA } from "@/components/home/features_a";
 import Hero from "@/components/home/hero";
-import { Letter } from "@/components/home/letter";
+// import { Letter } from "@/components/home/letter";
+import { OldNew } from "@/components/home/old-new";
 import { Pricing } from "@/components/home/pricing";
 import { Start } from "@/components/home/start";
 // import { UseCases } from "@/components/home/use-cases";
@@ -26,8 +27,9 @@ function HomeComponent() {
 			<Features />
 			{/* <FeaturesA /> */}
 			{/* <UseCases /> */}
+			{/* <OldNew /> */}
 			<Compare />
-			<Letter />
+			{/* <Letter /> */}
 			<Pricing />
 			<FAQ />
 			<Start />

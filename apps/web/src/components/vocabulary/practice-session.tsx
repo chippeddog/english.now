@@ -166,7 +166,7 @@ export default function PracticeSession({
 
 	if (phase === "results") {
 		return (
-			<div className="fixed inset-0 z-50 flex flex-col bg-linear-to-b from-sky-100/80 via-sky-50/60 to-white">
+			<div className="fixed inset-0 z-50 flex flex-col bg-white">
 				<div className="flex items-center justify-end p-4">
 					<button
 						type="button"

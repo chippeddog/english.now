@@ -76,7 +76,115 @@
     "general": "Général",
     "personalization": "Personnalisation",
     "billing": "Facturation & Abonnement",
-    "signOut": "Déconnexion"
+    "signOut": "Déconnexion",
+    "account": "Compte",
+    "common": {
+      "save": "Enregistrer"
+    },
+    "profile": {
+      "avatarAlt": "Avatar",
+      "avatarHelp": "Cliquez pour télécharger un nouvel avatar",
+      "avatarRequirements": "JPG, PNG ou GIF. Max 5MB.",
+      "nameLabel": "Nom",
+      "namePlaceholder": "Votre nom",
+      "emailLabel": "Email",
+      "emailHelp": "Si vous devez changer votre email, veuillez contacter le support.",
+      "timezoneLabel": "Fuseau horaire",
+      "timezoneDetected": "Détecté depuis votre navigateur : {{timezone}}.",
+      "deleteTitle": "Supprimer le compte",
+      "deleteDescription": "Supprimez définitivement votre compte et toutes les données. Cette action est irréversible.",
+      "deleteButton": "Supprimer",
+      "deleteDialog": {
+        "title": "Supprimer le compte",
+        "description": "Cette action est irréversible. Toutes vos données, progrès et abonnement seront définitivement supprimés.",
+        "confirmLabel": "Tapez {{keyword}} pour confirmer",
+        "cancel": "Annuler",
+        "confirmButton": "Supprimer le compte"
+      },
+      "toasts": {
+        "timezoneUpdated": "Fuseau horaire mis à jour avec succès",
+        "timezoneUpdateError": "Échec de la mise à jour du fuseau horaire",
+        "nameRequired": "Le nom ne peut pas être vide",
+        "profileUpdated": "Profil mis à jour avec succès",
+        "profileUpdateError": "Échec de la mise à jour du profil",
+        "invalidImageType": "Veuillez sélectionner un fichier image",
+        "imageTooLarge": "L'image doit être inférieure à 5MB",
+        "avatarUpdated": "Avatar mis à jour avec succès",
+        "avatarUploadError": "Échec du téléchargement de l'avatar",
+        "deleteKeywordRequired": "Veuillez taper \"{{keyword}}\" pour confirmer",
+        "accountDeleted": "Compte supprimé avec succès",
+        "accountDeleteError": "Échec de la suppression du compte"
+      }
+    },
+    "personalizationSection": {
+      "nativeLanguage": "Langue maternelle",
+      "selectLanguage": "Sélectionner la langue",
+      "dailyLearningGoal": "Objectif d'apprentissage quotidien",
+      "selectGoal": "Sélectionner l'objectif",
+      "learningGoal": "Objectif d'apprentissage",
+      "interestsLabel": "Centres d'intérêt",
+      "selectInterests": "Sélectionner les centres d'intérêt...",
+      "focusAreasLabel": "Domaines de concentration",
+      "selectFocusAreas": "Sélectionner les domaines de concentration...",
+      "dailyGoals": {
+        "option": "{{minutes}} min/jour - {{label}}",
+        "casual": "Décontracté",
+        "steady": "Régulier",
+        "serious": "Sérieux",
+        "intensive": "Intensif"
+      },
+      "goals": {
+        "career": "Évolution professionnelle",
+        "travel": "Voyage",
+        "education": "Éducation",
+        "social": "Social",
+        "personal": "Développement personnel",
+        "content": "Divertissement"
+      },
+      "focusAreas": {
+        "speaking": "Expression orale",
+        "vocabulary": "Vocabulaire",
+        "grammar": "Grammaire",
+        "pronunciation": "Prononciation"
+      },
+      "interests": {
+        "technology": "Technologie",
+        "travel": "Voyage",
+        "music": "Musique",
+        "movies": "Films & TV",
+        "food": "Gastronomie & Cuisine",
+        "fitness": "Santé & Fitness",
+        "business": "Affaires",
+        "art": "Art & Design",
+        "gaming": "Jeux vidéo",
+        "books": "Livres & Littérature"
+      },
+      "toasts": {
+        "updated": "Paramètres mis à jour",
+        "updateError": "Échec de la mise à jour des paramètres",
+        "focusAreaRequired": "Vous devez avoir au moins un domaine de concentration"
+      }
+    },
+    "billingSection": {
+      "currentPlan": "Votre plan actuel",
+      "free": "Gratuit",
+      "getPro": "Obtenez PRO",
+      "pro": "Pro",
+      "nextBillingDate": "Prochaine date de facturation",
+      "manageDescription": "Pour gérer votre abonnement, mettre à jour les détails de paiement ou annuler, ouvrez votre",
+      "customerPortal": "portail client Paddle",
+      "customerPortalLoading": "Ouverture du portail...",
+      "statuses": {
+        "trial": "Essai",
+        "active": "Actif",
+        "paused": "En pause",
+        "pastDue": "En retard"
+      },
+      "errors": {
+        "createPortalSession": "Échec de la création d'une session de portail client",
+        "openCustomerPortal": "Échec de l'ouverture du portail client"
+      }
+    }
   },
   "upgrade": {
     "pro": "PRO",

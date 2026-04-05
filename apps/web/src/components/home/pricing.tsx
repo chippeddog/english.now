@@ -43,7 +43,7 @@ export function Pricing() {
 		}) as string[];
 		return (
 			<div
-				className={`relative min-h-[428px] w-full gap-6 overflow-hidden rounded-3xl bg-background p-6 ${_plan.isPopular ? "border-[#C6F64D]" : ""}`}
+				className={`relative min-h-[478px] w-full gap-6 overflow-hidden rounded-3xl bg-background p-6 ${_plan.isPopular ? "border-[#C6F64D]" : ""}`}
 				style={{
 					boxShadow:
 						"0 0 0 1px rgba(0,0,0,.05),0 10px 10px -5px rgba(0,0,0,.04),0 20px 25px -5px rgba(0,0,0,.04),0 20px 32px -12px rgba(0,0,0,.04)",
@@ -163,7 +163,13 @@ export function Pricing() {
 				>
 					<CarouselContent className="items-end pb-4">
 						{_plans.map((_plan) => (
-							<CarouselItem key={_plan.key} className={cn("basis-[80%] pr-4 pl-4", _plan.isPopular ? "basis-[80%] pl-1 pr-1" : "")}>
+							<CarouselItem
+								key={_plan.key}
+								className={cn(
+									"basis-[80%] pr-4 pl-4",
+									_plan.isPopular ? "basis-[80%] pr-1 pl-1" : "",
+								)}
+							>
 								{_plan.isPopular
 									? renderPopularWrapper(renderPlanCard(_plan))
 									: renderPlanCard(_plan)}

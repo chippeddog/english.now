@@ -2,7 +2,6 @@ import { useTranslation } from "@english.now/i18n";
 import { Link } from "@tanstack/react-router";
 import { Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { LanguageSwitcher } from "@/components/language-switcher";
 import Logo from "@/components/logo";
 import { Button } from "./ui/button";
 
@@ -76,12 +75,12 @@ export default function Navbar() {
 						>
 							<Link to="/signup">
 								{t("auth.signUp")}{" "}
-								<span className="hidden text-neutral-500 text-sm md:inline">
+								{/* <span className="hidden text-neutral-500 text-sm md:inline">
 									-
 								</span>
 								<span className="hidden font-lyon text-lg text-neutral-500 italic md:inline">
 									free
-								</span>
+								</span> */}
 							</Link>
 						</Button>
 						<button

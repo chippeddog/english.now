@@ -738,7 +738,7 @@ function RouteComponent() {
 				<h1 className="font-bold font-lyon text-4xl text-neutral-900 tracking-tight md:text-5xl dark:text-white">
 					Everything you need <br className="md:hidden" /> to master English
 				</h1>
-				<p className="mx-auto max-w-2xl text-balance text-muted-foreground md:text-lg">
+				<p className="mx-auto text-balance text-muted-foreground md:text-lg">
 					All plans include access to our AI-powered learning tools. Select a
 					feature to explore.
 				</p>

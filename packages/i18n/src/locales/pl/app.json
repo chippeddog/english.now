@@ -76,7 +76,115 @@
     "general": "Ogólne",
     "personalization": "Personalizacja",
     "billing": "Rozliczenia i subskrypcja",
-    "signOut": "Wyloguj się"
+    "signOut": "Wyloguj się",
+    "account": "Konto",
+    "common": {
+      "save": "Zapisz"
+    },
+    "profile": {
+      "avatarAlt": "Awatar",
+      "avatarHelp": "Kliknij, aby przesłać nowy awatar",
+      "avatarRequirements": "JPG, PNG lub GIF. Maksymalnie 5MB.",
+      "nameLabel": "Imię",
+      "namePlaceholder": "Twoje imię",
+      "emailLabel": "Email",
+      "emailHelp": "Jeśli potrzebujesz zmienić swój email, skontaktuj się z pomocą techniczną.",
+      "timezoneLabel": "Strefa czasowa",
+      "timezoneDetected": "Wykryto z przeglądarki: {{timezone}}.",
+      "deleteTitle": "Usuń konto",
+      "deleteDescription": "Trwale usuń swoje konto i wszystkie dane. Tej akcji nie można cofnąć.",
+      "deleteButton": "Usuń",
+      "deleteDialog": {
+        "title": "Usuń konto",
+        "description": "Ta akcja jest nieodwracalna. Wszystkie Twoje dane, postępy i subskrypcja zostaną trwale usunięte.",
+        "confirmLabel": "Wpisz {{keyword}}, aby potwierdzić",
+        "cancel": "Anuluj",
+        "confirmButton": "Usuń konto"
+      },
+      "toasts": {
+        "timezoneUpdated": "Strefa czasowa zaktualizowana pomyślnie",
+        "timezoneUpdateError": "Nie udało się zaktualizować strefy czasowej",
+        "nameRequired": "Imię nie może być puste",
+        "profileUpdated": "Profil zaktualizowany pomyślnie",
+        "profileUpdateError": "Nie udało się zaktualizować profilu",
+        "invalidImageType": "Proszę wybrać plik graficzny",
+        "imageTooLarge": "Obraz musi być mniejszy niż 5MB",
+        "avatarUpdated": "Awatar zaktualizowany pomyślnie",
+        "avatarUploadError": "Nie udało się przesłać awatara",
+        "deleteKeywordRequired": "Proszę wpisać \"{{keyword}}\", aby potwierdzić",
+        "accountDeleted": "Konto usunięte pomyślnie",
+        "accountDeleteError": "Nie udało się usunąć konta"
+      }
+    },
+    "personalizationSection": {
+      "nativeLanguage": "Język ojczysty",
+      "selectLanguage": "Wybierz język",
+      "dailyLearningGoal": "Codzienny cel nauki",
+      "selectGoal": "Wybierz cel",
+      "learningGoal": "Cel nauki",
+      "interestsLabel": "Zainteresowania",
+      "selectInterests": "Wybierz zainteresowania...",
+      "focusAreasLabel": "Obszary zainteresowania",
+      "selectFocusAreas": "Wybierz obszary zainteresowania...",
+      "dailyGoals": {
+        "option": "{{minutes}} min/dzień - {{label}}",
+        "casual": "Swobodny",
+        "steady": "Stały",
+        "serious": "Poważny",
+        "intensive": "Intensywny"
+      },
+      "goals": {
+        "career": "Rozwój kariery",
+        "travel": "Podróże",
+        "education": "Edukacja",
+        "social": "Społeczny",
+        "personal": "Rozwój osobisty",
+        "content": "Rozrywka"
+      },
+      "focusAreas": {
+        "speaking": "Mówienie",
+        "vocabulary": "Słownictwo",
+        "grammar": "Gramatyka",
+        "pronunciation": "Wymowa"
+      },
+      "interests": {
+        "technology": "Technologia",
+        "travel": "Podróże",
+        "music": "Muzyka",
+        "movies": "Filmy i TV",
+        "food": "Jedzenie i gotowanie",
+        "fitness": "Zdrowie i fitness",
+        "business": "Biznes",
+        "art": "Sztuka i design",
+        "gaming": "Gry",
+        "books": "Książki i literatura"
+      },
+      "toasts": {
+        "updated": "Ustawienia zaktualizowane",
+        "updateError": "Nie udało się zaktualizować ustawień",
+        "focusAreaRequired": "Musisz wybrać co najmniej jeden obszar zainteresowania"
+      }
+    },
+    "billingSection": {
+      "currentPlan": "Twój obecny plan",
+      "free": "Darmowy",
+      "getPro": "Uzyskaj PRO",
+      "pro": "Pro",
+      "nextBillingDate": "Następna data rozliczenia",
+      "manageDescription": "Aby zarządzać subskrypcją, zaktualizować dane płatności lub anulować, otwórz swój",
+      "customerPortal": "portal klienta Paddle",
+      "customerPortalLoading": "Otwieranie portalu...",
+      "statuses": {
+        "trial": "Okres próbny",
+        "active": "Aktywny",
+        "paused": "Wstrzymany",
+        "pastDue": "Zaległy"
+      },
+      "errors": {
+        "createPortalSession": "Nie udało się utworzyć sesji portalu klienta",
+        "openCustomerPortal": "Nie udało się otworzyć portalu klienta"
+      }
+    }
   },
   "upgrade": {
     "pro": "PRO",

@@ -1,7 +1,9 @@
 import { env } from "@english.now/env/client";
+import { useTranslation } from "@english.now/i18n";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { Camera, Check, Loader2, Trash2 } from "lucide-react";
-import { useRef, useState } from "react";
+import { Camera, Loader2, Trash2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,12 +16,30 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+	NativeSelect,
+	NativeSelectOption,
+} from "@/components/ui/native-select";
 import { authClient } from "@/lib/auth-client";
+import { useTRPC } from "@/utils/trpc";
+
+const TIMEZONE_OPTIONS =
+	typeof Intl.supportedValuesOf === "function"
+		? Intl.supportedValuesOf("timeZone")
+		: ["UTC"];
 
 export const Profile = () => {
 	const navigate = useNavigate();
+	const { t } = useTranslation("app");
+	const trpc = useTRPC();
+	const queryClient = useQueryClient();
 	const { data: session } = authClient.useSession();
+	const { data: profile, isLoading: isLoadingProfile } = useQuery(
+		trpc.profile.get.queryOptions(),
+	);
 	const [name, setName] = useState(session?.user?.name || "");
+	const [detectedTimezone, setDetectedTimezone] = useState("UTC");
+	const [timezone, setTimezone] = useState("UTC");
 	const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
 	const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 	const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -28,10 +48,41 @@ export const Profile = () => {
 	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 	const [deleteConfirmation, setDeleteConfirmation] = useState("");
 	const [isDeleting, setIsDeleting] = useState(false);
+	const deleteKeyword = "DELETE";
+
+	const updateTimezoneMutation = useMutation(
+		trpc.profile.updateProfile.mutationOptions({
+			onSuccess: async () => {
+				await queryClient.invalidateQueries({
+					queryKey: trpc.profile.get.queryKey(),
+				});
+				toast.success(t("settings.profile.toasts.timezoneUpdated"));
+			},
+			onError: (error) => {
+				toast.error(
+					error.message || t("settings.profile.toasts.timezoneUpdateError"),
+				);
+			},
+		}),
+	);
+
+	useEffect(() => {
+		setDetectedTimezone(
+			Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+		);
+	}, []);
+
+	useEffect(() => {
+		if (isLoadingProfile) {
+			return;
+		}
+
+		setTimezone(profile?.timezone || detectedTimezone);
+	}, [detectedTimezone, isLoadingProfile, profile?.timezone]);
 
 	const handleUpdateProfile = async () => {
 		if (!name.trim()) {
-			toast.error("Name cannot be empty");
+			toast.error(t("settings.profile.toasts.nameRequired"));
 			return;
 		}
 
@@ -40,9 +91,9 @@ export const Profile = () => {
 			await authClient.updateUser({
 				name: name.trim(),
 			});
-			toast.success("Profile updated successfully");
+			toast.success(t("settings.profile.toasts.profileUpdated"));
 		} catch (error) {
-			toast.error("Failed to update profile");
+			toast.error(t("settings.profile.toasts.profileUpdateError"));
 			console.error(error);
 		} finally {
 			setIsUpdatingProfile(false);
@@ -59,13 +110,13 @@ export const Profile = () => {
 
 		// Validate file type
 		if (!file.type.startsWith("image/")) {
-			toast.error("Please select an image file");
+			toast.error(t("settings.profile.toasts.invalidImageType"));
 			return;
 		}
 
 		// Validate file size (max 5MB)
 		if (file.size > 5 * 1024 * 1024) {
-			toast.error("Image must be smaller than 5MB");
+			toast.error(t("settings.profile.toasts.imageTooLarge"));
 			return;
 		}
 
@@ -90,7 +141,9 @@ export const Profile = () => {
 
 			if (!response.ok) {
 				const error = await response.json();
-				throw new Error(error.error || "Failed to upload image");
+				throw new Error(
+					error.error || t("settings.profile.toasts.avatarUploadError"),
+				);
 			}
 
 			const { publicUrl } = await response.json();
@@ -100,10 +153,12 @@ export const Profile = () => {
 				image: publicUrl,
 			});
 
-			toast.success("Avatar updated successfully");
+			toast.success(t("settings.profile.toasts.avatarUpdated"));
 		} catch (error) {
 			toast.error(
-				error instanceof Error ? error.message : "Failed to upload avatar",
+				error instanceof Error
+					? error.message
+					: t("settings.profile.toasts.avatarUploadError"),
 			);
 			console.error(error);
 			setAvatarPreview(null);
@@ -113,18 +168,22 @@ export const Profile = () => {
 	};
 
 	const handleDeleteAccount = async () => {
-		if (deleteConfirmation !== "DELETE") {
-			toast.error('Please type "DELETE" to confirm');
+		if (deleteConfirmation !== deleteKeyword) {
+			toast.error(
+				t("settings.profile.toasts.deleteKeywordRequired", {
+					keyword: deleteKeyword,
+				}),
+			);
 			return;
 		}
 
 		setIsDeleting(true);
 		try {
 			await authClient.deleteUser();
-			toast.success("Account deleted successfully");
+			toast.success(t("settings.profile.toasts.accountDeleted"));
 			navigate({ to: "/" });
 		} catch (error) {
-			toast.error("Failed to delete account");
+			toast.error(t("settings.profile.toasts.accountDeleteError"));
 			console.error(error);
 		} finally {
 			setIsDeleting(false);
@@ -133,21 +192,33 @@ export const Profile = () => {
 	};
 
 	const currentAvatar = avatarPreview || session?.user?.image;
+	const savedTimezone = profile?.timezone || detectedTimezone;
+	const hasTimezoneChanges = timezone !== savedTimezone;
+
+	if (isLoadingProfile) {
+		return (
+			<div className="flex items-center justify-center py-12">
+				<Loader2 className="size-5 animate-spin text-muted-foreground" />
+			</div>
+		);
+	}
+
 	return (
 		<>
-			<div className="space-y-6">
+			<div className="space-y-5">
+				<h2 className="font-semibold">{t("settings.account")}</h2>
 				<div>
-					<div>
+					<div className="flex items-center gap-2">
 						<button
 							type="button"
 							onClick={handleAvatarClick}
 							disabled={isUploadingAvatar}
-							className="group relative size-16 overflow-hidden rounded-full border-2 border-transparent border-dashed transition-colors hover:border-muted-foreground/30 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+							className="group relative size-12 overflow-hidden rounded-full border-2 border-transparent border-dashed transition-colors hover:border-muted-foreground/30 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 						>
 							{currentAvatar ? (
 								<img
 									src={currentAvatar}
-									alt={session?.user?.name ?? "Avatar"}
+									alt={session?.user?.name ?? t("settings.profile.avatarAlt")}
 									className="size-full rounded-full object-cover"
 								/>
 							) : (
@@ -170,21 +241,21 @@ export const Profile = () => {
 							onChange={handleFileSelect}
 							className="hidden"
 						/>
+						<p className="text-muted-foreground text-sm">
+							{t("settings.profile.avatarHelp")} <br />
+							{t("settings.profile.avatarRequirements")}
+						</p>
 					</div>
 				</div>
-
-				{/* Name */}
-				<div>
-					<Label htmlFor="name" className="text-muted-foreground">
-						Name
-					</Label>
-					<div className="mt-2 flex gap-3">
+				<div className="space-y-2">
+					<Label htmlFor="name">{t("settings.profile.nameLabel")}</Label>
+					<div className="flex gap-3">
 						<Input
 							id="name"
 							value={name || session?.user?.name || ""}
 							onChange={(e) => setName(e.target.value)}
-							placeholder="Your name"
-							className="max-w-md rounded-xl"
+							placeholder={t("settings.profile.namePlaceholder")}
+							className="max-w-xs rounded-xl"
 						/>
 						{name && name !== session?.user?.name && (
 							<Button
@@ -192,78 +263,118 @@ export const Profile = () => {
 								disabled={isUpdatingProfile}
 								className="rounded-xl"
 							>
-								{isUpdatingProfile ? (
+								{isUpdatingProfile && (
 									<Loader2 className="size-4 animate-spin" />
-								) : (
-									<Check className="size-4" />
 								)}
-								Save
+								{t("settings.common.save")}
 							</Button>
 						)}
 					</div>
 				</div>
-
-				{/* Email */}
-				<div>
-					<Label htmlFor="email" className="text-muted-foreground">
-						Email
-					</Label>
-					<div className="mt-2">
+				<div className="space-y-2">
+					<Label htmlFor="email">{t("settings.profile.emailLabel")}</Label>
+					<div>
 						<Input
 							id="email"
 							value={session?.user?.email ?? ""}
 							disabled
-							className="max-w-md rounded-xl bg-muted/50"
+							className="max-w-xs rounded-xl bg-muted/50"
 						/>
 						<p className="mt-2 text-muted-foreground text-sm">
-							If you need to change your email, please contact support.
+							{t("settings.profile.emailHelp")}
 						</p>
 					</div>
 				</div>
-			</div>
-			<div className="mt-6">
-				{" "}
-				<hr className="mt-2 mb-4 border-border/50" />
-				<div className="flex flex-col items-start justify-between gap-4">
-					<div>
-						<h3 className="font-medium text-destructive">Delete Account</h3>
-						<p className="mt-1 text-muted-foreground text-sm">
-							Permanently delete your account and all associated data. This
-							action cannot be undone.
-						</p>
+				<hr className="my-5 border-border/50" />
+				<div className="space-y-2">
+					<Label htmlFor="timezone">
+						{t("settings.profile.timezoneLabel")}
+					</Label>
+					<div className="flex gap-3">
+						<NativeSelect
+							id="timezone"
+							value={timezone}
+							onChange={(e) => setTimezone(e.target.value)}
+							disabled={isLoadingProfile || updateTimezoneMutation.isPending}
+							className="min-w-[20rem] rounded-xl"
+						>
+							{TIMEZONE_OPTIONS.map((timezoneOption) => (
+								<NativeSelectOption key={timezoneOption} value={timezoneOption}>
+									{timezoneOption.replaceAll("_", " ")}
+								</NativeSelectOption>
+							))}
+						</NativeSelect>
+						{hasTimezoneChanges && (
+							<Button
+								onClick={() =>
+									updateTimezoneMutation.mutate({
+										timezone,
+									})
+								}
+								disabled={updateTimezoneMutation.isPending}
+								className="rounded-xl"
+							>
+								{updateTimezoneMutation.isPending && (
+									<Loader2 className="size-4 animate-spin" />
+								)}
+								{t("settings.common.save")}
+							</Button>
+						)}
 					</div>
-					<Button
-						variant="destructive"
-						className="shrink-0 rounded-xl"
-						onClick={() => setShowDeleteDialog(true)}
-					>
-						<Trash2 className="size-4" />
-						Delete
-					</Button>
+					<p className="text-muted-foreground text-sm">
+						{t("settings.profile.timezoneDetected", {
+							timezone: detectedTimezone,
+						})}
+					</p>
 				</div>
 			</div>
-			{/* Delete Confirmation Dialog */}
+			<hr className="my-5 border-border/50" />
+			<div className="mb-4">
+				<h3 className="font-medium text-sm">
+					{t("settings.profile.deleteTitle")}
+				</h3>
+				<p className="mt-1 text-muted-foreground text-sm">
+					{t("settings.profile.deleteDescription")}
+				</p>
+			</div>
+			<Button
+				variant="destructive"
+				className="shrink-0 rounded-xl"
+				onClick={() => setShowDeleteDialog(true)}
+			>
+				<Trash2 className="size-4" />
+				{t("settings.profile.deleteButton")}
+			</Button>
+
 			<Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
 				<DialogContent className="sm:max-w-[425px]">
 					<DialogHeader>
 						<DialogTitle className="text-destructive">
-							Delete Account
+							{t("settings.profile.deleteDialog.title")}
 						</DialogTitle>
 						<DialogDescription>
-							This action is irreversible. All your data, progress, and
-							subscription will be permanently deleted.
+							{t("settings.profile.deleteDialog.description")}
 						</DialogDescription>
 					</DialogHeader>
 					<div className="py-4">
 						<Label htmlFor="confirm-delete" className="text-sm">
-							Type <span className="font-mono font-semibold">DELETE</span> to
-							confirm
+							{
+								t("settings.profile.deleteDialog.confirmLabel", {
+									keyword: deleteKeyword,
+								}).split(deleteKeyword)[0]
+							}
+							<span className="font-mono font-semibold">{deleteKeyword}</span>
+							{
+								t("settings.profile.deleteDialog.confirmLabel", {
+									keyword: deleteKeyword,
+								}).split(deleteKeyword)[1]
+							}
 						</Label>
 						<Input
 							id="confirm-delete"
 							value={deleteConfirmation}
 							onChange={(e) => setDeleteConfirmation(e.target.value)}
-							placeholder="DELETE"
+							placeholder={deleteKeyword}
 							className="mt-2"
 						/>
 					</div>
@@ -275,19 +386,19 @@ export const Profile = () => {
 								setDeleteConfirmation("");
 							}}
 						>
-							Cancel
+							{t("settings.profile.deleteDialog.cancel")}
 						</Button>
 						<Button
 							variant="destructive"
 							onClick={handleDeleteAccount}
-							disabled={deleteConfirmation !== "DELETE" || isDeleting}
+							disabled={deleteConfirmation !== deleteKeyword || isDeleting}
 						>
 							{isDeleting ? (
 								<Loader2 className="size-4 animate-spin" />
 							) : (
 								<Trash2 className="size-4" />
 							)}
-							Delete Account
+							{t("settings.profile.deleteDialog.confirmButton")}
 						</Button>
 					</DialogFooter>
 				</DialogContent>

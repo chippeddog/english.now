@@ -8,11 +8,14 @@ import {
 } from "@english.now/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { Headphones, Languages, LogOutIcon, Settings } from "lucide-react";
+import { Headphones, Languages, LogOutIcon, Settings, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 import MobileMenu from "@/components/app/navbar/mobile-menu";
 import Streak from "@/components/app/navbar/streak";
-import { UpgradeDialogButton } from "@/components/dashboard/upgrade-dialog";
+import {
+	UpgradeDialogButton,
+	useUpgradeDialog,
+} from "@/components/dashboard/upgrade-dialog";
 import VoicesDialog from "@/components/dashboard/voices-dialog";
 import Logo from "@/components/logo";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -35,6 +38,8 @@ export default function Navbar() {
 	const { t } = useTranslation("app");
 	const trpc = useTRPC();
 	const [voicesOpen, setVoicesOpen] = useState(false);
+	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+	const { openDialog } = useUpgradeDialog();
 
 	const [isScrolled, setIsScrolled] = useState(false);
 	const [language, setLanguage] = useState<SupportedLanguage>(
@@ -44,7 +49,9 @@ export default function Navbar() {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const { data: session, isPending } = authClient.useSession();
-	const { data: profile } = useQuery(trpc.profile.get.queryOptions());
+	const { data: profile, isPending: isProfilePending } = useQuery(
+		trpc.profile.get.queryOptions(),
+	);
 	const timezone =
 		profile?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
 	const { data: practiceTimeData, isLoading: isPracticeTimeLoading } = useQuery(
@@ -75,6 +82,10 @@ export default function Navbar() {
 		{
 			to: "/vocabulary",
 			label: t("nav.vocabulary"),
+		},
+		{
+			to: "/progress",
+			label: t("nav.progress"),
 		},
 	];
 
@@ -121,9 +132,12 @@ export default function Navbar() {
 							activityDates={practiceTimeData?.map((time) => time.date) ?? []}
 							isLoading={isPracticeTimeLoading}
 						/>
-						<UpgradeDialogButton />
+						{/* <UpgradeDialogButton /> */}
 						<VoicesDialog open={voicesOpen} onOpenChange={setVoicesOpen} />
-						<DropdownMenu>
+						<DropdownMenu
+							open={isDropdownOpen}
+							onOpenChange={setIsDropdownOpen}
+						>
 							<DropdownMenuTrigger asChild>
 								<div className="flex w-full cursor-pointer flex-col items-start transition-opacity hover:opacity-80">
 									<div className="flex flex-row items-center gap-2">
@@ -140,9 +154,13 @@ export default function Navbar() {
 																: "border-neutral-200",
 														)}
 													>
-														{profile?.subscription.isPro && (
+														{profile?.subscription.isPro ? (
 															<span className="-bottom-0.5 absolute mx-auto rounded-full border border-black bg-linear-to-t from-[#202020] to-[#2F2F2F] px-1 font-semibold text-[9px] text-sm text-white italic">
 																PRO
+															</span>
+														) : (
+															<span className="-bottom-0.5 absolute mx-auto rounded-full border border-black bg-linear-to-t from-[#202020] to-[#2F2F2F] px-1 font-semibold text-[9px] text-sm text-white italic">
+																Free
 															</span>
 														)}
 
@@ -199,9 +217,13 @@ export default function Navbar() {
 																: "border-neutral-200",
 														)}
 													>
-														{profile?.subscription.isPro && (
+														{profile?.subscription.isPro ? (
 															<span className="-bottom-0.5 absolute mx-auto rounded-full border border-black bg-linear-to-t from-[#202020] to-[#2F2F2F] px-1 font-semibold text-[9px] text-sm text-white italic">
 																PRO
+															</span>
+														) : (
+															<span className="-bottom-0.5 absolute mx-auto rounded-full border border-0.5 bg-white px-1 font-semibold text-[9px] text-black italic shadow-xs">
+																FREE
 															</span>
 														)}
 														<img
@@ -231,14 +253,27 @@ export default function Navbar() {
 									</div>
 								</DropdownMenuLabel>
 								<DropdownMenuSeparator />
-								<DropdownMenuItem>
-									<Link
-										to="/settings"
-										className="flex w-full items-center gap-2"
+								{!isProfilePending && !profile?.subscription.isPro && (
+									<DropdownMenuItem
+										onSelect={() => {
+											setIsDropdownOpen(false);
+											openDialog();
+										}}
+										className="flex cursor-pointer items-center gap-2"
 									>
-										<Settings className="size-4" />
-										{t("nav.settings")}
-									</Link>
+										<Zap className="size-4" />
+										Pro
+									</DropdownMenuItem>
+								)}
+								<DropdownMenuItem
+									onSelect={() => {
+										setIsDropdownOpen(false);
+										navigate({ to: "/settings" });
+									}}
+									className="flex cursor-pointer items-center gap-2"
+								>
+									<Settings className="size-4" />
+									{t("nav.settings")}
 								</DropdownMenuItem>
 								<DropdownMenuSeparator />
 								<DropdownMenuSub>

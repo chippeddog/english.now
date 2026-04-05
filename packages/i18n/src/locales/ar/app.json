@@ -76,7 +76,115 @@
     "general": "عام",
     "personalization": "التخصيص",
     "billing": "الفوترة والاشتراك",
-    "signOut": "تسجيل الخروج"
+    "signOut": "تسجيل الخروج",
+    "account": "الحساب",
+    "common": {
+      "save": "حفظ"
+    },
+    "profile": {
+      "avatarAlt": "الصورة الرمزية",
+      "avatarHelp": "انقر لتحميل صورة رمزية جديدة",
+      "avatarRequirements": "JPG، PNG أو GIF. الحد الأقصى 5 ميجابايت.",
+      "nameLabel": "الاسم",
+      "namePlaceholder": "اسمك",
+      "emailLabel": "البريد الإلكتروني",
+      "emailHelp": "إذا كنت بحاجة لتغيير بريدك الإلكتروني، يرجى الاتصال بالدعم.",
+      "timezoneLabel": "المنطقة الزمنية",
+      "timezoneDetected": "تم الكشف من المتصفح الخاص بك: {{timezone}}.",
+      "deleteTitle": "حذف الحساب",
+      "deleteDescription": "حذف حسابك وجميع البيانات بشكل دائم. لا يمكن التراجع عن هذا الإجراء.",
+      "deleteButton": "حذف",
+      "deleteDialog": {
+        "title": "حذف الحساب",
+        "description": "هذا الإجراء لا يمكن التراجع عنه. سيتم حذف جميع بياناتك وتقدمك واشتراكك بشكل دائم.",
+        "confirmLabel": "اكتب {{keyword}} للتأكيد",
+        "cancel": "إلغاء",
+        "confirmButton": "حذف الحساب"
+      },
+      "toasts": {
+        "timezoneUpdated": "تم تحديث المنطقة الزمنية بنجاح",
+        "timezoneUpdateError": "فشل في تحديث المنطقة الزمنية",
+        "nameRequired": "لا يمكن أن يكون الاسم فارغًا",
+        "profileUpdated": "تم تحديث الملف الشخصي بنجاح",
+        "profileUpdateError": "فشل في تحديث الملف الشخصي",
+        "invalidImageType": "يرجى اختيار ملف صورة",
+        "imageTooLarge": "يجب أن تكون الصورة أقل من 5 ميجابايت",
+        "avatarUpdated": "تم تحديث الصورة الرمزية بنجاح",
+        "avatarUploadError": "فشل في تحميل الصورة الرمزية",
+        "deleteKeywordRequired": "يرجى كتابة \"{{keyword}}\" للتأكيد",
+        "accountDeleted": "تم حذف الحساب بنجاح",
+        "accountDeleteError": "فشل في حذف الحساب"
+      }
+    },
+    "personalizationSection": {
+      "nativeLanguage": "اللغة الأم",
+      "selectLanguage": "اختر اللغة",
+      "dailyLearningGoal": "الهدف اليومي للتعلم",
+      "selectGoal": "اختر الهدف",
+      "learningGoal": "هدف التعلم",
+      "interestsLabel": "الاهتمامات",
+      "selectInterests": "اختر الاهتمامات...",
+      "focusAreasLabel": "مجالات التركيز",
+      "selectFocusAreas": "اختر مجالات التركيز...",
+      "dailyGoals": {
+        "option": "{{minutes}} دقيقة/يوم - {{label}}",
+        "casual": "غير رسمي",
+        "steady": "منتظم",
+        "serious": "جدي",
+        "intensive": "مكثف"
+      },
+      "goals": {
+        "career": "النمو المهني",
+        "travel": "السفر",
+        "education": "التعليم",
+        "social": "اجتماعي",
+        "personal": "النمو الشخصي",
+        "content": "الترفيه"
+      },
+      "focusAreas": {
+        "speaking": "التحدث",
+        "vocabulary": "المفردات",
+        "grammar": "القواعد",
+        "pronunciation": "النطق"
+      },
+      "interests": {
+        "technology": "التكنولوجيا",
+        "travel": "السفر",
+        "music": "الموسيقى",
+        "movies": "الأفلام والتلفزيون",
+        "food": "الطعام والطبخ",
+        "fitness": "الصحة واللياقة",
+        "business": "الأعمال",
+        "art": "الفن والتصميم",
+        "gaming": "الألعاب",
+        "books": "الكتب والأدب"
+      },
+      "toasts": {
+        "updated": "تم تحديث الإعدادات",
+        "updateError": "فشل في تحديث الإعدادات",
+        "focusAreaRequired": "تحتاج إلى اختيار مجال تركيز واحد على الأقل"
+      }
+    },
+    "billingSection": {
+      "currentPlan": "خطتك الحالية",
+      "free": "مجاني",
+      "getPro": "احصل على PRO",
+      "pro": "برو",
+      "nextBillingDate": "تاريخ الفاتورة التالي",
+      "manageDescription": "لإدارة اشتراكك، تحديث تفاصيل الدفع، أو الإلغاء، افتح",
+      "customerPortal": "بوابة العملاء Paddle",
+      "customerPortalLoading": "فتح البوابة...",
+      "statuses": {
+        "trial": "تجريبي",
+        "active": "نشط",
+        "paused": "متوقف مؤقتًا",
+        "pastDue": "متأخر"
+      },
+      "errors": {
+        "createPortalSession": "فشل في إنشاء جلسة بوابة العملاء",
+        "openCustomerPortal": "فشل في فتح بوابة العملاء"
+      }
+    }
   },
   "upgrade": {
     "pro": "PRO",

@@ -73,10 +73,118 @@
     },
     "settings": {
         "title": "Settings",
+        "account": "Account",
         "general": "General",
         "personalization": "Personalization",
         "billing": "Billing & Subscription",
-        "signOut": "Sign Out"
+        "signOut": "Sign Out",
+        "common": {
+            "save": "Save"
+        },
+        "profile": {
+            "avatarAlt": "Avatar",
+            "avatarHelp": "Click to upload a new avatar",
+            "avatarRequirements": "JPG, PNG or GIF. Max 5MB.",
+            "nameLabel": "Name",
+            "namePlaceholder": "Your name",
+            "emailLabel": "Email",
+            "emailHelp": "If you need to change your email, please contact support.",
+            "timezoneLabel": "Timezone",
+            "timezoneDetected": "Detected from your browser: {{timezone}}.",
+            "deleteTitle": "Delete Account",
+            "deleteDescription": "Permanently delete your account and all data. This action cannot be undone.",
+            "deleteButton": "Delete",
+            "deleteDialog": {
+                "title": "Delete Account",
+                "description": "This action is irreversible. All your data, progress, and subscription will be permanently deleted.",
+                "confirmLabel": "Type {{keyword}} to confirm",
+                "cancel": "Cancel",
+                "confirmButton": "Delete Account"
+            },
+            "toasts": {
+                "timezoneUpdated": "Timezone updated successfully",
+                "timezoneUpdateError": "Failed to update timezone",
+                "nameRequired": "Name cannot be empty",
+                "profileUpdated": "Profile updated successfully",
+                "profileUpdateError": "Failed to update profile",
+                "invalidImageType": "Please select an image file",
+                "imageTooLarge": "Image must be smaller than 5MB",
+                "avatarUpdated": "Avatar updated successfully",
+                "avatarUploadError": "Failed to upload avatar",
+                "deleteKeywordRequired": "Please type \"{{keyword}}\" to confirm",
+                "accountDeleted": "Account deleted successfully",
+                "accountDeleteError": "Failed to delete account"
+            }
+        },
+        "personalizationSection": {
+            "nativeLanguage": "Native Language",
+            "selectLanguage": "Select language",
+            "dailyLearningGoal": "Daily Learning Goal",
+            "selectGoal": "Select goal",
+            "learningGoal": "Learning Goal",
+            "interestsLabel": "Interests",
+            "selectInterests": "Select interests...",
+            "focusAreasLabel": "Focus Areas",
+            "selectFocusAreas": "Select focus areas...",
+            "dailyGoals": {
+                "option": "{{minutes}} min/day - {{label}}",
+                "casual": "Casual",
+                "steady": "Steady",
+                "serious": "Serious",
+                "intensive": "Intensive"
+            },
+            "goals": {
+                "career": "Career Growth",
+                "travel": "Travel",
+                "education": "Education",
+                "social": "Social",
+                "personal": "Personal Growth",
+                "content": "Entertainment"
+            },
+            "focusAreas": {
+                "speaking": "Speaking",
+                "vocabulary": "Vocabulary",
+                "grammar": "Grammar",
+                "pronunciation": "Pronunciation"
+            },
+            "interests": {
+                "technology": "Technology",
+                "travel": "Travel",
+                "music": "Music",
+                "movies": "Movies & TV",
+                "food": "Food & Cooking",
+                "fitness": "Health & Fitness",
+                "business": "Business",
+                "art": "Art & Design",
+                "gaming": "Gaming",
+                "books": "Books & Literature"
+            },
+            "toasts": {
+                "updated": "Settings updated",
+                "updateError": "Failed to update settings",
+                "focusAreaRequired": "You need at least one focus area"
+            }
+        },
+        "billingSection": {
+            "currentPlan": "Your current plan",
+            "free": "Free",
+            "getPro": "Get PRO",
+            "pro": "Pro",
+            "nextBillingDate": "Next billing date",
+            "manageDescription": "To manage your subscription, update payment details, or cancel, open your",
+            "customerPortal": "Paddle customer portal",
+            "customerPortalLoading": "Opening portal...",
+            "statuses": {
+                "trial": "Trial",
+                "active": "Active",
+                "paused": "Paused",
+                "pastDue": "Past Due"
+            },
+            "errors": {
+                "createPortalSession": "Failed to create a customer portal session",
+                "openCustomerPortal": "Failed to open the customer portal"
+            }
+        }
     },
     "upgrade": {
         "pro": "PRO",

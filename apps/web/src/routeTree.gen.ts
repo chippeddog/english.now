@@ -27,6 +27,7 @@ import { Route as PublicPricingRouteImport } from './routes/_public.pricing'
 import { Route as PublicFeaturesRouteImport } from './routes/_public.features'
 import { Route as PublicContactRouteImport } from './routes/_public.contact'
 import { Route as PublicBlogRouteImport } from './routes/_public.blog'
+import { Route as PublicB2bRouteImport } from './routes/_public.b2b'
 import { Route as PublicAboutRouteImport } from './routes/_public.about'
 import { Route as LoginVerifyRouteImport } from './routes/_login.verify'
 import { Route as LoginSignupRouteImport } from './routes/_login.signup'
@@ -35,6 +36,7 @@ import { Route as LoginLoginRouteImport } from './routes/_login.login'
 import { Route as LoginForgotPasswordRouteImport } from './routes/_login.forgot-password'
 import { Route as DashboardVocabularyRouteImport } from './routes/_dashboard.vocabulary'
 import { Route as DashboardSettingsRouteImport } from './routes/_dashboard.settings'
+import { Route as DashboardProgressRouteImport } from './routes/_dashboard.progress'
 import { Route as DashboardPracticeRouteImport } from './routes/_dashboard.practice'
 import { Route as DashboardLessonsRouteImport } from './routes/_dashboard.lessons'
 import { Route as DashboardHomeRouteImport } from './routes/_dashboard.home'
@@ -137,6 +139,11 @@ const PublicBlogRoute = PublicBlogRouteImport.update({
   path: '/blog',
   getParentRoute: () => PublicRoute,
 } as any)
+const PublicB2bRoute = PublicB2bRouteImport.update({
+  id: '/b2b',
+  path: '/b2b',
+  getParentRoute: () => PublicRoute,
+} as any)
 const PublicAboutRoute = PublicAboutRouteImport.update({
   id: '/about',
   path: '/about',
@@ -175,6 +182,11 @@ const DashboardVocabularyRoute = DashboardVocabularyRouteImport.update({
 const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardProgressRoute = DashboardProgressRouteImport.update({
+  id: '/progress',
+  path: '/progress',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardPracticeRoute = DashboardPracticeRouteImport.update({
@@ -284,6 +296,7 @@ export interface FileRoutesByFullPath {
   '/home': typeof DashboardHomeRoute
   '/lessons': typeof DashboardLessonsRoute
   '/practice': typeof DashboardPracticeRoute
+  '/progress': typeof DashboardProgressRoute
   '/settings': typeof DashboardSettingsRoute
   '/vocabulary': typeof DashboardVocabularyRoute
   '/forgot-password': typeof LoginForgotPasswordRoute
@@ -292,6 +305,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof LoginSignupRoute
   '/verify': typeof LoginVerifyRoute
   '/about': typeof PublicAboutRoute
+  '/b2b': typeof PublicB2bRoute
   '/blog': typeof PublicBlogRouteWithChildren
   '/contact': typeof PublicContactRoute
   '/features': typeof PublicFeaturesRoute
@@ -322,6 +336,7 @@ export interface FileRoutesByTo {
   '/home': typeof DashboardHomeRoute
   '/lessons': typeof DashboardLessonsRoute
   '/practice': typeof DashboardPracticeRoute
+  '/progress': typeof DashboardProgressRoute
   '/settings': typeof DashboardSettingsRoute
   '/vocabulary': typeof DashboardVocabularyRoute
   '/forgot-password': typeof LoginForgotPasswordRoute
@@ -330,6 +345,7 @@ export interface FileRoutesByTo {
   '/signup': typeof LoginSignupRoute
   '/verify': typeof LoginVerifyRoute
   '/about': typeof PublicAboutRoute
+  '/b2b': typeof PublicB2bRoute
   '/contact': typeof PublicContactRoute
   '/features': typeof PublicFeaturesRoute
   '/pricing': typeof PublicPricingRoute
@@ -368,6 +384,7 @@ export interface FileRoutesById {
   '/_dashboard/home': typeof DashboardHomeRoute
   '/_dashboard/lessons': typeof DashboardLessonsRoute
   '/_dashboard/practice': typeof DashboardPracticeRoute
+  '/_dashboard/progress': typeof DashboardProgressRoute
   '/_dashboard/settings': typeof DashboardSettingsRoute
   '/_dashboard/vocabulary': typeof DashboardVocabularyRoute
   '/_login/forgot-password': typeof LoginForgotPasswordRoute
@@ -376,6 +393,7 @@ export interface FileRoutesById {
   '/_login/signup': typeof LoginSignupRoute
   '/_login/verify': typeof LoginVerifyRoute
   '/_public/about': typeof PublicAboutRoute
+  '/_public/b2b': typeof PublicB2bRoute
   '/_public/blog': typeof PublicBlogRouteWithChildren
   '/_public/contact': typeof PublicContactRoute
   '/_public/features': typeof PublicFeaturesRoute
@@ -409,6 +427,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/lessons'
     | '/practice'
+    | '/progress'
     | '/settings'
     | '/vocabulary'
     | '/forgot-password'
@@ -417,6 +436,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/verify'
     | '/about'
+    | '/b2b'
     | '/blog'
     | '/contact'
     | '/features'
@@ -447,6 +467,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/lessons'
     | '/practice'
+    | '/progress'
     | '/settings'
     | '/vocabulary'
     | '/forgot-password'
@@ -455,6 +476,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/verify'
     | '/about'
+    | '/b2b'
     | '/contact'
     | '/features'
     | '/pricing'
@@ -492,6 +514,7 @@ export interface FileRouteTypes {
     | '/_dashboard/home'
     | '/_dashboard/lessons'
     | '/_dashboard/practice'
+    | '/_dashboard/progress'
     | '/_dashboard/settings'
     | '/_dashboard/vocabulary'
     | '/_login/forgot-password'
@@ -500,6 +523,7 @@ export interface FileRouteTypes {
     | '/_login/signup'
     | '/_login/verify'
     | '/_public/about'
+    | '/_public/b2b'
     | '/_public/blog'
     | '/_public/contact'
     | '/_public/features'
@@ -663,6 +687,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicBlogRouteImport
       parentRoute: typeof PublicRoute
     }
+    '/_public/b2b': {
+      id: '/_public/b2b'
+      path: '/b2b'
+      fullPath: '/b2b'
+      preLoaderRoute: typeof PublicB2bRouteImport
+      parentRoute: typeof PublicRoute
+    }
     '/_public/about': {
       id: '/_public/about'
       path: '/about'
@@ -717,6 +748,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof DashboardSettingsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/progress': {
+      id: '/_dashboard/progress'
+      path: '/progress'
+      fullPath: '/progress'
+      preLoaderRoute: typeof DashboardProgressRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/_dashboard/practice': {
@@ -883,6 +921,7 @@ interface DashboardRouteChildren {
   DashboardHomeRoute: typeof DashboardHomeRoute
   DashboardLessonsRoute: typeof DashboardLessonsRoute
   DashboardPracticeRoute: typeof DashboardPracticeRoute
+  DashboardProgressRoute: typeof DashboardProgressRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   DashboardVocabularyRoute: typeof DashboardVocabularyRoute
 }
@@ -894,6 +933,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardHomeRoute: DashboardHomeRoute,
   DashboardLessonsRoute: DashboardLessonsRoute,
   DashboardPracticeRoute: DashboardPracticeRoute,
+  DashboardProgressRoute: DashboardProgressRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardVocabularyRoute: DashboardVocabularyRoute,
 }
@@ -962,6 +1002,7 @@ const PublicBlogRouteWithChildren = PublicBlogRoute._addFileChildren(
 
 interface PublicRouteChildren {
   PublicAboutRoute: typeof PublicAboutRoute
+  PublicB2bRoute: typeof PublicB2bRoute
   PublicBlogRoute: typeof PublicBlogRouteWithChildren
   PublicContactRoute: typeof PublicContactRoute
   PublicFeaturesRoute: typeof PublicFeaturesRoute
@@ -974,6 +1015,7 @@ interface PublicRouteChildren {
 
 const PublicRouteChildren: PublicRouteChildren = {
   PublicAboutRoute: PublicAboutRoute,
+  PublicB2bRoute: PublicB2bRoute,
   PublicBlogRoute: PublicBlogRouteWithChildren,
   PublicContactRoute: PublicContactRoute,
   PublicFeaturesRoute: PublicFeaturesRoute,

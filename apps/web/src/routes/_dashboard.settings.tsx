@@ -1,7 +1,7 @@
+import { useTranslation } from "@english.now/i18n";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Brain, LogOutIcon, SettingsIcon, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
 import { Billing } from "@/components/settings/billing";
 import { Personalization } from "@/components/settings/personalization";
 import { Profile } from "@/components/settings/profile";
@@ -56,17 +56,17 @@ function RouteComponent() {
 
 	const TABS = [
 		{
-			label: "General",
+			label: t("settings.account"),
 			value: "profile",
 			icon: SettingsIcon,
 		},
 		{
-			label: "Personalization",
+			label: t("settings.personalization"),
 			value: "learning",
 			icon: Brain,
 		},
 		{
-			label: "Billing & Subscription",
+			label: t("settings.billing"),
 			value: "billing",
 			icon: Zap,
 		},
@@ -80,10 +80,10 @@ function RouteComponent() {
 		);
 
 	return (
-		<div className="container relative z-10 mx-auto max-w-5xl px-4 pb-8">
+		<div className="container relative z-10 mx-auto max-w-5xl px-4">
 			{/* Mobile / tablet: sticky tab strip (sidebar is lg+ only) */}
 			<div className="-mx-4 sticky top-[4.75rem] z-10 mb-4 border-border/50 border-b bg-neutral-50/95 px-4 py-3 backdrop-blur-md lg:hidden dark:bg-neutral-900/95">
-				<h1 className="mb-3 font-bold font-lyon text-2xl tracking-tight">
+				<h1 className="mb-5 font-bold font-lyon text-3xl tracking-tight md:mb-3 md:text-3xl">
 					{t("settings.title")}
 				</h1>
 				<div className="-mx-1 flex gap-1 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -95,7 +95,7 @@ function RouteComponent() {
 							className={tabButtonClass(activeTab === tabItem.value, false)}
 							onClick={() => handleTabChange(tabItem.value as SettingsTab)}
 						>
-							{tabItem.icon && <tabItem.icon className="size-4 shrink-0" />}
+							{/* {tabItem.icon && <tabItem.icon className="size-4 shrink-0" />} */}
 							<span className="whitespace-nowrap">{tabItem.label}</span>
 						</button>
 					))}
@@ -115,7 +115,7 @@ function RouteComponent() {
 						}}
 					>
 						<LogOutIcon className="size-4 shrink-0" />
-						<span className="whitespace-nowrap">Sign Out</span>
+						<span className="whitespace-nowrap">{t("settings.signOut")}</span>
 					</button>
 				</div>
 			</div>
@@ -137,13 +137,13 @@ function RouteComponent() {
 								className={tabButtonClass(activeTab === tabItem.value, true)}
 								onClick={() => handleTabChange(tabItem.value as SettingsTab)}
 							>
-								{tabItem.icon && <tabItem.icon className="size-4 shrink-0" />}
+								{/* {tabItem.icon && <tabItem.icon className="size-4 shrink-0" />} */}
 								<span className="whitespace-nowrap">{tabItem.label}</span>
 							</button>
 						))}
 						<button
 							type="button"
-							className="mt-1 flex h-[34px] w-full cursor-pointer items-center gap-1.5 rounded-xl px-2.5 font-medium text-muted-foreground text-sm italic transition-all hover:text-foreground"
+							className="mt-4 flex h-[34px] w-full cursor-pointer items-center gap-1.5 rounded-xl px-2.5 font-medium text-muted-foreground text-sm italic transition-all hover:text-foreground"
 							onClick={() => {
 								authClient.signOut({
 									fetchOptions: {
@@ -157,12 +157,12 @@ function RouteComponent() {
 							}}
 						>
 							<LogOutIcon className="size-4 shrink-0" />
-							<span className="whitespace-nowrap">Sign Out</span>
+							<span className="whitespace-nowrap">{t("settings.signOut")}</span>
 						</button>
 					</nav>
 				</aside>
 
-				<div className="lg:-mr-8 block min-h-0 w-full flex-1 pt-6 pl-6 lg:min-h-full lg:min-w-0 lg:overflow-y-auto">
+				<div className="lg:-mr-8 block min-h-0 w-full flex-1 md:pt-6 md:pl-6 lg:min-h-full lg:min-w-0 lg:overflow-y-auto">
 					<section hidden={activeTab !== "profile"}>
 						<Profile />
 					</section>

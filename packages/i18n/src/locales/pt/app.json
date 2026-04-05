@@ -76,7 +76,115 @@
     "general": "Geral",
     "personalization": "Personalização",
     "billing": "Faturamento e Assinatura",
-    "signOut": "Sair"
+    "signOut": "Sair",
+    "account": "Conta",
+    "common": {
+      "save": "Salvar"
+    },
+    "profile": {
+      "avatarAlt": "Avatar",
+      "avatarHelp": "Clique para enviar um novo avatar",
+      "avatarRequirements": "JPG, PNG ou GIF. Máx 5MB.",
+      "nameLabel": "Nome",
+      "namePlaceholder": "Seu nome",
+      "emailLabel": "Email",
+      "emailHelp": "Se precisar alterar seu email, entre em contato com o suporte.",
+      "timezoneLabel": "Fuso horário",
+      "timezoneDetected": "Detectado do seu navegador: {{timezone}}.",
+      "deleteTitle": "Excluir Conta",
+      "deleteDescription": "Excluir permanentemente sua conta e todos os dados. Esta ação não pode ser desfeita.",
+      "deleteButton": "Excluir",
+      "deleteDialog": {
+        "title": "Excluir Conta",
+        "description": "Esta ação é irreversível. Todos os seus dados, progresso e assinatura serão permanentemente excluídos.",
+        "confirmLabel": "Digite {{keyword}} para confirmar",
+        "cancel": "Cancelar",
+        "confirmButton": "Excluir Conta"
+      },
+      "toasts": {
+        "timezoneUpdated": "Fuso horário atualizado com sucesso",
+        "timezoneUpdateError": "Falha ao atualizar o fuso horário",
+        "nameRequired": "O nome não pode estar vazio",
+        "profileUpdated": "Perfil atualizado com sucesso",
+        "profileUpdateError": "Falha ao atualizar o perfil",
+        "invalidImageType": "Por favor, selecione um arquivo de imagem",
+        "imageTooLarge": "A imagem deve ser menor que 5MB",
+        "avatarUpdated": "Avatar atualizado com sucesso",
+        "avatarUploadError": "Falha ao enviar o avatar",
+        "deleteKeywordRequired": "Por favor, digite \"{{keyword}}\" para confirmar",
+        "accountDeleted": "Conta excluída com sucesso",
+        "accountDeleteError": "Falha ao excluir a conta"
+      }
+    },
+    "personalizationSection": {
+      "nativeLanguage": "Idioma Nativo",
+      "selectLanguage": "Selecione o idioma",
+      "dailyLearningGoal": "Meta Diária de Aprendizado",
+      "selectGoal": "Selecione a meta",
+      "learningGoal": "Meta de Aprendizado",
+      "interestsLabel": "Interesses",
+      "selectInterests": "Selecione interesses...",
+      "focusAreasLabel": "Áreas de Foco",
+      "selectFocusAreas": "Selecione áreas de foco...",
+      "dailyGoals": {
+        "option": "{{minutes}} min/dia - {{label}}",
+        "casual": "Casual",
+        "steady": "Constante",
+        "serious": "Sério",
+        "intensive": "Intensivo"
+      },
+      "goals": {
+        "career": "Crescimento Profissional",
+        "travel": "Viagem",
+        "education": "Educação",
+        "social": "Social",
+        "personal": "Crescimento Pessoal",
+        "content": "Entretenimento"
+      },
+      "focusAreas": {
+        "speaking": "Fala",
+        "vocabulary": "Vocabulário",
+        "grammar": "Gramática",
+        "pronunciation": "Pronúncia"
+      },
+      "interests": {
+        "technology": "Tecnologia",
+        "travel": "Viagem",
+        "music": "Música",
+        "movies": "Filmes & TV",
+        "food": "Comida & Culinária",
+        "fitness": "Saúde & Fitness",
+        "business": "Negócios",
+        "art": "Arte & Design",
+        "gaming": "Jogos",
+        "books": "Livros & Literatura"
+      },
+      "toasts": {
+        "updated": "Configurações atualizadas",
+        "updateError": "Falha ao atualizar configurações",
+        "focusAreaRequired": "Você precisa de pelo menos uma área de foco"
+      }
+    },
+    "billingSection": {
+      "currentPlan": "Seu plano atual",
+      "free": "Grátis",
+      "getPro": "Obter PRO",
+      "pro": "Pro",
+      "nextBillingDate": "Próxima data de cobrança",
+      "manageDescription": "Para gerenciar sua assinatura, atualizar detalhes de pagamento ou cancelar, abra seu",
+      "customerPortal": "portal do cliente Paddle",
+      "customerPortalLoading": "Abrindo portal...",
+      "statuses": {
+        "trial": "Teste",
+        "active": "Ativo",
+        "paused": "Pausado",
+        "pastDue": "Vencido"
+      },
+      "errors": {
+        "createPortalSession": "Falha ao criar uma sessão do portal do cliente",
+        "openCustomerPortal": "Falha ao abrir o portal do cliente"
+      }
+    }
   },
   "upgrade": {
     "pro": "PRO",

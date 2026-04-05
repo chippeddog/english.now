@@ -76,7 +76,115 @@
     "general": "General",
     "personalization": "Personalización",
     "billing": "Facturación y Suscripción",
-    "signOut": "Cerrar sesión"
+    "signOut": "Cerrar sesión",
+    "account": "Cuenta",
+    "common": {
+      "save": "Guardar"
+    },
+    "profile": {
+      "avatarAlt": "Avatar",
+      "avatarHelp": "Haz clic para subir un nuevo avatar",
+      "avatarRequirements": "JPG, PNG o GIF. Máx 5MB.",
+      "nameLabel": "Nombre",
+      "namePlaceholder": "Tu nombre",
+      "emailLabel": "Correo electrónico",
+      "emailHelp": "Si necesitas cambiar tu correo electrónico, por favor contacta al soporte.",
+      "timezoneLabel": "Zona horaria",
+      "timezoneDetected": "Detectado desde tu navegador: {{timezone}}.",
+      "deleteTitle": "Eliminar Cuenta",
+      "deleteDescription": "Elimina permanentemente tu cuenta y todos los datos. Esta acción no se puede deshacer.",
+      "deleteButton": "Eliminar",
+      "deleteDialog": {
+        "title": "Eliminar Cuenta",
+        "description": "Esta acción es irreversible. Todos tus datos, progreso y suscripción serán eliminados permanentemente.",
+        "confirmLabel": "Escribe {{keyword}} para confirmar",
+        "cancel": "Cancelar",
+        "confirmButton": "Eliminar Cuenta"
+      },
+      "toasts": {
+        "timezoneUpdated": "Zona horaria actualizada con éxito",
+        "timezoneUpdateError": "Error al actualizar la zona horaria",
+        "nameRequired": "El nombre no puede estar vacío",
+        "profileUpdated": "Perfil actualizado con éxito",
+        "profileUpdateError": "Error al actualizar el perfil",
+        "invalidImageType": "Por favor selecciona un archivo de imagen",
+        "imageTooLarge": "La imagen debe ser menor de 5MB",
+        "avatarUpdated": "Avatar actualizado con éxito",
+        "avatarUploadError": "Error al subir el avatar",
+        "deleteKeywordRequired": "Por favor escribe \"{{keyword}}\" para confirmar",
+        "accountDeleted": "Cuenta eliminada con éxito",
+        "accountDeleteError": "Error al eliminar la cuenta"
+      }
+    },
+    "personalizationSection": {
+      "nativeLanguage": "Idioma Nativo",
+      "selectLanguage": "Seleccionar idioma",
+      "dailyLearningGoal": "Meta de Aprendizaje Diario",
+      "selectGoal": "Seleccionar meta",
+      "learningGoal": "Meta de Aprendizaje",
+      "interestsLabel": "Intereses",
+      "selectInterests": "Seleccionar intereses...",
+      "focusAreasLabel": "Áreas de Enfoque",
+      "selectFocusAreas": "Seleccionar áreas de enfoque...",
+      "dailyGoals": {
+        "option": "{{minutes}} min/día - {{label}}",
+        "casual": "Casual",
+        "steady": "Constante",
+        "serious": "Serio",
+        "intensive": "Intensivo"
+      },
+      "goals": {
+        "career": "Crecimiento Profesional",
+        "travel": "Viajar",
+        "education": "Educación",
+        "social": "Social",
+        "personal": "Crecimiento Personal",
+        "content": "Entretenimiento"
+      },
+      "focusAreas": {
+        "speaking": "Hablar",
+        "vocabulary": "Vocabulario",
+        "grammar": "Gramática",
+        "pronunciation": "Pronunciación"
+      },
+      "interests": {
+        "technology": "Tecnología",
+        "travel": "Viajes",
+        "music": "Música",
+        "movies": "Películas y TV",
+        "food": "Comida y Cocina",
+        "fitness": "Salud y Fitness",
+        "business": "Negocios",
+        "art": "Arte y Diseño",
+        "gaming": "Videojuegos",
+        "books": "Libros y Literatura"
+      },
+      "toasts": {
+        "updated": "Configuraciones actualizadas",
+        "updateError": "Error al actualizar configuraciones",
+        "focusAreaRequired": "Necesitas al menos un área de enfoque"
+      }
+    },
+    "billingSection": {
+      "currentPlan": "Tu plan actual",
+      "free": "Gratis",
+      "getPro": "Obtener PRO",
+      "pro": "Pro",
+      "nextBillingDate": "Próxima fecha de facturación",
+      "manageDescription": "Para gestionar tu suscripción, actualizar los detalles de pago o cancelar, abre tu",
+      "customerPortal": "portal de clientes de Paddle",
+      "customerPortalLoading": "Abriendo portal...",
+      "statuses": {
+        "trial": "Prueba",
+        "active": "Activo",
+        "paused": "Pausado",
+        "pastDue": "Vencido"
+      },
+      "errors": {
+        "createPortalSession": "Error al crear una sesión del portal de clientes",
+        "openCustomerPortal": "Error al abrir el portal de clientes"
+      }
+    }
   },
   "upgrade": {
     "pro": "PRO",

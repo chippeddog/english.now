@@ -121,6 +121,7 @@ export const profileRouter = router({
 				focusAreas: z.array(z.string()).optional(),
 				interests: z.array(z.string()).optional(),
 				goal: z.string().optional(),
+				timezone: z.string().optional(),
 				voiceModel: z.string().optional(),
 			}),
 		)
@@ -135,6 +136,7 @@ export const profileRouter = router({
 			if (input.focusAreas !== undefined) updates.focusAreas = input.focusAreas;
 			if (input.interests !== undefined) updates.interests = input.interests;
 			if (input.goal !== undefined) updates.goal = input.goal;
+			if (input.timezone !== undefined) updates.timezone = input.timezone;
 			if (input.voiceModel !== undefined) updates.voiceModel = input.voiceModel;
 
 			await db

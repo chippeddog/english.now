@@ -62,10 +62,10 @@ export default function Hero() {
 					<h1
 						className={cn(
 							"font-bold font-lyon text-5xl text-neutral-900 tracking-tight lg:text-6xl dark:text-white",
-							{
-								"text-4xl leading-tight sm:text-4xl lg:text-5xl":
-									i18n.language === "uk",
-							},
+							// {
+							// 	"text-4xl  sm:text-4xl lg:text-5xl":
+							// 		i18n.language === "uk",
+							// },
 						)}
 					>
 						<Trans components={{ br: <br className="" /> }}>
@@ -86,9 +86,9 @@ export default function Hero() {
 						>
 							<Link to="/login">
 								{t("hero.getStarted")}
-								<span className="hidden font-lyon text-neutral-500 text-xl italic md:inline">
+								{/* <span className="hidden font-lyon text-neutral-500 text-xl italic md:inline">
 									for free
-								</span>
+								</span> */}
 							</Link>
 						</Button>
 						<Button

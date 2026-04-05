@@ -1,3 +1,5 @@
+import type { SupportedLanguage } from "@english.now/i18n";
+import { useTranslation } from "@english.now/i18n";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -21,7 +23,7 @@ import {
 	X,
 	Zap,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
@@ -40,57 +42,152 @@ import {
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/utils/trpc";
 
+type SelectableOption = {
+	id: string;
+	labelKey: string;
+	icon: LucideIcon;
+};
+
 const LANGUAGES = [
-	{ id: "uk", name: "Ukrainian", flag: "🇺🇦" },
-	{ id: "en", name: "English", flag: "🇬🇧" },
-	{ id: "fr", name: "French", flag: "🇫🇷" },
-	{ id: "es", name: "Spanish", flag: "🇪🇸" },
-	{ id: "de", name: "German", flag: "🇩🇪" },
-	{ id: "pt", name: "Portuguese", flag: "🇵🇹" },
-	{ id: "it", name: "Italian", flag: "🇮🇹" },
-	{ id: "pl", name: "Polish", flag: "🇵🇱" },
-	{ id: "ja", name: "Japanese", flag: "🇯🇵" },
-	{ id: "ko", name: "Korean", flag: "🇰🇷" },
-	{ id: "zh", name: "Chinese", flag: "🇨🇳" },
-	{ id: "ar", name: "Arabic", flag: "🇸🇦" },
-	{ id: "hi", name: "Hindi", flag: "🇮🇳" },
-	{ id: "tr", name: "Turkish", flag: "🇹🇷" },
-];
+	{ id: "uk", flag: "🇺🇦" },
+	{ id: "en", flag: "🇬🇧" },
+	{ id: "fr", flag: "🇫🇷" },
+	{ id: "es", flag: "🇪🇸" },
+	{ id: "de", flag: "🇩🇪" },
+	{ id: "pt", flag: "🇵🇹" },
+	{ id: "it", flag: "🇮🇹" },
+	{ id: "pl", flag: "🇵🇱" },
+	{ id: "ja", flag: "🇯🇵" },
+	{ id: "ko", flag: "🇰🇷" },
+	{ id: "zh", flag: "🇨🇳" },
+	{ id: "ar", flag: "🇸🇦" },
+	{ id: "hi", flag: "🇮🇳" },
+	{ id: "tr", flag: "🇹🇷" },
+] as const satisfies ReadonlyArray<{ id: SupportedLanguage; flag: string }>;
 
 const DAILY_GOALS = [
-	{ minutes: 5, label: "Casual", description: "5 min/day" },
-	{ minutes: 10, label: "Steady", description: "10 min/day" },
-	{ minutes: 15, label: "Serious", description: "15 min/day" },
-	{ minutes: 20, label: "Intensive", description: "20+ min/day" },
+	{ minutes: 5, labelKey: "settings.personalizationSection.dailyGoals.casual" },
+	{
+		minutes: 10,
+		labelKey: "settings.personalizationSection.dailyGoals.steady",
+	},
+	{
+		minutes: 15,
+		labelKey: "settings.personalizationSection.dailyGoals.serious",
+	},
+	{
+		minutes: 20,
+		labelKey: "settings.personalizationSection.dailyGoals.intensive",
+	},
 ];
 
-const GOALS: { id: string; name: string; icon: LucideIcon }[] = [
-	{ id: "career", name: "Career Growth", icon: Briefcase },
-	{ id: "travel", name: "Travel", icon: Plane },
-	{ id: "education", name: "Education", icon: GraduationCap },
-	{ id: "social", name: "Social", icon: Users },
-	{ id: "personal", name: "Personal Growth", icon: Target },
-	{ id: "content", name: "Entertainment", icon: BookOpen },
+const GOALS: SelectableOption[] = [
+	{
+		id: "career",
+		labelKey: "settings.personalizationSection.goals.career",
+		icon: Briefcase,
+	},
+	{
+		id: "travel",
+		labelKey: "settings.personalizationSection.goals.travel",
+		icon: Plane,
+	},
+	{
+		id: "education",
+		labelKey: "settings.personalizationSection.goals.education",
+		icon: GraduationCap,
+	},
+	{
+		id: "social",
+		labelKey: "settings.personalizationSection.goals.social",
+		icon: Users,
+	},
+	{
+		id: "personal",
+		labelKey: "settings.personalizationSection.goals.personal",
+		icon: Target,
+	},
+	{
+		id: "content",
+		labelKey: "settings.personalizationSection.goals.content",
+		icon: BookOpen,
+	},
 ];
 
-const FOCUS_AREAS: { id: string; name: string; icon: LucideIcon }[] = [
-	{ id: "speaking", name: "Speaking", icon: MessageCircle },
-	{ id: "vocabulary", name: "Vocabulary", icon: BookOpen },
-	{ id: "grammar", name: "Grammar", icon: GraduationCap },
-	{ id: "pronunciation", name: "Pronunciation", icon: Zap },
+const FOCUS_AREAS: SelectableOption[] = [
+	{
+		id: "speaking",
+		labelKey: "settings.personalizationSection.focusAreas.speaking",
+		icon: MessageCircle,
+	},
+	{
+		id: "vocabulary",
+		labelKey: "settings.personalizationSection.focusAreas.vocabulary",
+		icon: BookOpen,
+	},
+	{
+		id: "grammar",
+		labelKey: "settings.personalizationSection.focusAreas.grammar",
+		icon: GraduationCap,
+	},
+	{
+		id: "pronunciation",
+		labelKey: "settings.personalizationSection.focusAreas.pronunciation",
+		icon: Zap,
+	},
 ];
 
-const INTERESTS: { id: string; name: string; icon: LucideIcon }[] = [
-	{ id: "technology", name: "Technology", icon: Cpu },
-	{ id: "travel", name: "Travel", icon: Plane },
-	{ id: "music", name: "Music", icon: Music },
-	{ id: "movies", name: "Movies & TV", icon: Clapperboard },
-	{ id: "food", name: "Food & Cooking", icon: UtensilsCrossed },
-	{ id: "fitness", name: "Health & Fitness", icon: Dumbbell },
-	{ id: "business", name: "Business", icon: Briefcase },
-	{ id: "art", name: "Art & Design", icon: Palette },
-	{ id: "gaming", name: "Gaming", icon: Gamepad2 },
-	{ id: "books", name: "Books & Literature", icon: BookOpen },
+const INTERESTS: SelectableOption[] = [
+	{
+		id: "technology",
+		labelKey: "settings.personalizationSection.interests.technology",
+		icon: Cpu,
+	},
+	{
+		id: "travel",
+		labelKey: "settings.personalizationSection.interests.travel",
+		icon: Plane,
+	},
+	{
+		id: "music",
+		labelKey: "settings.personalizationSection.interests.music",
+		icon: Music,
+	},
+	{
+		id: "movies",
+		labelKey: "settings.personalizationSection.interests.movies",
+		icon: Clapperboard,
+	},
+	{
+		id: "food",
+		labelKey: "settings.personalizationSection.interests.food",
+		icon: UtensilsCrossed,
+	},
+	{
+		id: "fitness",
+		labelKey: "settings.personalizationSection.interests.fitness",
+		icon: Dumbbell,
+	},
+	{
+		id: "business",
+		labelKey: "settings.personalizationSection.interests.business",
+		icon: Briefcase,
+	},
+	{
+		id: "art",
+		labelKey: "settings.personalizationSection.interests.art",
+		icon: Palette,
+	},
+	{
+		id: "gaming",
+		labelKey: "settings.personalizationSection.interests.gaming",
+		icon: Gamepad2,
+	},
+	{
+		id: "books",
+		labelKey: "settings.personalizationSection.interests.books",
+		icon: BookOpen,
+	},
 ];
 
 function MultiSelect({
@@ -102,10 +199,11 @@ function MultiSelect({
 }: {
 	label: string;
 	placeholder: string;
-	options: { id: string; name: string; icon: LucideIcon }[];
+	options: SelectableOption[];
 	selected: string[];
 	onChange: (next: string[]) => void;
 }) {
+	const { t } = useTranslation("app");
 	const [open, setOpen] = useState(false);
 
 	const toggle = (id: string) => {
@@ -123,9 +221,7 @@ function MultiSelect({
 
 	return (
 		<div className="space-y-2">
-			<Label className="font-medium text-muted-foreground text-sm">
-				{label}
-			</Label>
+			<Label className="font-medium">{label}</Label>
 			<Popover open={open} onOpenChange={setOpen}>
 				<PopoverTrigger asChild>
 					<button
@@ -142,7 +238,7 @@ function MultiSelect({
 								return (
 									<Badge key={id} variant="secondary" className="gap-1 pr-1">
 										<opt.icon className="size-3" />
-										{opt.name}
+										{t(opt.labelKey)}
 										<button
 											type="button"
 											className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
@@ -181,7 +277,7 @@ function MultiSelect({
 									{isSelected && <Check className="size-3" />}
 								</div>
 								<option.icon className="size-4 text-muted-foreground" />
-								<span>{option.name}</span>
+								<span>{t(option.labelKey)}</span>
 							</button>
 						);
 					})}
@@ -192,8 +288,21 @@ function MultiSelect({
 }
 
 export const Personalization = () => {
+	const { i18n, t } = useTranslation("app");
 	const trpc = useTRPC();
 	const queryClient = useQueryClient();
+	const languageFormatter = useMemo(
+		() =>
+			typeof Intl.DisplayNames === "function"
+				? new Intl.DisplayNames(
+						[i18n.resolvedLanguage || i18n.language || "en"],
+						{
+							type: "language",
+						},
+					)
+				: null,
+		[i18n.language, i18n.resolvedLanguage],
+	);
 
 	const { data: profile, isLoading } = useQuery(
 		trpc.profile.get.queryOptions(),
@@ -205,10 +314,10 @@ export const Personalization = () => {
 				queryClient.invalidateQueries({
 					queryKey: trpc.profile.get.queryKey(),
 				});
-				toast.success("Settings updated");
+				toast.success(t("settings.personalizationSection.toasts.updated"));
 			},
 			onError: () => {
-				toast.error("Failed to update settings");
+				toast.error(t("settings.personalizationSection.toasts.updateError"));
 			},
 		}),
 	);
@@ -226,27 +335,30 @@ export const Personalization = () => {
 	}
 
 	return (
-		<div className="space-y-8">
-			<div className="grid grid-cols-3 gap-5">
+		<div className="space-y-5">
+			<h2 className="font-semibold">{t("settings.personalization")}</h2>
+			<div className="grid grid-cols-1 gap-5 md:grid-cols-3">
 				<div className="col-span-1 space-y-2">
-					<div className="space-y-1">
-						<Label className="font-medium text-muted-foreground text-sm">
-							Native Language
-						</Label>
-					</div>
+					<Label>{t("settings.personalizationSection.nativeLanguage")}</Label>
 					<Select
 						value={profile?.nativeLanguage ?? ""}
 						onValueChange={(value) => update("nativeLanguage", value)}
 					>
 						<SelectTrigger className="w-full max-w-md">
-							<SelectValue placeholder="Select language" />
+							<SelectValue
+								placeholder={t(
+									"settings.personalizationSection.selectLanguage",
+								)}
+							/>
 						</SelectTrigger>
 						<SelectContent>
 							{LANGUAGES.map((lang) => (
 								<SelectItem key={lang.id} value={lang.id}>
 									<span className="flex items-center gap-2">
 										<span>{lang.flag}</span>
-										<span>{lang.name}</span>
+										<span>
+											{languageFormatter?.of(lang.id) ?? lang.id.toUpperCase()}
+										</span>
 									</span>
 								</SelectItem>
 							))}
@@ -256,8 +368,8 @@ export const Personalization = () => {
 
 				<div className="col-span-1 space-y-2">
 					<div className="space-y-1">
-						<Label className="font-medium text-muted-foreground text-sm">
-							Daily Learning Goal
+						<Label>
+							{t("settings.personalizationSection.dailyLearningGoal")}
 						</Label>
 					</div>
 					<Select
@@ -265,12 +377,17 @@ export const Personalization = () => {
 						onValueChange={(value) => update("dailyGoal", Number(value))}
 					>
 						<SelectTrigger className="w-full max-w-md">
-							<SelectValue placeholder="Select goal" />
+							<SelectValue
+								placeholder={t("settings.personalizationSection.selectGoal")}
+							/>
 						</SelectTrigger>
 						<SelectContent>
 							{DAILY_GOALS.map((goal) => (
 								<SelectItem key={goal.minutes} value={String(goal.minutes)}>
-									{goal.minutes} min - {goal.label}
+									{t("settings.personalizationSection.dailyGoals.option", {
+										minutes: goal.minutes,
+										label: t(goal.labelKey),
+									})}
 								</SelectItem>
 							))}
 						</SelectContent>
@@ -279,9 +396,7 @@ export const Personalization = () => {
 
 				<div className="col-span-1 space-y-3">
 					<div className="space-y-1">
-						<Label className="font-medium text-muted-foreground text-sm">
-							Learning Goal
-						</Label>
+						<Label>{t("settings.personalizationSection.learningGoal")}</Label>
 					</div>
 
 					<Select
@@ -289,14 +404,16 @@ export const Personalization = () => {
 						onValueChange={(value) => update("goal", value)}
 					>
 						<SelectTrigger className="w-full max-w-md">
-							<SelectValue placeholder="Select goal" />
+							<SelectValue
+								placeholder={t("settings.personalizationSection.selectGoal")}
+							/>
 						</SelectTrigger>
 						<SelectContent>
 							{GOALS.map((goal) => (
 								<SelectItem key={goal.id} value={goal.id}>
 									<span className="flex items-center gap-2">
 										<goal.icon className="size-4" />
-										{goal.name}
+										{t(goal.labelKey)}
 									</span>
 								</SelectItem>
 							))}
@@ -305,23 +422,25 @@ export const Personalization = () => {
 				</div>
 			</div>
 
-			<div className="grid grid-cols-2 gap-5">
+			<div className="grid grid-cols-1 gap-5 md:grid-cols-2">
 				<MultiSelect
-					label="Interests"
-					placeholder="Select interests..."
+					label={t("settings.personalizationSection.interestsLabel")}
+					placeholder={t("settings.personalizationSection.selectInterests")}
 					options={INTERESTS}
 					selected={profile?.interests ?? []}
 					onChange={(next) => update("interests", next)}
 				/>
 
 				<MultiSelect
-					label="Focus Areas"
-					placeholder="Select focus areas..."
+					label={t("settings.personalizationSection.focusAreasLabel")}
+					placeholder={t("settings.personalizationSection.selectFocusAreas")}
 					options={FOCUS_AREAS}
 					selected={profile?.focusAreas ?? []}
 					onChange={(next) => {
 						if (next.length === 0) {
-							toast.error("You need at least one focus area");
+							toast.error(
+								t("settings.personalizationSection.toasts.focusAreaRequired"),
+							);
 							return;
 						}
 						update("focusAreas", next);

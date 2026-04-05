@@ -76,7 +76,115 @@
     "general": "Genel",
     "personalization": "Kişiselleştirme",
     "billing": "Faturalandırma ve Abonelik",
-    "signOut": "Çıkış Yap"
+    "signOut": "Çıkış Yap",
+    "account": "Hesap",
+    "common": {
+      "save": "Kaydet"
+    },
+    "profile": {
+      "avatarAlt": "Avatar",
+      "avatarHelp": "Yeni bir avatar yüklemek için tıklayın",
+      "avatarRequirements": "JPG, PNG veya GIF. Maksimum 5MB.",
+      "nameLabel": "İsim",
+      "namePlaceholder": "Adınız",
+      "emailLabel": "E-posta",
+      "emailHelp": "E-postanızı değiştirmek istiyorsanız, lütfen destek ile iletişime geçin.",
+      "timezoneLabel": "Saat Dilimi",
+      "timezoneDetected": "Tarayıcınızdan algılandı: {{timezone}}.",
+      "deleteTitle": "Hesabı Sil",
+      "deleteDescription": "Hesabınızı ve tüm verilerinizi kalıcı olarak silin. Bu işlem geri alınamaz.",
+      "deleteButton": "Sil",
+      "deleteDialog": {
+        "title": "Hesabı Sil",
+        "description": "Bu işlem geri alınamaz. Tüm verileriniz, ilerlemeniz ve aboneliğiniz kalıcı olarak silinecektir.",
+        "confirmLabel": "Onaylamak için {{keyword}} yazın",
+        "cancel": "İptal",
+        "confirmButton": "Hesabı Sil"
+      },
+      "toasts": {
+        "timezoneUpdated": "Saat dilimi başarıyla güncellendi",
+        "timezoneUpdateError": "Saat dilimi güncellenemedi",
+        "nameRequired": "İsim boş olamaz",
+        "profileUpdated": "Profil başarıyla güncellendi",
+        "profileUpdateError": "Profil güncellenemedi",
+        "invalidImageType": "Lütfen bir resim dosyası seçin",
+        "imageTooLarge": "Resim 5MB'den küçük olmalıdır",
+        "avatarUpdated": "Avatar başarıyla güncellendi",
+        "avatarUploadError": "Avatar yüklenemedi",
+        "deleteKeywordRequired": "Onaylamak için \"{{keyword}}\" yazın",
+        "accountDeleted": "Hesap başarıyla silindi",
+        "accountDeleteError": "Hesap silinemedi"
+      }
+    },
+    "personalizationSection": {
+      "nativeLanguage": "Ana Dil",
+      "selectLanguage": "Dil seçin",
+      "dailyLearningGoal": "Günlük Öğrenme Hedefi",
+      "selectGoal": "Hedef seçin",
+      "learningGoal": "Öğrenme Hedefi",
+      "interestsLabel": "İlgi Alanları",
+      "selectInterests": "İlgi alanlarını seçin...",
+      "focusAreasLabel": "Odak Alanları",
+      "selectFocusAreas": "Odak alanlarını seçin...",
+      "dailyGoals": {
+        "option": "{{minutes}} dk/gün - {{label}}",
+        "casual": "Gündelik",
+        "steady": "Düzenli",
+        "serious": "Ciddi",
+        "intensive": "Yoğun"
+      },
+      "goals": {
+        "career": "Kariyer Gelişimi",
+        "travel": "Seyahat",
+        "education": "Eğitim",
+        "social": "Sosyal",
+        "personal": "Kişisel Gelişim",
+        "content": "Eğlence"
+      },
+      "focusAreas": {
+        "speaking": "Konuşma",
+        "vocabulary": "Kelime Bilgisi",
+        "grammar": "Dilbilgisi",
+        "pronunciation": "Telaffuz"
+      },
+      "interests": {
+        "technology": "Teknoloji",
+        "travel": "Seyahat",
+        "music": "Müzik",
+        "movies": "Filmler & TV",
+        "food": "Yemek & Yemek Pişirme",
+        "fitness": "Sağlık & Fitness",
+        "business": "İş",
+        "art": "Sanat & Tasarım",
+        "gaming": "Oyun",
+        "books": "Kitaplar & Edebiyat"
+      },
+      "toasts": {
+        "updated": "Ayarlar güncellendi",
+        "updateError": "Ayarlar güncellenemedi",
+        "focusAreaRequired": "En az bir odak alanına ihtiyacınız var"
+      }
+    },
+    "billingSection": {
+      "currentPlan": "Mevcut planınız",
+      "free": "Ücretsiz",
+      "getPro": "PRO Al",
+      "pro": "Pro",
+      "nextBillingDate": "Sonraki fatura tarihi",
+      "manageDescription": "Aboneliğinizi yönetmek, ödeme bilgilerini güncellemek veya iptal etmek için",
+      "customerPortal": "Paddle müşteri portalını açın",
+      "customerPortalLoading": "Portal açılıyor...",
+      "statuses": {
+        "trial": "Deneme",
+        "active": "Aktif",
+        "paused": "Durduruldu",
+        "pastDue": "Gecikmiş"
+      },
+      "errors": {
+        "createPortalSession": "Müşteri portal oturumu oluşturulamadı",
+        "openCustomerPortal": "Müşteri portalı açılamadı"
+      }
+    }
   },
   "upgrade": {
     "pro": "PRO",

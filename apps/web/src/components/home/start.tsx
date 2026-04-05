@@ -90,9 +90,9 @@ export function Start() {
 						>
 							<Link to="/login">
 								{tCommon("actions.getStarted")}
-								<span className="hidden font-lyon text-neutral-500 text-xl italic md:inline">
+								{/* <span className="hidden font-lyon text-neutral-500 text-xl italic md:inline">
 									for free
-								</span>
+								</span> */}
 							</Link>
 						</Button>
 						<Button

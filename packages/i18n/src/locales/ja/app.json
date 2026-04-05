@@ -76,7 +76,115 @@
     "general": "一般",
     "personalization": "パーソナライズ",
     "billing": "請求とサブスクリプション",
-    "signOut": "サインアウト"
+    "signOut": "サインアウト",
+    "account": "アカウント",
+    "common": {
+      "save": "保存"
+    },
+    "profile": {
+      "avatarAlt": "アバター",
+      "avatarHelp": "クリックして新しいアバターをアップロード",
+      "avatarRequirements": "JPG、PNG、またはGIF。最大5MB。",
+      "nameLabel": "名前",
+      "namePlaceholder": "あなたの名前",
+      "emailLabel": "メール",
+      "emailHelp": "メールを変更する必要がある場合は、サポートに連絡してください。",
+      "timezoneLabel": "タイムゾーン",
+      "timezoneDetected": "ブラウザから検出されました: {{timezone}}。",
+      "deleteTitle": "アカウントを削除",
+      "deleteDescription": "アカウントとすべてのデータを永久に削除します。この操作は元に戻せません。",
+      "deleteButton": "削除",
+      "deleteDialog": {
+        "title": "アカウントを削除",
+        "description": "この操作は取り消せません。すべてのデータ、進捗、サブスクリプションが永久に削除されます。",
+        "confirmLabel": "{{keyword}}と入力して確認",
+        "cancel": "キャンセル",
+        "confirmButton": "アカウントを削除"
+      },
+      "toasts": {
+        "timezoneUpdated": "タイムゾーンが正常に更新されました",
+        "timezoneUpdateError": "タイムゾーンの更新に失敗しました",
+        "nameRequired": "名前は空にできません",
+        "profileUpdated": "プロフィールが正常に更新されました",
+        "profileUpdateError": "プロフィールの更新に失敗しました",
+        "invalidImageType": "画像ファイルを選択してください",
+        "imageTooLarge": "画像は5MB以下である必要があります",
+        "avatarUpdated": "アバターが正常に更新されました",
+        "avatarUploadError": "アバターのアップロードに失敗しました",
+        "deleteKeywordRequired": "確認するには「{{keyword}}」と入力してください",
+        "accountDeleted": "アカウントが正常に削除されました",
+        "accountDeleteError": "アカウントの削除に失敗しました"
+      }
+    },
+    "personalizationSection": {
+      "nativeLanguage": "母国語",
+      "selectLanguage": "言語を選択",
+      "dailyLearningGoal": "毎日の学習目標",
+      "selectGoal": "目標を選択",
+      "learningGoal": "学習目標",
+      "interestsLabel": "興味",
+      "selectInterests": "興味を選択...",
+      "focusAreasLabel": "重点分野",
+      "selectFocusAreas": "重点分野を選択...",
+      "dailyGoals": {
+        "option": "{{minutes}} 分/日 - {{label}}",
+        "casual": "カジュアル",
+        "steady": "安定",
+        "serious": "真剣",
+        "intensive": "集中的"
+      },
+      "goals": {
+        "career": "キャリア成長",
+        "travel": "旅行",
+        "education": "教育",
+        "social": "社交",
+        "personal": "自己成長",
+        "content": "エンターテインメント"
+      },
+      "focusAreas": {
+        "speaking": "スピーキング",
+        "vocabulary": "語彙",
+        "grammar": "文法",
+        "pronunciation": "発音"
+      },
+      "interests": {
+        "technology": "テクノロジー",
+        "travel": "旅行",
+        "music": "音楽",
+        "movies": "映画 & テレビ",
+        "food": "食べ物 & 料理",
+        "fitness": "健康 & フィットネス",
+        "business": "ビジネス",
+        "art": "アート & デザイン",
+        "gaming": "ゲーム",
+        "books": "本 & 文学"
+      },
+      "toasts": {
+        "updated": "設定が更新されました",
+        "updateError": "設定の更新に失敗しました",
+        "focusAreaRequired": "少なくとも1つの重点分野が必要です"
+      }
+    },
+    "billingSection": {
+      "currentPlan": "現在のプラン",
+      "free": "無料",
+      "getPro": "PROを取得",
+      "pro": "プロ",
+      "nextBillingDate": "次の請求日",
+      "manageDescription": "サブスクリプションの管理、支払い情報の更新、またはキャンセルするには、",
+      "customerPortal": "Paddleカスタマーポータル",
+      "customerPortalLoading": "ポータルを開いています...",
+      "statuses": {
+        "trial": "トライアル",
+        "active": "アクティブ",
+        "paused": "一時停止",
+        "pastDue": "支払い遅延"
+      },
+      "errors": {
+        "createPortalSession": "カスタマーポータルセッションの作成に失敗しました",
+        "openCustomerPortal": "カスタマーポータルの開設に失敗しました"
+      }
+    }
   },
   "upgrade": {
     "pro": "PRO",

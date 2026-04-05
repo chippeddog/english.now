@@ -76,7 +76,115 @@
     "general": "Allgemein",
     "personalization": "Personalisierung",
     "billing": "Abrechnung & Abonnement",
-    "signOut": "Abmelden"
+    "signOut": "Abmelden",
+    "account": "Konto",
+    "common": {
+      "save": "Speichern"
+    },
+    "profile": {
+      "avatarAlt": "Avatar",
+      "avatarHelp": "Klicken Sie, um einen neuen Avatar hochzuladen",
+      "avatarRequirements": "JPG, PNG oder GIF. Max 5MB.",
+      "nameLabel": "Name",
+      "namePlaceholder": "Ihr Name",
+      "emailLabel": "E-Mail",
+      "emailHelp": "Wenn Sie Ihre E-Mail ändern müssen, kontaktieren Sie bitte den Support.",
+      "timezoneLabel": "Zeitzone",
+      "timezoneDetected": "Von Ihrem Browser erkannt: {{timezone}}.",
+      "deleteTitle": "Konto löschen",
+      "deleteDescription": "Löschen Sie Ihr Konto und alle Daten dauerhaft. Diese Aktion kann nicht rückgängig gemacht werden.",
+      "deleteButton": "Löschen",
+      "deleteDialog": {
+        "title": "Konto löschen",
+        "description": "Diese Aktion ist unwiderruflich. Alle Ihre Daten, Fortschritte und Abonnements werden dauerhaft gelöscht.",
+        "confirmLabel": "Geben Sie {{keyword}} ein, um zu bestätigen",
+        "cancel": "Abbrechen",
+        "confirmButton": "Konto löschen"
+      },
+      "toasts": {
+        "timezoneUpdated": "Zeitzone erfolgreich aktualisiert",
+        "timezoneUpdateError": "Fehler beim Aktualisieren der Zeitzone",
+        "nameRequired": "Name darf nicht leer sein",
+        "profileUpdated": "Profil erfolgreich aktualisiert",
+        "profileUpdateError": "Fehler beim Aktualisieren des Profils",
+        "invalidImageType": "Bitte wählen Sie eine Bilddatei",
+        "imageTooLarge": "Bild muss kleiner als 5MB sein",
+        "avatarUpdated": "Avatar erfolgreich aktualisiert",
+        "avatarUploadError": "Fehler beim Hochladen des Avatars",
+        "deleteKeywordRequired": "Bitte geben Sie \"{{keyword}}\" ein, um zu bestätigen",
+        "accountDeleted": "Konto erfolgreich gelöscht",
+        "accountDeleteError": "Fehler beim Löschen des Kontos"
+      }
+    },
+    "personalizationSection": {
+      "nativeLanguage": "Muttersprache",
+      "selectLanguage": "Sprache auswählen",
+      "dailyLearningGoal": "Tägliches Lernziel",
+      "selectGoal": "Ziel auswählen",
+      "learningGoal": "Lernziel",
+      "interestsLabel": "Interessen",
+      "selectInterests": "Interessen auswählen...",
+      "focusAreasLabel": "Schwerpunkte",
+      "selectFocusAreas": "Schwerpunkte auswählen...",
+      "dailyGoals": {
+        "option": "{{minutes}} Min/Tag - {{label}}",
+        "casual": "Gelegentlich",
+        "steady": "Stetig",
+        "serious": "Ernsthaft",
+        "intensive": "Intensiv"
+      },
+      "goals": {
+        "career": "Karrierewachstum",
+        "travel": "Reisen",
+        "education": "Bildung",
+        "social": "Sozial",
+        "personal": "Persönliches Wachstum",
+        "content": "Unterhaltung"
+      },
+      "focusAreas": {
+        "speaking": "Sprechen",
+        "vocabulary": "Wortschatz",
+        "grammar": "Grammatik",
+        "pronunciation": "Aussprache"
+      },
+      "interests": {
+        "technology": "Technologie",
+        "travel": "Reisen",
+        "music": "Musik",
+        "movies": "Filme & TV",
+        "food": "Essen & Kochen",
+        "fitness": "Gesundheit & Fitness",
+        "business": "Geschäft",
+        "art": "Kunst & Design",
+        "gaming": "Spiele",
+        "books": "Bücher & Literatur"
+      },
+      "toasts": {
+        "updated": "Einstellungen aktualisiert",
+        "updateError": "Fehler beim Aktualisieren der Einstellungen",
+        "focusAreaRequired": "Sie benötigen mindestens einen Schwerpunkt"
+      }
+    },
+    "billingSection": {
+      "currentPlan": "Ihr aktueller Plan",
+      "free": "Kostenlos",
+      "getPro": "PRO erhalten",
+      "pro": "Pro",
+      "nextBillingDate": "Nächstes Abrechnungsdatum",
+      "manageDescription": "Um Ihr Abonnement zu verwalten, Zahlungsdetails zu aktualisieren oder zu kündigen, öffnen Sie Ihr",
+      "customerPortal": "Paddle-Kundenportal",
+      "customerPortalLoading": "Portal wird geöffnet...",
+      "statuses": {
+        "trial": "Testphase",
+        "active": "Aktiv",
+        "paused": "Pausiert",
+        "pastDue": "Überfällig"
+      },
+      "errors": {
+        "createPortalSession": "Fehler beim Erstellen einer Kundenportalsitzung",
+        "openCustomerPortal": "Fehler beim Öffnen des Kundenportals"
+      }
+    }
   },
   "upgrade": {
     "pro": "PRO",

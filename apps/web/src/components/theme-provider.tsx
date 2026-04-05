@@ -1,3 +1,4 @@
+import { useRouterState } from "@tanstack/react-router";
 import * as React from "react";
 
 type Theme = "light" | "dark" | "system";
@@ -12,48 +13,26 @@ const ThemeContext = React.createContext<ThemeContextValue | undefined>(
 	undefined,
 );
 
-const STORAGE_KEY = "theme";
-
-function getSystemTheme(): "light" | "dark" {
-	if (typeof window === "undefined") return "light";
-	return window.matchMedia("(prefers-color-scheme: dark)").matches
-		? "dark"
-		: "light";
-}
-
 function applyTheme(resolved: "light" | "dark") {
 	const root = document.documentElement;
 	root.classList.remove("light", "dark");
 	root.classList.add(resolved);
+	root.style.colorScheme = resolved;
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-	const [theme, setThemeState] = React.useState<Theme>(() => {
-		if (typeof window === "undefined") return "light";
-		return (localStorage.getItem(STORAGE_KEY) as Theme) || "light";
+	const pathname = useRouterState({
+		select: (state) => state.location.pathname,
 	});
+	const resolvedTheme: "light" | "dark" = pathname.startsWith("/b2b")
+		? "dark"
+		: "light";
+	const theme: Theme = resolvedTheme;
+	const setTheme = React.useCallback((_theme: Theme) => {}, []);
 
-	const resolvedTheme = theme === "system" ? getSystemTheme() : theme;
-
-	const setTheme = React.useCallback((newTheme: Theme) => {
-		setThemeState(newTheme);
-		localStorage.setItem(STORAGE_KEY, newTheme);
-	}, []);
-
-	// Apply theme class to <html> whenever resolved theme changes
 	React.useEffect(() => {
 		applyTheme(resolvedTheme);
 	}, [resolvedTheme]);
-
-	// Listen for system preference changes when theme is "system"
-	React.useEffect(() => {
-		if (theme !== "system") return;
-
-		const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-		const handler = () => applyTheme(getSystemTheme());
-		mediaQuery.addEventListener("change", handler);
-		return () => mediaQuery.removeEventListener("change", handler);
-	}, [theme]);
 
 	const value = React.useMemo(
 		() => ({ theme, setTheme, resolvedTheme }),

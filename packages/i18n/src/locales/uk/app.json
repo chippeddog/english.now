@@ -12,7 +12,7 @@
     "close": "Закрити меню"
   },
   "home": {
-    "welcomeBack": "Ласкаво просимо назад, {{firstName}}",
+    "welcomeBack": "Ласкаво просимо, {{firstName}}",
     "subtitle": "Продовжуйте в тому ж дусі! Ви робите чудовий прогрес."
   },
   "streak": {
@@ -76,7 +76,115 @@
     "general": "Загальні",
     "personalization": "Персоналізація",
     "billing": "Оплата та підписка",
-    "signOut": "Вийти"
+    "signOut": "Вийти",
+    "account": "Обліковий запис",
+    "common": {
+      "save": "Зберегти"
+    },
+    "profile": {
+      "avatarAlt": "Аватар",
+      "avatarHelp": "Натисніть, щоб завантажити новий аватар",
+      "avatarRequirements": "JPG, PNG або GIF. Максимум 5MB.",
+      "nameLabel": "Ім'я",
+      "namePlaceholder": "Ваше ім'я",
+      "emailLabel": "Електронна пошта",
+      "emailHelp": "Якщо вам потрібно змінити електронну пошту, будь ласка, зв'яжіться з підтримкою.",
+      "timezoneLabel": "Часовий пояс",
+      "timezoneDetected": "Визначено з вашого браузера: {{timezone}}.",
+      "deleteTitle": "Видалити обліковий запис",
+      "deleteDescription": "Назавжди видалити ваш обліковий запис та всі дані. Цю дію не можна скасувати.",
+      "deleteButton": "Видалити",
+      "deleteDialog": {
+        "title": "Видалити обліковий запис",
+        "description": "Ця дія є незворотною. Всі ваші дані, прогрес та підписка будуть назавжди видалені.",
+        "confirmLabel": "Введіть {{keyword}}, щоб підтвердити",
+        "cancel": "Скасувати",
+        "confirmButton": "Видалити обліковий запис"
+      },
+      "toasts": {
+        "timezoneUpdated": "Часовий пояс успішно оновлено",
+        "timezoneUpdateError": "Не вдалося оновити часовий пояс",
+        "nameRequired": "Ім'я не може бути порожнім",
+        "profileUpdated": "Профіль успішно оновлено",
+        "profileUpdateError": "Не вдалося оновити профіль",
+        "invalidImageType": "Будь ласка, виберіть файл зображення",
+        "imageTooLarge": "Зображення має бути менше 5MB",
+        "avatarUpdated": "Аватар успішно оновлено",
+        "avatarUploadError": "Не вдалося завантажити аватар",
+        "deleteKeywordRequired": "Будь ласка, введіть \"{{keyword}}\", щоб підтвердити",
+        "accountDeleted": "Обліковий запис успішно видалено",
+        "accountDeleteError": "Не вдалося видалити обліковий запис"
+      }
+    },
+    "personalizationSection": {
+      "nativeLanguage": "Рідна мова",
+      "selectLanguage": "Виберіть мову",
+      "dailyLearningGoal": "Щоденна навчальна мета",
+      "selectGoal": "Виберіть мету",
+      "learningGoal": "Навчальна мета",
+      "interestsLabel": "Інтереси",
+      "selectInterests": "Виберіть інтереси...",
+      "focusAreasLabel": "Області фокусу",
+      "selectFocusAreas": "Виберіть області фокусу...",
+      "dailyGoals": {
+        "option": "{{minutes}} хв/день - {{label}}",
+        "casual": "Легкий",
+        "steady": "Стабільний",
+        "serious": "Серйозний",
+        "intensive": "Інтенсивний"
+      },
+      "goals": {
+        "career": "Кар'єрний ріст",
+        "travel": "Подорожі",
+        "education": "Освіта",
+        "social": "Соціальні",
+        "personal": "Особистий ріст",
+        "content": "Розваги"
+      },
+      "focusAreas": {
+        "speaking": "Говоріння",
+        "vocabulary": "Словниковий запас",
+        "grammar": "Граматика",
+        "pronunciation": "Вимова"
+      },
+      "interests": {
+        "technology": "Технології",
+        "travel": "Подорожі",
+        "music": "Музика",
+        "movies": "Фільми та ТБ",
+        "food": "Їжа та кулінарія",
+        "fitness": "Здоров'я та фітнес",
+        "business": "Бізнес",
+        "art": "Мистецтво та дизайн",
+        "gaming": "Ігри",
+        "books": "Книги та література"
+      },
+      "toasts": {
+        "updated": "Налаштування оновлено",
+        "updateError": "Не вдалося оновити налаштування",
+        "focusAreaRequired": "Вам потрібна принаймні одна область фокусу"
+      }
+    },
+    "billingSection": {
+      "currentPlan": "Ваш поточний план",
+      "free": "Безкоштовний",
+      "getPro": "Отримати PRO",
+      "pro": "Pro",
+      "nextBillingDate": "Наступна дата виставлення рахунку",
+      "manageDescription": "Щоб керувати підпискою, оновити платіжні дані або скасувати, відкрийте ваш",
+      "customerPortal": "Портал клієнта Paddle",
+      "customerPortalLoading": "Відкриття порталу...",
+      "statuses": {
+        "trial": "Пробний",
+        "active": "Активний",
+        "paused": "Призупинено",
+        "pastDue": "Прострочено"
+      },
+      "errors": {
+        "createPortalSession": "Не вдалося створити сесію порталу клієнта",
+        "openCustomerPortal": "Не вдалося відкрити портал клієнта"
+      }
+    }
   },
   "upgrade": {
     "pro": "PRO",

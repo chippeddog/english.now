@@ -76,7 +76,115 @@
     "general": "通用",
     "personalization": "个性化",
     "billing": "账单与订阅",
-    "signOut": "退出"
+    "signOut": "退出",
+    "account": "账户",
+    "common": {
+      "save": "保存"
+    },
+    "profile": {
+      "avatarAlt": "头像",
+      "avatarHelp": "点击上传新头像",
+      "avatarRequirements": "JPG, PNG 或 GIF。最大 5MB。",
+      "nameLabel": "姓名",
+      "namePlaceholder": "您的姓名",
+      "emailLabel": "电子邮件",
+      "emailHelp": "如果您需要更改电子邮件，请联系支持。",
+      "timezoneLabel": "时区",
+      "timezoneDetected": "从您的浏览器检测到：{{timezone}}。",
+      "deleteTitle": "删除账户",
+      "deleteDescription": "永久删除您的账户和所有数据。此操作无法撤销。",
+      "deleteButton": "删除",
+      "deleteDialog": {
+        "title": "删除账户",
+        "description": "此操作不可逆。您的所有数据、进度和订阅将被永久删除。",
+        "confirmLabel": "输入 {{keyword}} 以确认",
+        "cancel": "取消",
+        "confirmButton": "删除账户"
+      },
+      "toasts": {
+        "timezoneUpdated": "时区更新成功",
+        "timezoneUpdateError": "时区更新失败",
+        "nameRequired": "姓名不能为空",
+        "profileUpdated": "个人资料更新成功",
+        "profileUpdateError": "个人资料更新失败",
+        "invalidImageType": "请选择一个图像文件",
+        "imageTooLarge": "图像必须小于 5MB",
+        "avatarUpdated": "头像更新成功",
+        "avatarUploadError": "头像上传失败",
+        "deleteKeywordRequired": "请输入 \"{{keyword}}\" 以确认",
+        "accountDeleted": "账户删除成功",
+        "accountDeleteError": "账户删除失败"
+      }
+    },
+    "personalizationSection": {
+      "nativeLanguage": "母语",
+      "selectLanguage": "选择语言",
+      "dailyLearningGoal": "每日学习目标",
+      "selectGoal": "选择目标",
+      "learningGoal": "学习目标",
+      "interestsLabel": "兴趣",
+      "selectInterests": "选择兴趣...",
+      "focusAreasLabel": "重点领域",
+      "selectFocusAreas": "选择重点领域...",
+      "dailyGoals": {
+        "option": "{{minutes}} 分钟/天 - {{label}}",
+        "casual": "随意",
+        "steady": "稳定",
+        "serious": "认真",
+        "intensive": "密集"
+      },
+      "goals": {
+        "career": "职业发展",
+        "travel": "旅行",
+        "education": "教育",
+        "social": "社交",
+        "personal": "个人成长",
+        "content": "娱乐"
+      },
+      "focusAreas": {
+        "speaking": "口语",
+        "vocabulary": "词汇",
+        "grammar": "语法",
+        "pronunciation": "发音"
+      },
+      "interests": {
+        "technology": "科技",
+        "travel": "旅行",
+        "music": "音乐",
+        "movies": "电影和电视",
+        "food": "美食与烹饪",
+        "fitness": "健康与健身",
+        "business": "商业",
+        "art": "艺术与设计",
+        "gaming": "游戏",
+        "books": "书籍与文学"
+      },
+      "toasts": {
+        "updated": "设置已更新",
+        "updateError": "设置更新失败",
+        "focusAreaRequired": "您至少需要一个重点领域"
+      }
+    },
+    "billingSection": {
+      "currentPlan": "您当前的计划",
+      "free": "免费",
+      "getPro": "获取 PRO",
+      "pro": "专业版",
+      "nextBillingDate": "下一个账单日期",
+      "manageDescription": "要管理您的订阅、更新支付信息或取消，请打开您的",
+      "customerPortal": "Paddle 客户门户",
+      "customerPortalLoading": "正在打开门户...",
+      "statuses": {
+        "trial": "试用",
+        "active": "活跃",
+        "paused": "暂停",
+        "pastDue": "逾期"
+      },
+      "errors": {
+        "createPortalSession": "创建客户门户会话失败",
+        "openCustomerPortal": "打开客户门户失败"
+      }
+    }
   },
   "upgrade": {
     "pro": "专业版",

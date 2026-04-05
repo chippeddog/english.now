@@ -76,7 +76,115 @@
     "general": "일반",
     "personalization": "개인화",
     "billing": "결제 및 구독",
-    "signOut": "로그아웃"
+    "signOut": "로그아웃",
+    "account": "계정",
+    "common": {
+      "save": "저장"
+    },
+    "profile": {
+      "avatarAlt": "아바타",
+      "avatarHelp": "새 아바타를 업로드하려면 클릭하세요",
+      "avatarRequirements": "JPG, PNG 또는 GIF. 최대 5MB.",
+      "nameLabel": "이름",
+      "namePlaceholder": "당신의 이름",
+      "emailLabel": "이메일",
+      "emailHelp": "이메일을 변경해야 하는 경우 지원팀에 문의하세요.",
+      "timezoneLabel": "시간대",
+      "timezoneDetected": "브라우저에서 감지됨: {{timezone}}.",
+      "deleteTitle": "계정 삭제",
+      "deleteDescription": "계정과 모든 데이터를 영구적으로 삭제합니다. 이 작업은 되돌릴 수 없습니다.",
+      "deleteButton": "삭제",
+      "deleteDialog": {
+        "title": "계정 삭제",
+        "description": "이 작업은 되돌릴 수 없습니다. 모든 데이터, 진행 상황 및 구독이 영구적으로 삭제됩니다.",
+        "confirmLabel": "확인하려면 {{keyword}}를 입력하세요",
+        "cancel": "취소",
+        "confirmButton": "계정 삭제"
+      },
+      "toasts": {
+        "timezoneUpdated": "시간대가 성공적으로 업데이트되었습니다",
+        "timezoneUpdateError": "시간대 업데이트에 실패했습니다",
+        "nameRequired": "이름은 비워둘 수 없습니다",
+        "profileUpdated": "프로필이 성공적으로 업데이트되었습니다",
+        "profileUpdateError": "프로필 업데이트에 실패했습니다",
+        "invalidImageType": "이미지 파일을 선택하세요",
+        "imageTooLarge": "이미지는 5MB보다 작아야 합니다",
+        "avatarUpdated": "아바타가 성공적으로 업데이트되었습니다",
+        "avatarUploadError": "아바타 업로드에 실패했습니다",
+        "deleteKeywordRequired": "\"{{keyword}}\"를 입력하여 확인하세요",
+        "accountDeleted": "계정이 성공적으로 삭제되었습니다",
+        "accountDeleteError": "계정 삭제에 실패했습니다"
+      }
+    },
+    "personalizationSection": {
+      "nativeLanguage": "모국어",
+      "selectLanguage": "언어 선택",
+      "dailyLearningGoal": "일일 학습 목표",
+      "selectGoal": "목표 선택",
+      "learningGoal": "학습 목표",
+      "interestsLabel": "관심사",
+      "selectInterests": "관심사 선택...",
+      "focusAreasLabel": "집중 영역",
+      "selectFocusAreas": "집중 영역 선택...",
+      "dailyGoals": {
+        "option": "{{minutes}} 분/일 - {{label}}",
+        "casual": "가벼운",
+        "steady": "꾸준한",
+        "serious": "진지한",
+        "intensive": "집중적인"
+      },
+      "goals": {
+        "career": "경력 성장",
+        "travel": "여행",
+        "education": "교육",
+        "social": "사회적",
+        "personal": "개인 성장",
+        "content": "엔터테인먼트"
+      },
+      "focusAreas": {
+        "speaking": "말하기",
+        "vocabulary": "어휘",
+        "grammar": "문법",
+        "pronunciation": "발음"
+      },
+      "interests": {
+        "technology": "기술",
+        "travel": "여행",
+        "music": "음악",
+        "movies": "영화 & TV",
+        "food": "음식 & 요리",
+        "fitness": "건강 & 피트니스",
+        "business": "비즈니스",
+        "art": "예술 & 디자인",
+        "gaming": "게임",
+        "books": "책 & 문학"
+      },
+      "toasts": {
+        "updated": "설정이 업데이트되었습니다",
+        "updateError": "설정 업데이트에 실패했습니다",
+        "focusAreaRequired": "최소한 하나의 집중 영역이 필요합니다"
+      }
+    },
+    "billingSection": {
+      "currentPlan": "현재 요금제",
+      "free": "무료",
+      "getPro": "PRO 얻기",
+      "pro": "프로",
+      "nextBillingDate": "다음 결제일",
+      "manageDescription": "구독을 관리하거나 결제 정보를 업데이트하거나 취소하려면",
+      "customerPortal": "Paddle 고객 포털",
+      "customerPortalLoading": "포털 열기 중...",
+      "statuses": {
+        "trial": "체험",
+        "active": "활성",
+        "paused": "일시 중지",
+        "pastDue": "연체"
+      },
+      "errors": {
+        "createPortalSession": "고객 포털 세션 생성에 실패했습니다",
+        "openCustomerPortal": "고객 포털 열기에 실패했습니다"
+      }
+    }
   },
   "upgrade": {
     "pro": "PRO",

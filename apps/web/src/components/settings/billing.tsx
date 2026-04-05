@@ -1,13 +1,17 @@
 import { env } from "@english.now/env/client";
+import { useTranslation } from "@english.now/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useUpgradeDialog } from "@/components/dashboard/upgrade-dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useTRPC } from "@/utils/trpc";
 
 export const Billing = () => {
+	const { i18n, t } = useTranslation("app");
 	const trpc = useTRPC();
+	const { openDialog } = useUpgradeDialog();
 	const { data: subscriptionData } = useQuery(
 		trpc.profile.getSubscription.queryOptions(),
 	);
@@ -26,7 +30,7 @@ export const Billing = () => {
 
 			if (!response.ok || !data.url) {
 				throw new Error(
-					data.error ?? "Failed to create a customer portal session",
+					data.error ?? t("settings.billingSection.errors.createPortalSession"),
 				);
 			}
 
@@ -35,34 +39,36 @@ export const Billing = () => {
 			toast.error(
 				error instanceof Error
 					? error.message
-					: "Failed to open the customer portal",
+					: t("settings.billingSection.errors.openCustomerPortal"),
 			);
 		} finally {
 			setIsOpeningPortal(false);
 		}
 	};
 
+	const freePlanRow = (
+		<span className="inline-flex flex-wrap items-center gap-1">
+			<span className="text-muted-foreground">
+				{t("settings.billingSection.free")}
+			</span>
+			<Button
+				type="button"
+				variant="link"
+				className="h-auto gap-0.5 p-0 font-medium text-lime-700 italic underline hover:text-lime-800"
+				onClick={() => openDialog()}
+			>
+				({t("settings.billingSection.getPro")})
+			</Button>
+		</span>
+	);
+
 	return (
-		<div className="space-y-6">
-			{/* {(!subscriptionData ||
-								subscriptionData.status === "canceled") && (
-								<Button
-									className="bg-[radial-gradient(100%_100%_at_50%_0%,#EFFF9B_0%,#D8FF76_60%,#C6F64D_100%)] text-slate-900 hover:brightness-95"
-									onClick={() => {
-										if (!session?.user) return;
-										openCheckout({
-											priceId: PADDLE_PRICE_IDS.monthly,
-											userId: session.user.id,
-											email: session.user.email,
-										});
-									}}
-								>
-									<Zap className="size-4" />
-									Upgrade
-								</Button>
-							)} */}
+		<div className="space-y-5">
+			<h2 className="font-semibold">{t("settings.billing")}</h2>
+			{/* {(!subscriptionData || subscriptionData.status === "canceled") && (
+			)} */}
 			<div>
-				<Label className="text-muted-foreground">Your current plan</Label>
+				<Label>{t("settings.billingSection.currentPlan")}</Label>
 				<p className="mt-1 font-medium">
 					{subscriptionData
 						? (() => {
@@ -71,9 +77,13 @@ export const Billing = () => {
 									return (
 										<span className="inline-flex items-center gap-1.5">
 											<span className="size-2 rounded-full bg-green-500" />
-											Pro{" "}
+											{t("settings.billingSection.pro")}{" "}
 											<span className="text-muted-foreground">
-												({status === "trialing" ? "Trial" : "Active"})
+												(
+												{status === "trialing"
+													? t("settings.billingSection.statuses.trial")
+													: t("settings.billingSection.statuses.active")}
+												)
 											</span>
 										</span>
 									);
@@ -82,8 +92,10 @@ export const Billing = () => {
 									return (
 										<span className="inline-flex items-center gap-1.5">
 											<span className="size-2 rounded-full bg-yellow-500" />
-											Pro{" "}
-											<span className="text-muted-foreground">(Paused)</span>
+											{t("settings.billingSection.pro")}{" "}
+											<span className="text-muted-foreground">
+												({t("settings.billingSection.statuses.paused")})
+											</span>
 										</span>
 									);
 								}
@@ -91,26 +103,29 @@ export const Billing = () => {
 									return (
 										<span className="inline-flex items-center gap-1.5">
 											<span className="size-2 rounded-full bg-red-500" />
-											Pro{" "}
-											<span className="text-muted-foreground">(Past Due)</span>
+											{t("settings.billingSection.pro")}{" "}
+											<span className="text-muted-foreground">
+												({t("settings.billingSection.statuses.pastDue")})
+											</span>
 										</span>
 									);
 								}
-								return <span className="text-muted-foreground">Free</span>;
+								return freePlanRow;
 							})()
-						: "Free"}
+						: freePlanRow}
 				</p>
 			</div>
 
-			{/* Billing Period */}
 			{subscriptionData?.currentPeriodEnd &&
 				(subscriptionData.status === "active" ||
 					subscriptionData.status === "trialing") && (
 					<div>
-						<Label className="text-muted-foreground">Next billing date</Label>
+						<Label className="text-muted-foreground">
+							{t("settings.billingSection.nextBillingDate")}
+						</Label>
 						<p className="mt-1 font-medium">
 							{new Date(subscriptionData.currentPeriodEnd).toLocaleDateString(
-								"en-US",
+								i18n.resolvedLanguage || i18n.language || "en-US",
 								{
 									year: "numeric",
 									month: "long",
@@ -121,12 +136,10 @@ export const Billing = () => {
 					</div>
 				)}
 
-			{/* Manage Subscription */}
 			{subscriptionData && subscriptionData.status !== "canceled" && (
 				<div>
 					<p className="text-muted-foreground text-sm">
-						To manage your subscription, update payment details, or cancel, open
-						your{" "}
+						{t("settings.billingSection.manageDescription")}{" "}
 						<Button
 							type="button"
 							variant="link"
@@ -135,8 +148,8 @@ export const Billing = () => {
 							className="h-auto p-0 font-medium text-lime-700 hover:text-lime-800"
 						>
 							{isOpeningPortal
-								? "Paddle customer portal..."
-								: "Paddle customer portal"}
+								? t("settings.billingSection.customerPortalLoading")
+								: t("settings.billingSection.customerPortal")}
 						</Button>
 					</p>
 				</div>

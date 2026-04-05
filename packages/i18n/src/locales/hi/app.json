@@ -76,7 +76,115 @@
     "general": "सामान्य",
     "personalization": "व्यक्तिगतकरण",
     "billing": "बिलिंग और सदस्यता",
-    "signOut": "साइन आउट"
+    "signOut": "साइन आउट",
+    "account": "खाता",
+    "common": {
+      "save": "सहेजें"
+    },
+    "profile": {
+      "avatarAlt": "अवतार",
+      "avatarHelp": "नया अवतार अपलोड करने के लिए क्लिक करें",
+      "avatarRequirements": "JPG, PNG या GIF। अधिकतम 5MB।",
+      "nameLabel": "नाम",
+      "namePlaceholder": "आपका नाम",
+      "emailLabel": "ईमेल",
+      "emailHelp": "यदि आपको अपना ईमेल बदलने की आवश्यकता है, तो कृपया सहायता से संपर्क करें।",
+      "timezoneLabel": "समय क्षेत्र",
+      "timezoneDetected": "आपके ब्राउज़र से पता लगाया गया: {{timezone}}।",
+      "deleteTitle": "खाता हटाएं",
+      "deleteDescription": "अपने खाते और सभी डेटा को स्थायी रूप से हटा दें। यह क्रिया पूर्ववत नहीं की जा सकती।",
+      "deleteButton": "हटाएं",
+      "deleteDialog": {
+        "title": "खाता हटाएं",
+        "description": "यह क्रिया अपरिवर्तनीय है। आपका सारा डेटा, प्रगति, और सदस्यता स्थायी रूप से हटा दी जाएगी।",
+        "confirmLabel": "पुष्टि करने के लिए {{keyword}} टाइप करें",
+        "cancel": "रद्द करें",
+        "confirmButton": "खाता हटाएं"
+      },
+      "toasts": {
+        "timezoneUpdated": "समय क्षेत्र सफलतापूर्वक अपडेट किया गया",
+        "timezoneUpdateError": "समय क्षेत्र अपडेट करने में विफल",
+        "nameRequired": "नाम खाली नहीं हो सकता",
+        "profileUpdated": "प्रोफ़ाइल सफलतापूर्वक अपडेट की गई",
+        "profileUpdateError": "प्रोफ़ाइल अपडेट करने में विफल",
+        "invalidImageType": "कृपया एक छवि फ़ाइल चुनें",
+        "imageTooLarge": "छवि 5MB से छोटी होनी चाहिए",
+        "avatarUpdated": "अवतार सफलतापूर्वक अपडेट किया गया",
+        "avatarUploadError": "अवतार अपलोड करने में विफल",
+        "deleteKeywordRequired": "कृपया पुष्टि करने के लिए \"{{keyword}}\" टाइप करें",
+        "accountDeleted": "खाता सफलतापूर्वक हटाया गया",
+        "accountDeleteError": "खाता हटाने में विफल"
+      }
+    },
+    "personalizationSection": {
+      "nativeLanguage": "मातृभाषा",
+      "selectLanguage": "भाषा चुनें",
+      "dailyLearningGoal": "दैनिक सीखने का लक्ष्य",
+      "selectGoal": "लक्ष्य चुनें",
+      "learningGoal": "सीखने का लक्ष्य",
+      "interestsLabel": "रुचियाँ",
+      "selectInterests": "रुचियाँ चुनें...",
+      "focusAreasLabel": "फोकस क्षेत्र",
+      "selectFocusAreas": "फोकस क्षेत्र चुनें...",
+      "dailyGoals": {
+        "option": "{{minutes}} मिनट/दिन - {{label}}",
+        "casual": "आकस्मिक",
+        "steady": "स्थिर",
+        "serious": "गंभीर",
+        "intensive": "गहन"
+      },
+      "goals": {
+        "career": "करियर विकास",
+        "travel": "यात्रा",
+        "education": "शिक्षा",
+        "social": "सामाजिक",
+        "personal": "व्यक्तिगत विकास",
+        "content": "मनोरंजन"
+      },
+      "focusAreas": {
+        "speaking": "बोलना",
+        "vocabulary": "शब्दावली",
+        "grammar": "व्याकरण",
+        "pronunciation": "उच्चारण"
+      },
+      "interests": {
+        "technology": "प्रौद्योगिकी",
+        "travel": "यात्रा",
+        "music": "संगीत",
+        "movies": "फिल्में और टीवी",
+        "food": "भोजन और पाक कला",
+        "fitness": "स्वास्थ्य और फिटनेस",
+        "business": "व्यवसाय",
+        "art": "कला और डिज़ाइन",
+        "gaming": "गेमिंग",
+        "books": "पुस्तकें और साहित्य"
+      },
+      "toasts": {
+        "updated": "सेटिंग्स अपडेट की गईं",
+        "updateError": "सेटिंग्स अपडेट करने में विफल",
+        "focusAreaRequired": "आपको कम से कम एक फोकस क्षेत्र की आवश्यकता है"
+      }
+    },
+    "billingSection": {
+      "currentPlan": "आपकी वर्तमान योजना",
+      "free": "मुफ़्त",
+      "getPro": "PRO प्राप्त करें",
+      "pro": "प्रो",
+      "nextBillingDate": "अगली बिलिंग तिथि",
+      "manageDescription": "अपनी सदस्यता प्रबंधित करने, भुगतान विवरण अपडेट करने, या रद्द करने के लिए, अपना खोलें",
+      "customerPortal": "Paddle ग्राहक पोर्टल",
+      "customerPortalLoading": "पोर्टल खोल रहा है...",
+      "statuses": {
+        "trial": "परीक्षण",
+        "active": "सक्रिय",
+        "paused": "विरामित",
+        "pastDue": "अतिदेय"
+      },
+      "errors": {
+        "createPortalSession": "ग्राहक पोर्टल सत्र बनाने में विफल",
+        "openCustomerPortal": "ग्राहक पोर्टल खोलने में विफल"
+      }
+    }
   },
   "upgrade": {
     "pro": "प्रो",

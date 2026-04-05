@@ -76,7 +76,115 @@
     "general": "Generale",
     "personalization": "Personalizzazione",
     "billing": "Fatturazione e Abbonamento",
-    "signOut": "Esci"
+    "signOut": "Esci",
+    "account": "Account",
+    "common": {
+      "save": "Salva"
+    },
+    "profile": {
+      "avatarAlt": "Avatar",
+      "avatarHelp": "Clicca per caricare un nuovo avatar",
+      "avatarRequirements": "JPG, PNG o GIF. Max 5MB.",
+      "nameLabel": "Nome",
+      "namePlaceholder": "Il tuo nome",
+      "emailLabel": "Email",
+      "emailHelp": "Se hai bisogno di cambiare la tua email, contatta il supporto.",
+      "timezoneLabel": "Fuso orario",
+      "timezoneDetected": "Rilevato dal tuo browser: {{timezone}}.",
+      "deleteTitle": "Elimina Account",
+      "deleteDescription": "Elimina definitivamente il tuo account e tutti i dati. Questa azione non può essere annullata.",
+      "deleteButton": "Elimina",
+      "deleteDialog": {
+        "title": "Elimina Account",
+        "description": "Questa azione è irreversibile. Tutti i tuoi dati, progressi e abbonamenti saranno eliminati definitivamente.",
+        "confirmLabel": "Digita {{keyword}} per confermare",
+        "cancel": "Annulla",
+        "confirmButton": "Elimina Account"
+      },
+      "toasts": {
+        "timezoneUpdated": "Fuso orario aggiornato con successo",
+        "timezoneUpdateError": "Aggiornamento del fuso orario fallito",
+        "nameRequired": "Il nome non può essere vuoto",
+        "profileUpdated": "Profilo aggiornato con successo",
+        "profileUpdateError": "Aggiornamento del profilo fallito",
+        "invalidImageType": "Seleziona un file immagine",
+        "imageTooLarge": "L'immagine deve essere più piccola di 5MB",
+        "avatarUpdated": "Avatar aggiornato con successo",
+        "avatarUploadError": "Caricamento dell'avatar fallito",
+        "deleteKeywordRequired": "Digita \"{{keyword}}\" per confermare",
+        "accountDeleted": "Account eliminato con successo",
+        "accountDeleteError": "Eliminazione dell'account fallita"
+      }
+    },
+    "personalizationSection": {
+      "nativeLanguage": "Lingua Madre",
+      "selectLanguage": "Seleziona lingua",
+      "dailyLearningGoal": "Obiettivo di Apprendimento Giornaliero",
+      "selectGoal": "Seleziona obiettivo",
+      "learningGoal": "Obiettivo di Apprendimento",
+      "interestsLabel": "Interessi",
+      "selectInterests": "Seleziona interessi...",
+      "focusAreasLabel": "Aree di Interesse",
+      "selectFocusAreas": "Seleziona aree di interesse...",
+      "dailyGoals": {
+        "option": "{{minutes}} min/giorno - {{label}}",
+        "casual": "Casuale",
+        "steady": "Costante",
+        "serious": "Serio",
+        "intensive": "Intensivo"
+      },
+      "goals": {
+        "career": "Crescita Professionale",
+        "travel": "Viaggi",
+        "education": "Istruzione",
+        "social": "Sociale",
+        "personal": "Crescita Personale",
+        "content": "Intrattenimento"
+      },
+      "focusAreas": {
+        "speaking": "Conversazione",
+        "vocabulary": "Vocabolario",
+        "grammar": "Grammatica",
+        "pronunciation": "Pronuncia"
+      },
+      "interests": {
+        "technology": "Tecnologia",
+        "travel": "Viaggi",
+        "music": "Musica",
+        "movies": "Film & TV",
+        "food": "Cibo & Cucina",
+        "fitness": "Salute & Fitness",
+        "business": "Business",
+        "art": "Arte & Design",
+        "gaming": "Giochi",
+        "books": "Libri & Letteratura"
+      },
+      "toasts": {
+        "updated": "Impostazioni aggiornate",
+        "updateError": "Aggiornamento delle impostazioni fallito",
+        "focusAreaRequired": "Devi selezionare almeno un'area di interesse"
+      }
+    },
+    "billingSection": {
+      "currentPlan": "Il tuo piano attuale",
+      "free": "Gratuito",
+      "getPro": "Ottieni PRO",
+      "pro": "Pro",
+      "nextBillingDate": "Prossima data di fatturazione",
+      "manageDescription": "Per gestire il tuo abbonamento, aggiornare i dettagli di pagamento o annullare, apri il tuo",
+      "customerPortal": "portale clienti Paddle",
+      "customerPortalLoading": "Apertura del portale...",
+      "statuses": {
+        "trial": "Prova",
+        "active": "Attivo",
+        "paused": "In Pausa",
+        "pastDue": "Scaduto"
+      },
+      "errors": {
+        "createPortalSession": "Creazione della sessione del portale clienti fallita",
+        "openCustomerPortal": "Apertura del portale clienti fallita"
+      }
+    }
   },
   "upgrade": {
     "pro": "PRO",
