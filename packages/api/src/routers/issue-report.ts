@@ -2,7 +2,9 @@ import {
 	conversationSession,
 	db,
 	eq,
+	grammarSession,
 	issueReport,
+	lessonAttempt,
 	pronunciationSession,
 } from "@english.now/db";
 import { TRPCError } from "@trpc/server";
@@ -14,7 +16,12 @@ export const issueReportRouter = router({
 		.input(
 			z.object({
 				sessionId: z.string(),
-				sessionType: z.enum(["conversation", "pronunciation"]),
+				sessionType: z.enum([
+					"conversation",
+					"pronunciation",
+					"lesson",
+					"grammar",
+				]),
 				category: z.string(),
 				description: z.string().optional(),
 			}),
@@ -23,7 +30,11 @@ export const issueReportRouter = router({
 			const table =
 				input.sessionType === "conversation"
 					? conversationSession
-					: pronunciationSession;
+					: input.sessionType === "pronunciation"
+						? pronunciationSession
+						: input.sessionType === "grammar"
+							? grammarSession
+							: lessonAttempt;
 
 			const [session] = await db
 				.select({ userId: table.userId })

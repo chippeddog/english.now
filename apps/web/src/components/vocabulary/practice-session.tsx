@@ -240,22 +240,24 @@ export default function PracticeSession({
 	return (
 		<div className="fixed inset-0 z-50 flex flex-col bg-neutral-50">
 			{/* Header */}
-			<div className="flex items-center gap-4 px-4 pt-4 pb-2">
-				<span className="shrink-0 font-medium text-neutral-500 text-sm">
-					{currentIndex + 1} <span className="text-neutral-300">/</span>{" "}
-					{cards.length}
-				</span>
-				<Progress
-					value={progressValue}
-					className="h-2 flex-1 bg-white/60 [&>div]:bg-lime-500"
-				/>
-				<button
-					type="button"
-					onClick={onClose}
-					className="flex size-10 shrink-0 items-center justify-center rounded-full text-neutral-400 transition-colors hover:bg-white/60 hover:text-neutral-600"
-				>
-					<X className="size-5" />
-				</button>
+			<div className="mx-auto w-full max-w-3xl">
+				<div className="flex items-center gap-4 px-4 pt-4 pb-2">
+					<span className="shrink-0 font-medium text-neutral-500 text-sm">
+						{currentIndex + 1} <span className="text-neutral-300">/</span>{" "}
+						{cards.length}
+					</span>
+					<Progress
+						value={progressValue}
+						className="h-2 flex-1 bg-white/60 [&>div]:bg-lime-500"
+					/>
+					<button
+						type="button"
+						onClick={onClose}
+						className="flex size-10 shrink-0 items-center justify-center rounded-full text-neutral-400 transition-colors hover:bg-white/60 hover:text-neutral-600"
+					>
+						<X className="size-5" />
+					</button>
+				</div>
 			</div>
 
 			{/* Card area */}
@@ -264,7 +266,7 @@ export default function PracticeSession({
 					type="button"
 					onClick={handleFlip}
 					className={cn(
-						"flex w-full max-w-2xl select-none flex-col items-center justify-center rounded-2xl border bg-white p-8 shadow-sm transition-all md:min-h-[320px] md:p-12",
+						"flex w-full max-w-2xl select-none flex-col items-center justify-center rounded-3xl bg-white p-8 shadow-sm transition-all md:min-h-[320px] md:p-12",
 						!flipped && "cursor-pointer hover:shadow-md",
 					)}
 				>

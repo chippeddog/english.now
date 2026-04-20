@@ -63,13 +63,26 @@
     "pronunciation": "发音",
     "practiceYourEnglish": "练习你的英语",
     "practiceYourPronunciation": "练习你的发音",
-    "practiceYourPronunciationDescription": "选择一个段落并通过AI练习你的发音"
+    "practiceYourPronunciationDescription": "选择一个段落并通过AI练习你的发音",
+    "grammar": "语法",
+    "practiceYourGrammar": "练习你的语法",
+    "loadMore": "加载更多"
   },
   "vocabulary": {
     "title": "词汇",
     "words": "单词",
     "phrases": "短语",
-    "progress": "进度"
+    "progress": "进度",
+    "itemRow": {
+      "dueNow": "现在到期",
+      "inHours": "{{count}}小时后",
+      "tomorrow": "明天",
+      "inDays": "{{count}}天后",
+      "deleteTitle": "删除项目",
+      "deleteDescription": "您确定要删除此项目吗？此操作无法撤销。",
+      "cancel": "取消",
+      "delete": "删除"
+    }
   },
   "settings": {
     "title": "设置",
@@ -254,7 +267,72 @@
     "recentSessions": "最近的会话",
     "readAloud": "朗读",
     "unknownDate": "未知日期",
-    "feedbackReady": "反馈已准备好"
+    "feedbackReady": "反馈已准备好",
+    "session": {
+      "noSpeechDetected": "未检测到语音。请至少说一个短语再保存。",
+      "savingRecording": "正在保存录音...",
+      "savePausedRecording": "保存暂停的录音",
+      "stopRecording": "停止录音",
+      "recordingStartsIn": "录音将在 {{count}} 秒后开始",
+      "attemptLimitReached": "此评审最多可录制 {{count}} 次",
+      "freeAttemptLimitReached": "免费用户每次评审只能录制一次",
+      "microphoneAccessRequired": "请在浏览器中允许麦克风访问以开始录音",
+      "recordingsLeft_one": "您还有 {{count}} 次录音机会",
+      "recordingsLeft_other": "您还有 {{count}} 次录音机会",
+      "startRecording": "开始录音",
+      "readParagraph": "阅读以下段落：",
+      "liveTranscript": "实时转录",
+      "startSpeaking": "开始说话...",
+      "backToPractice": "返回练习",
+      "processing": {
+        "analyzing": "正在分析您的录音",
+        "computing": "正在计算您的结果",
+        "generatingFeedback": "正在生成个性化反馈",
+        "title": "正在处理您的会话",
+        "subtitle": "通常需要大约30秒"
+      },
+      "controls": {
+        "continueRecording": "继续录音",
+        "pauseRecording": "暂停录音",
+        "clearAndStartAgain": "清除并重新开始",
+        "saving": "正在保存...",
+        "saveRecording": "保存录音",
+        "record": "录音",
+        "finishReviewTitle": "完成评审？",
+        "finishReviewDescription": "您将停止录音并进入评审结果。",
+        "finish": "完成"
+      },
+      "attemptQuota": {
+        "ariaLabel": "已使用 {{used}} 次录音，共 {{limit}} 次，剩余 {{remaining}} 次",
+        "used_one": "已使用 {{used}} 次录音，共 {{limit}} 次",
+        "used_other": "已使用 {{used}} 次录音，共 {{limit}} 次",
+        "left_one": "剩余 {{count}} 次录音{{suffix}}",
+        "left_other": "剩余 {{count}} 次录音{{suffix}}",
+        "proSuffix": " 在此评审中。",
+        "freeSuffix": " 在免费计划中。"
+      },
+      "attemptCount": {
+        "ariaLabel_one": "本次会话 {{count}} 次尝试",
+        "ariaLabel_other": "本次会话 {{count}} 次尝试",
+        "tooltip_one": "本次会话记录了 {{count}} 次尝试",
+        "tooltip_other": "本次会话记录了 {{count}} 次尝试"
+      },
+      "attempts": {
+        "unknownDate": "未知日期",
+        "deleteConfirm": "再次点击以删除",
+        "label": "尝试 {{count}}",
+        "emptyTitle": "尚无录音",
+        "emptyDescription": "保存的尝试将在您录制后显示在此处。"
+      },
+      "settings": {
+        "close": "关闭设置",
+        "interfaceLanguage": "界面语言",
+        "inputDevice": "输入设备",
+        "selectMicrophone": "选择麦克风",
+        "microphoneLabel": "麦克风 {{count}}",
+        "noAudioDevices": "未找到音频设备。允许麦克风访问后再次打开设置。"
+      }
+    }
   },
   "lessons": {
     "title": "课程",

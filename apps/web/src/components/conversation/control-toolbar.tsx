@@ -3,15 +3,9 @@ import {
 	CornerDownRight,
 	Lightbulb,
 	Loader,
-	LogOutIcon,
 	Mic,
 	MicOff,
 	MousePointer2,
-	MousePointerClick,
-	SearchIcon,
-	SquareArrowRight,
-	SquareDashedMousePointer,
-	TextSelect,
 	Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";

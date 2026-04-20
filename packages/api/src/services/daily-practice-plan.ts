@@ -308,7 +308,7 @@ async function createPronunciationActivities(
 
 	return paragraphs.map((paragraph, index) => ({
 		id: `pronunciation-${index + 1}`,
-		emoji: "🎙️",
+		emoji: paragraph.icon,
 		title: paragraph.topic,
 		description: paragraph.tips,
 		duration: 3,

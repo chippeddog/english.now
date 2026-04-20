@@ -1,37 +1,34 @@
 import { useTranslation } from "@english.now/i18n";
-import { Loader } from "lucide-react";
+import { Loader, Minus, TrendingDown, TrendingUp } from "lucide-react";
 import { useMemo } from "react";
 import {
-	Bar,
-	BarChart,
+	Area,
 	CartesianGrid,
+	ComposedChart,
+	Line,
 	ReferenceLine,
 	Tooltip,
 	XAxis,
 	YAxis,
 } from "recharts";
 import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
+import { cn } from "@/lib/utils";
 
 type DayKey = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
 
 type DayData = {
 	dayKey: DayKey;
 	dayLabel: string;
+	dayShortLabel: string;
 	date: number;
 	seconds: number;
+	minutes: number;
+	goalMinutes: number;
 	isToday: boolean;
+	isFuture: boolean;
 };
 
-type PracticeXAxisTickProps = {
-	x?: number;
-	y?: number;
-	payload?: {
-		value: string;
-		index?: number;
-	};
-	committedSeconds: number;
-	weekData: DayData[];
-};
+type Trend = "up" | "down" | "flat";
 
 const DAY_KEYS: DayKey[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 const ENGLISH_DAY_LABELS: Record<DayKey, string> = {
@@ -44,10 +41,16 @@ const ENGLISH_DAY_LABELS: Record<DayKey, string> = {
 	sun: "Sun",
 };
 
+const LIME_STROKE = "#65A30D";
+const LIME_FILL_TOP = "#A3E635";
+const DASHED_STROKE = "#A3A3A3";
+const AREA_GRADIENT_ID = "practice-time-area-gradient";
+
 function buildWeekData(
 	practiceData: { date: string; seconds: number }[],
 	timezone: string,
 	language: string,
+	goalMinutes: number,
 ): DayData[] {
 	const now = new Date();
 	const formatter = new Intl.DateTimeFormat("en-US", {
@@ -60,6 +63,10 @@ function buildWeekData(
 	const localizedWeekdayFormatter = new Intl.DateTimeFormat(language, {
 		timeZone: timezone,
 		weekday: "short",
+	});
+	const localizedNarrowFormatter = new Intl.DateTimeFormat(language, {
+		timeZone: timezone,
+		weekday: "narrow",
 	});
 
 	const todayParts = formatter.formatToParts(now);
@@ -96,133 +103,53 @@ function buildWeekData(
 
 		const parts = formatter.formatToParts(date);
 		const dayNum = Number(parts.find((p) => p.type === "day")?.value ?? 0);
+		const seconds = secondsMap.get(ymd) ?? 0;
 
 		week.push({
 			dayKey: DAY_KEYS[i],
 			dayLabel: localizedWeekdayFormatter.format(date),
+			dayShortLabel: localizedNarrowFormatter.format(date),
 			date: dayNum,
-			seconds: secondsMap.get(ymd) ?? 0,
+			seconds,
+			minutes: seconds / 60,
+			goalMinutes,
 			isToday: ymd === todayYMD,
+			isFuture: offset > 0,
 		});
 	}
 
 	return week;
 }
 
-const chartConfig = {
-	minutes: {
-		label: "Duration",
-		color: "hsl(var(--muted-foreground) / 0.6)",
-	},
-} as const;
+function computeTrend(weekData: DayData[]): Trend {
+	const played = weekData.filter((d) => !d.isFuture);
+	if (played.length < 2) return "flat";
 
-const LOGO_BAR_GRADIENT_ID = "practice-time-logo-bar-gradient";
-const FIVE_MINUTES_IN_SECONDS = 5 * 60;
+	const mid = Math.floor(played.length / 2);
+	const first = played.slice(0, mid);
+	const second = played.slice(mid);
 
-function roundUpToStep(value: number, step: number) {
-	return Math.ceil(value / step) * step;
+	const avg = (list: DayData[]) =>
+		list.reduce((sum, d) => sum + d.minutes, 0) / Math.max(1, list.length);
+
+	const diff = avg(second) - avg(first);
+	if (Math.abs(diff) < 0.5) return "flat";
+	return diff > 0 ? "up" : "down";
 }
 
-function getGridStepSeconds(maxSeconds: number) {
-	const maxMinutes = Math.ceil(maxSeconds / 60);
-
-	if (maxMinutes <= 20) {
-		return FIVE_MINUTES_IN_SECONDS;
+function formatMinutes(minutes: number, t: (key: string) => string): string {
+	if (minutes <= 0) return `0 ${t("practiceTime.minShort")}`;
+	if (minutes < 1) {
+		const secs = Math.max(1, Math.round(minutes * 60));
+		return `${secs} ${t("practiceTime.secShort")}`;
 	}
-
-	if (maxMinutes <= 45) {
-		return 10 * 60;
-	}
-
-	if (maxMinutes <= 90) {
-		return 15 * 60;
-	}
-
-	return 30 * 60;
-}
-
-function getGridTicks(maxSeconds: number, stepSeconds: number) {
-	const tickCount = Math.max(1, Math.ceil(maxSeconds / stepSeconds));
-	return Array.from({ length: tickCount }, (_, index) => index * stepSeconds);
-}
-
-function formatDuration(seconds: number): string {
-	const mins = Math.floor(seconds / 60);
-	const secs = Math.round(seconds % 60);
-	if (mins === 0 && secs === 0) return "0 min";
-	if (mins === 0) return `${secs} sec`;
-	return secs > 0 ? `${mins} min ${secs} sec` : `${mins} min`;
-}
-
-function PracticeXAxisTick({
-	x = 0,
-	y = 0,
-	payload,
-	committedSeconds,
-	weekData,
-}: PracticeXAxisTickProps) {
-	if (!payload) {
-		return null;
-	}
-
-	const day =
-		(payload.index !== undefined ? weekData[payload.index] : undefined) ??
-		weekData.find((item) => item.dayKey === payload.value);
-
-	if (!day) {
-		return null;
-	}
-
-	const indicatorColor =
-		day.seconds >= committedSeconds
-			? "#84CC16"
-			: day.seconds > 0
-				? "#F59E0B"
-				: "#F5F5F5";
-
-	return (
-		<g transform={`translate(${x},${y})`}>
-			{/* {day.isToday ? (
-				<rect
-					x={-18}
-					y={6}
-					width={36}
-					height={44}
-					rx={12}
-					fill="#FFFFFF"
-					stroke="rgba(0, 0, 0, 0.05)"
-				/>
-			) : null} */}
-			<text
-				x={0}
-				y={22}
-				textAnchor="middle"
-				fontSize={12}
-				fill="var(--muted-foreground)"
-			>
-				{day.dayLabel}
-			</text>
-			<text
-				x={0}
-				y={40}
-				textAnchor="middle"
-				fontSize={12}
-				fontWeight={600}
-				fill={day.isToday ? "#171717" : "#737373"}
-			>
-				{day.date}
-			</text>
-			{indicatorColor ? (
-				<circle cx={0} cy={48} r={3} fill={indicatorColor} />
-			) : null}
-		</g>
-	);
+	return `${Math.round(minutes)} ${t("practiceTime.minShort")}`;
 }
 
 function PracticeTimeSkeleton() {
 	return (
 		<div className="w-full rounded-xl pt-0">
-			<div className="h-[190px] w-full rounded-xl border border-border/40 bg-neutral-50/70">
+			<div className="h-[220px] w-full rounded-xl border border-border/40 bg-neutral-50/70">
 				<div className="flex h-full items-center justify-center text-neutral-400">
 					<Loader className="size-5 animate-spin" />
 				</div>
@@ -230,6 +157,17 @@ function PracticeTimeSkeleton() {
 		</div>
 	);
 }
+
+const chartConfig = {
+	minutes: {
+		label: "Practice",
+		color: LIME_STROKE,
+	},
+	goalMinutes: {
+		label: "Goal",
+		color: DASHED_STROKE,
+	},
+} as const;
 
 export default function DailyPracticeTime({
 	practiceData,
@@ -243,166 +181,254 @@ export default function DailyPracticeTime({
 	isLoading?: boolean;
 }) {
 	const { i18n, t } = useTranslation("app");
-	const committedMinutes = dailyGoal || 5;
-	const committedSeconds = committedMinutes * 60;
+	const goalMinutes = dailyGoal || 5;
+
 	const weekData = useMemo(
 		() =>
 			buildWeekData(
 				practiceData,
 				timezone,
 				i18n.resolvedLanguage || i18n.language || "en",
+				goalMinutes,
 			),
-		[practiceData, timezone, i18n.language, i18n.resolvedLanguage],
+		[practiceData, timezone, i18n.language, i18n.resolvedLanguage, goalMinutes],
 	);
-	const maxPracticeSeconds = useMemo(
-		() => Math.max(0, ...weekData.map((day) => day.seconds)),
+
+	const totalWeekMinutes = useMemo(
+		() => weekData.reduce((sum, d) => sum + d.minutes, 0),
 		[weekData],
 	);
-	const gridStepSeconds = useMemo(
-		() => getGridStepSeconds(Math.max(committedSeconds, maxPracticeSeconds)),
-		[committedSeconds, maxPracticeSeconds],
+	const maxMinutes = useMemo(
+		() => Math.max(goalMinutes, ...weekData.map((d) => d.minutes)),
+		[weekData, goalMinutes],
 	);
-	const chartMaxSeconds = useMemo(
-		() =>
-			Math.max(
-				gridStepSeconds * 2,
-				roundUpToStep(
-					Math.max(committedSeconds, maxPracticeSeconds) + gridStepSeconds,
-					gridStepSeconds,
-				),
-			),
-		[committedSeconds, maxPracticeSeconds, gridStepSeconds],
+	const chartMaxMinutes = useMemo(
+		() => Math.max(goalMinutes * 1.4, Math.ceil(maxMinutes * 1.2)),
+		[maxMinutes, goalMinutes],
 	);
-	const gridTicks = useMemo(
-		() => getGridTicks(chartMaxSeconds, gridStepSeconds),
-		[chartMaxSeconds, gridStepSeconds],
-	);
-	const gridLineTicks = useMemo(
-		() => gridTicks.filter((tick) => tick !== committedSeconds),
-		[gridTicks, committedSeconds],
-	);
+
+	const trend = useMemo(() => computeTrend(weekData), [weekData]);
+	const trendLabel =
+		trend === "up"
+			? t("practiceTime.trendingUp")
+			: trend === "down"
+				? t("practiceTime.trendingDown")
+				: t("practiceTime.steady");
+	const TrendIcon =
+		trend === "up" ? TrendingUp : trend === "down" ? TrendingDown : Minus;
+	const trendColor =
+		trend === "up"
+			? "text-lime-600"
+			: trend === "down"
+				? "text-orange-500"
+				: "text-neutral-500";
 
 	return (
 		<div
-			className="overflow-hidden rounded-3xl bg-white p-2.5"
+			className="relative overflow-hidden rounded-3xl bg-white p-4"
 			style={{
 				boxShadow:
 					"0 0 0 1px rgba(0,0,0,.05),0 10px 10px -5px rgba(0,0,0,.04),0 20px 25px -5px rgba(0,0,0,.04),0 20px 32px -12px rgba(0,0,0,.04)",
 			}}
 		>
-			<div className="mt-1 mb-2.5 flex flex-col pl-1.5">
-				<div className="font-bold font-lyon text-xl">
-					{t("practiceTime.title")}
+			<div className="mb-3 flex items-start justify-between gap-3">
+				<div>
+					<div className="flex items-center gap-1.5">
+						{/* <TrendingUp className="size-4 text-lime-600" strokeWidth={2.5} /> */}
+						<div className="font-semibold text-sm">
+							{t("practiceTime.title")}
+						</div>
+					</div>
+					{/* <div className="mt-0.5 text-neutral-500 text-xs">
+						{t("practiceTime.subtitle")}
+					</div> */}
 				</div>
 			</div>
 
 			{isLoading ? (
 				<PracticeTimeSkeleton />
 			) : (
-				<div className="w-full rounded-xl border border-border/50 p-2.5 pt-0">
+				<>
+					<div className="absolute top-12 left-4 flex items-end justify-between">
+						<div>
+							<div className="font-semibold text-neutral-900 text-xl tabular-nums">
+								{formatMinutes(totalWeekMinutes, t)}
+							</div>
+							<div className="text-[11px] text-neutral-500 italic tracking-wide">
+								{t("practiceTime.thisWeek")}
+							</div>
+						</div>
+						{/* <div
+							className={cn(
+								"flex items-center gap-1 font-medium text-xs",
+								trendColor,
+							)}
+						>
+							<TrendIcon className="size-3.5" strokeWidth={2.5} />
+							{trendLabel}
+						</div> */}
+					</div>
+
 					<ChartContainer
 						config={chartConfig}
-						className="aspect-auto h-[190px] w-full self-stretch"
+						className="aspect-auto h-[170px] w-full self-stretch"
 					>
-						<BarChart
+						<ComposedChart
 							accessibilityLayer
 							data={weekData}
-							margin={{ top: 14, right: 6, left: 2, bottom: 6 }}
+							margin={{ top: 12, right: 8, left: 4, bottom: 4 }}
 						>
 							<defs>
-								<radialGradient
-									id={LOGO_BAR_GRADIENT_ID}
-									cx="50%"
-									cy="0%"
-									r="100%"
-									fx="50%"
-									fy="0%"
+								<linearGradient
+									id={AREA_GRADIENT_ID}
+									x1="0"
+									y1="0"
+									x2="0"
+									y2="1"
 								>
-									<stop offset="0%" stopColor="#EFFF9B" />
-									<stop offset="60%" stopColor="#D8FF76" />
-									<stop offset="100%" stopColor="#C6F64D" />
-								</radialGradient>
-							</defs>
-							<CartesianGrid
-								vertical={false}
-								stroke="var(--border)"
-								strokeWidth={1}
-								horizontalCoordinatesGenerator={({ offset }) => {
-									if (
-										offset?.top === undefined ||
-										offset.height === undefined ||
-										chartMaxSeconds <= 0
-									) {
-										return [];
-									}
-
-									const { top, height } = offset;
-
-									return gridLineTicks.map((tick) => {
-										const progress = tick / chartMaxSeconds;
-										return top + height - height * progress;
-									});
-								}}
-							/>
-							<XAxis
-								dataKey="dayKey"
-								tick={(props) => (
-									<PracticeXAxisTick
-										{...props}
-										committedSeconds={committedSeconds}
-										weekData={weekData}
+									<stop
+										offset="0%"
+										stopColor={LIME_FILL_TOP}
+										stopOpacity={0.35}
 									/>
-								)}
+									<stop
+										offset="100%"
+										stopColor={LIME_FILL_TOP}
+										stopOpacity={0}
+									/>
+								</linearGradient>
+							</defs>
+							<CartesianGrid vertical={false} stroke="transparent" />
+							<XAxis
+								dataKey="dayShortLabel"
 								tickLine={false}
 								axisLine={false}
 								interval={0}
-								height={58}
+								tick={{
+									fontSize: 11,
+									fill: "#737373",
+								}}
+								tickMargin={6}
 							/>
 							<YAxis
-								tick={false}
-								tickLine={false}
-								axisLine={false}
-								domain={[0, chartMaxSeconds]}
-								ticks={gridLineTicks}
-								width={0}
+								hide
+								domain={[0, chartMaxMinutes]}
+								allowDataOverflow={false}
 							/>
 							<Tooltip
 								content={
 									<ChartTooltipContent
-										formatter={(value) => (
-											<span className="font-medium font-mono tabular-nums">
-												{formatDuration(value as number)}
-											</span>
+										indicator="line"
+										labelFormatter={(_, payload) => {
+											const day = payload?.[0]?.payload as DayData | undefined;
+											if (!day) return "";
+											return `${day.dayLabel} ${day.date}`;
+										}}
+										formatter={(value, name) => (
+											<div className="flex w-full items-center justify-between gap-3">
+												<span className="text-muted-foreground capitalize">
+													{name === "minutes"
+														? t("practiceTime.practice")
+														: t("practiceTime.goal")}
+												</span>
+												<span className="font-medium font-mono tabular-nums">
+													{formatMinutes(value as number, t)}
+												</span>
+											</div>
 										)}
-										labelFormatter={(label) => label}
 									/>
 								}
-								cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }}
-							/>
-							<ReferenceLine
-								y={committedSeconds}
-								stroke="#5EA500"
-								strokeDasharray="4 4"
-								strokeWidth={1}
-								label={{
-									value: `${committedMinutes} min`,
-									position: "insideTopRight",
-									fill: "#497D00",
-									fontSize: 11,
-									fontWeight: 500,
+								cursor={{
+									stroke: "#E5E5E5",
+									strokeWidth: 1,
+									strokeDasharray: "3 3",
 								}}
 							/>
-							<Bar
-								dataKey="seconds"
-								fill={`url(#${LOGO_BAR_GRADIENT_ID})`}
-								stroke="#C6F64D"
-								strokeWidth={1}
-								radius={[4, 4, 0, 0]}
-								maxBarSize={32}
+							<ReferenceLine
+								y={goalMinutes}
+								stroke="transparent"
+								ifOverflow="extendDomain"
 							/>
-						</BarChart>
+							<Area
+								type="monotone"
+								dataKey="minutes"
+								stroke="transparent"
+								fill={`url(#${AREA_GRADIENT_ID})`}
+								isAnimationActive={false}
+								activeDot={false}
+							/>
+							<Line
+								type="monotone"
+								dataKey="goalMinutes"
+								stroke={DASHED_STROKE}
+								strokeWidth={1.5}
+								strokeDasharray="4 4"
+								dot={false}
+								activeDot={false}
+								isAnimationActive={false}
+							/>
+							<Line
+								type="monotone"
+								dataKey="minutes"
+								stroke={LIME_STROKE}
+								strokeWidth={2.5}
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								dot={(props) => {
+									const { cx, cy, payload, index } = props as {
+										cx: number;
+										cy: number;
+										payload: DayData;
+										index: number;
+									};
+									if (!payload.isToday) {
+										return <g key={`dot-${index}`} />;
+									}
+									return (
+										<g key={`dot-${index}`}>
+											<circle
+												cx={cx}
+												cy={cy}
+												r={5}
+												fill="#FFFFFF"
+												stroke={LIME_STROKE}
+												strokeWidth={2.5}
+											/>
+										</g>
+									);
+								}}
+								activeDot={{
+									r: 4,
+									fill: LIME_STROKE,
+									stroke: "#FFFFFF",
+									strokeWidth: 2,
+								}}
+								isAnimationActive={false}
+							/>
+						</ComposedChart>
 					</ChartContainer>
-				</div>
+
+					<div className="mt-2 flex items-center justify-center gap-5 text-[11px] text-neutral-500">
+						<div className="flex items-center gap-1.5">
+							<span
+								className="inline-block h-[2px] w-4 rounded-full"
+								style={{ backgroundColor: LIME_STROKE }}
+							/>
+							<span>{t("practiceTime.practice")}</span>
+						</div>
+						<div className="flex items-center gap-1.5">
+							<span
+								className="inline-block h-[2px] w-4"
+								style={{
+									backgroundImage: `linear-gradient(to right, ${DASHED_STROKE} 50%, transparent 50%)`,
+									backgroundSize: "4px 2px",
+									backgroundRepeat: "repeat-x",
+								}}
+							/>
+							<span>{t("practiceTime.goal")}</span>
+						</div>
+					</div>
+				</>
 			)}
 		</div>
 	);

@@ -83,10 +83,6 @@ export default function Navbar() {
 			to: "/vocabulary",
 			label: t("nav.vocabulary"),
 		},
-		{
-			to: "/progress",
-			label: t("nav.progress"),
-		},
 	];
 
 	useEffect(() => {
@@ -240,7 +236,7 @@ export default function Navbar() {
 							</DropdownMenuTrigger>
 							<DropdownMenuContent
 								align="end"
-								className="w-[180px] rounded-xl shadow-sm"
+								className="rounded-xl shadow-sm"
 								sideOffset={8}
 								side="bottom"
 							>

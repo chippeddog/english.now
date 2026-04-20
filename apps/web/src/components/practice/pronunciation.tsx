@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { Loader, MicIcon, RefreshCwIcon } from "lucide-react";
+import { ChevronRight, Loader, MicIcon, RefreshCwIcon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -23,7 +23,7 @@ import { useTRPC } from "@/utils/trpc";
 type ParagraphPreview = {
 	text: string;
 	topic: string;
-	cefrLevel: "A1" | "A2" | "B1" | "B2" | "C1";
+	cefrLevel: "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
 	wordCount: number;
 	focusAreas: string[];
 	tips: string;
@@ -213,7 +213,7 @@ function DialogTopicsPronunciation({
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogContent showCloseButton={false}>
-				<div className="mb-8 flex flex-col gap-3 text-center">
+				<div className="mb-8 flex flex-col gap-2 text-center">
 					<h1 className="font-bold font-lyon text-3xl tracking-tight">
 						{t("practice.pronunciation")}
 					</h1>
@@ -351,13 +351,22 @@ export default function Pronunciation() {
 	};
 
 	return (
+		// <div
+		// 	className="relative flex items-center gap-2 rounded-3xl border text-zinc-700 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all hover:scale-[1.02]"
+		// 	style={{
+		// 		backgroundColor: "rgba(14, 165, 233, 0.06)",
+		// 		borderColor: "rgba(14, 165, 233, 0.086)",
+		// 	}}
+		// >
 		<div
-			className="overflow-hidden rounded-[1.2rem] bg-white"
+			className="overflow-hidden rounded-[1.2rem] bg-white transition-all hover:scale-[1.02]"
 			style={{
 				boxShadow:
 					"0 0 0 1px rgba(0,0,0,.05),0 10px 10px -5px rgba(0,0,0,.04),0 20px 25px -5px rgba(0,0,0,.04),0 20px 32px -12px rgba(0,0,0,.04)",
 			}}
 		>
+			{/* <span className="pointer-events-none absolute inset-0 rounded-full bg-linear-to-br from-white/80 via-transparent to-transparent opacity-60" />
+			<span className="pointer-events-none absolute top-0 left-1/4 h-px w-1/2 bg-linear-to-r from-transparent via-white to-transparent" /> */}
 			<DialogTopicsPronunciation
 				open={dialogOpen}
 				setOpen={setDialogOpen}
@@ -366,14 +375,14 @@ export default function Pronunciation() {
 			<button
 				onClick={handleCardClick}
 				type="button"
-				className="group flex w-full cursor-pointer items-center justify-between p-3.5 transition-colors duration-300 hover:bg-neutral-100"
+				className="group flex w-full cursor-pointer items-center justify-between p-2.5 sm:items-start sm:p-3 md:items-center"
 			>
-				<div className="flex items-center gap-2.5">
-					<div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-[#C6F64D] bg-radial from-[#EFFF9B] to-[#D8FF76]">
-						<MicIcon className="size-5 text-lime-700" />
+				<div className="flex items-center gap-2.5 sm:flex-col sm:items-start md:flex-row md:items-center md:gap-3">
+					<div className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-[#C6F64D] bg-radial from-[#EFFF9B] to-[#D8FF76] sm:size-8 md:size-10">
+						<MicIcon className="size-4.5 text-lime-700" />
 					</div>
 					<div className="text-left">
-						<h2 className="font-medium text-slate-900">
+						<h2 className="font-medium text-zinc-900">
 							{t("practice.pronunciation")}
 						</h2>
 						<p className="text-muted-foreground text-sm">
@@ -381,20 +390,10 @@ export default function Pronunciation() {
 						</p>
 					</div>
 				</div>
-				<svg
-					className="relative size-5 text-gray-400 transition-all duration-300 group-hover:text-gray-500"
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke="currentColor"
-					aria-hidden="true"
-				>
-					<path
-						strokeLinecap="round"
-						strokeLinejoin="round"
-						strokeWidth={2}
-						d="M9 5l7 7-7 7"
-					/>
-				</svg>
+				<ChevronRight
+					strokeWidth={2}
+					className="size-4.5 text-muted-foreground transition-all duration-300 group-hover:text-zinc-700"
+				/>
 			</button>
 		</div>
 	);

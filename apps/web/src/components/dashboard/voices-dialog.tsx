@@ -82,7 +82,7 @@ export default function VoicesDialog({
 						Select the voice for AI conversations and pronunciation practice
 					</DialogDescription>
 				</DialogHeader>
-				<div className="grid max-h-[200px] gap-0.5 overflow-y-auto rounded-2xl border border-border/50 bg-muted/50 p-0.5">
+				<div className="grid gap-0.5 rounded-2xl border border-border/50 bg-muted/50 p-0.5">
 					{isLoading ? (
 						<div className="py-4 text-center text-muted-foreground text-sm">
 							Loading…

@@ -63,13 +63,26 @@
     "pronunciation": "Telaffuz",
     "practiceYourEnglish": "İngilizcenizi pratiğe dökün",
     "practiceYourPronunciation": "Telaffuzunuzu pratiğe dökün",
-    "practiceYourPronunciationDescription": "Bir paragraf seçin ve telaffuzunuzu yapay zeka ile pratik yapın"
+    "practiceYourPronunciationDescription": "Bir paragraf seçin ve telaffuzunuzu yapay zeka ile pratik yapın",
+    "grammar": "Dilbilgisi",
+    "practiceYourGrammar": "Dilbilginizi geliştirin",
+    "loadMore": "Daha fazla yükle"
   },
   "vocabulary": {
     "title": "Kelime Bilgisi",
     "words": "Kelimeler",
     "phrases": "İfadeler",
-    "progress": "İlerleme"
+    "progress": "İlerleme",
+    "itemRow": {
+      "dueNow": "Şimdi vadesi doldu",
+      "inHours": "{{count}} saat içinde",
+      "tomorrow": "Yarın",
+      "inDays": "{{count}} gün içinde",
+      "deleteTitle": "Öğeyi sil",
+      "deleteDescription": "Bu öğeyi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+      "cancel": "İptal",
+      "delete": "Sil"
+    }
   },
   "settings": {
     "title": "Ayarlar",
@@ -254,7 +267,72 @@
     "recentSessions": "Son Oturumlar",
     "readAloud": "Sesli Oku",
     "unknownDate": "Bilinmeyen tarih",
-    "feedbackReady": "Geri bildirim hazır"
+    "feedbackReady": "Geri bildirim hazır",
+    "session": {
+      "noSpeechDetected": "Konuşma algılanmadı. Kaydetmeden önce en azından kısa bir cümle söyleyin.",
+      "savingRecording": "Kayıt kaydediliyor...",
+      "savePausedRecording": "Durdurulan kaydı kaydet",
+      "stopRecording": "Kaydı durdur",
+      "recordingStartsIn": "Kayıt {{count}} içinde başlıyor",
+      "attemptLimitReached": "Bu inceleme için maksimum {{count}} kayıt sayısına ulaşıldı",
+      "freeAttemptLimitReached": "Ücretsiz kullanıcılar her incelemede bir kez kayıt yapabilir",
+      "microphoneAccessRequired": "Kayda başlamak için tarayıcınızda mikrofon erişimine izin verin",
+      "recordingsLeft_one": "{{count}} kayıt hakkınız kaldı",
+      "recordingsLeft_other": "{{count}} kayıt hakkınız kaldı",
+      "startRecording": "Kayda başla",
+      "readParagraph": "Aşağıdaki paragrafı okuyun:",
+      "liveTranscript": "Canlı transkript",
+      "startSpeaking": "Konuşmaya başlayın...",
+      "backToPractice": "Alıştırmaya geri dön",
+      "processing": {
+        "analyzing": "Kayıtlarınız analiz ediliyor",
+        "computing": "Sonuçlarınız hesaplanıyor",
+        "generatingFeedback": "Kişiselleştirilmiş geri bildirim oluşturuluyor",
+        "title": "Oturumunuz işleniyor",
+        "subtitle": "Bu genellikle yaklaşık 30 saniye sürer"
+      },
+      "controls": {
+        "continueRecording": "Kayda devam et",
+        "pauseRecording": "Kaydı duraklat",
+        "clearAndStartAgain": "Temizle ve yeniden başla",
+        "saving": "Kaydediliyor...",
+        "saveRecording": "Kaydı Kaydet",
+        "record": "Kaydet",
+        "finishReviewTitle": "İncelemeyi bitir?",
+        "finishReviewDescription": "Kaydı durduracak ve inceleme sonuçlarına geçeceksiniz.",
+        "finish": "Bitir"
+      },
+      "attemptQuota": {
+        "ariaLabel": "{{used}} / {{limit}} kayıt kullanıldı, {{remaining}} kaldı",
+        "used_one": "{{used}} / {{limit}} kayıt kullanıldı",
+        "used_other": "{{used}} / {{limit}} kayıt kullanıldı",
+        "left_one": "{{count}} kayıt kaldı{{suffix}}",
+        "left_other": "{{count}} kayıt kaldı{{suffix}}",
+        "proSuffix": " bu incelemede.",
+        "freeSuffix": " ücretsiz planda."
+      },
+      "attemptCount": {
+        "ariaLabel_one": "Bu oturumda {{count}} deneme",
+        "ariaLabel_other": "Bu oturumda {{count}} deneme",
+        "tooltip_one": "Bu oturumda {{count}} deneme kaydedildi",
+        "tooltip_other": "Bu oturumda {{count}} deneme kaydedildi"
+      },
+      "attempts": {
+        "unknownDate": "Bilinmeyen tarih",
+        "deleteConfirm": "Silmek için tekrar tıklayın",
+        "label": "Deneme {{count}}",
+        "emptyTitle": "Henüz kayıt yok",
+        "emptyDescription": "Kaydedilen denemeleriniz burada görünecek."
+      },
+      "settings": {
+        "close": "Ayarları kapat",
+        "interfaceLanguage": "Arayüz dili",
+        "inputDevice": "Giriş cihazı",
+        "selectMicrophone": "Mikrofon seçin",
+        "microphoneLabel": "Mikrofon {{count}}",
+        "noAudioDevices": "Ses cihazı bulunamadı. Mikrofon erişimine izin verdikten sonra ayarları tekrar açın."
+      }
+    }
   },
   "lessons": {
     "title": "Dersler",

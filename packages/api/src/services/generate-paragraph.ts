@@ -9,7 +9,8 @@ const openai = createOpenAI({ apiKey: env.OPENAI_API_KEY });
 
 export const paragraphSchema = z.object({
 	text: z.string(),
-	topic: z.string(),
+	topic: z.string().describe("Short display name (2-3 words max)"),
+	icon: z.string().describe("Single emoji that best represents the topic"),
 	focusAreas: z.array(z.string()),
 	tips: z.string(),
 });
@@ -44,6 +45,7 @@ STYLE: ${style}
 Requirements:
 - Word count: ${minWords}-${maxWords} words (STRICT — count carefully)
 - The paragraph should flow naturally and be genuinely interesting to read aloud
+- The icon must be a single emoji that matches the topic clearly
 - Include a variety of pronunciation challenges appropriate for the level (vowel sounds, consonant clusters, word stress, linking sounds, intonation patterns)
 - The focusAreas should list 2-3 specific pronunciation features present in the paragraph
 - The tips should give 1-2 practical pronunciation tips for reading this paragraph well
@@ -61,6 +63,7 @@ ${interestContext}`,
 	return {
 		text: output.text,
 		topic: output.topic,
+		icon: output.icon,
 		cefrLevel: level,
 		wordCount,
 		focusAreas: output.focusAreas,

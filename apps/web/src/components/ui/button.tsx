@@ -22,6 +22,8 @@ const buttonVariants = cva(
 				link: "text-primary underline-offset-4 hover:underline",
 				gradientblack:
 					"bg-linear-to-t from-[#202020] to-[#2F2F2F] text-base text-white shadow-[inset_0_1px_4px_0_rgba(255,255,255,0.4)] hover:opacity-90 dark:from-[rgb(192,192,192)] dark:to-[rgb(255,255,255)] dark:shadow-[inset_0_1px_4px_0_rgba(128,128,128,0.2)]",
+				gradientDistructive:
+					"bg-linear-to-t from-[#D8FF76] to-[#C6F64D] text-base text-white shadow-[inset_0_1px_4px_0_rgba(255,255,255,0.4)] hover:opacity-90 dark:from-[rgb(192,192,192)] dark:to-[rgb(255,255,255)] dark:shadow-[inset_0_1px_4px_0_rgba(128,128,128,0.2)]",
 			},
 			size: {
 				default: "h-9 px-4 py-2 has-[>svg]:px-3",

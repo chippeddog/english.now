@@ -2,6 +2,11 @@ import { and, db, eq, sql, userActivity, userProfile } from "@english.now/db";
 import { z } from "zod";
 import { protectedProcedure, router } from "../index";
 import {
+	getLessonAccessSummary,
+	getPracticeAccessSummary,
+	getVocabularyAccessSummary,
+} from "../services/feature-gating";
+import {
 	getCurrentSubscription,
 	getSubscriptionSummary,
 } from "../services/subscription";
@@ -83,6 +88,22 @@ export const profileRouter = router({
 		}),
 	getSubscription: protectedProcedure.query(async ({ ctx }) => {
 		return getCurrentSubscription(ctx.session.user.id);
+	}),
+	getUsageLimits: protectedProcedure.query(async ({ ctx }) => {
+		const [practice, lessons, vocabulary] = await Promise.all([
+			getPracticeAccessSummary(ctx.session.user.id),
+			getLessonAccessSummary(ctx.session.user.id),
+			getVocabularyAccessSummary(ctx.session.user.id),
+		]);
+
+		return {
+			isPro: practice.isPro,
+			conversation: practice.conversation,
+			pronunciation: practice.pronunciation,
+			lessonStarts: lessons.newLessonStarts,
+			vocabularyAdds: vocabulary.adds,
+			vocabularyReviews: vocabulary.reviews,
+		};
 	}),
 	saveOnboarding: protectedProcedure
 		.input(

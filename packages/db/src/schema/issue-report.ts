@@ -9,7 +9,7 @@ export const issueReport = pgTable("issue_report", {
 	sessionId: text("session_id").notNull(),
 	sessionType: text("session_type")
 		.notNull()
-		.$type<"conversation" | "pronunciation">(),
+		.$type<"conversation" | "pronunciation" | "lesson" | "grammar">(),
 	category: text("category").notNull(),
 	description: text("description"),
 	createdAt: timestamp("created_at").notNull().defaultNow(),

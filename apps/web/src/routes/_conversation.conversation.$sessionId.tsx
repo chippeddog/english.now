@@ -4,22 +4,15 @@ import {
 } from "@english.now/api/services/conversation-mode";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import {
-	ArrowLeft,
-	ChevronLeft,
-	InfoIcon,
-	Loader,
-	MessageCircleQuestionIcon,
-	Settings,
-} from "lucide-react";
+import { ArrowLeft, ChevronLeft, Loader, Settings } from "lucide-react";
 import { type MouseEvent, useEffect, useMemo, useState } from "react";
 import LeavePracticeDialog from "@/components/conversation/practice/leave-practice-dialog";
 import PracticeView from "@/components/conversation/practice-view";
-import ReportIssueDialog from "@/components/conversation/report-issue-dialog";
 import { ConversationReviewScreen } from "@/components/conversation/review/conversation-review-screen";
 import { LoadingState } from "@/components/conversation/review-view";
 import Logo from "@/components/logo";
 import SessionLoader from "@/components/session/loader";
+import ReportIssueDialog from "@/components/session/report-issue-dialog";
 import { Button } from "@/components/ui/button";
 import {
 	Popover,

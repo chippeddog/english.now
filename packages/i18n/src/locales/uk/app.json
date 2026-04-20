@@ -63,13 +63,26 @@
     "pronunciation": "Вимова",
     "practiceYourEnglish": "Практикуйте свою англійську",
     "practiceYourPronunciation": "Практикуйте свою вимову",
-    "practiceYourPronunciationDescription": "Виберіть абзац і практикуйте свою вимову за допомогою AI"
+    "practiceYourPronunciationDescription": "Виберіть абзац і практикуйте свою вимову",
+    "grammar": "Граматика",
+    "practiceYourGrammar": "Практикуйте свою граматику",
+    "loadMore": "Завантажити більше"
   },
   "vocabulary": {
     "title": "Словник",
     "words": "Слова",
     "phrases": "Фрази",
-    "progress": "Прогрес"
+    "progress": "Прогрес",
+    "itemRow": {
+      "dueNow": "На зараз",
+      "inHours": "Через {{count}} год",
+      "tomorrow": "Завтра",
+      "inDays": "Через {{count}} дн",
+      "deleteTitle": "Видалити елемент",
+      "deleteDescription": "Ви впевнені, що хочете видалити цей елемент? Цю дію не можна скасувати.",
+      "cancel": "Скасувати",
+      "delete": "Видалити"
+    }
   },
   "settings": {
     "title": "Налаштування",
@@ -254,7 +267,72 @@
     "recentSessions": "Останні сесії",
     "readAloud": "Читати вголос",
     "unknownDate": "Невідома дата",
-    "feedbackReady": "Зворотний зв'язок готовий"
+    "feedbackReady": "Зворотний зв'язок готовий",
+    "session": {
+      "noSpeechDetected": "Мовлення не виявлено. Скажіть хоча б коротку фразу перед збереженням.",
+      "savingRecording": "Збереження запису...",
+      "savePausedRecording": "Зберегти призупинений запис",
+      "stopRecording": "Зупинити запис",
+      "recordingStartsIn": "Запис почнеться через {{count}}",
+      "attemptLimitReached": "Досягнуто максимум {{count}} записів для цього огляду",
+      "freeAttemptLimitReached": "Безкоштовні користувачі можуть записати один раз на огляд",
+      "microphoneAccessRequired": "Дозвольте доступ до мікрофона у вашому браузері, щоб почати запис",
+      "recordingsLeft_one": "У вас залишився {{count}} запис",
+      "recordingsLeft_other": "У вас залишилося {{count}} записів",
+      "startRecording": "Почати запис",
+      "readParagraph": "Прочитайте наступний абзац:",
+      "liveTranscript": "Живий транскрипт",
+      "startSpeaking": "Почніть говорити...",
+      "backToPractice": "Повернутися до практики",
+      "processing": {
+        "analyzing": "Аналізуємо ваші записи",
+        "computing": "Обчислюємо ваші результати",
+        "generatingFeedback": "Генеруємо персоналізований відгук",
+        "title": "Обробка вашої сесії",
+        "subtitle": "Це зазвичай займає близько 30 секунд"
+      },
+      "controls": {
+        "continueRecording": "Продовжити запис",
+        "pauseRecording": "Призупинити запис",
+        "clearAndStartAgain": "Очистити і почати знову",
+        "saving": "Збереження...",
+        "saveRecording": "Зберегти запис",
+        "record": "Записати",
+        "finishReviewTitle": "Завершити огляд?",
+        "finishReviewDescription": "Ви зупините запис і перейдете до результатів огляду.",
+        "finish": "Завершити"
+      },
+      "attemptQuota": {
+        "ariaLabel": "{{used}} з {{limit}} записів використано, {{remaining}} залишилося",
+        "used_one": "{{used}} з {{limit}} запису використано",
+        "used_other": "{{used}} з {{limit}} записів використано",
+        "left_one": "{{count}} запис залишився{{suffix}}",
+        "left_other": "{{count}} записів залишилося{{suffix}}",
+        "proSuffix": " у цьому огляді.",
+        "freeSuffix": " на безкоштовному плані."
+      },
+      "attemptCount": {
+        "ariaLabel_one": "{{count}} спроба у цій сесії",
+        "ariaLabel_other": "{{count}} спроб у цій сесії",
+        "tooltip_one": "{{count}} спроба записана у цій сесії",
+        "tooltip_other": "{{count}} спроб записано у цій сесії"
+      },
+      "attempts": {
+        "unknownDate": "Невідома дата",
+        "deleteConfirm": "Натисніть ще раз, щоб видалити",
+        "label": "Спроба {{count}}",
+        "emptyTitle": "Записів ще немає",
+        "emptyDescription": "Ваші збережені спроби з'являться тут після запису."
+      },
+      "settings": {
+        "close": "Закрити налаштування",
+        "interfaceLanguage": "Мова інтерфейсу",
+        "inputDevice": "Пристрій введення",
+        "selectMicrophone": "Виберіть мікрофон",
+        "microphoneLabel": "Мікрофон {{count}}",
+        "noAudioDevices": "Аудіопристроїв не знайдено. Відкрийте налаштування знову після дозволу доступу до мікрофона."
+      }
+    }
   },
   "lessons": {
     "title": "Уроки",

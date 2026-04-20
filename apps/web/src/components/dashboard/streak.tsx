@@ -69,12 +69,14 @@ export default function Streak({
 					"0 0 0 1px rgba(0,0,0,.05),0 10px 10px -5px rgba(0,0,0,.04),0 20px 25px -5px rgba(0,0,0,.04),0 20px 32px -12px rgba(0,0,0,.04)",
 			}}
 		>
-			<div className="mb-2.5 flex gap-2 pl-1.5 font-medium">
+			<div className="mt-1 mb-3 flex items-center justify-between gap-3 pr-1.5 pl-1.5 font-medium">
 				<div className="relative flex items-center gap-1.5">
-					<h3 className="flex items-center gap-2 font-lyon font-semibold text-xl">
-						<Trans>{t("streak.title", { count: streak })}</Trans>
-					</h3>
-					<Tooltip>
+					<span className="font-lyon text-5xl">{streak}</span>
+					<span className="flex items-center gap-2 font-semibold">
+						day streak
+						{/* <Trans>{t("streak.title", { count: streak })}</Trans> */}
+					</span>
+					{/* <Tooltip>
 						<TooltipTrigger>
 							<svg
 								className="size-3.5 text-neutral-300"
@@ -98,7 +100,7 @@ export default function Streak({
 								</Trans>
 							</p>
 						</TooltipContent>
-					</Tooltip>
+					</Tooltip> */}
 					{/* <p className="text-muted-foreground text-sm">
 						Time to start your first lesson!
 					</p> */}
@@ -116,7 +118,6 @@ export default function Streak({
 								<span className="font-medium text-neutral-500 text-xs">
 									{weekdayLabels[index]}
 								</span>
-
 								{isLoading ? (
 									<Skeleton className="size-8.5 animate-pulse rounded-full" />
 								) : (

@@ -1,5 +1,7 @@
+import type { TFunction } from "i18next";
 import { MoreHorizontalIcon, Trash2, Volume1, Volume2 } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -25,6 +27,7 @@ export interface ItemRowProps {
 	primaryText: string;
 	secondaryText?: string | null;
 	ipa?: string | null;
+	showIpa?: boolean;
 	audioUrl?: string | null;
 	mastery: string;
 	playingId: string | null;
@@ -35,23 +38,27 @@ export interface ItemRowProps {
 	isDue?: boolean;
 }
 
-function getReviewLabel(nextReviewAt?: string | null, isDue?: boolean) {
-	if (isDue) return "Due now";
+function getReviewLabel(
+	t: TFunction<"app">,
+	nextReviewAt?: string | null,
+	isDue?: boolean,
+) {
+	if (isDue) return t("vocabulary.itemRow.dueNow");
 	if (!nextReviewAt) return null;
 
 	const dueAt = new Date(nextReviewAt);
 	const diffMs = dueAt.getTime() - Date.now();
 
-	if (diffMs <= 0) return "Due now";
+	if (diffMs <= 0) return t("vocabulary.itemRow.dueNow");
 
 	const diffHours = Math.ceil(diffMs / (60 * 60 * 1000));
 	if (diffHours < 24) {
-		return `In ${diffHours}h`;
+		return t("vocabulary.itemRow.inHours", { count: diffHours });
 	}
 
 	const diffDays = Math.ceil(diffMs / (24 * 60 * 60 * 1000));
-	if (diffDays === 1) return "Tomorrow";
-	return `In ${diffDays}d`;
+	if (diffDays === 1) return t("vocabulary.itemRow.tomorrow");
+	return t("vocabulary.itemRow.inDays", { count: diffDays });
 }
 
 export default function ItemRow({
@@ -59,6 +66,7 @@ export default function ItemRow({
 	primaryText,
 	secondaryText,
 	ipa,
+	showIpa = true,
 	audioUrl,
 	mastery,
 	playingId,
@@ -68,8 +76,9 @@ export default function ItemRow({
 	nextReviewAt,
 	isDue,
 }: ItemRowProps) {
+	const { t } = useTranslation("app");
 	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-	const reviewLabel = getReviewLabel(nextReviewAt, isDue);
+	const reviewLabel = getReviewLabel(t, nextReviewAt, isDue);
 	return (
 		<div className="group flex w-full items-center justify-between gap-3 rounded-2xl border border-border/50 bg-white p-2.5 px-3 text-left transition-colors hover:border-border/80 hover:shadow-xs dark:bg-slate-900">
 			<div className="flex items-center gap-3">
@@ -99,12 +108,12 @@ export default function ItemRow({
 						>
 							{primaryText}
 						</span>
-						{ipa ? (
+						{showIpa && ipa ? (
 							<span className="text-muted-foreground text-xs">{ipa}</span>
 						) : null}
 					</div>
 					{secondaryText ? (
-						<p className="mt-0.5 line-clamp-1 text-muted-foreground text-sm">
+						<p className="line-clamp-1 text-muted-foreground text-sm">
 							{secondaryText}
 						</p>
 					) : null}
@@ -135,7 +144,7 @@ export default function ItemRow({
 							onClick={() => setShowDeleteDialog(true)}
 						>
 							<Trash2 />
-							Delete
+							{t("vocabulary.itemRow.delete")}
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
@@ -143,19 +152,22 @@ export default function ItemRow({
 			<AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
 				<AlertDialogContent className="w-sm">
 					<AlertDialogHeader>
-						<AlertDialogTitle>Delete item</AlertDialogTitle>
+						<AlertDialogTitle>
+							{t("vocabulary.itemRow.deleteTitle")}
+						</AlertDialogTitle>
 						<AlertDialogDescription>
-							Are you sure you want to delete this item? This action cannot be
-							undone.
+							{t("vocabulary.itemRow.deleteDescription")}
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogCancel>Cancel</AlertDialogCancel>
+						<AlertDialogCancel>
+							{t("vocabulary.itemRow.cancel")}
+						</AlertDialogCancel>
 						<AlertDialogAction
 							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
 							onClick={onDelete}
 						>
-							Delete
+							{t("vocabulary.itemRow.delete")}
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>

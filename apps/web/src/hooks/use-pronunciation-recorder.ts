@@ -13,8 +13,9 @@ type DeepgramResult = {
 	speech_final?: boolean;
 };
 
-export default function usePronunciationRecorder() {
+export default function usePronunciationRecorder(selectedDevice?: string) {
 	const [isRecording, setIsRecording] = useState(false);
+	const [isPaused, setIsPaused] = useState(false);
 	const [isConnected, setIsConnected] = useState(false);
 	const [transcript, setTranscript] = useState("");
 	const [interimTranscript, setInterimTranscript] = useState("");
@@ -99,7 +100,11 @@ export default function usePronunciationRecorder() {
 
 		try {
 			const [stream, ws] = await Promise.all([
-				navigator.mediaDevices.getUserMedia({ audio: true }),
+				navigator.mediaDevices.getUserMedia({
+					audio: selectedDevice
+						? { deviceId: { exact: selectedDevice } }
+						: true,
+				}),
 				connectDeepgram(),
 			]);
 
@@ -110,6 +115,7 @@ export default function usePronunciationRecorder() {
 			});
 			mediaRecorderRef.current = mediaRecorder;
 			audioChunksRef.current = [];
+			setIsPaused(false);
 
 			mediaRecorder.ondataavailable = (event) => {
 				if (event.data.size > 0) {
@@ -130,10 +136,32 @@ export default function usePronunciationRecorder() {
 			stopMediaStream();
 			closeWebSocket();
 		}
-	}, [connectDeepgram, stopMediaStream, closeWebSocket]);
+	}, [closeWebSocket, connectDeepgram, selectedDevice, stopMediaStream]);
+
+	const pauseRecording = useCallback(() => {
+		const recorder = mediaRecorderRef.current;
+		if (!recorder || recorder.state !== "recording") return;
+
+		recorder.pause();
+		setIsRecording(false);
+		setIsPaused(true);
+	}, []);
+
+	const resumeRecording = useCallback(() => {
+		const recorder = mediaRecorderRef.current;
+		if (!recorder || recorder.state !== "paused") return;
+
+		recorder.resume();
+		setIsPaused(false);
+		setIsRecording(true);
+	}, []);
 
 	const stopRecording = useCallback(async (): Promise<Blob | null> => {
-		if (!mediaRecorderRef.current || !isRecording) return null;
+		if (
+			!mediaRecorderRef.current ||
+			mediaRecorderRef.current.state === "inactive"
+		)
+			return null;
 
 		return new Promise<Blob | null>((resolve) => {
 			const recorder = mediaRecorderRef.current;
@@ -149,12 +177,41 @@ export default function usePronunciationRecorder() {
 					type: "audio/webm",
 				});
 				setIsRecording(false);
+				setIsPaused(false);
+				mediaRecorderRef.current = null;
 				resolve(blob);
 			};
 
 			recorder.stop();
 		});
-	}, [isRecording, stopMediaStream, closeWebSocket]);
+	}, [stopMediaStream, closeWebSocket]);
+
+	const cancelRecording = useCallback(async () => {
+		const recorder = mediaRecorderRef.current;
+		audioChunksRef.current = [];
+
+		if (!recorder || recorder.state === "inactive") {
+			setIsRecording(false);
+			setIsPaused(false);
+			stopMediaStream();
+			closeWebSocket();
+			mediaRecorderRef.current = null;
+			return;
+		}
+
+		await new Promise<void>((resolve) => {
+			recorder.ondataavailable = () => {};
+			recorder.onstop = () => {
+				setIsRecording(false);
+				setIsPaused(false);
+				stopMediaStream();
+				closeWebSocket();
+				mediaRecorderRef.current = null;
+				resolve();
+			};
+			recorder.stop();
+		});
+	}, [stopMediaStream, closeWebSocket]);
 
 	useEffect(() => {
 		return () => {
@@ -177,12 +234,16 @@ export default function usePronunciationRecorder() {
 
 	return {
 		isRecording,
+		isPaused,
 		isConnected,
 		transcript: fullTranscript,
 		finalTranscript: transcript,
 		interimTranscript,
 		startRecording,
+		pauseRecording,
+		resumeRecording,
 		stopRecording,
+		cancelRecording,
 		resetTranscript: useCallback(() => {
 			finalTranscriptRef.current = "";
 			setTranscript("");

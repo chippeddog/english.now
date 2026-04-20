@@ -1,8 +1,8 @@
-import type { ExerciseItem } from "@/types/lesson";
 import { ArrowRight } from "lucide-react";
 import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import type { ExerciseItem } from "@/types/lesson";
 import Categorization from "./exercises/categorization";
 import Dictation from "./exercises/dictation";
 import ErrorIdentification from "./exercises/error-identification";
@@ -30,21 +30,60 @@ interface ExercisePlayerProps {
 }
 
 const EXERCISE_TYPE_LABELS: Record<string, { label: string; color: string }> = {
-	multiple_choice: { label: "Choose the correct answer", color: "bg-violet-100 text-violet-700" },
-	fill_in_the_blank: { label: "Fill in the blank", color: "bg-sky-100 text-sky-700" },
-	sentence_correction: { label: "Correct the sentence", color: "bg-amber-100 text-amber-700" },
-	sentence_transformation: { label: "Transform the sentence", color: "bg-amber-100 text-amber-700" },
-	reorder_words: { label: "Reorder the words", color: "bg-indigo-100 text-indigo-700" },
-	error_identification: { label: "Find the error", color: "bg-amber-100 text-amber-700" },
+	multiple_choice: {
+		label: "Choose the correct answer",
+		color: "bg-violet-100 text-violet-700",
+	},
+	fill_in_the_blank: {
+		label: "Fill in the blank",
+		color: "bg-sky-100 text-sky-700",
+	},
+	sentence_correction: {
+		label: "Correct the sentence",
+		color: "bg-amber-100 text-amber-700",
+	},
+	sentence_transformation: {
+		label: "Transform the sentence",
+		color: "bg-amber-100 text-amber-700",
+	},
+	reorder_words: {
+		label: "Reorder the words",
+		color: "bg-indigo-100 text-indigo-700",
+	},
+	error_identification: {
+		label: "Find the error",
+		color: "bg-amber-100 text-amber-700",
+	},
 	word_matching: { label: "Match the pairs", color: "bg-sky-100 text-sky-700" },
-	synonym_antonym: { label: "Synonyms & Antonyms", color: "bg-sky-100 text-sky-700" },
-	categorization: { label: "Sort into categories", color: "bg-teal-100 text-teal-700" },
-	true_false: { label: "True or False", color: "bg-emerald-100 text-emerald-700" },
-	comprehension: { label: "Comprehension", color: "bg-emerald-100 text-emerald-700" },
+	synonym_antonym: {
+		label: "Synonyms & Antonyms",
+		color: "bg-sky-100 text-sky-700",
+	},
+	categorization: {
+		label: "Sort into categories",
+		color: "bg-teal-100 text-teal-700",
+	},
+	true_false: {
+		label: "True or False",
+		color: "bg-emerald-100 text-emerald-700",
+	},
+	comprehension: {
+		label: "Comprehension",
+		color: "bg-emerald-100 text-emerald-700",
+	},
 	dictation: { label: "Listen and type", color: "bg-amber-100 text-amber-700" },
-	dialogue_completion: { label: "Complete the dialogue", color: "bg-rose-100 text-rose-700" },
-	sentence_building: { label: "Build a sentence", color: "bg-indigo-100 text-indigo-700" },
-	error_correction: { label: "Correct the error", color: "bg-amber-100 text-amber-700" },
+	dialogue_completion: {
+		label: "Complete the dialogue",
+		color: "bg-rose-100 text-rose-700",
+	},
+	sentence_building: {
+		label: "Build a sentence",
+		color: "bg-indigo-100 text-indigo-700",
+	},
+	error_correction: {
+		label: "Correct the error",
+		color: "bg-amber-100 text-amber-700",
+	},
 };
 
 export default function ExercisePlayer({
@@ -93,7 +132,7 @@ export default function ExercisePlayer({
 		: undefined;
 
 	return (
-		<div className="container mx-auto max-w-2xl px-4 py-8">
+		<div className="container mx-auto max-w-3xl px-4 py-8">
 			{/* Progress bar */}
 			<div className="mb-2 flex items-center justify-between">
 				<span className="font-medium text-muted-foreground text-sm">

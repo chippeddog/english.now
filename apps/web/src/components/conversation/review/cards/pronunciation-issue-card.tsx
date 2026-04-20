@@ -3,7 +3,6 @@ import type { inferRouterOutputs } from "@trpc/server";
 import { Loader2, Mic, SkipForward, Volume2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import ReportIssueDialog from "@/components/conversation/report-issue-dialog";
 import {
 	IssueCardEyebrow,
 	IssueCardShell,
@@ -405,7 +404,7 @@ function PronunciationSingleIssueCard({
 					Skip
 				</Button>
 				<div className="ml-auto">
-					<ReportIssueDialog sessionId={sessionId} sessionType="conversation" />
+					{/* <ReportIssueDialog sessionId={sessionId} sessionType="conversation" /> */}
 				</div>
 			</div>
 			{localTranscript ? (

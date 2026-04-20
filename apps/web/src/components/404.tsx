@@ -62,7 +62,8 @@ export default function NotFound() {
 				</div>
 				<Button
 					variant="outline"
-					className="group mt-5 inline-flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-xl border border-neutral-200 bg-linear-to-b from-neutral-50 to-neutral-100 px-6 py-1.5 font-medium text-neutral-700 italic shadow-none transition duration-150 ease-in-out will-change-transform hover:brightness-95 focus:shadow-none focus:outline-none focus-visible:shadow-none"
+					size="lg"
+					className="group mt-5 inline-flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-2xl border border-neutral-200 bg-linear-to-b from-neutral-50 to-neutral-100 px-6 py-1.5 font-medium text-neutral-700 italic shadow-none transition duration-150 ease-in-out will-change-transform hover:brightness-95 focus:shadow-none focus:outline-none focus-visible:shadow-none"
 					asChild
 				>
 					<Link to="/">Back to home</Link>

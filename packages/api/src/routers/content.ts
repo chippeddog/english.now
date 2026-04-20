@@ -16,6 +16,7 @@ import {
 	lessonCompletion,
 	userProfile,
 } from "@english.now/db";
+import { grammarTopic, lessonGrammarTopic } from "@english.now/db/schema/grammar";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure, router } from "../index";
@@ -153,6 +154,72 @@ function resolveLessonGate(input: {
 		lockReason: null,
 		replayAllowed: false,
 	};
+}
+
+async function getGrammarTopicsByLessonIds(lessonIds: string[]) {
+	if (lessonIds.length === 0) {
+		return new Map<
+			string,
+			Array<{
+				id: string;
+				slug: string;
+				title: string;
+				summary: string;
+				cefrLevel: "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
+				category: string;
+				kind: "teach" | "practice" | "review";
+				sortOrder: number;
+			}>
+		>();
+	}
+
+	const rows = await db
+		.select({
+			lessonId: lessonGrammarTopic.lessonId,
+			kind: lessonGrammarTopic.kind,
+			sortOrder: lessonGrammarTopic.sortOrder,
+			id: grammarTopic.id,
+			slug: grammarTopic.slug,
+			title: grammarTopic.title,
+			summary: grammarTopic.summary,
+			cefrLevel: grammarTopic.cefrLevel,
+			category: grammarTopic.category,
+		})
+		.from(lessonGrammarTopic)
+		.innerJoin(grammarTopic, eq(grammarTopic.id, lessonGrammarTopic.grammarTopicId))
+		.where(inArray(lessonGrammarTopic.lessonId, lessonIds))
+		.orderBy(asc(lessonGrammarTopic.lessonId), asc(lessonGrammarTopic.sortOrder));
+
+	const topicsByLessonId = new Map<
+		string,
+		Array<{
+			id: string;
+			slug: string;
+			title: string;
+			summary: string;
+			cefrLevel: "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
+			category: string;
+			kind: "teach" | "practice" | "review";
+			sortOrder: number;
+		}>
+	>();
+
+	for (const row of rows) {
+		const existing = topicsByLessonId.get(row.lessonId) ?? [];
+		existing.push({
+			id: row.id,
+			slug: row.slug,
+			title: row.title,
+			summary: row.summary,
+			cefrLevel: row.cefrLevel,
+			category: row.category,
+			kind: row.kind,
+			sortOrder: row.sortOrder,
+		});
+		topicsByLessonId.set(row.lessonId, existing);
+	}
+
+	return topicsByLessonId;
 }
 
 // ─── Router ─────────────────────────────────────────────────────────────────
@@ -314,6 +381,9 @@ export const contentRouter = router({
 		const totalCompleted = completedLessonIds.size;
 		const overallProgress =
 			totalLessons > 0 ? Math.round((totalCompleted / totalLessons) * 100) : 0;
+		const grammarTopicsByLessonId = await getGrammarTopicsByLessonIds(
+			lessons.map((lesson) => lesson.id),
+		);
 
 		return {
 			enrollmentId: e.id,
@@ -359,6 +429,7 @@ export const contentRouter = router({
 						progress: completedLessonIds.has(l.id) ? 100 : 0,
 						activeAttemptId: activeAttemptByLessonId.get(l.id) ?? null,
 						content: l.content,
+						grammarTopics: grammarTopicsByLessonId.get(l.id) ?? [],
 					})),
 				};
 			}),
@@ -491,6 +562,10 @@ export const contentRouter = router({
 				});
 			}
 
+			const grammarTopicsByLessonId = await getGrammarTopicsByLessonIds([
+				lessonRow.id,
+			]);
+
 			return {
 				id: lessonRow.id,
 				title: lessonRow.title,
@@ -499,6 +574,7 @@ export const contentRouter = router({
 				lessonType:
 					lessonRow.lessonType ?? blockTypeToLessonType(lessonRow.blockType),
 				content: lessonRow.content,
+				grammarTopics: grammarTopicsByLessonId.get(lessonRow.id) ?? [],
 				access: {
 					...lessonState,
 					activeAttemptId: activeAttemptRow?.id ?? null,

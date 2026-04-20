@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+
 import {
 	addEdge,
 	Background,
@@ -566,7 +567,7 @@ const getNodesAndEdges = (
 	return { nodes, edges };
 };
 
-export const Route = createFileRoute("/_dashboard/grammar")({
+export const Route = createFileRoute("/_dashboard/grammar2")({
 	component: GrammarFlowPage,
 });
 

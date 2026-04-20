@@ -1,0 +1,1 @@
+ALTER TABLE "grammar_topic" DROP COLUMN "source_path";

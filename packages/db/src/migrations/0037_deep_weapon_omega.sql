@@ -1,0 +1,1 @@
+ALTER TABLE "pronunciation_attempt" DROP COLUMN "item_index";

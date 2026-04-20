@@ -63,13 +63,26 @@
     "pronunciation": "Aussprache",
     "practiceYourEnglish": "Üben Sie Ihr Englisch",
     "practiceYourPronunciation": "Üben Sie Ihre Aussprache",
-    "practiceYourPronunciationDescription": "Wählen Sie einen Absatz aus und üben Sie Ihre Aussprache mit KI"
+    "practiceYourPronunciationDescription": "Wählen Sie einen Absatz aus und üben Sie Ihre Aussprache mit KI",
+    "grammar": "Grammatik",
+    "practiceYourGrammar": "Üben Sie Ihre Grammatik",
+    "loadMore": "Mehr laden"
   },
   "vocabulary": {
     "title": "Wortschatz",
     "words": "Wörter",
     "phrases": "Phrasen",
-    "progress": "Fortschritt"
+    "progress": "Fortschritt",
+    "itemRow": {
+      "dueNow": "Fällig jetzt",
+      "inHours": "In {{count}}h",
+      "tomorrow": "Morgen",
+      "inDays": "In {{count}}d",
+      "deleteTitle": "Element löschen",
+      "deleteDescription": "Sind Sie sicher, dass Sie dieses Element löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "cancel": "Abbrechen",
+      "delete": "Löschen"
+    }
   },
   "settings": {
     "title": "Einstellungen",
@@ -254,7 +267,72 @@
     "recentSessions": "Kürzliche Sitzungen",
     "readAloud": "Laut vorlesen",
     "unknownDate": "Unbekanntes Datum",
-    "feedbackReady": "Feedback bereit"
+    "feedbackReady": "Feedback bereit",
+    "session": {
+      "noSpeechDetected": "Keine Sprache erkannt. Sagen Sie mindestens einen kurzen Satz, bevor Sie speichern.",
+      "savingRecording": "Aufnahme wird gespeichert...",
+      "savePausedRecording": "Pausierte Aufnahme speichern",
+      "stopRecording": "Aufnahme stoppen",
+      "recordingStartsIn": "Aufnahme beginnt in {{count}}",
+      "attemptLimitReached": "Maximal {{count}} Aufnahmen für diese Überprüfung erreicht",
+      "freeAttemptLimitReached": "Kostenlose Benutzer können einmal pro Überprüfung aufnehmen",
+      "microphoneAccessRequired": "Erlauben Sie den Mikrofonzugriff in Ihrem Browser, um die Aufnahme zu starten",
+      "recordingsLeft_one": "Sie haben noch {{count}} Aufnahme übrig",
+      "recordingsLeft_other": "Sie haben noch {{count}} Aufnahmen übrig",
+      "startRecording": "Aufnahme starten",
+      "readParagraph": "Lesen Sie den folgenden Absatz:",
+      "liveTranscript": "Live-Transkript",
+      "startSpeaking": "Beginnen Sie zu sprechen...",
+      "backToPractice": "Zurück zur Übung",
+      "processing": {
+        "analyzing": "Ihre Aufnahmen werden analysiert",
+        "computing": "Ihre Ergebnisse werden berechnet",
+        "generatingFeedback": "Personalisierte Rückmeldung wird generiert",
+        "title": "Ihre Sitzung wird verarbeitet",
+        "subtitle": "Dies dauert normalerweise etwa 30 Sekunden"
+      },
+      "controls": {
+        "continueRecording": "Aufnahme fortsetzen",
+        "pauseRecording": "Aufnahme pausieren",
+        "clearAndStartAgain": "Löschen und neu beginnen",
+        "saving": "Speichern...",
+        "saveRecording": "Aufnahme speichern",
+        "record": "Aufnehmen",
+        "finishReviewTitle": "Überprüfung beenden?",
+        "finishReviewDescription": "Sie werden die Aufnahme beenden und zu den Überprüfungsergebnissen wechseln.",
+        "finish": "Beenden"
+      },
+      "attemptQuota": {
+        "ariaLabel": "{{used}} von {{limit}} Aufnahmen verwendet, {{remaining}} übrig",
+        "used_one": "{{used}} von {{limit}} Aufnahme verwendet",
+        "used_other": "{{used}} von {{limit}} Aufnahmen verwendet",
+        "left_one": "{{count}} Aufnahme übrig{{suffix}}",
+        "left_other": "{{count}} Aufnahmen übrig{{suffix}}",
+        "proSuffix": " in dieser Überprüfung.",
+        "freeSuffix": " im kostenlosen Plan."
+      },
+      "attemptCount": {
+        "ariaLabel_one": "{{count}} Versuch in dieser Sitzung",
+        "ariaLabel_other": "{{count}} Versuche in dieser Sitzung",
+        "tooltip_one": "{{count}} Versuch in dieser Sitzung aufgezeichnet",
+        "tooltip_other": "{{count}} Versuche in dieser Sitzung aufgezeichnet"
+      },
+      "attempts": {
+        "unknownDate": "Unbekanntes Datum",
+        "deleteConfirm": "Klicken Sie erneut, um zu löschen",
+        "label": "Versuch {{count}}",
+        "emptyTitle": "Noch keine Aufnahmen",
+        "emptyDescription": "Ihre gespeicherten Versuche werden hier angezeigt, nachdem Sie eine aufgenommen haben."
+      },
+      "settings": {
+        "close": "Einstellungen schließen",
+        "interfaceLanguage": "Schnittstellensprache",
+        "inputDevice": "Eingabegerät",
+        "selectMicrophone": "Mikrofon auswählen",
+        "microphoneLabel": "Mikrofon {{count}}",
+        "noAudioDevices": "Keine Audiogeräte gefunden. Öffnen Sie die Einstellungen erneut, nachdem Sie den Mikrofonzugriff erlaubt haben."
+      }
+    }
   },
   "lessons": {
     "title": "Lektionen",

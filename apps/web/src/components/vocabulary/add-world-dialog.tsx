@@ -59,14 +59,18 @@ export default function AddWordDialog({
 				</div>
 				<div className="flex justify-end gap-2">
 					<DialogClose asChild>
-						<Button variant="outline">Cancel</Button>
+						<Button
+							variant="ghost"
+							className="flex-1 rounded-xl italic sm:flex-none"
+						>
+							Cancel
+						</Button>
 					</DialogClose>
-					<Button onClick={onSubmit} disabled={!newWord.trim() || isPending}>
-						{isPending ? (
-							<Loader className="mr-2 size-4 animate-spin" />
-						) : (
-							<Plus className="mr-2 size-4" />
-						)}
+					<Button
+						className="relative flex shrink-0 cursor-pointer items-center justify-center gap-1.5 overflow-hidden whitespace-nowrap rounded-xl bg-linear-to-t from-[#202020] to-[#2F2F2F] font-base text-white italic shadow-[inset_0_1px_4px_0_rgba(255,255,255,0.4)] outline-none backdrop-blur transition-all hover:opacity-90 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-40 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:from-[rgb(192,192,192)] dark:to-[rgb(255,255,255)] dark:shadow-[inset_0_1px_4px_0_rgba(128,128,128,0.2)] dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none"
+						onClick={onSubmit}
+						disabled={!newWord.trim() || isPending}
+					>
 						Add Word
 					</Button>
 				</div>

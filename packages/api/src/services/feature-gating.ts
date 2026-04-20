@@ -6,6 +6,7 @@ import {
 	FREE_DAILY_VOCAB_ADDS_LIMIT,
 	FREE_DAILY_VOCAB_REVIEW_LIMIT,
 	FREE_PRONUNCIATION_MAX_ATTEMPTS,
+	PRO_PRONUNCIATION_MAX_ATTEMPTS,
 } from "@english.now/shared/feature-limit-config";
 import {
 	getDailyFeatureUsageTotal,
@@ -171,11 +172,14 @@ export async function getVocabularyAccessSummary(
 function buildSessionCapAccessSummary(input: {
 	isPro: boolean;
 	used: number;
-	limit: number;
+	freeLimit: number;
+	proLimit?: number | null;
 }): SessionCapAccessSummary {
-	if (input.isPro) {
+	const limit = input.isPro ? (input.proLimit ?? null) : input.freeLimit;
+
+	if (limit == null) {
 		return {
-			isPro: true,
+			isPro: input.isPro,
 			used: input.used,
 			limit: null,
 			remaining: null,
@@ -183,12 +187,12 @@ function buildSessionCapAccessSummary(input: {
 		};
 	}
 
-	const remaining = Math.max(0, input.limit - input.used);
+	const remaining = Math.max(0, limit - input.used);
 
 	return {
-		isPro: false,
+		isPro: input.isPro,
 		used: input.used,
-		limit: input.limit,
+		limit,
 		remaining,
 		reachedLimit: remaining <= 0,
 	};
@@ -203,7 +207,7 @@ export async function getConversationReplyAccessSummary(
 	return buildSessionCapAccessSummary({
 		isPro: subscription.isPro,
 		used: assistantReplies,
-		limit: FREE_CONVERSATION_MAX_AI_REPLIES,
+		freeLimit: FREE_CONVERSATION_MAX_AI_REPLIES,
 	});
 }
 
@@ -216,7 +220,8 @@ export async function getPronunciationAttemptAccessSummary(
 	return buildSessionCapAccessSummary({
 		isPro: subscription.isPro,
 		used: attemptsUsed,
-		limit: FREE_PRONUNCIATION_MAX_ATTEMPTS,
+		freeLimit: FREE_PRONUNCIATION_MAX_ATTEMPTS,
+		proLimit: PRO_PRONUNCIATION_MAX_ATTEMPTS,
 	});
 }
 

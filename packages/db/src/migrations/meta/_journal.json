@@ -239,6 +239,41 @@
       "when": 1774217039192,
       "tag": "0033_sad_viper",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1775529600000,
+      "tag": "0034_canonical_grammar_foundation",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1775543299698,
+      "tag": "0035_wide_grandmaster",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1775554105801,
+      "tag": "0036_flimsy_klaw",
+      "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1776116332899,
+      "tag": "0037_deep_weapon_omega",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1776416658775,
+      "tag": "0038_stale_rick_jones",
+      "breakpoints": true
     }
   ]
 }

@@ -32,7 +32,16 @@
     },
     "practiceTime": {
         "title": "Daily speaking time",
-        "duration": "Duration"
+        "subtitle": "Last 7 days",
+        "duration": "Duration",
+        "thisWeek": "this week",
+        "practice": "Practice",
+        "goal": "Goal",
+        "trendingUp": "Trending up",
+        "trendingDown": "Trending down",
+        "steady": "Steady",
+        "minShort": "min",
+        "secShort": "sec"
     },
     "lessonsWidget": {
         "title": "Lessons",
@@ -43,8 +52,10 @@
         "recentSessions": "Recent Sessions",
         "conversation": "Conversation",
         "pronunciation": "Pronunciation",
+        "grammar": "Grammar",
         "practiceYourEnglish": "Practice your English",
         "practiceYourPronunciation": "Practice your pronunciation",
+        "practiceYourGrammar": "Practice your grammar",
         "practiceYourPronunciationDescription": "Select a paragraph and practice your pronunciation",
         "filterAll": "All",
         "filterConversations": "Conversations",
@@ -63,13 +74,24 @@
         "delete": "Delete",
         "deleting": "Deleting...",
         "deleteSuccess": "Session deleted successfully",
-        "deleteError": "Failed to delete session"
+        "deleteError": "Failed to delete session",
+        "loadMore": "Load more"
     },
     "vocabulary": {
         "title": "Vocabulary",
         "words": "Words",
         "phrases": "Phrases",
-        "progress": "Progress"
+        "progress": "Progress",
+        "itemRow": {
+            "dueNow": "Due now",
+            "inHours": "In {{count}}h",
+            "tomorrow": "Tomorrow",
+            "inDays": "In {{count}}d",
+            "deleteTitle": "Delete item",
+            "deleteDescription": "Are you sure you want to delete this item? This action cannot be undone.",
+            "cancel": "Cancel",
+            "delete": "Delete"
+        }
     },
     "settings": {
         "title": "Settings",
@@ -254,7 +276,72 @@
         "recentSessions": "Recent Sessions",
         "readAloud": "Read Aloud",
         "unknownDate": "Unknown date",
-        "feedbackReady": "Feedback ready"
+        "feedbackReady": "Feedback ready",
+        "session": {
+            "noSpeechDetected": "No speech detected. Say at least a short phrase before saving.",
+            "savingRecording": "Saving recording...",
+            "savePausedRecording": "Save paused recording",
+            "stopRecording": "Stop recording",
+            "recordingStartsIn": "Recording starts in {{count}}",
+            "attemptLimitReached": "Maximum {{count}} recordings reached for this review",
+            "freeAttemptLimitReached": "Free users can record once per review",
+            "microphoneAccessRequired": "Allow microphone access in your browser to start recording",
+            "recordingsLeft_one": "You have {{count}} recording left",
+            "recordingsLeft_other": "You have {{count}} recordings left",
+            "startRecording": "Start recording",
+            "readParagraph": "Read the following paragraph:",
+            "liveTranscript": "Live transcript",
+            "startSpeaking": "Start speaking...",
+            "backToPractice": "Back to practice",
+            "processing": {
+                "analyzing": "Analyzing your recordings",
+                "computing": "Computing your results",
+                "generatingFeedback": "Generating personalized feedback",
+                "title": "Processing your session",
+                "subtitle": "This usually takes about 30 seconds"
+            },
+            "controls": {
+                "continueRecording": "Continue recording",
+                "pauseRecording": "Pause recording",
+                "clearAndStartAgain": "Clear and start again",
+                "saving": "Saving...",
+                "saveRecording": "Save Recording",
+                "record": "Record",
+                "finishReviewTitle": "Finish review?",
+                "finishReviewDescription": "You will stop recording and move to the review results.",
+                "finish": "Finish"
+            },
+            "attemptQuota": {
+                "ariaLabel": "{{used}} of {{limit}} recordings used, {{remaining}} left",
+                "used_one": "{{used}} of {{limit}} recording used",
+                "used_other": "{{used}} of {{limit}} recordings used",
+                "left_one": "{{count}} recording left{{suffix}}",
+                "left_other": "{{count}} recordings left{{suffix}}",
+                "proSuffix": " in this review.",
+                "freeSuffix": " on the free plan."
+            },
+            "attemptCount": {
+                "ariaLabel_one": "{{count}} attempt this session",
+                "ariaLabel_other": "{{count}} attempts this session",
+                "tooltip_one": "{{count}} attempt recorded this session",
+                "tooltip_other": "{{count}} attempts recorded this session"
+            },
+            "attempts": {
+                "unknownDate": "Unknown date",
+                "deleteConfirm": "Click again to delete",
+                "label": "Attempt {{count}}",
+                "emptyTitle": "No recordings yet",
+                "emptyDescription": "Your saved attempts will appear here after you record one."
+            },
+            "settings": {
+                "close": "Close settings",
+                "interfaceLanguage": "Interface language",
+                "inputDevice": "Input device",
+                "selectMicrophone": "Select microphone",
+                "microphoneLabel": "Microphone {{count}}",
+                "noAudioDevices": "No audio devices found. Open settings again after allowing microphone access."
+            }
+        }
     },
     "lessons": {
         "title": "Lessons",

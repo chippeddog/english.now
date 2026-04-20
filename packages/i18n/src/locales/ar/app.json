@@ -63,13 +63,26 @@
     "pronunciation": "النطق",
     "practiceYourEnglish": "تمرن على لغتك الإنجليزية",
     "practiceYourPronunciation": "تمرن على النطق",
-    "practiceYourPronunciationDescription": "اختر فقرة وتمرن على النطق باستخدام الذكاء الاصطناعي"
+    "practiceYourPronunciationDescription": "اختر فقرة وتمرن على النطق باستخدام الذكاء الاصطناعي",
+    "grammar": "القواعد",
+    "practiceYourGrammar": "مارس قواعدك",
+    "loadMore": "تحميل المزيد"
   },
   "vocabulary": {
     "title": "المفردات",
     "words": "الكلمات",
     "phrases": "العبارات",
-    "progress": "التقدم"
+    "progress": "التقدم",
+    "itemRow": {
+      "dueNow": "مستحق الآن",
+      "inHours": "خلال {{count}} ساعة",
+      "tomorrow": "غداً",
+      "inDays": "خلال {{count}} يوم",
+      "deleteTitle": "حذف العنصر",
+      "deleteDescription": "هل أنت متأكد من أنك تريد حذف هذا العنصر؟ لا يمكن التراجع عن هذا الإجراء.",
+      "cancel": "إلغاء",
+      "delete": "حذف"
+    }
   },
   "settings": {
     "title": "الإعدادات",
@@ -254,7 +267,72 @@
     "recentSessions": "الجلسات الأخيرة",
     "readAloud": "القراءة بصوت عالٍ",
     "unknownDate": "تاريخ غير معروف",
-    "feedbackReady": "التعليقات جاهزة"
+    "feedbackReady": "التعليقات جاهزة",
+    "session": {
+      "noSpeechDetected": "لم يتم اكتشاف أي كلام. قل على الأقل عبارة قصيرة قبل الحفظ.",
+      "savingRecording": "جارٍ حفظ التسجيل...",
+      "savePausedRecording": "حفظ التسجيل المتوقف مؤقتًا",
+      "stopRecording": "إيقاف التسجيل",
+      "recordingStartsIn": "يبدأ التسجيل في {{count}}",
+      "attemptLimitReached": "تم الوصول إلى الحد الأقصى {{count}} من التسجيلات لهذه المراجعة",
+      "freeAttemptLimitReached": "يمكن للمستخدمين المجانيين التسجيل مرة واحدة لكل مراجعة",
+      "microphoneAccessRequired": "اسمح بالوصول إلى الميكروفون في متصفحك لبدء التسجيل",
+      "recordingsLeft_one": "لديك {{count}} تسجيل متبقي",
+      "recordingsLeft_other": "لديك {{count}} تسجيلات متبقية",
+      "startRecording": "ابدأ التسجيل",
+      "readParagraph": "اقرأ الفقرة التالية:",
+      "liveTranscript": "النص الحي",
+      "startSpeaking": "ابدأ التحدث...",
+      "backToPractice": "العودة إلى الممارسة",
+      "processing": {
+        "analyzing": "جارٍ تحليل تسجيلاتك",
+        "computing": "جارٍ حساب نتائجك",
+        "generatingFeedback": "جارٍ إنشاء ملاحظات مخصصة",
+        "title": "جارٍ معالجة جلستك",
+        "subtitle": "عادةً ما يستغرق هذا حوالي 30 ثانية"
+      },
+      "controls": {
+        "continueRecording": "متابعة التسجيل",
+        "pauseRecording": "إيقاف التسجيل مؤقتًا",
+        "clearAndStartAgain": "مسح وبدء من جديد",
+        "saving": "جارٍ الحفظ...",
+        "saveRecording": "حفظ التسجيل",
+        "record": "تسجيل",
+        "finishReviewTitle": "إنهاء المراجعة؟",
+        "finishReviewDescription": "ستتوقف عن التسجيل وتنتقل إلى نتائج المراجعة.",
+        "finish": "إنهاء"
+      },
+      "attemptQuota": {
+        "ariaLabel": "{{used}} من {{limit}} تسجيلات مستخدمة، {{remaining}} متبقية",
+        "used_one": "{{used}} من {{limit}} تسجيل مستخدم",
+        "used_other": "{{used}} من {{limit}} تسجيلات مستخدمة",
+        "left_one": "{{count}} تسجيل متبقي{{suffix}}",
+        "left_other": "{{count}} تسجيلات متبقية{{suffix}}",
+        "proSuffix": " في هذه المراجعة.",
+        "freeSuffix": " في الخطة المجانية."
+      },
+      "attemptCount": {
+        "ariaLabel_one": "{{count}} محاولة في هذه الجلسة",
+        "ariaLabel_other": "{{count}} محاولات في هذه الجلسة",
+        "tooltip_one": "{{count}} محاولة مسجلة في هذه الجلسة",
+        "tooltip_other": "{{count}} محاولات مسجلة في هذه الجلسة"
+      },
+      "attempts": {
+        "unknownDate": "تاريخ غير معروف",
+        "deleteConfirm": "انقر مرة أخرى للحذف",
+        "label": "محاولة {{count}}",
+        "emptyTitle": "لا توجد تسجيلات بعد",
+        "emptyDescription": "ستظهر محاولاتك المحفوظة هنا بعد تسجيل واحدة."
+      },
+      "settings": {
+        "close": "إغلاق الإعدادات",
+        "interfaceLanguage": "لغة الواجهة",
+        "inputDevice": "جهاز الإدخال",
+        "selectMicrophone": "اختر الميكروفون",
+        "microphoneLabel": "ميكروفون {{count}}",
+        "noAudioDevices": "لم يتم العثور على أجهزة صوت. افتح الإعدادات مرة أخرى بعد السماح بالوصول إلى الميكروفون."
+      }
+    }
   },
   "lessons": {
     "title": "الدروس",

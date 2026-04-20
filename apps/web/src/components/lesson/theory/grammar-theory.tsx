@@ -1,43 +1,75 @@
-import type { GrammarLessonContent } from "@/types/lesson";
 import { AlertTriangle, ArrowRight, BookOpen, ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { cn } from "@/lib/utils";
+import type { GrammarLessonContent } from "@/types/lesson";
 
 interface GrammarTheoryProps {
 	content: GrammarLessonContent;
 	onContinue: () => void;
+	continueLabel?: string;
+	continueDisabled?: boolean;
+	title?: string;
+	description?: string;
+	badgeLabel?: string;
+	headerSlot?: ReactNode;
+	footerSlot?: ReactNode;
 }
 
 export default function GrammarTheory({
 	content,
 	onContinue,
+	continueLabel = "Start Practice",
+	continueDisabled = false,
+	title,
+	description,
+	badgeLabel = "Grammar",
+	headerSlot,
+	footerSlot,
 }: GrammarTheoryProps) {
+	const objectives = Array.isArray(content.objectives)
+		? content.objectives
+		: [];
+	const rules = Array.isArray(content.rules) ? content.rules : [];
+	const vocabulary = Array.isArray(content.vocabulary)
+		? content.vocabulary
+		: [];
+
 	return (
 		<div className="container mx-auto max-w-2xl px-4 py-8">
 			<div className="mb-2">
 				<span className="inline-block rounded-full bg-violet-100 px-3 py-1 font-medium text-violet-700 text-xs">
-					Grammar
+					{badgeLabel}
 				</span>
 			</div>
 
+			{headerSlot}
+
 			<h2 className="mb-2 font-bold font-lyon text-2xl">
-				{content.objectives[0] ?? "Grammar Rules"}
+				{title ?? objectives[0] ?? "Grammar Rules"}
 			</h2>
-			<p className="mb-8 text-muted-foreground">{content.description}</p>
+			<p className="mb-8 text-muted-foreground">
+				{description ?? content.description}
+			</p>
 
-			<div className="flex flex-col gap-6">
-				{content.rules.map((rule) => (
-					<RuleCard key={rule.title} rule={rule} />
-				))}
-			</div>
+			{rules.length > 0 ? (
+				<div className="flex flex-col gap-6">
+					{rules.map((rule) => (
+						<RuleCard key={rule.title} rule={rule} />
+					))}
+				</div>
+			) : (
+				<div className="rounded-2xl border border-border/60 border-dashed bg-white px-5 py-6 text-muted-foreground text-sm">
+					This grammar topic does not have detailed rule blocks yet.
+				</div>
+			)}
 
-			{content.vocabulary.length > 0 && (
+			{vocabulary.length > 0 && (
 				<div className="mt-8">
 					<h3 className="mb-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
 						Key Vocabulary
 					</h3>
 					<div className="flex flex-wrap gap-2">
-						{content.vocabulary.map((v) => (
+						{vocabulary.map((v) => (
 							<span
 								key={v.word}
 								className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 font-medium text-sky-700 text-sm"
@@ -54,13 +86,16 @@ export default function GrammarTheory({
 				</div>
 			)}
 
+			{footerSlot}
+
 			<div className="mt-10 flex justify-end">
 				<button
 					type="button"
 					onClick={onContinue}
-					className="flex h-12 items-center gap-2 rounded-2xl bg-blue-600 px-8 font-semibold text-base text-white transition-colors hover:bg-blue-700"
+					disabled={continueDisabled}
+					className="flex h-12 items-center gap-2 rounded-2xl bg-blue-600 px-8 font-semibold text-base text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
 				>
-					Start Practice
+					{continueLabel}
 					<ArrowRight className="size-4" />
 				</button>
 			</div>

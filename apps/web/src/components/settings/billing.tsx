@@ -1,6 +1,7 @@
 import { env } from "@english.now/env/client";
 import { useTranslation } from "@english.now/i18n";
 import { useQuery } from "@tanstack/react-query";
+import { ArrowUpRight } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useUpgradeDialog } from "@/components/dashboard/upgrade-dialog";
@@ -76,7 +77,7 @@ export const Billing = () => {
 								if (status === "active" || status === "trialing") {
 									return (
 										<span className="inline-flex items-center gap-1.5">
-											<span className="size-2 rounded-full bg-green-500" />
+											{/* <span className="size-2 rounded-full bg-green-500" /> */}
 											{t("settings.billingSection.pro")}{" "}
 											<span className="text-muted-foreground">
 												(
@@ -120,9 +121,7 @@ export const Billing = () => {
 				(subscriptionData.status === "active" ||
 					subscriptionData.status === "trialing") && (
 					<div>
-						<Label className="text-muted-foreground">
-							{t("settings.billingSection.nextBillingDate")}
-						</Label>
+						<Label>{t("settings.billingSection.nextBillingDate")}</Label>
 						<p className="mt-1 font-medium">
 							{new Date(subscriptionData.currentPeriodEnd).toLocaleDateString(
 								i18n.resolvedLanguage || i18n.language || "en-US",
@@ -138,18 +137,19 @@ export const Billing = () => {
 
 			{subscriptionData && subscriptionData.status !== "canceled" && (
 				<div>
-					<p className="text-muted-foreground text-sm">
+					<p className="flex gap-1.5 text-sm">
 						{t("settings.billingSection.manageDescription")}{" "}
 						<Button
 							type="button"
 							variant="link"
 							onClick={() => void handleOpenCustomerPortal()}
 							disabled={isOpeningPortal}
-							className="h-auto p-0 font-medium text-lime-700 hover:text-lime-800"
+							className="m-0 h-auto cursor-pointer items-center gap-1 p-0! font-medium text-lime-700 hover:text-lime-800 hover:no-underline"
 						>
 							{isOpeningPortal
 								? t("settings.billingSection.customerPortalLoading")
 								: t("settings.billingSection.customerPortal")}
+							<ArrowUpRight className="size-4" />
 						</Button>
 					</p>
 				</div>

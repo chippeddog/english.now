@@ -1,7 +1,7 @@
+import { resolveConversationActivityMode } from "@english.now/api/services/conversation-mode";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { resolveConversationActivityMode } from "@english.now/api/services/conversation-mode";
-import { Loader2, MessageCircleIcon } from "lucide-react";
+import { ChevronRight, Loader2, MessageCircleIcon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useUpgradeDialog } from "@/components/dashboard/upgrade-dialog";
@@ -112,7 +112,8 @@ function DialogTopics({
 			"general-conversation",
 	);
 	const roleplays = conversationActivities.filter(
-		(activity) => resolveConversationActivityMode(activity.payload) === "roleplay",
+		(activity) =>
+			resolveConversationActivityMode(activity.payload) === "roleplay",
 	);
 	const hasContent = topics.length > 0 || roleplays.length > 0;
 	const access = planData?.access ?? null;
@@ -186,7 +187,7 @@ function DialogTopics({
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogContent showCloseButton={false}>
 				<div className="mb-3 flex flex-col gap-2 text-center">
-					<h1 className="font-bold font-lyon text-3xl tracking-tight">
+					<h1 className="font-bold font-lyon text-2xl tracking-tight md:text-3xl">
 						What would you like to talk about?
 					</h1>
 					<p className="text-muted-foreground text-sm">
@@ -373,7 +374,7 @@ export default function Conversation() {
 
 	return (
 		<div
-			className="overflow-hidden rounded-[1.2rem] bg-white"
+			className="overflow-hidden rounded-[1.2rem] bg-white transition-all hover:scale-[1.02]"
 			style={{
 				boxShadow:
 					"0 0 0 1px rgba(0,0,0,.05),0 10px 10px -5px rgba(0,0,0,.04),0 20px 25px -5px rgba(0,0,0,.04),0 20px 32px -12px rgba(0,0,0,.04)",
@@ -384,41 +385,30 @@ export default function Conversation() {
 				setOpen={setDialogOpen}
 				onUpgradeClick={openUpgradeDialog}
 			/>
-			<div className="p-0">
-				<button
-					type="button"
-					onClick={handleCardClick}
-					className="group flex w-full cursor-pointer items-center justify-between p-3.5 transition-colors duration-300 hover:bg-neutral-100"
-				>
-					<div className="flex items-center gap-3">
-						<div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-[#C6F64D] bg-radial from-[#EFFF9B] to-[#D8FF76]">
-							<MessageCircleIcon className="size-5 text-lime-700" />
-						</div>
-						<div className="text-left">
-							<h2 className="font-medium text-slate-900">
-								{t("practice.conversation")}
-							</h2>
-							<p className="text-muted-foreground text-sm">
-								{t("practice.practiceYourEnglish")}
-							</p>
-						</div>
+
+			<button
+				type="button"
+				onClick={handleCardClick}
+				className="group flex w-full cursor-pointer items-center justify-between p-2.5 sm:items-start sm:p-3 md:items-center"
+			>
+				<div className="flex items-center gap-2.5 sm:flex-col sm:items-start md:flex-row md:items-center md:gap-3">
+					<div className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-[#C6F64D] bg-radial from-[#EFFF9B] to-[#D8FF76] sm:size-8 md:size-10">
+						<MessageCircleIcon className="size-4.5 text-lime-700 sm:size-4 md:size-5" />
 					</div>
-					<svg
-						className="relative size-5 text-gray-400 transition-all duration-300 group-hover:text-gray-500"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke="currentColor"
-						aria-hidden="true"
-					>
-						<path
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							strokeWidth={2}
-							d="M9 5l7 7-7 7"
-						/>
-					</svg>
-				</button>
-			</div>
+					<div className="text-left">
+						<h2 className="font-medium text-zinc-900">
+							{t("practice.conversation")}
+						</h2>
+						<p className="text-muted-foreground text-sm">
+							{t("practice.practiceYourEnglish")}
+						</p>
+					</div>
+				</div>
+				<ChevronRight
+					strokeWidth={2}
+					className="size-4.5 text-muted-foreground transition-all duration-300 group-hover:text-zinc-700"
+				/>
+			</button>
 		</div>
 	);
 }

@@ -255,7 +255,7 @@ function LevelHeader({ level }: { level: LevelInfo }) {
 							</span>
 						</div> */}
 						<div className="mb-2 flex flex-col gap-1">
-							<h2 className="font-bold font-lyon text-xl">{level.label}</h2>
+							<h2 className="font-bold">{level.label}</h2>
 							<p className="text-muted-foreground text-sm">
 								Reach {level.nextPercentage}% to get{" "}
 								<span className="font-semibold text-foreground">
@@ -302,7 +302,7 @@ function UnitProgressCircle({
 
 	if (status === "locked") {
 		return (
-			<div className="flex size-11 items-center justify-center rounded-full bg-neutral-100 text-neutral-400">
+			<div className="flex size-10 items-center justify-center rounded-full bg-neutral-100 text-neutral-400">
 				<Lock className="size-4" />
 			</div>
 		);
@@ -318,7 +318,7 @@ function UnitProgressCircle({
 					r="18"
 					fill="none"
 					stroke="currentColor"
-					strokeWidth="3.5"
+					strokeWidth="3"
 					className="text-neutral-100"
 				/>
 				<circle
@@ -327,7 +327,7 @@ function UnitProgressCircle({
 					r="18"
 					fill="none"
 					stroke="currentColor"
-					strokeWidth="3.5"
+					strokeWidth="3"
 					strokeLinecap="round"
 					strokeDasharray={`${circumference}`}
 					strokeDashoffset={dashOffset}
@@ -486,7 +486,7 @@ function UnitCard({
 					<div className="flex items-center gap-3">
 						<UnitProgressCircle progress={0} status="locked" />
 						<div>
-							<h3 className="font-bold font-lyon text-lg text-muted-foreground">
+							<h3 className="font-semibold text-muted-foreground">
 								{unit.title}
 							</h3>
 							{unit.unlockMessage && (
@@ -534,7 +534,7 @@ function UnitCard({
 								canCollapse && "cursor-pointer",
 							)}
 						>
-							<h3 className="font-bold font-lyon text-lg">{unit.title}</h3>
+							<h3 className="font-semibold">{unit.title}</h3>
 							{canCollapse && (
 								<ChevronDown
 									className={cn(

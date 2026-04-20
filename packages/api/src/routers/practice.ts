@@ -1,5 +1,6 @@
 import type {
 	ConversationReview,
+	GrammarSessionSummary,
 	PronunciationSessionSummary,
 } from "@english.now/db";
 import {
@@ -9,6 +10,8 @@ import {
 	db,
 	desc,
 	eq,
+	grammarSession,
+	grammarTopic,
 	inArray,
 	isNull,
 	lt,
@@ -135,7 +138,7 @@ export const practiceRouter = router({
 		.input(
 			z.object({
 				sessionId: z.string(),
-				type: z.enum(["conversation", "pronunciation"]),
+				type: z.enum(["conversation", "pronunciation", "grammar"]),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -157,7 +160,7 @@ export const practiceRouter = router({
 				if (result.length === 0) {
 					throw new Error("Session not found");
 				}
-			} else {
+			} else if (input.type === "pronunciation") {
 				const result = await db
 					.update(pronunciationSession)
 					.set({ deletedAt: now })
@@ -168,6 +171,21 @@ export const practiceRouter = router({
 						),
 					)
 					.returning({ id: pronunciationSession.id });
+
+				if (result.length === 0) {
+					throw new Error("Session not found");
+				}
+			} else {
+				const result = await db
+					.update(grammarSession)
+					.set({ deletedAt: now })
+					.where(
+						and(
+							eq(grammarSession.id, input.sessionId),
+							eq(grammarSession.userId, userId),
+						),
+					)
+					.returning({ id: grammarSession.id });
 
 				if (result.length === 0) {
 					throw new Error("Session not found");
@@ -197,7 +215,9 @@ export const practiceRouter = router({
 		.input(
 			z.object({
 				limit: z.number().min(1).max(50).default(10),
-				type: z.enum(["all", "conversation", "pronunciation"]).default("all"),
+				type: z
+					.enum(["all", "conversation", "pronunciation", "grammar"])
+					.default("all"),
 				cursor: z.string().datetime().nullish(),
 			}),
 		)
@@ -210,14 +230,16 @@ export const practiceRouter = router({
 
 			const includePronunciation = type === "all" || type === "pronunciation";
 			const includeConversation = type === "all" || type === "conversation";
+			const includeGrammar = type === "all" || type === "grammar";
 
-			const [pronResults, convResults] = await Promise.all([
+			const [pronResults, convResults, grammarResults] = await Promise.all([
 				includePronunciation
 					? db
 							.select({
 								id: pronunciationSession.id,
 								mode: pronunciationSession.mode,
 								level: pronunciationSession.level,
+								paragraph: pronunciationSession.paragraph,
 								status: pronunciationSession.status,
 								summary: pronunciationSession.summary,
 								createdAt: pronunciationSession.createdAt,
@@ -259,6 +281,34 @@ export const practiceRouter = router({
 							.orderBy(desc(conversationSession.createdAt))
 							.limit(fetchLimit)
 					: [],
+				includeGrammar
+					? db
+							.select({
+								id: grammarSession.id,
+								grammarTopicId: grammarSession.grammarTopicId,
+								level: grammarSession.level,
+								status: grammarSession.status,
+								summary: grammarSession.summary,
+								createdAt: grammarSession.createdAt,
+								topicTitle: grammarTopic.title,
+							})
+							.from(grammarSession)
+							.leftJoin(
+								grammarTopic,
+								eq(grammarSession.grammarTopicId, grammarTopic.id),
+							)
+							.where(
+								and(
+									eq(grammarSession.userId, userId),
+									isNull(grammarSession.deletedAt),
+									cursorDate
+										? lt(grammarSession.createdAt, cursorDate)
+										: undefined,
+								),
+							)
+							.orderBy(desc(grammarSession.createdAt))
+							.limit(fetchLimit)
+					: [],
 			]);
 
 			const conversationFeedbackScores =
@@ -288,7 +338,9 @@ export const practiceRouter = router({
 				...pronResults.map((s) => ({
 					id: s.id,
 					type: "pronunciation" as const,
-					title: s.mode === "read-aloud" ? "Read Aloud" : "Tongue Twisters",
+					title:
+						(s.paragraph as { topic?: string } | null)?.topic?.trim() ||
+						(s.mode === "read-aloud" ? "Read Aloud" : "Tongue Twisters"),
 					mode: s.mode,
 					status: s.status,
 					score:
@@ -306,6 +358,16 @@ export const practiceRouter = router({
 						(s.review as ConversationReview | null)?.overallScore ??
 						feedbackScoreBySessionId.get(s.id) ??
 						null,
+					createdAt: s.createdAt,
+				})),
+				...grammarResults.map((s) => ({
+					id: s.id,
+					type: "grammar" as const,
+					title: s.topicTitle ?? "Grammar drill",
+					mode: null,
+					status: s.status,
+					score:
+						(s.summary as GrammarSessionSummary | null)?.scorePercent ?? null,
 					createdAt: s.createdAt,
 				})),
 			];

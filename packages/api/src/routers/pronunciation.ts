@@ -1,3 +1,4 @@
+import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import type {
 	PronunciationSessionSummary,
 	WeakPhoneme,
@@ -13,11 +14,11 @@ import {
 	pronunciationSession,
 	userProfile,
 } from "@english.now/db";
+import { env } from "@english.now/env/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure, rateLimitedProcedure, router } from "../index";
 import { profileLevelToCefr } from "../lib/cefr";
-import { generateParagraph } from "../services/generate-paragraph";
 import {
 	getTodayPracticePlanRecord,
 	markDailyPracticeActivityStarted,
@@ -28,7 +29,43 @@ import {
 	getReportAccessSummary,
 } from "../services/feature-gating";
 import { recordDailyFeatureUsage } from "../services/feature-usage";
+import { generateParagraph } from "../services/generate-paragraph";
 import { recordActivity } from "../services/record-activity";
+
+const pronunciationAudioBucket = "_audio";
+
+const s3 = new S3Client({
+	region: "auto",
+	endpoint: env.R2_ENDPOINT,
+	credentials: {
+		accessKeyId: env.R2_ACCESS_KEY_ID,
+		secretAccessKey: env.R2_SECRET_ACCESS_KEY,
+	},
+});
+
+function getAudioStorageKey(audioUrl: string) {
+	const publicUrl = new URL(env.R2_PUBLIC_URL);
+	const fileUrl = new URL(audioUrl);
+
+	if (fileUrl.origin !== publicUrl.origin) {
+		throw new TRPCError({
+			code: "INTERNAL_SERVER_ERROR",
+			message: "INVALID_ATTEMPT_AUDIO_URL",
+		});
+	}
+
+	const pathSegments = fileUrl.pathname.split("/").filter(Boolean);
+	const bucketIndex = pathSegments.indexOf(pronunciationAudioBucket);
+
+	if (bucketIndex === -1 || bucketIndex === pathSegments.length - 1) {
+		throw new TRPCError({
+			code: "INTERNAL_SERVER_ERROR",
+			message: "INVALID_ATTEMPT_AUDIO_URL",
+		});
+	}
+
+	return decodeURIComponent(pathSegments.slice(bucketIndex + 1).join("/"));
+}
 
 export const pronunciationRouter = router({
 	generatePreview: rateLimitedProcedure(5, 60_000).mutation(async ({ ctx }) => {
@@ -75,8 +112,7 @@ export const pronunciationRouter = router({
 			}
 
 			const activity = plan.activities.find(
-				(item) =>
-					item.id === input.activityId && item.type === "pronunciation",
+				(item) => item.id === input.activityId && item.type === "pronunciation",
 			);
 
 			if (!activity || activity.type !== "pronunciation") {
@@ -146,6 +182,14 @@ export const pronunciationRouter = router({
 		)
 		.mutation(async ({ ctx, input }) => {
 			const userId = ctx.session.user.id;
+			const transcript = input.transcript.trim();
+
+			if (!transcript) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "EMPTY_ATTEMPT_TRANSCRIPT",
+				});
+			}
 
 			const [session] = await db
 				.select()
@@ -169,10 +213,12 @@ export const pronunciationRouter = router({
 				existingAttempts.length,
 			);
 
-			if (!attemptAccess.isPro && attemptAccess.reachedLimit) {
+			if (attemptAccess.reachedLimit) {
 				throw new TRPCError({
 					code: "FORBIDDEN",
-					message: "FREE_ATTEMPT_LIMIT_REACHED",
+					message: attemptAccess.isPro
+						? "PRO_ATTEMPT_LIMIT_REACHED"
+						: "FREE_ATTEMPT_LIMIT_REACHED",
 					cause: attemptAccess,
 				});
 			}
@@ -183,7 +229,7 @@ export const pronunciationRouter = router({
 				id: attemptId,
 				sessionId: input.sessionId,
 				itemIndex: input.itemIndex,
-				transcript: input.transcript,
+				transcript,
 				score: 0,
 				wordResults: [],
 				audioUrl: input.audioUrl,
@@ -346,6 +392,31 @@ export const pronunciationRouter = router({
 				.limit(1);
 
 			if (!session) throw new Error("Session not found or already completed");
+
+			const [attempt] = await db
+				.select({
+					id: pronunciationAttempt.id,
+					audioUrl: pronunciationAttempt.audioUrl,
+				})
+				.from(pronunciationAttempt)
+				.where(
+					and(
+						eq(pronunciationAttempt.id, input.attemptId),
+						eq(pronunciationAttempt.sessionId, input.sessionId),
+					),
+				)
+				.limit(1);
+
+			if (!attempt) throw new Error("Attempt not found");
+
+			if (attempt.audioUrl) {
+				await s3.send(
+					new DeleteObjectCommand({
+						Bucket: pronunciationAudioBucket,
+						Key: getAudioStorageKey(attempt.audioUrl),
+					}),
+				);
+			}
 
 			const [deleted] = await db
 				.delete(pronunciationAttempt)

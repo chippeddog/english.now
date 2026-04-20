@@ -14,6 +14,7 @@
   "scripts": {
     "build": "tsdown",
     "check-types": "tsc -b",
+    "grammar:seed": "tsx src/seeds/grammar-topics.ts",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:generate": "drizzle-kit generate",

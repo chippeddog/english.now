@@ -1,19 +1,27 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import Explore from "@/components/vocabulary/explore";
+// import Explore from "@/components/vocabulary/explore";
 import Phrases from "@/components/vocabulary/phrases";
 import Practice from "@/components/vocabulary/practice";
-import Progress from "@/components/vocabulary/progress";
+// import Progress from "@/components/vocabulary/progress";
 import Words from "@/components/vocabulary/words";
+import { createTitle, PAGE_TITLE } from "@/utils/title";
 import { Tabs, TabsContent } from "../components/ui/tabs";
 import { cn } from "../lib/utils";
 
-const tabs = ["words", "phrases", "progress"] as const;
+const tabs = ["words", "phrases"] as const;
 type Tab = (typeof tabs)[number];
 
 export const Route = createFileRoute("/_dashboard/vocabulary")({
 	component: VocabularyPage,
+	head: () => ({
+		meta: [
+			{
+				title: createTitle(PAGE_TITLE.vocabulary),
+			},
+		],
+	}),
 	validateSearch: (search: Record<string, unknown>): { tab?: Tab } => {
 		const tab = search.tab as string;
 		if (tab && tabs.includes(tab as Tab) && tab !== "words") {
@@ -83,7 +91,7 @@ function VocabularyPage() {
 							>
 								{t("vocabulary.phrases")}
 							</button>
-							<button
+							{/* <button
 								type="button"
 								disabled={activeView === "progress"}
 								className={cn(
@@ -94,12 +102,12 @@ function VocabularyPage() {
 								onClick={() => handleTabChange("progress")}
 							>
 								{t("vocabulary.progress")}
-							</button>
+							</button> */}
 						</div>
 
 						<div className="flex gap-3">
 							<Practice />
-							<Explore />
+							{/* <Explore /> */}
 						</div>
 					</div>
 
@@ -111,9 +119,9 @@ function VocabularyPage() {
 						<Phrases />
 					</TabsContent>
 
-					<TabsContent value="progress" className="space-y-8">
+					{/* <TabsContent value="progress" className="space-y-8">
 						<Progress />
-					</TabsContent>
+					</TabsContent> */}
 				</Tabs>
 			</div>
 		</div>

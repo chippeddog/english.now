@@ -23,8 +23,8 @@ export default function ProgressCircle({ progress }: { progress: number }) {
 					: "text-red-600";
 
 	return (
-		<div className="relative flex size-11 items-center justify-center">
-			<svg className="size-11" viewBox="0 0 44 44" aria-hidden="true">
+		<div className="relative flex size-10 items-center justify-center">
+			<svg className="size-10" viewBox="0 0 44 44" aria-hidden="true">
 				<title>Unit progress</title>
 				<circle
 					cx="22"
@@ -32,7 +32,7 @@ export default function ProgressCircle({ progress }: { progress: number }) {
 					r="18"
 					fill="none"
 					stroke="currentColor"
-					strokeWidth="3.5"
+					strokeWidth="3"
 					className="text-neutral-100"
 				/>
 				<circle
@@ -41,7 +41,7 @@ export default function ProgressCircle({ progress }: { progress: number }) {
 					r="18"
 					fill="none"
 					stroke="currentColor"
-					strokeWidth="3.5"
+					strokeWidth="3"
 					strokeLinecap="round"
 					strokeDasharray={`${circumference}`}
 					strokeDashoffset={dashOffset}

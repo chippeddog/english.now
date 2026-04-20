@@ -2,7 +2,7 @@ import type { AppRouter } from "@english.now/api/routers/index";
 import type { inferRouterOutputs } from "@trpc/server";
 import { Bookmark, Check, Flag, Mic, SkipForward, Volume2 } from "lucide-react";
 import { useMemo, useState } from "react";
-import ReportIssueDialog from "@/components/conversation/report-issue-dialog";
+// import ReportIssueDialog from "@/components/conversation/report-issue-dialog";
 import {
 	IssueCardEyebrow,
 	IssueCardShell,
@@ -275,7 +275,7 @@ export function VocabularyIssueCard({
 					>
 						<Bookmark className="size-4" />
 					</Button>
-					<ReportIssueDialog sessionId={sessionId} sessionType="conversation">
+					{/* <ReportIssueDialog sessionId={sessionId} sessionType="conversation">
 						<button
 							type="button"
 							className="inline-flex size-8 items-center justify-center rounded-full border border-neutral-200 bg-neutral-50 text-muted-foreground text-xs transition-colors hover:bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900"
@@ -283,7 +283,7 @@ export function VocabularyIssueCard({
 						>
 							<Flag className="size-3.5" strokeWidth={2} />
 						</button>
-					</ReportIssueDialog>
+					</ReportIssueDialog> */}
 				</div>
 			</div>
 

@@ -63,13 +63,26 @@
     "pronunciation": "उच्चारण",
     "practiceYourEnglish": "अपनी अंग्रेजी का अभ्यास करें",
     "practiceYourPronunciation": "अपने उच्चारण का अभ्यास करें",
-    "practiceYourPronunciationDescription": "एक पैराग्राफ चुनें और एआई के साथ अपने उच्चारण का अभ्यास करें"
+    "practiceYourPronunciationDescription": "एक पैराग्राफ चुनें और एआई के साथ अपने उच्चारण का अभ्यास करें",
+    "grammar": "व्याकरण",
+    "practiceYourGrammar": "अपने व्याकरण का अभ्यास करें",
+    "loadMore": "और लोड करें"
   },
   "vocabulary": {
     "title": "शब्दावली",
     "words": "शब्द",
     "phrases": "वाक्यांश",
-    "progress": "प्रगति"
+    "progress": "प्रगति",
+    "itemRow": {
+      "dueNow": "अभी देय",
+      "inHours": "{{count}} घंटे में",
+      "tomorrow": "कल",
+      "inDays": "{{count}} दिन में",
+      "deleteTitle": "आइटम हटाएं",
+      "deleteDescription": "क्या आप वाकई इस आइटम को हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।",
+      "cancel": "रद्द करें",
+      "delete": "हटाएं"
+    }
   },
   "settings": {
     "title": "सेटिंग्स",
@@ -254,7 +267,72 @@
     "recentSessions": "हाल की सत्र",
     "readAloud": "जोर से पढ़ें",
     "unknownDate": "अज्ञात तिथि",
-    "feedbackReady": "प्रतिक्रिया तैयार"
+    "feedbackReady": "प्रतिक्रिया तैयार",
+    "session": {
+      "noSpeechDetected": "कोई आवाज़ नहीं सुनी गई। सहेजने से पहले कम से कम एक छोटा वाक्यांश बोलें।",
+      "savingRecording": "रिकॉर्डिंग सहेज रहा है...",
+      "savePausedRecording": "रुकी हुई रिकॉर्डिंग सहेजें",
+      "stopRecording": "रिकॉर्डिंग रोकें",
+      "recordingStartsIn": "रिकॉर्डिंग {{count}} में शुरू होगी",
+      "attemptLimitReached": "इस समीक्षा के लिए अधिकतम {{count}} रिकॉर्डिंग्स की सीमा पूरी हो गई है",
+      "freeAttemptLimitReached": "मुफ्त उपयोगकर्ता प्रति समीक्षा एक बार रिकॉर्ड कर सकते हैं",
+      "microphoneAccessRequired": "रिकॉर्डिंग शुरू करने के लिए अपने ब्राउज़र में माइक्रोफ़ोन की अनुमति दें",
+      "recordingsLeft_one": "आपके पास {{count}} रिकॉर्डिंग बची है",
+      "recordingsLeft_other": "आपके पास {{count}} रिकॉर्डिंग्स बची हैं",
+      "startRecording": "रिकॉर्डिंग शुरू करें",
+      "readParagraph": "निम्नलिखित अनुच्छेद पढ़ें:",
+      "liveTranscript": "लाइव प्रतिलेख",
+      "startSpeaking": "बोलना शुरू करें...",
+      "backToPractice": "अभ्यास पर वापस जाएं",
+      "processing": {
+        "analyzing": "आपकी रिकॉर्डिंग्स का विश्लेषण कर रहा है",
+        "computing": "आपके परिणामों की गणना कर रहा है",
+        "generatingFeedback": "व्यक्तिगत प्रतिक्रिया उत्पन्न कर रहा है",
+        "title": "आपके सत्र को प्रोसेस कर रहा है",
+        "subtitle": "इसमें आमतौर पर लगभग 30 सेकंड लगते हैं"
+      },
+      "controls": {
+        "continueRecording": "रिकॉर्डिंग जारी रखें",
+        "pauseRecording": "रिकॉर्डिंग रोकें",
+        "clearAndStartAgain": "साफ करें और फिर से शुरू करें",
+        "saving": "सहेज रहा है...",
+        "saveRecording": "रिकॉर्डिंग सहेजें",
+        "record": "रिकॉर्ड",
+        "finishReviewTitle": "समीक्षा समाप्त करें?",
+        "finishReviewDescription": "आप रिकॉर्डिंग रोक देंगे और समीक्षा परिणामों पर जाएंगे।",
+        "finish": "समाप्त करें"
+      },
+      "attemptQuota": {
+        "ariaLabel": "{{used}} में से {{limit}} रिकॉर्डिंग्स उपयोग की गईं, {{remaining}} बची हैं",
+        "used_one": "{{used}} में से {{limit}} रिकॉर्डिंग उपयोग की गई",
+        "used_other": "{{used}} में से {{limit}} रिकॉर्डिंग्स उपयोग की गईं",
+        "left_one": "{{count}} रिकॉर्डिंग बची है{{suffix}}",
+        "left_other": "{{count}} रिकॉर्डिंग्स बची हैं{{suffix}}",
+        "proSuffix": " इस समीक्षा में।",
+        "freeSuffix": " मुफ्त योजना पर।"
+      },
+      "attemptCount": {
+        "ariaLabel_one": "इस सत्र में {{count}} प्रयास",
+        "ariaLabel_other": "इस सत्र में {{count}} प्रयास",
+        "tooltip_one": "इस सत्र में {{count}} प्रयास रिकॉर्ड किया गया",
+        "tooltip_other": "इस सत्र में {{count}} प्रयास रिकॉर्ड किए गए"
+      },
+      "attempts": {
+        "unknownDate": "अज्ञात तिथि",
+        "deleteConfirm": "हटाने के लिए फिर से क्लिक करें",
+        "label": "प्रयास {{count}}",
+        "emptyTitle": "अभी तक कोई रिकॉर्डिंग नहीं",
+        "emptyDescription": "आपके सहेजे गए प्रयास यहां दिखाई देंगे जब आप एक रिकॉर्ड करेंगे।"
+      },
+      "settings": {
+        "close": "सेटिंग्स बंद करें",
+        "interfaceLanguage": "इंटरफ़ेस भाषा",
+        "inputDevice": "इनपुट डिवाइस",
+        "selectMicrophone": "माइक्रोफोन चुनें",
+        "microphoneLabel": "माइक्रोफोन {{count}}",
+        "noAudioDevices": "कोई ऑडियो डिवाइस नहीं मिला। माइक्रोफ़ोन की अनुमति देने के बाद सेटिंग्स को फिर से खोलें।"
+      }
+    }
   },
   "lessons": {
     "title": "पाठ",

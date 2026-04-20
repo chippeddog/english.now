@@ -63,13 +63,26 @@
     "pronunciation": "Pronuncia",
     "practiceYourEnglish": "Pratica il tuo inglese",
     "practiceYourPronunciation": "Pratica la tua pronuncia",
-    "practiceYourPronunciationDescription": "Seleziona un paragrafo e pratica la tua pronuncia con l'IA"
+    "practiceYourPronunciationDescription": "Seleziona un paragrafo e pratica la tua pronuncia con l'IA",
+    "grammar": "Grammatica",
+    "practiceYourGrammar": "Esercita la tua grammatica",
+    "loadMore": "Carica di più"
   },
   "vocabulary": {
     "title": "Vocabolario",
     "words": "Parole",
     "phrases": "Frasi",
-    "progress": "Progresso"
+    "progress": "Progresso",
+    "itemRow": {
+      "dueNow": "Scade ora",
+      "inHours": "Tra {{count}}h",
+      "tomorrow": "Domani",
+      "inDays": "Tra {{count}}g",
+      "deleteTitle": "Elimina elemento",
+      "deleteDescription": "Sei sicuro di voler eliminare questo elemento? Questa azione non può essere annullata.",
+      "cancel": "Annulla",
+      "delete": "Elimina"
+    }
   },
   "settings": {
     "title": "Impostazioni",
@@ -254,7 +267,72 @@
     "recentSessions": "Sessioni Recenti",
     "readAloud": "Leggi ad Alta Voce",
     "unknownDate": "Data sconosciuta",
-    "feedbackReady": "Feedback pronto"
+    "feedbackReady": "Feedback pronto",
+    "session": {
+      "noSpeechDetected": "Nessun discorso rilevato. Pronuncia almeno una breve frase prima di salvare.",
+      "savingRecording": "Salvataggio della registrazione...",
+      "savePausedRecording": "Salva registrazione in pausa",
+      "stopRecording": "Interrompi registrazione",
+      "recordingStartsIn": "La registrazione inizia tra {{count}}",
+      "attemptLimitReached": "Massimo {{count}} registrazioni raggiunte per questa revisione",
+      "freeAttemptLimitReached": "Gli utenti gratuiti possono registrare una volta per revisione",
+      "microphoneAccessRequired": "Consenti l'accesso al microfono nel tuo browser per avviare la registrazione",
+      "recordingsLeft_one": "Hai {{count}} registrazione rimasta",
+      "recordingsLeft_other": "Hai {{count}} registrazioni rimaste",
+      "startRecording": "Inizia registrazione",
+      "readParagraph": "Leggi il seguente paragrafo:",
+      "liveTranscript": "Trascrizione dal vivo",
+      "startSpeaking": "Inizia a parlare...",
+      "backToPractice": "Torna alla pratica",
+      "processing": {
+        "analyzing": "Analizzando le tue registrazioni",
+        "computing": "Calcolando i tuoi risultati",
+        "generatingFeedback": "Generazione di feedback personalizzato",
+        "title": "Elaborazione della tua sessione",
+        "subtitle": "Di solito ci vogliono circa 30 secondi"
+      },
+      "controls": {
+        "continueRecording": "Continua registrazione",
+        "pauseRecording": "Metti in pausa registrazione",
+        "clearAndStartAgain": "Cancella e ricomincia",
+        "saving": "Salvataggio...",
+        "saveRecording": "Salva registrazione",
+        "record": "Registra",
+        "finishReviewTitle": "Finire la revisione?",
+        "finishReviewDescription": "Interromperai la registrazione e passerai ai risultati della revisione.",
+        "finish": "Fine"
+      },
+      "attemptQuota": {
+        "ariaLabel": "{{used}} di {{limit}} registrazioni utilizzate, {{remaining}} rimaste",
+        "used_one": "{{used}} di {{limit}} registrazione utilizzata",
+        "used_other": "{{used}} di {{limit}} registrazioni utilizzate",
+        "left_one": "{{count}} registrazione rimasta{{suffix}}",
+        "left_other": "{{count}} registrazioni rimaste{{suffix}}",
+        "proSuffix": " in questa revisione.",
+        "freeSuffix": " nel piano gratuito."
+      },
+      "attemptCount": {
+        "ariaLabel_one": "{{count}} tentativo in questa sessione",
+        "ariaLabel_other": "{{count}} tentativi in questa sessione",
+        "tooltip_one": "{{count}} tentativo registrato in questa sessione",
+        "tooltip_other": "{{count}} tentativi registrati in questa sessione"
+      },
+      "attempts": {
+        "unknownDate": "Data sconosciuta",
+        "deleteConfirm": "Clicca di nuovo per eliminare",
+        "label": "Tentativo {{count}}",
+        "emptyTitle": "Nessuna registrazione ancora",
+        "emptyDescription": "I tuoi tentativi salvati appariranno qui dopo che ne avrai registrato uno."
+      },
+      "settings": {
+        "close": "Chiudi impostazioni",
+        "interfaceLanguage": "Lingua dell'interfaccia",
+        "inputDevice": "Dispositivo di input",
+        "selectMicrophone": "Seleziona microfono",
+        "microphoneLabel": "Microfono {{count}}",
+        "noAudioDevices": "Nessun dispositivo audio trovato. Apri di nuovo le impostazioni dopo aver consentito l'accesso al microfono."
+      }
+    }
   },
   "lessons": {
     "title": "Lezioni",

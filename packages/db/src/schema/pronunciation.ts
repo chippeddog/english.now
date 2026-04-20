@@ -1,11 +1,12 @@
 import { integer, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { user } from "./auth";
 
-export type CefrLevel = "A1" | "A2" | "B1" | "B2" | "C1";
+export type CefrLevel = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
 
 export type ParagraphItem = {
 	text: string;
 	topic: string;
+	icon: string;
 	cefrLevel: CefrLevel;
 	wordCount: number;
 	focusAreas: string[];
@@ -131,7 +132,6 @@ export const pronunciationAttempt = pgTable("pronunciation_attempt", {
 	sessionId: text("session_id")
 		.notNull()
 		.references(() => pronunciationSession.id, { onDelete: "cascade" }),
-	itemIndex: integer("item_index").notNull(),
 	transcript: text("transcript").notNull(),
 	score: integer("score").notNull(),
 	accuracyScore: integer("accuracy_score"),

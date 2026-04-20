@@ -3,20 +3,37 @@ import { useEffect, useState } from "react";
 export default function useAudioDevices(enabled: boolean) {
 	const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
 	const [selectedDevice, setSelectedDevice] = useState<string>("");
+	const [microphoneAccess, setMicrophoneAccess] = useState<
+		"unknown" | "granted" | "denied"
+	>("unknown");
 
 	useEffect(() => {
 		const getDevices = async () => {
 			try {
-				await navigator.mediaDevices.getUserMedia({ audio: true });
+				const stream = await navigator.mediaDevices.getUserMedia({
+					audio: true,
+				});
 				const devices = await navigator.mediaDevices.enumerateDevices();
 				const audioInputs = devices.filter(
 					(device) => device.kind === "audioinput",
 				);
+
+				setMicrophoneAccess("granted");
 				setAudioDevices(audioInputs);
-				if (audioInputs.length > 0 && !selectedDevice) {
-					setSelectedDevice(audioInputs[0].deviceId);
+
+				const hasSelectedDevice = audioInputs.some(
+					(device) => device.deviceId === selectedDevice,
+				);
+				if (audioInputs.length > 0 && !hasSelectedDevice) {
+					setSelectedDevice(audioInputs[0]?.deviceId ?? "");
+				}
+
+				for (const track of stream.getTracks()) {
+					track.stop();
 				}
 			} catch (err) {
+				setMicrophoneAccess("denied");
+				setAudioDevices([]);
 				console.error("Error getting audio devices:", err);
 			}
 		};
@@ -30,5 +47,6 @@ export default function useAudioDevices(enabled: boolean) {
 		audioDevices,
 		selectedDevice,
 		setSelectedDevice,
+		microphoneAccess,
 	};
 }

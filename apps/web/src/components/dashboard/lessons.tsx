@@ -342,8 +342,8 @@ export default function Lessons({
 			{!isLoading && summary && summary?.currentLesson && (
 				<div className="-bottom-3 absolute right-0 left-0 z-20 h-24 w-full bg-linear-to-t from-white to-transparent" />
 			)}
-			<div className="mb-2 flex items-center justify-between gap-2 pl-1.5">
-				<div className="font-bold font-lyon text-xl">Lessons</div>
+			<div className="mt-1 mb-3 flex items-center justify-between pr-1.5 pl-1.5">
+				<div className="font-semibold">Lessons</div>
 			</div>
 
 			{isLoading ? (

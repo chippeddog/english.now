@@ -2,7 +2,7 @@ import type { AppRouter } from "@english.now/api/routers/index";
 import type { inferRouterOutputs } from "@trpc/server";
 import { Check, Flag, Mic, SkipForward, Volume2 } from "lucide-react";
 import { useState } from "react";
-import ReportIssueDialog from "@/components/conversation/report-issue-dialog";
+// import ReportIssueDialog from "@/components/conversation/report-issue-dialog";
 import {
 	IssueCardEyebrow,
 	IssueCardShell,
@@ -208,7 +208,7 @@ export function GrammarIssueCard({
 					</>
 				) : null}
 				<div className="ml-auto">
-					<ReportIssueDialog sessionId={sessionId} sessionType="conversation">
+					{/* <ReportIssueDialog sessionId={sessionId} sessionType="conversation">
 						<button
 							type="button"
 							className={cn(
@@ -218,7 +218,7 @@ export function GrammarIssueCard({
 						>
 							<Flag className="size-3.5" strokeWidth={2} />
 						</button>
-					</ReportIssueDialog>
+					</ReportIssueDialog> */}
 				</div>
 			</div>
 		</IssueCardShell>

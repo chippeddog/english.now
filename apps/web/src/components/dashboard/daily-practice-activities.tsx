@@ -370,9 +370,9 @@ export default function DailyPracticeActivities({
 							: undefined,
 				}}
 			>
-				<div className="mb-2.5 flex items-center justify-between gap-3 pr-1.5 pl-1.5">
+				<div className="mt-1 mb-3 flex items-center justify-between px-1.5">
 					<div className="flex items-center gap-3">
-						<h2 className="flex gap-2 font-bold font-lyon text-xl">
+						<h2 className="flex gap-2 font-semibold">
 							{variant === "home" ? "Today's Practice" : "Today’s Plan"}
 						</h2>
 					</div>
@@ -503,7 +503,8 @@ export default function DailyPracticeActivities({
 										<Badge
 											variant="outline"
 											className={cn(
-												"mb-4 rounded-lg px-2 py-0.5 font-normal text-xs italic",
+												//"mb-4 rounded-lg px-2 py-0.5 font-normal text-xs italic",
+												"f mb-4 border-0 p-0 font-medium text-neutral-600 text-xs italic tracking-wide",
 												isCompleted
 													? "border-lime-200 bg-lime-50 text-lime-700"
 													: isLocked
@@ -516,12 +517,12 @@ export default function DailyPracticeActivities({
 											{activity.duration}{" "}
 											{activity.duration === 1 ? "minute" : "minutes"}
 										</Badge>
-										<div className="mb-2 text-2xl xl:text-4xl">
+										<div className="mb-2 text-2xl xl:text-3xl">
 											{activity.emoji}
 										</div>
 										<h3
 											className={cn(
-												"mb-1 font-semibold text-sm leading-snug",
+												"mb-1 font-medium text-sm leading-snug",
 												isCompleted && "text-lime-900",
 												isStarted && "text-amber-900",
 											)}
@@ -533,7 +534,17 @@ export default function DailyPracticeActivities({
 										</p> */}
 									</div>
 
-									<div className="mt-3 flex items-center justify-between">
+									{/* 
+									<div
+										className="relative overflow-hidden rounded-[1.2rem] bg-white transition-all hover:scale-[1.02]"
+										style={{
+											backgroundColor: "rgba(120, 113, 108, 0.06)",
+											borderColor: "rgba(120, 113, 108, 0.086)",
+										}}
+									> */}
+									<div className="relative mt-3 flex items-center justify-between">
+										{/* <span className="pointer-events-none absolute inset-0 rounded-full bg-linear-to-br from-white/80 via-transparent to-transparent opacity-60" />
+										<span className="pointer-events-none absolute top-0 left-1/4 h-px w-1/2 bg-linear-to-r from-transparent via-white to-transparent" /> */}
 										<span
 											className={cn(
 												"flex items-center gap-1 whitespace-nowrap rounded-xl border px-2.5 py-1.5 font-medium text-xs italic transition",
@@ -543,7 +554,7 @@ export default function DailyPracticeActivities({
 														? "border-neutral-200 bg-neutral-100 text-neutral-600"
 														: isStarted
 															? "border-amber-200 bg-amber-50 text-amber-700"
-															: "border-neutral-200 text-neutral-700 hover:brightness-95",
+															: "border-neutral-200 text-neutral-600 hover:brightness-95",
 											)}
 										>
 											{isLocked

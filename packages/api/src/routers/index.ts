@@ -3,6 +3,7 @@ import { contactRouter } from "./contact";
 import { contentRouter } from "./content";
 import { conversationRouter } from "./conversation";
 import { feedbackRouter } from "./feedback";
+import { grammarRouter } from "./grammar";
 import { issueReportRouter } from "./issue-report";
 import { practiceRouter } from "./practice";
 import { profileRouter } from "./profile";
@@ -15,6 +16,7 @@ export const appRouter = router({
 	}),
 	contact: contactRouter,
 	content: contentRouter,
+	grammar: grammarRouter,
 	vocabulary: vocabularyRouter,
 	pronunciation: pronunciationRouter,
 	conversation: conversationRouter,

@@ -1,12 +1,21 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Check, ChevronLeft, CircleDashed, Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import {
+	Check,
+	ChevronLeft,
+	CircleDashed,
+	Loader2,
+	Settings,
+} from "lucide-react";
+import { type MouseEvent, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import Logo from "@/components/logo";
 import ReadAloudMode from "@/components/pronunciation/read-aloud";
 import SessionReview from "@/components/pronunciation/session-review";
+import LeavePracticeDialog from "@/components/session/leave-practice-dialog";
 import SessionLoader from "@/components/session/loader";
 import ReportIssueDialog from "@/components/session/report-issue-dialog";
+import { Button } from "@/components/ui/button";
 import { usePracticeTimer } from "@/hooks/use-practice-timer";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/utils/trpc";
@@ -47,6 +56,7 @@ type SessionSummary = {
 };
 
 type ProcessingStepStatus = "pending" | "active" | "completed" | "failed";
+type ProcessingStepKey = "analyzing" | "computing" | "generatingFeedback";
 
 function ProcessingStep({
 	label,
@@ -90,7 +100,7 @@ function ProcessingStep({
 function getSteps(
 	sessionStatus: string | undefined,
 	feedbackStatus: string | null | undefined,
-): { label: string; status: ProcessingStepStatus }[] {
+): { key: ProcessingStepKey; status: ProcessingStepStatus }[] {
 	const isCompleted = sessionStatus === "completed";
 	const isFeedbackDone = feedbackStatus === "completed";
 	const isFeedbackFailed = feedbackStatus === "failed";
@@ -98,15 +108,15 @@ function getSteps(
 
 	return [
 		{
-			label: "Analyzing your recordings",
+			key: "analyzing",
 			status: isCompleted ? "completed" : "active",
 		},
 		{
-			label: "Computing your results",
+			key: "computing",
 			status: isCompleted ? "completed" : "pending",
 		},
 		{
-			label: "Generating personalized feedback",
+			key: "generatingFeedback",
 			status: isFeedbackDone
 				? "completed"
 				: isFeedbackFailed
@@ -126,7 +136,15 @@ function ProcessingView({
 	sessionStatus: string | undefined;
 	feedbackStatus: string | null | undefined;
 }) {
+	const { t } = useTranslation("app");
 	const steps = getSteps(sessionStatus, feedbackStatus);
+	const stepLabels = {
+		analyzing: t("pronunciation.session.processing.analyzing"),
+		computing: t("pronunciation.session.processing.computing"),
+		generatingFeedback: t(
+			"pronunciation.session.processing.generatingFeedback",
+		),
+	};
 
 	return (
 		<div className="flex min-h-[60vh] items-center justify-center">
@@ -135,11 +153,11 @@ function ProcessingView({
 					{/* <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-primary/10">
 						<Loader2 className="size-8 animate-spin text-primary" />
 					</div> */}
-					<h2 className="font-bold font-lyon text-2xl tracking-tight">
-						Processing your session
+					<h2 className="font-bold text-xl tracking-tight">
+						{t("pronunciation.session.processing.title")}
 					</h2>
 					<p className="mt-2 text-muted-foreground text-sm">
-						This usually takes about 30 seconds
+						{t("pronunciation.session.processing.subtitle")}
 					</p>
 				</div>
 
@@ -147,8 +165,8 @@ function ProcessingView({
 					<div className="space-y-5">
 						{steps.map((step) => (
 							<ProcessingStep
-								key={step.label}
-								label={step.label}
+								key={step.key}
+								label={stepLabels[step.key]}
 								status={step.status}
 							/>
 						))}
@@ -161,6 +179,7 @@ function ProcessingView({
 
 function PronunciationSessionPage() {
 	const trpc = useTRPC();
+	const { t } = useTranslation("app");
 	const navigate = useNavigate();
 	const { sessionId } = Route.useParams();
 	const { getElapsedSeconds } = usePracticeTimer();
@@ -168,6 +187,8 @@ function PronunciationSessionPage() {
 		"practice",
 	);
 	const [summary, setSummary] = useState<SessionSummary | null>(null);
+	const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
+	const [settingsOpen, setSettingsOpen] = useState(false);
 
 	const {
 		data: sessionData,
@@ -217,8 +238,20 @@ function PronunciationSessionPage() {
 	}, [sessionData, view]);
 
 	const handleFinish = () => {
+		setSettingsOpen(false);
 		setView("processing");
 	};
+
+	const handleLogoClick = (event: MouseEvent<HTMLAnchorElement>) => {
+		event.preventDefault();
+		setLeaveDialogOpen(true);
+	};
+
+	useEffect(() => {
+		if (view !== "practice" && settingsOpen) {
+			setSettingsOpen(false);
+		}
+	}, [settingsOpen, view]);
 
 	if (isLoading) {
 		return <SessionLoader />;
@@ -228,8 +261,7 @@ function PronunciationSessionPage() {
 		return null;
 	}
 
-	const paragraph = (sessionData.paragraph ??
-		(sessionData.items as ParagraphItem[])?.[0]) as ParagraphItem | null;
+	const paragraph = sessionData.paragraph as ParagraphItem | null;
 
 	if (!paragraph) return null;
 
@@ -241,12 +273,26 @@ function PronunciationSessionPage() {
 						<div className="container relative z-10 mx-auto max-w-3xl px-4">
 							<nav className="flex grid-cols-2 items-center justify-between py-5 md:grid-cols-5">
 								<div className="items-center gap-2 md:flex">
-									<Logo link="/practice" />
+									<Logo link="/practice" onClick={handleLogoClick} />
 								</div>
-								<ReportIssueDialog
-									sessionId={sessionId}
-									sessionType="pronunciation"
-								/>
+								<div className="flex items-center gap-2">
+									<ReportIssueDialog
+										sessionId={sessionId}
+										sessionType="pronunciation"
+									/>
+									<Button
+										variant="outline"
+										size="icon"
+										className={cn(
+											"size-9 cursor-pointer rounded-xl shadow-none",
+											settingsOpen && "bg-neutral-100",
+										)}
+										onClick={() => setSettingsOpen(true)}
+										aria-label={t("settings.title")}
+									>
+										<Settings className="size-4" strokeWidth={2} />
+									</Button>
+								</div>
 							</nav>
 						</div>
 					</div>
@@ -256,7 +302,7 @@ function PronunciationSessionPage() {
 								sessionId={sessionId}
 								paragraph={paragraph}
 								attemptAccess={
-									(sessionData.attemptAccess as
+									sessionData.attemptAccess as
 										| {
 												isPro: boolean;
 												used: number;
@@ -264,7 +310,7 @@ function PronunciationSessionPage() {
 												remaining: number | null;
 												reachedLimit: boolean;
 										  }
-										| undefined)
+										| undefined
 								}
 								initialAttempts={(sessionData.attempts ?? [])
 									.filter((a) => a.audioUrl)
@@ -272,14 +318,21 @@ function PronunciationSessionPage() {
 										id: a.id,
 										audioUrl: a.audioUrl ?? "",
 										transcript: a.transcript,
+										createdAt: a.createdAt,
 									}))}
 								onFinish={handleFinish}
 								getElapsedSeconds={getElapsedSeconds}
+								settingsOpen={settingsOpen}
+								onSettingsOpenChange={setSettingsOpen}
 							/>
 						</div>
 					</div>
 				</>
 			)}
+			<LeavePracticeDialog
+				leaveDialogOpen={leaveDialogOpen}
+				setLeaveDialogOpen={setLeaveDialogOpen}
+			/>
 			{view === "processing" && (
 				<div className="container relative z-10 mx-auto max-w-3xl px-4 py-6">
 					<div className="fade-in slide-in-from-bottom-4 animate-in duration-300">
@@ -304,7 +357,7 @@ function PronunciationSessionPage() {
 									className="flex items-center gap-1 text-muted-foreground text-sm transition-colors hover:text-foreground"
 								>
 									<ChevronLeft className="size-4" />
-									Back to practice
+									{t("pronunciation.session.backToPractice")}
 								</Link>
 							</nav>
 						</div>
