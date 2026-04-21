@@ -1,7 +1,7 @@
 import { useTranslation } from "@english.now/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Brain, Loader2, LogOutIcon, SettingsIcon, Zap } from "lucide-react";
+import { Brain, Loader, LogOutIcon, SettingsIcon, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Billing } from "@/components/settings/billing";
 import { Personalization } from "@/components/settings/personalization";
@@ -189,10 +189,6 @@ function RouteComponent() {
 				</aside>
 
 				<div className="lg:-mr-8 block min-h-0 w-full flex-1 md:pt-6 md:pl-6 lg:min-h-full lg:min-w-0 lg:overflow-y-auto">
-					<PracticeLimitsCard
-						isLoading={isLoadingUsageLimits}
-						limits={usageLimits}
-					/>
 					<section hidden={activeTab !== "profile"}>
 						<Profile />
 					</section>
@@ -201,6 +197,11 @@ function RouteComponent() {
 					</section>
 					<section hidden={activeTab !== "billing"}>
 						<Billing />
+						<hr className="my-5 border-border/50" />
+						<PracticeLimitsCard
+							isLoading={isLoadingUsageLimits}
+							limits={usageLimits}
+						/>
 					</section>
 				</div>
 			</div>
@@ -248,22 +249,16 @@ function PracticeLimitsCard({
 	];
 
 	return (
-		<div className="mb-6 rounded-3xl border border-border/50 bg-white/80 p-5 shadow-sm backdrop-blur dark:bg-neutral-900/80">
+		<div>
 			<div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
 				<div>
-					<h2 className="font-semibold">Today's practice limits</h2>
-					<p className="mt-1 text-muted-foreground text-sm">
-						Track how much free practice you still have left today.
-					</p>
+					<h2 className="font-semibold">Usage</h2>
 				</div>
-				<span className="text-muted-foreground text-sm">
-					{limits?.isPro ? "Pro plan" : "Free plan"}
-				</span>
 			</div>
 
 			{isLoading ? (
 				<div className="flex items-center gap-2 py-6 text-muted-foreground text-sm">
-					<Loader2 className="size-4 animate-spin" />
+					<Loader className="size-4 animate-spin" />
 					Loading today's limits...
 				</div>
 			) : !limits ? (
@@ -271,7 +266,7 @@ function PracticeLimitsCard({
 					Unable to load today's limits right now.
 				</p>
 			) : (
-				<div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+				<div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 					{items.map((item) => (
 						<LimitProgressItem
 							key={item.key}
@@ -313,11 +308,10 @@ function LimitProgressItem({
 				: `${limit.used} used, ${limit.remaining} left today.`;
 
 	return (
-		<div className="rounded-2xl border border-border/50 bg-background/80 p-4">
+		<div>
 			<div className="mb-3 flex items-start justify-between gap-3">
 				<div className="min-w-0">
 					<p className="font-medium">{label}</p>
-					<p className="mt-1 text-muted-foreground text-sm">{description}</p>
 				</div>
 				<span
 					className={cn(
@@ -335,7 +329,7 @@ function LimitProgressItem({
 			<Progress
 				value={progressValue}
 				className={cn(
-					"h-2.5 bg-muted",
+					"h-1.5 bg-muted",
 					limit.limit == null || limit.remaining == null
 						? "*:bg-lime-500"
 						: limit.remaining === 0

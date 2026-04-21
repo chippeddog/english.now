@@ -1,5 +1,11 @@
 import type { TFunction } from "i18next";
-import { MoreHorizontalIcon, Trash2, Volume1, Volume2 } from "lucide-react";
+import {
+	MoreHorizontalIcon,
+	Pencil,
+	Trash2,
+	Volume1,
+	Volume2,
+} from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -33,6 +39,7 @@ export interface ItemRowProps {
 	playingId: string | null;
 	onPlay: (url: string, id: string) => void;
 	onDelete: () => void;
+	onEdit?: () => void;
 	primaryClassName?: string;
 	nextReviewAt?: string | null;
 	isDue?: boolean;
@@ -72,6 +79,7 @@ export default function ItemRow({
 	playingId,
 	onPlay,
 	onDelete,
+	onEdit,
 	primaryClassName,
 	nextReviewAt,
 	isDue,
@@ -139,6 +147,12 @@ export default function ItemRow({
 						</Button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="end">
+						{onEdit ? (
+							<DropdownMenuItem onClick={onEdit}>
+								<Pencil />
+								{t("vocabulary.itemRow.edit")}
+							</DropdownMenuItem>
+						) : null}
 						<DropdownMenuItem
 							variant="destructive"
 							onClick={() => setShowDeleteDialog(true)}

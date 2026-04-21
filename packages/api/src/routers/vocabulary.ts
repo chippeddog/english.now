@@ -4,6 +4,7 @@ import {
 	eq,
 	phrase,
 	phraseTranslation,
+	sql,
 	userPhrase,
 	userProfile,
 	userWord,
@@ -74,12 +75,28 @@ export const vocabularyRouter = router({
 					lemma: word.lemma,
 					ipa: word.ipa,
 					audioUrl: word.audioUrl,
-					partOfSpeech: word.partOfSpeech,
-					definition: word.definition,
-					exampleSentence: word.exampleSentence,
+					partOfSpeech:
+						sql<string | null>`coalesce(${userWord.customPartOfSpeech}, ${word.partOfSpeech})`.as(
+							"part_of_speech",
+						),
+					definition:
+						sql<string>`coalesce(${userWord.customDefinition}, ${word.definition})`.as(
+							"definition",
+						),
+					exampleSentence:
+						sql<string | null>`coalesce(${userWord.customExampleSentence}, ${word.exampleSentence})`.as(
+							"example_sentence",
+						),
 					level: word.level,
 					frequencyRank: word.frequencyRank,
-					translation: wordTranslation.translation,
+					translation:
+						sql<string | null>`coalesce(${userWord.customTranslation}, ${wordTranslation.translation})`.as(
+							"translation",
+						),
+					customPartOfSpeech: userWord.customPartOfSpeech,
+					customDefinition: userWord.customDefinition,
+					customExampleSentence: userWord.customExampleSentence,
+					customTranslation: userWord.customTranslation,
 				})
 				.from(userWord)
 				.innerJoin(word, eq(userWord.wordId, word.id))
@@ -192,6 +209,79 @@ export const vocabularyRouter = router({
 			return { success: true };
 		}),
 
+	updateWord: protectedProcedure
+		.input(
+			z.object({
+				userWordId: z.string(),
+				partOfSpeech: z
+					.string()
+					.trim()
+					.min(1)
+					.max(40)
+					.nullable()
+					.optional(),
+				definition: z.string().trim().min(1).max(500).nullable().optional(),
+				exampleSentence: z
+					.string()
+					.trim()
+					.min(1)
+					.max(500)
+					.nullable()
+					.optional(),
+				translation: z
+					.string()
+					.trim()
+					.min(1)
+					.max(300)
+					.nullable()
+					.optional(),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const patch: Partial<{
+				customPartOfSpeech: string | null;
+				customDefinition: string | null;
+				customExampleSentence: string | null;
+				customTranslation: string | null;
+			}> = {};
+			if (input.partOfSpeech !== undefined) {
+				patch.customPartOfSpeech = input.partOfSpeech;
+			}
+			if (input.definition !== undefined) {
+				patch.customDefinition = input.definition;
+			}
+			if (input.exampleSentence !== undefined) {
+				patch.customExampleSentence = input.exampleSentence;
+			}
+			if (input.translation !== undefined) {
+				patch.customTranslation = input.translation;
+			}
+
+			if (Object.keys(patch).length === 0) {
+				return { success: true };
+			}
+
+			const updated = await db
+				.update(userWord)
+				.set(patch)
+				.where(
+					and(
+						eq(userWord.id, input.userWordId),
+						eq(userWord.userId, ctx.session.user.id),
+					),
+				)
+				.returning({ id: userWord.id });
+
+			if (!updated[0]) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Vocabulary word not found.",
+				});
+			}
+
+			return { success: true };
+		}),
+
 	reviewWord: protectedProcedure
 		.input(
 			z.object({
@@ -292,10 +382,26 @@ export const vocabularyRouter = router({
 					ipa: phrase.ipa,
 					audioUrl: phrase.audioUrl,
 					level: phrase.level,
-					meaning: phrase.meaning,
-					exampleUsage: phrase.exampleUsage,
-					translation: phraseTranslation.translation,
-					literalTranslation: phraseTranslation.literalTranslation,
+					meaning:
+						sql<string>`coalesce(${userPhrase.customMeaning}, ${phrase.meaning})`.as(
+							"meaning",
+						),
+					exampleUsage:
+						sql<string | null>`coalesce(${userPhrase.customExampleUsage}, ${phrase.exampleUsage})`.as(
+							"example_usage",
+						),
+					translation:
+						sql<string | null>`coalesce(${userPhrase.customTranslation}, ${phraseTranslation.translation})`.as(
+							"translation",
+						),
+					literalTranslation:
+						sql<string | null>`coalesce(${userPhrase.customLiteralTranslation}, ${phraseTranslation.literalTranslation})`.as(
+							"literal_translation",
+						),
+					customMeaning: userPhrase.customMeaning,
+					customExampleUsage: userPhrase.customExampleUsage,
+					customTranslation: userPhrase.customTranslation,
+					customLiteralTranslation: userPhrase.customLiteralTranslation,
 				})
 				.from(userPhrase)
 				.innerJoin(phrase, eq(userPhrase.phraseId, phrase.id))
@@ -397,6 +503,79 @@ export const vocabularyRouter = router({
 						eq(userPhrase.userId, ctx.session.user.id),
 					),
 				);
+			return { success: true };
+		}),
+
+	updatePhrase: protectedProcedure
+		.input(
+			z.object({
+				userPhraseId: z.string(),
+				meaning: z.string().trim().min(1).max(500).nullable().optional(),
+				exampleUsage: z
+					.string()
+					.trim()
+					.min(1)
+					.max(500)
+					.nullable()
+					.optional(),
+				translation: z
+					.string()
+					.trim()
+					.min(1)
+					.max(300)
+					.nullable()
+					.optional(),
+				literalTranslation: z
+					.string()
+					.trim()
+					.min(1)
+					.max(300)
+					.nullable()
+					.optional(),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const patch: Partial<{
+				customMeaning: string | null;
+				customExampleUsage: string | null;
+				customTranslation: string | null;
+				customLiteralTranslation: string | null;
+			}> = {};
+			if (input.meaning !== undefined) {
+				patch.customMeaning = input.meaning;
+			}
+			if (input.exampleUsage !== undefined) {
+				patch.customExampleUsage = input.exampleUsage;
+			}
+			if (input.translation !== undefined) {
+				patch.customTranslation = input.translation;
+			}
+			if (input.literalTranslation !== undefined) {
+				patch.customLiteralTranslation = input.literalTranslation;
+			}
+
+			if (Object.keys(patch).length === 0) {
+				return { success: true };
+			}
+
+			const updated = await db
+				.update(userPhrase)
+				.set(patch)
+				.where(
+					and(
+						eq(userPhrase.id, input.userPhraseId),
+						eq(userPhrase.userId, ctx.session.user.id),
+					),
+				)
+				.returning({ id: userPhrase.id });
+
+			if (!updated[0]) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Vocabulary phrase not found.",
+				});
+			}
+
 			return { success: true };
 		}),
 

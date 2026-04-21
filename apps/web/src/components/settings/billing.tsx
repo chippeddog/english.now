@@ -66,8 +66,6 @@ export const Billing = () => {
 	return (
 		<div className="space-y-5">
 			<h2 className="font-semibold">{t("settings.billing")}</h2>
-			{/* {(!subscriptionData || subscriptionData.status === "canceled") && (
-			)} */}
 			<div>
 				<Label>{t("settings.billingSection.currentPlan")}</Label>
 				<p className="mt-1 font-medium">
@@ -79,7 +77,7 @@ export const Billing = () => {
 										<span className="inline-flex items-center gap-1.5">
 											{/* <span className="size-2 rounded-full bg-green-500" /> */}
 											{t("settings.billingSection.pro")}{" "}
-											<span className="text-muted-foreground">
+											<span className="text-lime-700 italic">
 												(
 												{status === "trialing"
 													? t("settings.billingSection.statuses.trial")

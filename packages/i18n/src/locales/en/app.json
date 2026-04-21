@@ -90,7 +90,8 @@
             "deleteTitle": "Delete item",
             "deleteDescription": "Are you sure you want to delete this item? This action cannot be undone.",
             "cancel": "Cancel",
-            "delete": "Delete"
+            "delete": "Delete",
+            "edit": "Edit"
         }
     },
     "settings": {

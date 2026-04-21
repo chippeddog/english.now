@@ -14,6 +14,10 @@ import {
 import usePlaybackFromUrl from "@/hooks/use-playback-from-url";
 import { useTRPC } from "@/utils/trpc";
 import AddPhraseDialogContent from "./add-phrase-dialog";
+import EditPhraseDialog, {
+	type EditPhraseTarget,
+	type EditPhraseValues,
+} from "./edit-phrase-dialog";
 import ItemEmptyState from "./item-empty-state";
 import ItemRow from "./item-row";
 import ItemSkeleton from "./item-skeleton";
@@ -41,6 +45,9 @@ export default function Phrases() {
 	const [masteryFilter, setMasteryFilter] = useState<
 		"all" | "new" | "learning" | "reviewing" | "mastered"
 	>("all");
+	const [editTarget, setEditTarget] = useState<
+		(EditPhraseTarget & { userPhraseId: string }) | null
+	>(null);
 	const { playAudio, playingId } = usePlaybackFromUrl();
 
 	const addPhraseMutation = useMutation(
@@ -72,6 +79,21 @@ export default function Phrases() {
 		}),
 	);
 
+	const updatePhraseMutation = useMutation(
+		trpc.vocabulary.updatePhrase.mutationOptions({
+			onSuccess: () => {
+				queryClient.invalidateQueries({
+					queryKey: trpc.vocabulary.getPhrases.queryKey(),
+				});
+				setEditTarget(null);
+				toast.success("Phrase updated");
+			},
+			onError: (error) => {
+				toast.error(error.message);
+			},
+		}),
+	);
+
 	const filteredPhrases = useMemo(() => phrases ?? [], [phrases]);
 	const remainingAdds = access?.adds.remaining;
 	const addHelperText =
@@ -85,6 +107,18 @@ export default function Phrases() {
 		const trimmed = newPhrase.trim();
 		if (!trimmed) return;
 		addPhraseMutation.mutate({ phrase: trimmed, source: "manual" });
+	};
+
+	const handleSaveEdit = (values: EditPhraseValues) => {
+		if (!editTarget) return;
+		if (Object.keys(values).length === 0) {
+			setEditTarget(null);
+			return;
+		}
+		updatePhraseMutation.mutate({
+			userPhraseId: editTarget.userPhraseId,
+			...values,
+		});
 	};
 
 	const isEmpty = !isLoading && (!phrases || phrases.length === 0);
@@ -172,11 +206,34 @@ export default function Phrases() {
 							onDelete={() =>
 								removePhraseMutation.mutate({ userPhraseId: p.userPhraseId })
 							}
+							onEdit={() =>
+								setEditTarget({
+									userPhraseId: p.userPhraseId,
+									text: p.text,
+									meaning: p.meaning,
+									exampleUsage: p.exampleUsage,
+									translation: p.translation,
+									literalTranslation: p.literalTranslation,
+									customMeaning: p.customMeaning,
+									customExampleUsage: p.customExampleUsage,
+									customTranslation: p.customTranslation,
+									customLiteralTranslation: p.customLiteralTranslation,
+								})
+							}
 							primaryClassName="font-semibold"
 						/>
 					))}
 				</div>
 			)}
+			<EditPhraseDialog
+				open={editTarget !== null}
+				onOpenChange={(open) => {
+					if (!open) setEditTarget(null);
+				}}
+				target={editTarget}
+				onSubmit={handleSaveEdit}
+				isPending={updatePhraseMutation.isPending}
+			/>
 		</div>
 	);
 }

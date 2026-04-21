@@ -12,6 +12,10 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import AddWordDialog from "@/components/vocabulary/add-world-dialog";
+import EditWordDialog, {
+	type EditWordTarget,
+	type EditWordValues,
+} from "@/components/vocabulary/edit-word-dialog";
 import usePlaybackFromUrl from "@/hooks/use-playback-from-url";
 import { useTRPC } from "@/utils/trpc";
 import ItemEmptyState from "./item-empty-state";
@@ -42,6 +46,9 @@ export default function Words() {
 	const [masteryFilter, setMasteryFilter] = useState<
 		"all" | "new" | "learning" | "reviewing" | "mastered"
 	>("all");
+	const [editTarget, setEditTarget] = useState<
+		(EditWordTarget & { userWordId: string }) | null
+	>(null);
 
 	const { playAudio, playingId } = usePlaybackFromUrl();
 
@@ -74,6 +81,21 @@ export default function Words() {
 		}),
 	);
 
+	const updateWordMutation = useMutation(
+		trpc.vocabulary.updateWord.mutationOptions({
+			onSuccess: () => {
+				queryClient.invalidateQueries({
+					queryKey: trpc.vocabulary.getWords.queryKey(),
+				});
+				setEditTarget(null);
+				toast.success("Word updated");
+			},
+			onError: (error) => {
+				toast.error(error.message);
+			},
+		}),
+	);
+
 	const filteredWords = useMemo(() => {
 		if (!words) return [];
 		if (masteryFilter === "all") return words;
@@ -91,6 +113,18 @@ export default function Words() {
 		const trimmed = newWord.trim();
 		if (!trimmed) return;
 		addWordMutation.mutate({ word: trimmed, source: "manual" });
+	};
+
+	const handleSaveEdit = (values: EditWordValues) => {
+		if (!editTarget) return;
+		if (Object.keys(values).length === 0) {
+			setEditTarget(null);
+			return;
+		}
+		updateWordMutation.mutate({
+			userWordId: editTarget.userWordId,
+			...values,
+		});
 	};
 
 	const isEmpty = !isLoading && (!words || words.length === 0);
@@ -178,10 +212,33 @@ export default function Words() {
 							onDelete={() =>
 								removeWordMutation.mutate({ userWordId: w.userWordId })
 							}
+							onEdit={() =>
+								setEditTarget({
+									userWordId: w.userWordId,
+									lemma: w.lemma,
+									partOfSpeech: w.partOfSpeech,
+									definition: w.definition,
+									exampleSentence: w.exampleSentence,
+									translation: w.translation,
+									customPartOfSpeech: w.customPartOfSpeech,
+									customDefinition: w.customDefinition,
+									customExampleSentence: w.customExampleSentence,
+									customTranslation: w.customTranslation,
+								})
+							}
 						/>
 					))}
 				</div>
 			)}
+			<EditWordDialog
+				open={editTarget !== null}
+				onOpenChange={(open) => {
+					if (!open) setEditTarget(null);
+				}}
+				target={editTarget}
+				onSubmit={handleSaveEdit}
+				isPending={updateWordMutation.isPending}
+			/>
 		</div>
 	);
 }
