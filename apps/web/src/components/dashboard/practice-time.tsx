@@ -249,7 +249,7 @@ export default function DailyPracticeTime({
 				<PracticeTimeSkeleton />
 			) : (
 				<>
-					<div className="absolute top-12 left-4 flex items-end justify-between">
+					<div className="absolute top-11 left-5 flex items-end justify-between">
 						<div>
 							<div className="font-semibold text-neutral-900 text-xl tabular-nums">
 								{formatMinutes(totalWeekMinutes, t)}
@@ -408,7 +408,7 @@ export default function DailyPracticeTime({
 						</ComposedChart>
 					</ChartContainer>
 
-					<div className="mt-2 flex items-center justify-center gap-5 text-[11px] text-neutral-500">
+					<div className="mt-2 flex items-center gap-5 text-[11px] text-neutral-500">
 						<div className="flex items-center gap-1.5">
 							<span
 								className="inline-block h-[2px] w-4 rounded-full"

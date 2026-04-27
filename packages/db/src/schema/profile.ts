@@ -7,6 +7,7 @@ import {
 	timestamp,
 } from "drizzle-orm/pg-core";
 import { user } from "./auth";
+import { enrollment } from "./curriculum";
 
 export const userProfile = pgTable("user_profile", {
 	id: text("id").primaryKey(),
@@ -15,6 +16,10 @@ export const userProfile = pgTable("user_profile", {
 		.references(() => user.id, { onDelete: "cascade" }),
 	nativeLanguage: text("native_language"),
 	level: text("level"),
+	activeEnrollmentId: text("active_enrollment_id").references(
+		() => enrollment.id,
+		{ onDelete: "set null" },
+	),
 	goal: text("goal"),
 	dailyGoal: integer("daily_goal"),
 	focusAreas: jsonb("focus_areas").$type<string[]>(),

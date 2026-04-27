@@ -281,6 +281,34 @@
       "when": 1776722814275,
       "tag": "0039_next_ultimatum",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1776787423465,
+      "tag": "0040_aspiring_frog_thor",
+      "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1776788021014,
+      "tag": "0041_shocking_tempest",
+      "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1776803963353,
+      "tag": "0042_first_ikaris",
+      "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1777111479468,
+      "tag": "0043_skinny_blizzard",
+      "breakpoints": true
     }
   ]
 }

@@ -150,8 +150,12 @@ function LessonPage() {
 
 	useEffect(() => {
 		if (!lessonData) return;
+		// Guard against double-start: once we already have an attempt id for
+		// this lesson, or the mutation is currently in flight, don't fire again.
+		if (attemptId) return;
+		if (startMutation.isPending) return;
 		startMutation.mutate({ lessonId });
-	}, [lessonData, lessonId]);
+	}, [lessonData, lessonId, attemptId, startMutation.isPending, startMutation]);
 
 	useEffect(() => {
 		setNavbarAttemptId(attemptId);
@@ -266,6 +270,11 @@ function LessonPage() {
 					</div>
 
 					<div>
+						{lessonData?.level && (
+							<div className="mb-3 flex justify-center">
+								<Badge variant={lessonData.level}>{lessonData.level}</Badge>
+							</div>
+						)}
 						<h1 className="mb-2 font-bold font-lyon text-3xl">
 							{lessonData?.title}
 						</h1>

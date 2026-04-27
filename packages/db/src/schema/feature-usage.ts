@@ -13,6 +13,7 @@ import { user } from "./auth";
 export const featureUsageType = pgEnum("feature_usage_type", [
 	"conversation_session",
 	"pronunciation_session",
+	"grammar_session",
 	"lesson_start",
 	"vocabulary_add",
 	"vocabulary_review",

@@ -1,4 +1,8 @@
-import type { CurriculumLessonContent, ExerciseItem } from "@english.now/db";
+import type {
+	CefrLevel,
+	CurriculumLessonContent,
+	ExerciseItem,
+} from "@english.now/db";
 import { FREE_LESSON_FREE_UNIT_COUNT } from "@english.now/shared/feature-limit-config";
 import {
 	and,
@@ -20,10 +24,14 @@ import { grammarTopic, lessonGrammarTopic } from "@english.now/db/schema/grammar
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure, router } from "../index";
+import { profileLevelToCefr } from "../lib/cefr";
 import { getLessonAccessSummary } from "../services/feature-gating";
 import { generateLessonExercises } from "../services/generate-lesson-exercises";
 import { recordDailyFeatureUsage } from "../services/feature-usage";
 import { recordActivity } from "../services/record-activity";
+
+const CEFR_LEVELS: CefrLevel[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
+const cefrLevelSchema = z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]);
 
 // ─── Status Computation ─────────────────────────────────────────────────────
 
@@ -222,6 +230,136 @@ async function getGrammarTopicsByLessonIds(lessonIds: string[]) {
 	return topicsByLessonId;
 }
 
+// ─── Enrollment resolution helpers ──────────────────────────────────────────
+
+async function getLatestPublishedCourseVersion(level: CefrLevel) {
+	const [cv] = await db
+		.select({
+			id: courseVersion.id,
+			courseId: courseVersion.courseId,
+		})
+		.from(courseVersion)
+		.innerJoin(course, eq(course.id, courseVersion.courseId))
+		.where(
+			and(
+				eq(course.level, level),
+				eq(course.isActive, true),
+				eq(courseVersion.status, "published"),
+			),
+		)
+		.orderBy(desc(courseVersion.version))
+		.limit(1);
+
+	return cv ?? null;
+}
+
+async function ensureEnrollmentForLevel(
+	userId: string,
+	level: CefrLevel,
+): Promise<{ enrollmentId: string; courseVersionId: string }> {
+	const cv = await getLatestPublishedCourseVersion(level);
+	if (!cv) {
+		throw new TRPCError({
+			code: "NOT_FOUND",
+			message: `No published course found for level ${level}`,
+		});
+	}
+
+	const [existing] = await db
+		.select({ id: enrollment.id })
+		.from(enrollment)
+		.where(
+			and(
+				eq(enrollment.userId, userId),
+				eq(enrollment.courseVersionId, cv.id),
+			),
+		)
+		.limit(1);
+
+	if (existing) {
+		return { enrollmentId: existing.id, courseVersionId: cv.id };
+	}
+
+	const enrollmentId = crypto.randomUUID();
+	await db.insert(enrollment).values({
+		id: enrollmentId,
+		userId,
+		courseVersionId: cv.id,
+		status: "active",
+	});
+
+	return { enrollmentId, courseVersionId: cv.id };
+}
+
+async function resolveActiveEnrollment(userId: string): Promise<{
+	enrollmentId: string;
+	courseVersionId: string;
+} | null> {
+	const [profile] = await db
+		.select({
+			id: userProfile.id,
+			level: userProfile.level,
+			activeEnrollmentId: userProfile.activeEnrollmentId,
+		})
+		.from(userProfile)
+		.where(eq(userProfile.userId, userId))
+		.limit(1);
+
+	if (profile?.activeEnrollmentId) {
+		const [active] = await db
+			.select({
+				id: enrollment.id,
+				courseVersionId: enrollment.courseVersionId,
+			})
+			.from(enrollment)
+			.where(eq(enrollment.id, profile.activeEnrollmentId))
+			.limit(1);
+
+		if (active) {
+			return {
+				enrollmentId: active.id,
+				courseVersionId: active.courseVersionId,
+			};
+		}
+	}
+
+	const [first] = await db
+		.select({
+			id: enrollment.id,
+			courseVersionId: enrollment.courseVersionId,
+		})
+		.from(enrollment)
+		.where(
+			and(eq(enrollment.userId, userId), eq(enrollment.status, "active")),
+		)
+		.orderBy(desc(enrollment.enrolledAt))
+		.limit(1);
+
+	if (first) {
+		if (profile && !profile.activeEnrollmentId) {
+			await db
+				.update(userProfile)
+				.set({ activeEnrollmentId: first.id, updatedAt: new Date() })
+				.where(eq(userProfile.id, profile.id));
+		}
+		return { enrollmentId: first.id, courseVersionId: first.courseVersionId };
+	}
+
+	if (!profile) return null;
+
+	const defaultLevel: CefrLevel = profileLevelToCefr(profile.level);
+	const cv = await getLatestPublishedCourseVersion(defaultLevel);
+	if (!cv) return null;
+
+	const { enrollmentId } = await ensureEnrollmentForLevel(userId, defaultLevel);
+	await db
+		.update(userProfile)
+		.set({ activeEnrollmentId: enrollmentId, updatedAt: new Date() })
+		.where(eq(userProfile.id, profile.id));
+
+	return { enrollmentId, courseVersionId: cv.id };
+}
+
 // ─── Router ─────────────────────────────────────────────────────────────────
 
 export const contentRouter = router({
@@ -239,66 +377,235 @@ export const contentRouter = router({
 		return e ?? null;
 	}),
 
-	enroll: protectedProcedure
-		.input(z.object({ level: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]) }))
+	listEnrollments: protectedProcedure.query(async ({ ctx }) => {
+		const userId = ctx.session.user.id;
+		const lessonAccess = await getLessonAccessSummary(userId);
+
+		const [profile] = await db
+			.select({
+				activeEnrollmentId: userProfile.activeEnrollmentId,
+			})
+			.from(userProfile)
+			.where(eq(userProfile.userId, userId))
+			.limit(1);
+
+		// Latest published course_version per CEFR level.
+		const courseRows = await db
+			.select({
+				level: course.level,
+				courseVersionId: courseVersion.id,
+			})
+			.from(courseVersion)
+			.innerJoin(course, eq(course.id, courseVersion.courseId))
+			.where(
+				and(
+					eq(course.isActive, true),
+					eq(courseVersion.status, "published"),
+				),
+			)
+			.orderBy(desc(courseVersion.version));
+
+		const latestCvByLevel = new Map<CefrLevel, string>();
+		for (const row of courseRows) {
+			if (!latestCvByLevel.has(row.level)) {
+				latestCvByLevel.set(row.level, row.courseVersionId);
+			}
+		}
+
+		const userEnrollments = await db
+			.select({
+				id: enrollment.id,
+				courseVersionId: enrollment.courseVersionId,
+				status: enrollment.status,
+			})
+			.from(enrollment)
+			.where(eq(enrollment.userId, userId));
+
+		const enrollmentByCv = new Map(
+			userEnrollments.map((e) => [e.courseVersionId, e] as const),
+		);
+
+		const enrollmentIds = userEnrollments.map((e) => e.id);
+		const lessonsByEnrollment = new Map<
+			string,
+			{ total: number; completed: number }
+		>();
+
+		if (enrollmentIds.length > 0) {
+			const versionIds = userEnrollments.map((e) => e.courseVersionId);
+			const units = await db
+				.select({
+					id: curriculumUnit.id,
+					courseVersionId: curriculumUnit.courseVersionId,
+				})
+				.from(curriculumUnit)
+				.where(inArray(curriculumUnit.courseVersionId, versionIds));
+
+			const unitIds = units.map((u) => u.id);
+			const unitToVersion = new Map(
+				units.map((u) => [u.id, u.courseVersionId] as const),
+			);
+
+			const lessons =
+				unitIds.length > 0
+					? await db
+							.select({
+								id: curriculumLesson.id,
+								unitId: curriculumLesson.unitId,
+							})
+							.from(curriculumLesson)
+							.where(inArray(curriculumLesson.unitId, unitIds))
+					: [];
+
+			const lessonsByVersion = new Map<string, Set<string>>();
+			for (const lesson of lessons) {
+				const cvId = unitToVersion.get(lesson.unitId);
+				if (!cvId) continue;
+				const existing = lessonsByVersion.get(cvId) ?? new Set<string>();
+				existing.add(lesson.id);
+				lessonsByVersion.set(cvId, existing);
+			}
+
+			const completions = await db
+				.select({
+					enrollmentId: lessonCompletion.enrollmentId,
+					lessonId: lessonCompletion.lessonId,
+				})
+				.from(lessonCompletion)
+				.where(inArray(lessonCompletion.enrollmentId, enrollmentIds));
+
+			for (const e of userEnrollments) {
+				const lessonIds = lessonsByVersion.get(e.courseVersionId) ?? new Set();
+				const completed = completions.filter(
+					(c) => c.enrollmentId === e.id && lessonIds.has(c.lessonId),
+				).length;
+				lessonsByEnrollment.set(e.id, {
+					total: lessonIds.size,
+					completed,
+				});
+			}
+		}
+
+		return CEFR_LEVELS.map((level) => {
+			const courseVersionId = latestCvByLevel.get(level) ?? null;
+			const e = courseVersionId
+				? (enrollmentByCv.get(courseVersionId) ?? null)
+				: null;
+			const counts = e
+				? (lessonsByEnrollment.get(e.id) ?? { total: 0, completed: 0 })
+				: { total: 0, completed: 0 };
+			const progressPercent =
+				counts.total > 0
+					? Math.round((counts.completed / counts.total) * 100)
+					: 0;
+
+			const isPrimary = e
+				? e.id === profile?.activeEnrollmentId
+				: false;
+
+			const requiresUpgrade =
+				!lessonAccess.isPro && !e && courseVersionId !== null;
+
+			const status: "active" | "completed" | "paused" | "unavailable" =
+				!courseVersionId ? "unavailable" : (e?.status ?? "active");
+
+			return {
+				level,
+				enrollmentId: e?.id ?? null,
+				courseVersionId,
+				status: courseVersionId ? status : ("unavailable" as const),
+				progressPercent,
+				totalLessons: counts.total,
+				completedLessons: counts.completed,
+				isPrimary,
+				requiresUpgrade,
+			};
+		});
+	}),
+
+	setActiveLevel: protectedProcedure
+		.input(z.object({ level: cefrLevelSchema }))
 		.mutation(async ({ ctx, input }) => {
 			const userId = ctx.session.user.id;
 
-			const [existing] = await db
-				.select({ id: enrollment.id })
+			const { enrollmentId } = await ensureEnrollmentForLevel(
+				userId,
+				input.level,
+			);
+
+			await db
+				.update(userProfile)
+				.set({
+					activeEnrollmentId: enrollmentId,
+					updatedAt: new Date(),
+				})
+				.where(eq(userProfile.userId, userId));
+
+			return { enrollmentId, level: input.level };
+		}),
+
+	enroll: protectedProcedure
+		.input(z.object({ level: cefrLevelSchema }))
+		.mutation(async ({ ctx, input }) => {
+			const userId = ctx.session.user.id;
+
+			const existingForLevel = await db
+				.select({
+					id: enrollment.id,
+					courseVersionId: enrollment.courseVersionId,
+					courseLevel: course.level,
+				})
 				.from(enrollment)
-				.where(eq(enrollment.userId, userId))
+				.innerJoin(
+					courseVersion,
+					eq(courseVersion.id, enrollment.courseVersionId),
+				)
+				.innerJoin(course, eq(course.id, courseVersion.courseId))
+				.where(
+					and(
+						eq(enrollment.userId, userId),
+						eq(course.level, input.level),
+					),
+				)
 				.limit(1);
 
-			if (existing) {
+			if (existingForLevel[0]) {
 				return {
-					enrollmentId: existing.id,
+					enrollmentId: existingForLevel[0].id,
 					status: "already_enrolled" as const,
 				};
 			}
 
-			const [cv] = await db
-				.select({ id: courseVersion.id })
-				.from(courseVersion)
-				.innerJoin(course, eq(course.id, courseVersion.courseId))
-				.where(
-					and(
-						eq(course.level, input.level),
-						eq(course.isActive, true),
-						eq(courseVersion.status, "published"),
-					),
-				)
-				.orderBy(desc(courseVersion.version))
-				.limit(1);
-
-			if (!cv) {
-				throw new TRPCError({
-					code: "NOT_FOUND",
-					message: `No published course found for level ${input.level}`,
-				});
-			}
-
-			const enrollmentId = crypto.randomUUID();
-			await db.insert(enrollment).values({
-				id: enrollmentId,
+			const { enrollmentId } = await ensureEnrollmentForLevel(
 				userId,
-				courseVersionId: cv.id,
-				status: "active",
-			});
+				input.level,
+			);
 
 			return { enrollmentId, status: "enrolled" as const };
 		}),
 
-	getCourse: protectedProcedure.query(async ({ ctx }) => {
+	getCourse: protectedProcedure
+		.input(z.object({ level: cefrLevelSchema.optional() }).optional())
+		.query(async ({ ctx, input }) => {
 		const userId = ctx.session.user.id;
 		const lessonAccess = await getLessonAccessSummary(userId);
+
+		let resolved: { enrollmentId: string; courseVersionId: string } | null;
+		if (input?.level) {
+			// Resolve/create enrollment for the requested level WITHOUT touching
+			// user_profile.active_enrollment_id — that only changes via
+			// setActiveLevel.
+			resolved = await ensureEnrollmentForLevel(userId, input.level);
+		} else {
+			resolved = await resolveActiveEnrollment(userId);
+		}
+
+		if (!resolved) return null;
 
 		const [e] = await db
 			.select()
 			.from(enrollment)
-			.where(
-				and(eq(enrollment.userId, userId), eq(enrollment.status, "active")),
-			)
+			.where(eq(enrollment.id, resolved.enrollmentId))
 			.limit(1);
 
 		if (!e) return null;
@@ -453,6 +760,7 @@ export const contentRouter = router({
 				.select({
 					id: curriculumUnit.id,
 					order: curriculumUnit.order,
+					courseVersionId: curriculumUnit.courseVersionId,
 				})
 				.from(curriculumUnit)
 				.where(eq(curriculumUnit.id, lessonRow.unitId))
@@ -460,6 +768,16 @@ export const contentRouter = router({
 
 			if (!unitRow) return null;
 
+			const [courseMeta] = await db
+				.select({ level: course.level })
+				.from(courseVersion)
+				.innerJoin(course, eq(course.id, courseVersion.courseId))
+				.where(eq(courseVersion.id, unitRow.courseVersionId))
+				.limit(1);
+
+			// Match the user's enrollment to the lesson's course_version, so
+			// that in a multi-enrollment world we read progress/attempts from
+			// the correct enrollment instead of picking "any active" one.
 			const [enrollmentRow] = await db
 				.select({
 					id: enrollment.id,
@@ -467,7 +785,10 @@ export const contentRouter = router({
 				})
 				.from(enrollment)
 				.where(
-					and(eq(enrollment.userId, userId), eq(enrollment.status, "active")),
+					and(
+						eq(enrollment.userId, userId),
+						eq(enrollment.courseVersionId, unitRow.courseVersionId),
+					),
 				)
 				.limit(1);
 
@@ -573,6 +894,7 @@ export const contentRouter = router({
 				type: lessonRow.blockType,
 				lessonType:
 					lessonRow.lessonType ?? blockTypeToLessonType(lessonRow.blockType),
+				level: courseMeta?.level ?? null,
 				content: lessonRow.content,
 				grammarTopics: grammarTopicsByLessonId.get(lessonRow.id) ?? [],
 				access: {
@@ -586,24 +908,6 @@ export const contentRouter = router({
 		.input(z.object({ lessonId: z.string() }))
 		.mutation(async ({ ctx, input }) => {
 			const userId = ctx.session.user.id;
-
-			const [e] = await db
-				.select({
-					id: enrollment.id,
-					courseVersionId: enrollment.courseVersionId,
-				})
-				.from(enrollment)
-				.where(
-					and(eq(enrollment.userId, userId), eq(enrollment.status, "active")),
-				)
-				.limit(1);
-
-			if (!e) {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message: "No active enrollment",
-				});
-			}
 
 			const [existingAttempt] = await db
 				.select()
@@ -640,21 +944,45 @@ export const contentRouter = router({
 				});
 			}
 
-			const [unitRow] = await db
+			const [unitForLesson] = await db
 				.select({
 					id: curriculumUnit.id,
 					order: curriculumUnit.order,
+					courseVersionId: curriculumUnit.courseVersionId,
 				})
 				.from(curriculumUnit)
 				.where(eq(curriculumUnit.id, lessonRecord.unitId))
 				.limit(1);
 
-			if (!unitRow) {
+			if (!unitForLesson) {
 				throw new TRPCError({
 					code: "NOT_FOUND",
 					message: "Unit not found",
 				});
 			}
+
+			const [e] = await db
+				.select({
+					id: enrollment.id,
+					courseVersionId: enrollment.courseVersionId,
+				})
+				.from(enrollment)
+				.where(
+					and(
+						eq(enrollment.userId, userId),
+						eq(enrollment.courseVersionId, unitForLesson.courseVersionId),
+					),
+				)
+				.limit(1);
+
+			if (!e) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "No active enrollment",
+				});
+			}
+
+			const unitRow = unitForLesson;
 
 			const courseUnits = await db
 				.select({

@@ -1,5 +1,4 @@
 import { auth } from "@english.now/auth";
-import { db, enrollment, eq } from "@english.now/db";
 import type { Context, Next } from "hono";
 import { Hono } from "hono";
 import { enrollUser } from "../services/enroll-user";
@@ -33,19 +32,6 @@ content.post("/generate", requireAuth, async (c) => {
 	}
 
 	const userId = session.user.id;
-
-	const [existing] = await db
-		.select()
-		.from(enrollment)
-		.where(eq(enrollment.userId, userId))
-		.limit(1);
-
-	if (existing) {
-		return c.json({
-			status: "already_exists",
-			enrollmentId: existing.id,
-		});
-	}
 
 	try {
 		const { enrollmentId } = await enrollUser(userId);

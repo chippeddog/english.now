@@ -1,15 +1,9 @@
+import { useTranslation } from "@english.now/i18n";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Clock3, Sparkles } from "lucide-react";
-import { useMemo } from "react";
+import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import GrammarTheory from "@/components/lesson/theory/grammar-theory";
-import {
-	RelationList,
-	StatusBadge,
-	type TopicRef,
-} from "@/components/practice/grammar-route-shared";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -30,6 +24,7 @@ export const Route = createFileRoute("/_dashboard/practice/grammar/$slug")({
 function GrammarTopicPage() {
 	const trpc = useTRPC();
 	const navigate = useNavigate();
+	const { t } = useTranslation("app");
 	const { slug } = Route.useParams();
 
 	const { data: catalog, isLoading: isCatalogLoading } = useQuery(
@@ -58,7 +53,11 @@ function GrammarTopicPage() {
 				toast.error(
 					err.message === "NO_DRILL_ITEMS_AVAILABLE"
 						? "No drill questions are available for this topic yet."
-						: "Failed to start drill. Try again.",
+						: err.message === "FREE_DAILY_GRAMMAR_LIMIT_REACHED"
+							? "You reached today's free grammar drill limit."
+							: err.message === "GENERATION_FAILED"
+								? "We couldn't generate a fresh drill right now. Please try again."
+								: "Failed to start drill. Try again.",
 				);
 			},
 		}),
@@ -76,70 +75,10 @@ function GrammarTopicPage() {
 		selectedTopicSummary?.activeSessionId ??
 		null;
 	const detailButtonLabel = activeSessionId
-		? "Resume drill"
+		? t("practice.continue")
 		: selectedTopicStatus === "completed"
-			? "Practice again"
-			: "Start drill";
-
-	const topicSlugById = useMemo(
-		() =>
-			new Map((catalog?.topics ?? []).map((topic) => [topic.id, topic.slug])),
-		[catalog?.topics],
-	);
-
-	const currentTopicIndex = (catalog?.topics ?? []).findIndex(
-		(topic) => topic.slug === slug,
-	);
-	const previousTopicSlug =
-		currentTopicIndex > 0
-			? (catalog?.topics[currentTopicIndex - 1]?.slug ?? null)
-			: null;
-	const nextTopicSlug =
-		currentTopicIndex >= 0
-			? (catalog?.topics[currentTopicIndex + 1]?.slug ?? null)
-			: null;
-
-	const prerequisiteTopics = useMemo<TopicRef[]>(
-		() =>
-			(selectedTopic?.prerequisites ?? []).flatMap((topic) =>
-				topic
-					? [
-							{
-								id: topic.id,
-								slug: topicSlugById.get(topic.id) ?? null,
-								title: topic.title,
-								level: topic.level,
-								category: topic.category,
-							},
-						]
-					: [],
-			),
-		[selectedTopic?.prerequisites, topicSlugById],
-	);
-	const relatedTopics = useMemo<TopicRef[]>(
-		() =>
-			(selectedTopic?.relatedTopics ?? []).flatMap((topic) =>
-				topic
-					? [
-							{
-								id: topic.id,
-								slug: topicSlugById.get(topic.id) ?? null,
-								title: topic.title,
-								level: topic.level,
-								category: topic.category,
-							},
-						]
-					: [],
-			),
-		[selectedTopic?.relatedTopics, topicSlugById],
-	);
-
-	const openTopic = (topicSlug: string) => {
-		navigate({
-			to: "/practice/grammar/$slug",
-			params: { slug: topicSlug },
-		});
-	};
+			? t("grammar.review.practiceAgain")
+			: t("grammar.startPractice");
 
 	const handleStartDrill = () => {
 		if (!selectedTopic || !hasDrills || startDrill.isPending) {
@@ -179,11 +118,11 @@ function GrammarTopicPage() {
 					<Button
 						type="button"
 						variant="outline"
-						onClick={() => navigate({ to: "/practice/grammar" })}
+						onClick={() => navigate({ to: "/practice" })}
 						className="mb-4 rounded-xl"
 					>
 						<ArrowLeft className="size-4" />
-						Back to grammar
+						Back to practice
 					</Button>
 					<div className="rounded-3xl border border-border/50 bg-white p-8 text-center shadow-sm">
 						<h1 className="font-bold font-lyon text-3xl tracking-tight">
@@ -205,11 +144,11 @@ function GrammarTopicPage() {
 				<Button
 					type="button"
 					variant="outline"
-					onClick={() => navigate({ to: "/practice/grammar" })}
+					onClick={() => navigate({ to: "/practice" })}
 					className="mb-4 rounded-xl"
 				>
 					<ArrowLeft className="size-4" />
-					Back to grammar
+					Back to practice
 				</Button>
 
 				<div className="rounded-3xl border border-border/50 bg-white shadow-sm">

@@ -1,6 +1,7 @@
+import { useTranslation } from "@english.now/i18n";
 import { useMutation } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ChevronLeft, RotateCcw } from "lucide-react";
+import { ChevronLeft, RotateCcw, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ export type ReviewAttempt = {
 	userAnswer: string;
 	expectedAnswer: string;
 	isCorrect: boolean;
+	hintUsed?: boolean;
 	ruleTitle: string | null;
 };
 
@@ -23,6 +25,8 @@ export type ReviewSummary = {
 	incorrectCount: number;
 	scorePercent: number;
 	weakRules: string[];
+	hintsUsed?: number;
+	mistakeBankCount?: number;
 };
 
 type SessionReviewProps = {
@@ -40,6 +44,7 @@ export default function SessionReview({
 }: SessionReviewProps) {
 	const trpc = useTRPC();
 	const navigate = useNavigate();
+	const { t } = useTranslation("app");
 
 	const startDrill = useMutation(
 		trpc.grammar.startDrillSession.mutationOptions({
@@ -69,7 +74,7 @@ export default function SessionReview({
 				<div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
 					<div>
 						<p className="text-muted-foreground text-sm uppercase tracking-wider">
-							Drill complete
+							{t("grammar.review.complete")}
 						</p>
 						<h1 className="mt-1 font-bold font-lyon text-3xl">{topicTitle}</h1>
 					</div>
@@ -92,7 +97,9 @@ export default function SessionReview({
 
 				{summary.weakRules.length > 0 ? (
 					<div className="mt-6 rounded-2xl bg-neutral-50 p-4">
-						<p className="mb-2 font-medium text-sm">Focus next time</p>
+						<p className="mb-2 font-medium text-sm">
+							{t("grammar.review.focusNext")}
+						</p>
 						<div className="flex flex-wrap gap-2">
 							{summary.weakRules.map((rule) => (
 								<Badge key={rule} variant="secondary">
@@ -100,6 +107,22 @@ export default function SessionReview({
 								</Badge>
 							))}
 						</div>
+					</div>
+				) : null}
+
+				{summary.mistakeBankCount ? (
+					<div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+						<div className="flex items-center gap-2">
+							<Sparkles className="size-4 text-amber-700" />
+							<p className="font-medium text-amber-900">
+								{t("grammar.review.bank")}
+							</p>
+						</div>
+						<p className="mt-2 text-amber-950 text-sm">
+							{t("grammar.review.bankAdded", {
+								count: summary.mistakeBankCount,
+							})}
+						</p>
 					</div>
 				) : null}
 
@@ -111,7 +134,7 @@ export default function SessionReview({
 							className="inline-flex h-10 items-center gap-2 rounded-xl border border-border bg-white px-4 font-medium text-sm transition-colors hover:bg-neutral-50"
 						>
 							<ChevronLeft className="size-4" />
-							Back to topic
+							{t("grammar.review.backToTopic")}
 						</Link>
 					) : null}
 					<Button
@@ -132,13 +155,24 @@ export default function SessionReview({
 						className="h-10 rounded-xl"
 					>
 						<RotateCcw className="size-4" />
-						{startDrill.isPending ? "Starting..." : "Practice again"}
+						{startDrill.isPending
+							? t("grammar.starting")
+							: t("grammar.review.practiceAgain")}
+					</Button>
+					<Button
+						type="button"
+						variant="outline"
+						onClick={() => navigate({ to: "/grammar/review" })}
+						className="h-10 rounded-xl"
+					>
+						<Sparkles className="size-4" />
+						{t("grammar.review.bank")}
 					</Button>
 				</div>
 			</div>
 
 			<div className="mt-6">
-				<h2 className="mb-3 font-semibold">Your answers</h2>
+				<h2 className="mb-3 font-semibold">{t("grammar.review.answers")}</h2>
 				<div className="flex flex-col gap-3">
 					{sorted.map((attempt) => (
 						<div
@@ -152,7 +186,9 @@ export default function SessionReview({
 						>
 							<div className="mb-2 flex items-center justify-between gap-2">
 								<span className="text-muted-foreground text-xs">
-									Question {attempt.itemIndex + 1}
+									{t("grammar.review.questionNumber", {
+										count: attempt.itemIndex + 1,
+									})}
 									{attempt.ruleTitle ? ` · ${attempt.ruleTitle}` : ""}
 								</span>
 								<Badge
@@ -163,7 +199,9 @@ export default function SessionReview({
 											: "border-red-300 bg-red-100 text-red-700"
 									}
 								>
-									{attempt.isCorrect ? "Correct" : "Incorrect"}
+									{attempt.isCorrect
+										? t("grammar.correct")
+										: t("grammar.review.incorrect")}
 								</Badge>
 							</div>
 							<p className="text-base">
@@ -171,23 +209,32 @@ export default function SessionReview({
 							</p>
 							<div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
 								<span>
-									<span className="text-muted-foreground">Your answer: </span>
+									<span className="text-muted-foreground">
+										{t("grammar.yourAnswer")}{" "}
+									</span>
 									<span
 										className={cn(
 											"font-medium",
 											attempt.isCorrect ? "text-lime-700" : "text-red-700",
 										)}
 									>
-										{attempt.userAnswer || "(empty)"}
+										{attempt.userAnswer || t("grammar.emptyAnswer")}
 									</span>
 								</span>
 								{!attempt.isCorrect ? (
 									<span>
-										<span className="text-muted-foreground">Expected: </span>
+										<span className="text-muted-foreground">
+											{t("grammar.correctAnswer")}{" "}
+										</span>
 										<span className="font-medium text-lime-700">
 											{attempt.expectedAnswer}
 										</span>
 									</span>
+								) : null}
+								{attempt.hintUsed ? (
+									<Badge variant="outline">
+										{t("grammar.review.hintUsed")}
+									</Badge>
 								) : null}
 							</div>
 						</div>

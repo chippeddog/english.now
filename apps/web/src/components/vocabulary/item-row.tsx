@@ -8,16 +8,6 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -26,6 +16,7 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import DeleteItemDialog from "./delete-item-dialog";
 import MasteryIndicator from "./mastery-indicator";
 
 export interface ItemRowProps {
@@ -121,7 +112,7 @@ export default function ItemRow({
 						) : null}
 					</div>
 					{secondaryText ? (
-						<p className="line-clamp-1 text-muted-foreground text-sm">
+						<p className="line-clamp-1 text-muted-foreground text-sm italic">
 							{secondaryText}
 						</p>
 					) : null}
@@ -130,7 +121,7 @@ export default function ItemRow({
 			<div className="flex shrink-0 items-center gap-2">
 				<div className="flex items-center gap-1">
 					{reviewLabel ? (
-						<span className="text-[11px] text-muted-foreground">
+						<span className="text-muted-foreground text-xs italic">
 							{reviewLabel}
 						</span>
 					) : null}
@@ -163,29 +154,11 @@ export default function ItemRow({
 					</DropdownMenuContent>
 				</DropdownMenu>
 			</div>
-			<AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-				<AlertDialogContent className="w-sm">
-					<AlertDialogHeader>
-						<AlertDialogTitle>
-							{t("vocabulary.itemRow.deleteTitle")}
-						</AlertDialogTitle>
-						<AlertDialogDescription>
-							{t("vocabulary.itemRow.deleteDescription")}
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogCancel>
-							{t("vocabulary.itemRow.cancel")}
-						</AlertDialogCancel>
-						<AlertDialogAction
-							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-							onClick={onDelete}
-						>
-							{t("vocabulary.itemRow.delete")}
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
+			<DeleteItemDialog
+				open={showDeleteDialog}
+				onOpenChange={setShowDeleteDialog}
+				onConfirm={onDelete}
+			/>
 		</div>
 	);
 }

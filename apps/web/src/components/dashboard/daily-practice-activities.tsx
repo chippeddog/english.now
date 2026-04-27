@@ -372,7 +372,7 @@ export default function DailyPracticeActivities({
 			>
 				<div className="mt-1 mb-3 flex items-center justify-between px-1.5">
 					<div className="flex items-center gap-3">
-						<h2 className="flex gap-2 font-semibold">
+						<h2 className="flex gap-2 font-semibold text-sm">
 							{variant === "home" ? "Today's Practice" : "Today’s Plan"}
 						</h2>
 					</div>

@@ -1,0 +1,2 @@
+ALTER TABLE "user_profile" ADD COLUMN "active_enrollment_id" text;--> statement-breakpoint
+ALTER TABLE "user_profile" ADD CONSTRAINT "user_profile_active_enrollment_id_enrollment_id_fk" FOREIGN KEY ("active_enrollment_id") REFERENCES "public"."enrollment"("id") ON DELETE set null ON UPDATE no action;

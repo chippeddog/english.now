@@ -3,7 +3,9 @@ import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+dotenv.config({
+	path: path.resolve(__dirname, "../../../../apps/server/.env"),
+});
 
 import { createOpenAI } from "@ai-sdk/openai";
 import {
@@ -177,8 +179,12 @@ function normalizePlannedTopic(topic: TopicPlan): TopicPlan {
 	return {
 		...topic,
 		slug: slugify(topic.slug || topic.title),
-		prerequisites: Array.isArray(topic.prerequisites) ? topic.prerequisites : [],
-		relatedTopics: Array.isArray(topic.relatedTopics) ? topic.relatedTopics : [],
+		prerequisites: Array.isArray(topic.prerequisites)
+			? topic.prerequisites
+			: [],
+		relatedTopics: Array.isArray(topic.relatedTopics)
+			? topic.relatedTopics
+			: [],
 		nextTopics: Array.isArray(topic.nextTopics) ? topic.nextTopics : [],
 		lessonTitleHints: Array.isArray(topic.lessonTitleHints)
 			? topic.lessonTitleHints

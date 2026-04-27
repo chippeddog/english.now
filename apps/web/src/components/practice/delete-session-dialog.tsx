@@ -45,13 +45,13 @@ export default function DeleteSessionDialog({
 				<AlertDialogFooter>
 					<AlertDialogCancel
 						variant="ghost"
-						className="flex-1 italic sm:flex-none"
+						className="flex-1 rounded-xl text-sm italic sm:flex-none"
 					>
 						{t("practice.cancel")}
 					</AlertDialogCancel>
 					<AlertDialogAction
-						className="italic"
-						variant="destructive"
+						className="rounded-xl text-sm italic"
+						variant="gradientRed"
 						disabled={isPending}
 						onClick={() => {
 							if (target) {

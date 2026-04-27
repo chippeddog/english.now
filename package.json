@@ -17,7 +17,12 @@
 		"db:push": "turbo -F @english.now/db db:push",
 		"db:studio": "turbo -F @english.now/db db:studio",
 		"db:generate": "turbo -F @english.now/db db:generate",
-		"db:migrate": "turbo -F @english.now/db db:migrate"
+		"db:migrate": "turbo -F @english.now/db db:migrate",
+		"content:curriculum:generate": "pnpm -F @english.now/content curriculum:generate",
+		"content:curriculum:manage": "pnpm -F @english.now/content curriculum:manage",
+		"content:grammar:generate": "pnpm -F @english.now/content grammar:generate",
+		"content:grammar:practice": "pnpm -F @english.now/content grammar:practice",
+		"content:grammar:topic": "pnpm -F @english.now/content grammar:topic"
 	},
 	"dependencies": {
 		"dotenv": "^17.2.2",

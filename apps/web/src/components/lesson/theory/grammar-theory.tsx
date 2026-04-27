@@ -1,6 +1,8 @@
-import { AlertTriangle, ArrowRight, BookOpen, ChevronDown } from "lucide-react";
-import { type ReactNode, useState } from "react";
-import { cn } from "@/lib/utils";
+import { useTranslation } from "@english.now/i18n";
+import { ArrowRight, BookOpen } from "lucide-react";
+import type { ReactNode } from "react";
+import EmojiChip from "@/components/grammar/emoji-chip";
+import ExampleBubble from "@/components/grammar/example-bubble";
 import type { GrammarLessonContent } from "@/types/lesson";
 
 interface GrammarTheoryProps {
@@ -26,6 +28,7 @@ export default function GrammarTheory({
 	headerSlot,
 	footerSlot,
 }: GrammarTheoryProps) {
+	const { t } = useTranslation("app");
 	const objectives = Array.isArray(content.objectives)
 		? content.objectives
 		: [];
@@ -36,12 +39,6 @@ export default function GrammarTheory({
 
 	return (
 		<div className="container mx-auto max-w-2xl px-4 py-8">
-			<div className="mb-2">
-				<span className="inline-block rounded-full bg-violet-100 px-3 py-1 font-medium text-violet-700 text-xs">
-					{badgeLabel}
-				</span>
-			</div>
-
 			{headerSlot}
 
 			<h2 className="mb-2 font-bold font-lyon text-2xl">
@@ -59,30 +56,7 @@ export default function GrammarTheory({
 				</div>
 			) : (
 				<div className="rounded-2xl border border-border/60 border-dashed bg-white px-5 py-6 text-muted-foreground text-sm">
-					This grammar topic does not have detailed rule blocks yet.
-				</div>
-			)}
-
-			{vocabulary.length > 0 && (
-				<div className="mt-8">
-					<h3 className="mb-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
-						Key Vocabulary
-					</h3>
-					<div className="flex flex-wrap gap-2">
-						{vocabulary.map((v) => (
-							<span
-								key={v.word}
-								className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 font-medium text-sky-700 text-sm"
-							>
-								{v.word}
-								{v.definition && (
-									<span className="ml-1 font-normal text-sky-500">
-										— {v.definition}
-									</span>
-								)}
-							</span>
-						))}
-					</div>
+					{t("grammar.noItems")}
 				</div>
 			)}
 
@@ -104,107 +78,91 @@ export default function GrammarTheory({
 }
 
 function RuleCard({ rule }: { rule: GrammarLessonContent["rules"][number] }) {
-	const [mistakesOpen, setMistakesOpen] = useState(false);
+	const { t } = useTranslation("app");
+	const keyExamples = rule.examples.slice(0, 2);
+	const primaryMistake = rule.commonMistakes?.[0];
+	const plainRule = rule.ruleShort ?? rule.explanation;
 
 	return (
-		<div className="overflow-hidden rounded-2xl border border-border/50 bg-white">
-			<div className="border-violet-200 border-b bg-violet-50/50 px-5 py-4">
-				<div className="flex items-center gap-2">
-					<BookOpen className="size-4 text-violet-600" />
-					<h3 className="font-bold text-lg">{rule.title}</h3>
+		<div className="overflow-hidden rounded-3xl border border-border/50 bg-white shadow-sm">
+			<div className="border-violet-200/70 border-b bg-violet-50/60 px-5 py-4">
+				<div className="flex flex-wrap items-center gap-2">
+					<EmojiChip emoji="1" label="Examples first" className="bg-white" />
+					<div className="flex items-center gap-2">
+						<BookOpen className="size-4 text-violet-600" />
+						<h3 className="font-bold text-lg">{rule.title}</h3>
+					</div>
 				</div>
 			</div>
 
-			<div className="px-5 py-4">
-				<p className="mb-4 text-neutral-700 leading-relaxed">
-					{rule.explanation}
-				</p>
-
-				{rule.formula && (
-					<div className="mb-4 rounded-xl bg-neutral-50 px-4 py-3">
-						<p className="font-mono text-sm tracking-wide">{rule.formula}</p>
+			<div className="space-y-5 px-5 py-5">
+				<div>
+					<p className="mb-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+						Examples
+					</p>
+					<div className="grid gap-3 md:grid-cols-2">
+						{keyExamples.map((example) => (
+							<ExampleBubble
+								key={example.sentence}
+								sentence={example.sentence}
+								highlight={example.highlight}
+								note={example.note}
+							/>
+						))}
 					</div>
-				)}
-
-				<div className="mb-2 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
-					Examples
 				</div>
-				<div className="flex flex-col gap-2">
-					{rule.examples.map((ex) => (
-						<div
-							key={ex.sentence}
-							className="flex items-start gap-3 rounded-xl bg-neutral-50 px-4 py-3"
-						>
-							<div className="min-w-0 flex-1">
-								<p
-									className="text-sm"
-									// biome-ignore lint/security/noDangerouslySetInnerHtml: highlighting grammar in examples
-									dangerouslySetInnerHTML={{
-										__html: ex.sentence.replace(
-											new RegExp(
-												`(${ex.highlight.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`,
-												"gi",
-											),
-											'<strong class="text-violet-700">$1</strong>',
-										),
-									}}
-								/>
-								{ex.note && (
-									<p className="mt-1 text-muted-foreground text-xs italic">
-										{ex.note}
-									</p>
-								)}
+
+				<div className="rounded-2xl bg-neutral-50 px-4 py-4">
+					<p className="mb-2 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+						Rule
+					</p>
+					<p className="text-neutral-800 leading-relaxed">{plainRule}</p>
+					{rule.formula ? (
+						<p className="mt-3 font-mono text-muted-foreground text-sm">
+							{rule.formula}
+						</p>
+					) : null}
+				</div>
+
+				{primaryMistake ? (
+					<div>
+						<p className="mb-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+							{t("grammar.contrast.wrong")} / {t("grammar.contrast.right")}
+						</p>
+						<div className="grid gap-3 md:grid-cols-2">
+							<div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-4">
+								<p className="mb-2 font-semibold text-red-700 text-xs uppercase tracking-wider">
+									{t("grammar.contrast.wrong")}
+								</p>
+								<p className="font-medium text-red-700 line-through">
+									{primaryMistake.wrong}
+								</p>
+							</div>
+							<div className="rounded-2xl border border-lime-200 bg-lime-50 px-4 py-4">
+								<p className="mb-2 font-semibold text-lime-700 text-xs uppercase tracking-wider">
+									{t("grammar.contrast.right")}
+								</p>
+								<p className="font-medium text-lime-700">
+									{primaryMistake.correct}
+								</p>
+								<p className="mt-2 text-lime-900 text-sm">
+									{primaryMistake.why}
+								</p>
 							</div>
 						</div>
-					))}
-				</div>
-
-				{rule.commonMistakes && rule.commonMistakes.length > 0 && (
-					<div className="mt-4">
-						<button
-							type="button"
-							onClick={() => setMistakesOpen(!mistakesOpen)}
-							className="flex w-full items-center gap-2 text-left"
-						>
-							<AlertTriangle className="size-4 text-amber-500" />
-							<span className="font-semibold text-amber-700 text-sm">
-								Common Mistakes
-							</span>
-							<ChevronDown
-								className={cn(
-									"ml-auto size-4 text-muted-foreground transition-transform",
-									mistakesOpen && "rotate-180",
-								)}
-							/>
-						</button>
-
-						{mistakesOpen && (
-							<div className="mt-3 flex flex-col gap-2">
-								{rule.commonMistakes.map((m) => (
-									<div
-										key={m.wrong}
-										className="rounded-xl border border-amber-200 bg-amber-50 p-3"
-									>
-										<div className="flex items-start gap-3">
-											<div className="min-w-0 flex-1">
-												<p className="text-sm">
-													<span className="font-medium text-red-600 line-through">
-														{m.wrong}
-													</span>
-													<span className="mx-2 text-muted-foreground">→</span>
-													<span className="font-medium text-lime-700">
-														{m.correct}
-													</span>
-												</p>
-												<p className="mt-1 text-amber-700 text-xs">{m.why}</p>
-											</div>
-										</div>
-									</div>
-								))}
-							</div>
-						)}
 					</div>
-				)}
+				) : null}
+
+				{rule.signal ? (
+					<div className="rounded-2xl border border-sky-200 bg-sky-50 px-4 py-4">
+						<p className="mb-2 font-semibold text-sky-700 text-xs uppercase tracking-wider">
+							{t("grammar.signal")}
+						</p>
+						<p className="text-sky-950 text-sm leading-relaxed">
+							{rule.signal}
+						</p>
+					</div>
+				) : null}
 			</div>
 		</div>
 	);

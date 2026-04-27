@@ -10,6 +10,46 @@ export type LessonTypeValue =
 	| "speaking"
 	| "writing";
 
+export type CefrLevel = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
+
+// ─── Shared UI Types for the lessons tree ────────────────────────────────────
+
+export type LessonStatus = "completed" | "current" | "available" | "locked";
+
+export type UnitStatus = "completed" | "active" | "locked";
+
+export interface LessonTreeLesson {
+	id: string;
+	title: string;
+	subtitle: string;
+	type: LessonTypeValue;
+	status: LessonStatus;
+	progress?: number;
+	lockReason?: string | null;
+	replayAllowed?: boolean;
+	detail: LessonDetail;
+}
+
+export interface LessonTreeUnit {
+	id: string;
+	title: string;
+	status: UnitStatus;
+	progress: number;
+	lessons: LessonTreeLesson[];
+	lockReason?: string | null;
+	unlockMessage?: string;
+}
+
+export interface LessonDetail {
+	description: string;
+	type?: string;
+	objectives?: string[];
+	grammarPoints?: { title: string; description: string; examples?: string[] }[];
+	vocabulary?: VocabularyItem[];
+	rules?: { title: string; description: string; examples?: string[] }[];
+	words?: VocabularyItem[];
+}
+
 // ─── Vocabulary Item ─────────────────────────────────────────────────────────
 
 export interface VocabularyItem {
@@ -36,6 +76,8 @@ export interface GrammarLessonContent extends BaseLessonContent {
 		title: string;
 		explanation: string;
 		formula?: string;
+		ruleShort?: string;
+		signal?: string;
 		examples: { sentence: string; highlight: string; note?: string }[];
 		commonMistakes?: { wrong: string; correct: string; why: string }[];
 	}[];

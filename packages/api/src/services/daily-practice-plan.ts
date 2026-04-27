@@ -11,8 +11,11 @@ import type {
 import {
 	and,
 	conversationSuggestion,
+	course,
+	courseVersion,
 	dailyPracticePlan,
 	db,
+	enrollment,
 	eq,
 	phrase,
 	phraseTranslation,
@@ -36,6 +39,7 @@ import { getSubscriptionSummaryForUser } from "./subscription";
 
 type PracticeProfile = {
 	level: string | null;
+	cefrLevel: CefrLevel | null;
 	interests: string[] | null;
 	focusAreas: string[] | null;
 	goal: string | null;
@@ -80,10 +84,28 @@ function getDurationFromCardCount(cardCount: number): number {
 	return 4;
 }
 
+async function getActiveEnrollmentLevel(
+	userId: string,
+	activeEnrollmentId: string | null,
+): Promise<CefrLevel | null> {
+	if (!activeEnrollmentId) return null;
+	const [row] = await db
+		.select({ level: course.level })
+		.from(enrollment)
+		.innerJoin(courseVersion, eq(courseVersion.id, enrollment.courseVersionId))
+		.innerJoin(course, eq(course.id, courseVersion.courseId))
+		.where(
+			and(eq(enrollment.id, activeEnrollmentId), eq(enrollment.userId, userId)),
+		)
+		.limit(1);
+	return row?.level ?? null;
+}
+
 async function getPracticeProfile(userId: string): Promise<PracticeProfile> {
 	const [profile] = await db
 		.select({
 			level: userProfile.level,
+			activeEnrollmentId: userProfile.activeEnrollmentId,
 			interests: userProfile.interests,
 			focusAreas: userProfile.focusAreas,
 			goal: userProfile.goal,
@@ -94,8 +116,17 @@ async function getPracticeProfile(userId: string): Promise<PracticeProfile> {
 		.where(eq(userProfile.userId, userId))
 		.limit(1);
 
+	// The CEFR attached to the primary enrollment's course_version is the
+	// canonical source of truth. If the user has no active enrollment yet we
+	// fall through to the onboarding-proficiency bucket in callers.
+	const enrollmentLevel = await getActiveEnrollmentLevel(
+		userId,
+		profile?.activeEnrollmentId ?? null,
+	);
+
 	return {
 		level: profile?.level ?? null,
+		cefrLevel: enrollmentLevel,
 		interests: profile?.interests ?? null,
 		focusAreas: profile?.focusAreas ?? null,
 		goal: profile?.goal ?? null,
@@ -625,7 +656,8 @@ export async function generateDailyPracticePlanForUser(
 ) {
 	const profile = await getPracticeProfile(userId);
 	const timezone = profile.timezone || "UTC";
-	const level = profileLevelToCefr(profile.level);
+	const level: CefrLevel =
+		profile.cefrLevel ?? profileLevelToCefr(profile.level);
 
 	const [existingPlan] = await db
 		.select()

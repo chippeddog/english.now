@@ -1,0 +1,1 @@
+ALTER TYPE "public"."feature_usage_type" ADD VALUE 'grammar_session' BEFORE 'lesson_start';

@@ -1,8 +1,8 @@
 import {
 	db,
 	eq,
-	featureUsage,
 	type FeatureUsageType,
+	featureUsage,
 	sql,
 	userProfile,
 } from "@english.now/db";
@@ -21,7 +21,24 @@ export type UserDayContext = {
 	timezone: string;
 };
 
-export async function getUserDayContext(userId: string): Promise<UserDayContext> {
+export function isUnsupportedFeatureUsageValue(
+	error: unknown,
+	feature: FeatureUsageType,
+) {
+	if (!(error instanceof Error)) {
+		return false;
+	}
+
+	const message = error.message.toLowerCase();
+	return (
+		message.includes("feature_usage_type") &&
+		message.includes(feature.toLowerCase())
+	);
+}
+
+export async function getUserDayContext(
+	userId: string,
+): Promise<UserDayContext> {
 	const [profile] = await db
 		.select({ timezone: userProfile.timezone })
 		.from(userProfile)
@@ -83,11 +100,13 @@ export async function getLatestDailyFeatureUsage(
 ) {
 	const rows = await getDailyFeatureUsageRows(userId, feature);
 
-	return rows.sort((a, b) => {
-		const aTime = a.updatedAt?.getTime() ?? a.createdAt?.getTime() ?? 0;
-		const bTime = b.updatedAt?.getTime() ?? b.createdAt?.getTime() ?? 0;
-		return bTime - aTime;
-	})[0] ?? null;
+	return (
+		rows.sort((a, b) => {
+			const aTime = a.updatedAt?.getTime() ?? a.createdAt?.getTime() ?? 0;
+			const bTime = b.updatedAt?.getTime() ?? b.createdAt?.getTime() ?? 0;
+			return bTime - aTime;
+		})[0] ?? null
+	);
 }
 
 export async function recordDailyFeatureUsage({

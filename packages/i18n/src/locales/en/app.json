@@ -77,6 +77,68 @@
         "deleteError": "Failed to delete session",
         "loadMore": "Load more"
     },
+    "grammar": {
+        "title": "Grammar",
+        "progress": "Drill progress",
+        "check": "Check",
+        "checking": "Checking...",
+        "next": "Next",
+        "finishing": "Finishing...",
+        "finishDrill": "Finish drill",
+        "starting": "Starting...",
+        "startPractice": "Start practice",
+        "answerPlaceholder": "Type your answer",
+        "reorderPlaceholder": "Build the sentence here",
+        "reset": "Reset",
+        "correct": "Correct",
+        "notQuite": "Not quite",
+        "yourAnswer": "Your answer:",
+        "correctAnswer": "Correct answer:",
+        "emptyAnswer": "(empty)",
+        "noItems": "No drill items available for this session.",
+        "phase": {
+            "controlled": "Controlled",
+            "semi": "Semi-controlled",
+            "freer": "Freer"
+        },
+        "hint": {
+            "show": "Show hint",
+            "reveal": "Hint"
+        },
+        "translation": {
+            "show": "Show translation",
+            "hide": "Hide translation"
+        },
+        "diagnose": {
+            "title": "Quick check",
+            "subtitle": "A few questions to tune this drill before practice."
+        },
+        "review": {
+            "complete": "Drill complete",
+            "focusNext": "Focus next time",
+            "bank": "Review mistakes",
+            "bankAdded_one": "{{count}} item was added to your mistake bank for spaced review.",
+            "bankAdded_other": "{{count}} items were added to your mistake bank for spaced review.",
+            "due_one": "{{count}} due mistake waiting for review.",
+            "due_other": "{{count}} due mistakes waiting for review.",
+            "backToTopic": "Back to topic",
+            "practiceAgain": "Practice again",
+            "answers": "Your answers",
+            "questionNumber": "Question {{count}}",
+            "incorrect": "Incorrect",
+            "hintUsed": "Hint used"
+        },
+        "startCard": {
+            "title": "Recommended path",
+            "description": "Open the next best topic and keep your grammar streak moving.",
+            "descriptionWithTopic": "Pick up with {{topic}} and keep building from your current level."
+        },
+        "signal": "When to use it",
+        "contrast": {
+            "wrong": "Not this",
+            "right": "Use this"
+        }
+    },
     "vocabulary": {
         "title": "Vocabulary",
         "words": "Words",

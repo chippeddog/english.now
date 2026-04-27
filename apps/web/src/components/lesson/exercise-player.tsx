@@ -139,11 +139,11 @@ export default function ExercisePlayer({
 					{currentIndex + 1} / {totalCount}
 				</span>
 				<div className="flex items-center gap-3">
-					{exercise.phase === "guided" && (
+					{/* {exercise.phase === "guided" && (
 						<span className="rounded-full bg-blue-50 px-2 py-0.5 text-blue-600 text-xs">
 							Guided
 						</span>
-					)}
+					)} */}
 					<span className="font-medium text-muted-foreground text-sm">
 						{correctCount} correct
 					</span>

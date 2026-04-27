@@ -59,14 +59,14 @@ export default function SessionRow({
 						<span className="truncate text-left font-medium text-sm">
 							{session.title}
 						</span>
-						<span className="text-muted-foreground text-xs capitalize">
+						<span className="text-muted-foreground text-xs capitalize italic">
 							{sessionTypeLabel}
 							{statusLabel ? ` · ${statusLabel}` : ""}
 						</span>
 					</div>
 				</div>
 
-				<span className="shrink-0 text-muted-foreground text-xs">
+				<span className="shrink-0 text-muted-foreground text-xs italic">
 					{formatRelativeDate(new Date(session.createdAt))}
 				</span>
 			</button>

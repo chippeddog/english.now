@@ -71,11 +71,11 @@ export default function Streak({
 		>
 			<div className="mt-1 mb-3 flex items-center justify-between gap-3 pr-1.5 pl-1.5 font-medium">
 				<div className="relative flex items-center gap-1.5">
-					<span className="font-lyon text-5xl">{streak}</span>
-					<span className="flex items-center gap-2 font-semibold">
+					<span className="font-lyon text-4xl">{streak}</span>
+					<sub className="flex items-center gap-2 font-semibold text-sm">
 						day streak
 						{/* <Trans>{t("streak.title", { count: streak })}</Trans> */}
-					</span>
+					</sub>
 					{/* <Tooltip>
 						<TooltipTrigger>
 							<svg

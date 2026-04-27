@@ -1,0 +1,26 @@
+{
+  "name": "@english.now/content",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check-types": "tsc -b",
+    "curriculum:generate": "tsx src/scripts/generate-curriculum.ts",
+    "curriculum:manage": "tsx src/scripts/manage-curriculum.ts",
+    "grammar:generate": "tsx src/scripts/generate-grammar-topics.ts",
+    "grammar:practice": "tsx src/scripts/generate-grammar-practice-sets.ts",
+    "grammar:topic": "tsx src/scripts/generate-grammar-topics.ts"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^3.0.28",
+    "@english.now/api": "workspace:*",
+    "@english.now/db": "workspace:*",
+    "ai": "^6.0.85",
+    "dotenv": "catalog:",
+    "drizzle-orm": "^0.44.2",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2",
+    "typescript": "catalog:"
+  }
+}

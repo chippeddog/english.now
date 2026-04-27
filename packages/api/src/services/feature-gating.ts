@@ -1,6 +1,7 @@
 import {
 	FREE_CONVERSATION_MAX_AI_REPLIES,
 	FREE_DAILY_CONVERSATIONS,
+	FREE_DAILY_GRAMMAR_SESSIONS,
 	FREE_DAILY_NEW_LESSON_STARTS,
 	FREE_DAILY_PRONUNCIATION_SESSIONS,
 	FREE_DAILY_VOCAB_ADDS_LIMIT,
@@ -11,6 +12,7 @@ import {
 import {
 	getDailyFeatureUsageTotal,
 	getLatestDailyFeatureUsage,
+	isUnsupportedFeatureUsageValue,
 } from "./feature-usage";
 import { getSubscriptionSummaryForUser } from "./subscription";
 
@@ -36,6 +38,7 @@ export type PracticeAccessSummary = {
 	isPro: boolean;
 	conversation: DailyLimitAccessSummary;
 	pronunciation: DailyLimitAccessSummary;
+	grammar: DailyLimitAccessSummary;
 };
 
 export type LessonAccessSummary = {
@@ -104,6 +107,20 @@ export async function getPracticeAccessSummary(
 		getLatestDailyFeatureUsage(userId, "pronunciation_session"),
 	]);
 
+	let grammarUsed = 0;
+	let latestGrammar: { resourceId?: string | null } | null = null;
+
+	try {
+		[grammarUsed, latestGrammar] = await Promise.all([
+			getDailyFeatureUsageTotal(userId, "grammar_session"),
+			getLatestDailyFeatureUsage(userId, "grammar_session"),
+		]);
+	} catch (error) {
+		if (!isUnsupportedFeatureUsageValue(error, "grammar_session")) {
+			throw error;
+		}
+	}
+
 	return {
 		isPro: subscription.isPro,
 		conversation: buildDailyAccessSummary({
@@ -118,6 +135,12 @@ export async function getPracticeAccessSummary(
 			limit: FREE_DAILY_PRONUNCIATION_SESSIONS,
 			latestResourceId: latestPronunciation?.resourceId || null,
 		}),
+		grammar: buildDailyAccessSummary({
+			isPro: subscription.isPro,
+			used: grammarUsed,
+			limit: FREE_DAILY_GRAMMAR_SESSIONS,
+			latestResourceId: latestGrammar?.resourceId || null,
+		}),
 	};
 }
 
@@ -127,6 +150,10 @@ export async function getConversationAccessSummary(userId: string) {
 
 export async function getPronunciationAccessSummary(userId: string) {
 	return (await getPracticeAccessSummary(userId)).pronunciation;
+}
+
+export async function getGrammarAccessSummary(userId: string) {
+	return (await getPracticeAccessSummary(userId)).grammar;
 }
 
 export async function getLessonAccessSummary(

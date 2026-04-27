@@ -31,8 +31,8 @@ function GrammarSessionPage() {
 	const trpc = useTRPC();
 	const navigate = useNavigate();
 	const { sessionId } = Route.useParams();
-	const [view, setView] = useState<"practice" | "review">("practice");
 	const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
+	const [translationEnabled, setTranslationEnabled] = useState(false);
 
 	const {
 		data: sessionData,
@@ -48,11 +48,18 @@ function GrammarSessionPage() {
 	}, [error, navigate]);
 
 	useEffect(() => {
-		if (!sessionData) return;
-		if (sessionData.status === "completed") {
-			setView("review");
+		if (typeof localStorage === "undefined") {
+			return;
 		}
-	}, [sessionData]);
+		setTranslationEnabled(localStorage.getItem("grammar.l1Enabled") === "1");
+	}, []);
+
+	useEffect(() => {
+		if (typeof localStorage === "undefined") {
+			return;
+		}
+		localStorage.setItem("grammar.l1Enabled", translationEnabled ? "1" : "0");
+	}, [translationEnabled]);
 
 	const handleLogoClick = (event: MouseEvent<HTMLAnchorElement>) => {
 		event.preventDefault();
@@ -67,17 +74,36 @@ function GrammarSessionPage() {
 		return null;
 	}
 
-	const items = (sessionData.items ?? []) as DrillItem[];
+	type SessionDrillItem = Partial<DrillItem> & { answer?: string };
+	const items = ((sessionData.items ?? []) as SessionDrillItem[]).map(
+		(item, index): DrillItem => ({
+			id: item.id ?? crypto.randomUUID(),
+			sessionItemIndex: index,
+			phase: item.phase ?? "controlled",
+			type: item.type ?? "multiple_choice",
+			difficulty: item.difficulty ?? "easy",
+			prompt: item.prompt ?? "",
+			instruction: item.instruction,
+			options: item.options,
+			correctAnswer: item.correctAnswer ?? item.answer ?? "",
+			hint: item.hint,
+			ruleTitle: item.ruleTitle ?? "Grammar",
+			explanation: item.explanation ?? "",
+			l1: item.l1,
+		}),
+	);
 	const attempts = sessionData.attempts ?? [];
 	const initialAttempts: InitialAttempt[] = attempts.map((attempt) => ({
 		itemIndex: attempt.itemIndex,
 		userAnswer: attempt.userAnswer,
 		isCorrect: attempt.isCorrect,
+		hintUsed: attempt.hintUsed ?? false,
 	}));
 
 	const topic = sessionData.topic;
-	const topicTitle = topic?.title ?? "Grammar drill";
-	const topicLevel = topic?.level ?? sessionData.level ?? null;
+	const topicTitle = sessionData.isMistakeReview
+		? "Grammar review"
+		: (topic?.title ?? "Grammar drill");
 	const topicSlug = topic?.slug ?? null;
 
 	return (
@@ -89,10 +115,7 @@ function GrammarSessionPage() {
 							<Logo link="/practice" onClick={handleLogoClick} />
 						</div>
 						<div className="flex items-center gap-2">
-							<ReportIssueDialog
-								sessionId={sessionId}
-								sessionType="grammar"
-							/>
+							<ReportIssueDialog sessionId={sessionId} sessionType="grammar" />
 						</div>
 					</nav>
 				</div>
@@ -103,23 +126,22 @@ function GrammarSessionPage() {
 				setLeaveDialogOpen={setLeaveDialogOpen}
 			/>
 
-			{view === "practice" && sessionData.status !== "completed" ? (
+			{sessionData.status !== "completed" ? (
 				<div className="fade-in slide-in-from-bottom-4 animate-in duration-300">
 					<DrillPlayer
 						sessionId={sessionId}
-						topicTitle={topicTitle}
-						topicLevel={topicLevel}
 						items={items}
 						initialAttempts={initialAttempts}
+						translationEnabled={translationEnabled}
+						onToggleTranslation={() => setTranslationEnabled((prev) => !prev)}
 						onComplete={() => {
 							refetch();
-							setView("review");
 						}}
 					/>
 				</div>
 			) : null}
 
-			{view === "review" && sessionData.summary ? (
+			{sessionData.status === "completed" && sessionData.summary ? (
 				<div className="container relative z-10 mx-auto max-w-3xl px-4 py-6 pt-8">
 					<div className="fade-in slide-in-from-bottom-4 animate-in duration-300">
 						<SessionReview

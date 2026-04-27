@@ -100,6 +100,7 @@ export const profileRouter = router({
 			isPro: practice.isPro,
 			conversation: practice.conversation,
 			pronunciation: practice.pronunciation,
+			grammar: practice.grammar,
 			lessonStarts: lessons.newLessonStarts,
 			vocabularyAdds: vocabulary.adds,
 			vocabularyReviews: vocabulary.reviews,

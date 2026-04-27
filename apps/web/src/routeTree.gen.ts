@@ -53,11 +53,11 @@ import { Route as SessionFeedbackSessionIdRouteImport } from './routes/_session.
 import { Route as PublicBlogSlugRouteImport } from './routes/_public.blog.$slug'
 import { Route as PronunciationPronunciationSessionIdRouteImport } from './routes/_pronunciation.pronunciation.$sessionId'
 import { Route as LessonLessonLessonIdRouteImport } from './routes/_lesson.lesson.$lessonId'
+import { Route as GrammarGrammarReviewRouteImport } from './routes/_grammar.grammar.review'
 import { Route as GrammarGrammarSessionIdRouteImport } from './routes/_grammar.grammar.$sessionId'
 import { Route as DashboardPracticeGrammarRouteImport } from './routes/_dashboard.practice.grammar'
 import { Route as DashboardCoursesCourseIdRouteImport } from './routes/_dashboard.courses.$courseId'
 import { Route as ConversationConversationSessionIdRouteImport } from './routes/_conversation.conversation.$sessionId'
-import { Route as DashboardPracticeGrammarIndexRouteImport } from './routes/_dashboard.practice.grammar.index'
 import { Route as DashboardPracticeGrammarSlugRouteImport } from './routes/_dashboard.practice.grammar.$slug'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -276,6 +276,11 @@ const LessonLessonLessonIdRoute = LessonLessonLessonIdRouteImport.update({
   path: '/lesson/$lessonId',
   getParentRoute: () => LessonRoute,
 } as any)
+const GrammarGrammarReviewRoute = GrammarGrammarReviewRouteImport.update({
+  id: '/grammar/review',
+  path: '/grammar/review',
+  getParentRoute: () => GrammarRoute,
+} as any)
 const GrammarGrammarSessionIdRoute = GrammarGrammarSessionIdRouteImport.update({
   id: '/grammar/$sessionId',
   path: '/grammar/$sessionId',
@@ -298,12 +303,6 @@ const ConversationConversationSessionIdRoute =
     id: '/conversation/$sessionId',
     path: '/conversation/$sessionId',
     getParentRoute: () => ConversationRoute,
-  } as any)
-const DashboardPracticeGrammarIndexRoute =
-  DashboardPracticeGrammarIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => DashboardPracticeGrammarRoute,
   } as any)
 const DashboardPracticeGrammarSlugRoute =
   DashboardPracticeGrammarSlugRouteImport.update({
@@ -343,6 +342,7 @@ export interface FileRoutesByFullPath {
   '/courses/$courseId': typeof DashboardCoursesCourseIdRoute
   '/practice/grammar': typeof DashboardPracticeGrammarRouteWithChildren
   '/grammar/$sessionId': typeof GrammarGrammarSessionIdRoute
+  '/grammar/review': typeof GrammarGrammarReviewRoute
   '/lesson/$lessonId': typeof LessonLessonLessonIdRoute
   '/pronunciation/$sessionId': typeof PronunciationPronunciationSessionIdRoute
   '/blog/$slug': typeof PublicBlogSlugRoute
@@ -354,7 +354,6 @@ export interface FileRoutesByFullPath {
   '/blog/': typeof PublicBlogIndexRoute
   '/session': typeof SessionSessionIndexRoute
   '/practice/grammar/$slug': typeof DashboardPracticeGrammarSlugRoute
-  '/practice/grammar/': typeof DashboardPracticeGrammarIndexRoute
 }
 export interface FileRoutesByTo {
   '/generating': typeof GeneratingRoute
@@ -383,7 +382,9 @@ export interface FileRoutesByTo {
   '/': typeof PublicIndexRoute
   '/conversation/$sessionId': typeof ConversationConversationSessionIdRoute
   '/courses/$courseId': typeof DashboardCoursesCourseIdRoute
+  '/practice/grammar': typeof DashboardPracticeGrammarRouteWithChildren
   '/grammar/$sessionId': typeof GrammarGrammarSessionIdRoute
+  '/grammar/review': typeof GrammarGrammarReviewRoute
   '/lesson/$lessonId': typeof LessonLessonLessonIdRoute
   '/pronunciation/$sessionId': typeof PronunciationPronunciationSessionIdRoute
   '/blog/$slug': typeof PublicBlogSlugRoute
@@ -395,7 +396,6 @@ export interface FileRoutesByTo {
   '/blog': typeof PublicBlogIndexRoute
   '/session': typeof SessionSessionIndexRoute
   '/practice/grammar/$slug': typeof DashboardPracticeGrammarSlugRoute
-  '/practice/grammar': typeof DashboardPracticeGrammarIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -437,6 +437,7 @@ export interface FileRoutesById {
   '/_dashboard/courses/$courseId': typeof DashboardCoursesCourseIdRoute
   '/_dashboard/practice/grammar': typeof DashboardPracticeGrammarRouteWithChildren
   '/_grammar/grammar/$sessionId': typeof GrammarGrammarSessionIdRoute
+  '/_grammar/grammar/review': typeof GrammarGrammarReviewRoute
   '/_lesson/lesson/$lessonId': typeof LessonLessonLessonIdRoute
   '/_pronunciation/pronunciation/$sessionId': typeof PronunciationPronunciationSessionIdRoute
   '/_public/blog/$slug': typeof PublicBlogSlugRoute
@@ -448,7 +449,6 @@ export interface FileRoutesById {
   '/_public/blog/': typeof PublicBlogIndexRoute
   '/_session/session/': typeof SessionSessionIndexRoute
   '/_dashboard/practice/grammar/$slug': typeof DashboardPracticeGrammarSlugRoute
-  '/_dashboard/practice/grammar/': typeof DashboardPracticeGrammarIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -483,6 +483,7 @@ export interface FileRouteTypes {
     | '/courses/$courseId'
     | '/practice/grammar'
     | '/grammar/$sessionId'
+    | '/grammar/review'
     | '/lesson/$lessonId'
     | '/pronunciation/$sessionId'
     | '/blog/$slug'
@@ -494,7 +495,6 @@ export interface FileRouteTypes {
     | '/blog/'
     | '/session'
     | '/practice/grammar/$slug'
-    | '/practice/grammar/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/generating'
@@ -523,7 +523,9 @@ export interface FileRouteTypes {
     | '/'
     | '/conversation/$sessionId'
     | '/courses/$courseId'
+    | '/practice/grammar'
     | '/grammar/$sessionId'
+    | '/grammar/review'
     | '/lesson/$lessonId'
     | '/pronunciation/$sessionId'
     | '/blog/$slug'
@@ -535,7 +537,6 @@ export interface FileRouteTypes {
     | '/blog'
     | '/session'
     | '/practice/grammar/$slug'
-    | '/practice/grammar'
   id:
     | '__root__'
     | '/_conversation'
@@ -576,6 +577,7 @@ export interface FileRouteTypes {
     | '/_dashboard/courses/$courseId'
     | '/_dashboard/practice/grammar'
     | '/_grammar/grammar/$sessionId'
+    | '/_grammar/grammar/review'
     | '/_lesson/lesson/$lessonId'
     | '/_pronunciation/pronunciation/$sessionId'
     | '/_public/blog/$slug'
@@ -587,7 +589,6 @@ export interface FileRouteTypes {
     | '/_public/blog/'
     | '/_session/session/'
     | '/_dashboard/practice/grammar/$slug'
-    | '/_dashboard/practice/grammar/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -914,6 +915,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LessonLessonLessonIdRouteImport
       parentRoute: typeof LessonRoute
     }
+    '/_grammar/grammar/review': {
+      id: '/_grammar/grammar/review'
+      path: '/grammar/review'
+      fullPath: '/grammar/review'
+      preLoaderRoute: typeof GrammarGrammarReviewRouteImport
+      parentRoute: typeof GrammarRoute
+    }
     '/_grammar/grammar/$sessionId': {
       id: '/_grammar/grammar/$sessionId'
       path: '/grammar/$sessionId'
@@ -941,13 +949,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/conversation/$sessionId'
       preLoaderRoute: typeof ConversationConversationSessionIdRouteImport
       parentRoute: typeof ConversationRoute
-    }
-    '/_dashboard/practice/grammar/': {
-      id: '/_dashboard/practice/grammar/'
-      path: '/'
-      fullPath: '/practice/grammar/'
-      preLoaderRoute: typeof DashboardPracticeGrammarIndexRouteImport
-      parentRoute: typeof DashboardPracticeGrammarRoute
     }
     '/_dashboard/practice/grammar/$slug': {
       id: '/_dashboard/practice/grammar/$slug'
@@ -989,13 +990,11 @@ const DashboardCoursesRouteWithChildren =
 
 interface DashboardPracticeGrammarRouteChildren {
   DashboardPracticeGrammarSlugRoute: typeof DashboardPracticeGrammarSlugRoute
-  DashboardPracticeGrammarIndexRoute: typeof DashboardPracticeGrammarIndexRoute
 }
 
 const DashboardPracticeGrammarRouteChildren: DashboardPracticeGrammarRouteChildren =
   {
     DashboardPracticeGrammarSlugRoute: DashboardPracticeGrammarSlugRoute,
-    DashboardPracticeGrammarIndexRoute: DashboardPracticeGrammarIndexRoute,
   }
 
 const DashboardPracticeGrammarRouteWithChildren =
@@ -1042,10 +1041,12 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
 
 interface GrammarRouteChildren {
   GrammarGrammarSessionIdRoute: typeof GrammarGrammarSessionIdRoute
+  GrammarGrammarReviewRoute: typeof GrammarGrammarReviewRoute
 }
 
 const GrammarRouteChildren: GrammarRouteChildren = {
   GrammarGrammarSessionIdRoute: GrammarGrammarSessionIdRoute,
+  GrammarGrammarReviewRoute: GrammarGrammarReviewRoute,
 }
 
 const GrammarRouteWithChildren =

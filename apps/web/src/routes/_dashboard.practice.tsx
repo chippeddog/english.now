@@ -16,7 +16,7 @@ import Conversation from "@/components/practice/conversation";
 import DeleteSessionDialog, {
 	type DeleteSessionTarget,
 } from "@/components/practice/delete-session-dialog";
-import Grammar from "@/components/practice/grammar";
+import Grammar from "@/components/practice/grammar/grammar";
 import Pronunciation from "@/components/practice/pronunciation";
 import RecentSessionsSection, {
 	type RecentSessionsFilter,
