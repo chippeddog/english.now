@@ -1,22 +1,27 @@
+import type { FeatureUsageType } from "@english.now/db";
 import {
 	FREE_CONVERSATION_MAX_AI_REPLIES,
-	FREE_DAILY_CONVERSATIONS,
-	FREE_DAILY_GRAMMAR_SESSIONS,
 	FREE_DAILY_NEW_LESSON_STARTS,
-	FREE_DAILY_PRONUNCIATION_SESSIONS,
 	FREE_DAILY_VOCAB_ADDS_LIMIT,
 	FREE_DAILY_VOCAB_REVIEW_LIMIT,
 	FREE_PRONUNCIATION_MAX_ATTEMPTS,
+	FREE_WEEKLY_PRACTICE_SESSIONS,
 	PRO_PRONUNCIATION_MAX_ATTEMPTS,
 } from "@english.now/shared/feature-limit-config";
 import {
 	getDailyFeatureUsageTotal,
-	getLatestDailyFeatureUsage,
-	isUnsupportedFeatureUsageValue,
+	getLatestWeeklyFeatureUsage,
+	getWeeklyFeatureUsageTotal,
 } from "./feature-usage";
 import { getSubscriptionSummaryForUser } from "./subscription";
 
-type AccessReason = "pro" | "free_available" | "free_daily_limit_reached";
+type AccessReason = "pro" | "free_available" | "free_limit_reached";
+
+const PRACTICE_SESSION_FEATURES = [
+	"conversation_session",
+	"pronunciation_session",
+	"grammar_session",
+] satisfies FeatureUsageType[];
 
 export type DailyLimitAccessSummary = {
 	isPro: boolean;
@@ -86,7 +91,7 @@ function buildDailyAccessSummary(input: {
 		used: input.used,
 		remaining,
 		hasAccess: remaining > 0,
-		reason: remaining > 0 ? "free_available" : "free_daily_limit_reached",
+		reason: remaining > 0 ? "free_available" : "free_limit_reached",
 		latestResourceId: input.latestResourceId ?? null,
 	};
 }
@@ -95,50 +100,32 @@ export async function getPracticeAccessSummary(
 	userId: string,
 ): Promise<PracticeAccessSummary> {
 	const subscription = await getSubscriptionSummaryForUser(userId);
-	const [
-		conversationUsed,
-		pronunciationUsed,
-		latestConversation,
-		latestPronunciation,
-	] = await Promise.all([
-		getDailyFeatureUsageTotal(userId, "conversation_session"),
-		getDailyFeatureUsageTotal(userId, "pronunciation_session"),
-		getLatestDailyFeatureUsage(userId, "conversation_session"),
-		getLatestDailyFeatureUsage(userId, "pronunciation_session"),
-	]);
-
-	let grammarUsed = 0;
-	let latestGrammar: { resourceId?: string | null } | null = null;
-
-	try {
-		[grammarUsed, latestGrammar] = await Promise.all([
-			getDailyFeatureUsageTotal(userId, "grammar_session"),
-			getLatestDailyFeatureUsage(userId, "grammar_session"),
+	const [practiceUsed, latestConversation, latestPronunciation, latestGrammar] =
+		await Promise.all([
+			getWeeklyFeatureUsageTotal(userId, PRACTICE_SESSION_FEATURES),
+			getLatestWeeklyFeatureUsage(userId, "conversation_session"),
+			getLatestWeeklyFeatureUsage(userId, "pronunciation_session"),
+			getLatestWeeklyFeatureUsage(userId, "grammar_session"),
 		]);
-	} catch (error) {
-		if (!isUnsupportedFeatureUsageValue(error, "grammar_session")) {
-			throw error;
-		}
-	}
 
 	return {
 		isPro: subscription.isPro,
 		conversation: buildDailyAccessSummary({
 			isPro: subscription.isPro,
-			used: conversationUsed,
-			limit: FREE_DAILY_CONVERSATIONS,
+			used: practiceUsed,
+			limit: FREE_WEEKLY_PRACTICE_SESSIONS,
 			latestResourceId: latestConversation?.resourceId || null,
 		}),
 		pronunciation: buildDailyAccessSummary({
 			isPro: subscription.isPro,
-			used: pronunciationUsed,
-			limit: FREE_DAILY_PRONUNCIATION_SESSIONS,
+			used: practiceUsed,
+			limit: FREE_WEEKLY_PRACTICE_SESSIONS,
 			latestResourceId: latestPronunciation?.resourceId || null,
 		}),
 		grammar: buildDailyAccessSummary({
 			isPro: subscription.isPro,
-			used: grammarUsed,
-			limit: FREE_DAILY_GRAMMAR_SESSIONS,
+			used: practiceUsed,
+			limit: FREE_WEEKLY_PRACTICE_SESSIONS,
 			latestResourceId: latestGrammar?.resourceId || null,
 		}),
 	};

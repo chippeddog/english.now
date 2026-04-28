@@ -213,7 +213,7 @@ export function GrammarPickerDialog({
 						<div className="flex items-center gap-3 border-border/60 border-b px-6 py-4">
 							<div className="min-w-0 flex-1">
 								<DialogTitle className="font-lyon font-semibold text-2xl">
-									Grammar practice
+									Grammar Topics
 								</DialogTitle>
 							</div>
 						</div>

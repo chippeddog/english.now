@@ -967,7 +967,7 @@ export const grammarRouter = router({
 			if (!access.hasAccess) {
 				throw new TRPCError({
 					code: "PRECONDITION_FAILED",
-					message: "FREE_DAILY_GRAMMAR_LIMIT_REACHED",
+					message: "FREE_WEEKLY_PRACTICE_LIMIT_REACHED",
 				});
 			}
 

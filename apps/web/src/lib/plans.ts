@@ -20,8 +20,8 @@ const _plans = [
 		paddlePriceId: null as string | null,
 		features: [
 			"First unit free + 1 new lesson per day",
-			"1 AI conversation per day (up to 8 replies)",
-			"1 pronunciation session per day (3 attempts)",
+			"3 AI practice sessions per week",
+			"Conversation, pronunciation, or grammar practice",
 			"10 vocab adds + 15 review cards per day",
 			"Basic feedback preview",
 			"Progress tracking",
@@ -36,7 +36,7 @@ const _plans = [
 		duration: "month" as const,
 		paddlePriceId: PADDLE_PRICE_IDS.monthly,
 		features: [
-			"Unlimited AI conversations and pronunciation",
+			"Unlimited AI practice",
 			"Full lesson access",
 			"Full AI feedback and corrections",
 			"Unlimited vocabulary practice and saves",
@@ -53,7 +53,7 @@ const _plans = [
 		duration: "year" as const,
 		paddlePriceId: PADDLE_PRICE_IDS.yearly,
 		features: [
-			"Unlimited AI conversations and pronunciation",
+			"Unlimited AI practice",
 			"Full lesson access",
 			"Full AI feedback and corrections",
 			"Unlimited vocabulary practice and saves",

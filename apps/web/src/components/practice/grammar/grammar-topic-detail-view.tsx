@@ -9,6 +9,12 @@ import { DialogTitle } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/utils/trpc";
+import {
+	ExplanationRenderer,
+	QuickMapRenderer,
+	type StructuredExplanation,
+	type StructuredQuickMap,
+} from "./grammar-topic-content-renderers";
 
 type GrammarRule = {
 	title: string;
@@ -20,7 +26,15 @@ type GrammarRule = {
 	commonMistakes?: { wrong: string; correct: string; why: string }[];
 };
 
-type QuickMap =
+type TopicContentWithStructured = {
+	rules?: GrammarRule[];
+	vocabulary?: unknown[];
+	notes?: string[];
+	explanation?: StructuredExplanation;
+	quickMap?: StructuredQuickMap;
+};
+
+type LegacyQuickMap =
 	| {
 			type: "forms";
 			title: string;
@@ -58,7 +72,7 @@ function buildQuickMap({
 	title: string;
 	category: string;
 	rules: GrammarRule[];
-}): QuickMap | null {
+}): LegacyQuickMap | null {
 	const searchable = `${title} ${category}`.toLowerCase();
 
 	if (
@@ -159,8 +173,9 @@ export function GrammarTopicDetailView({
 				toast.error(
 					err.message === "NO_DRILL_ITEMS_AVAILABLE"
 						? "No drill questions are available for this topic yet."
-						: err.message === "FREE_DAILY_GRAMMAR_LIMIT_REACHED"
-							? "You reached today's free grammar drill limit."
+						: err.message === "FREE_WEEKLY_PRACTICE_LIMIT_REACHED" ||
+								err.message === "FREE_DAILY_GRAMMAR_LIMIT_REACHED"
+							? "You reached this week's free practice limit."
 							: err.message === "GENERATION_FAILED"
 								? "We couldn't generate a fresh drill right now. Please try again."
 								: "Failed to start drill. Try again.",
@@ -179,17 +194,25 @@ export function GrammarTopicDetailView({
 			? t("grammar.review.practiceAgain")
 			: t("grammar.startPractice");
 
+	const content = topic?.content as TopicContentWithStructured | undefined;
 	const objectives = topic?.objectives ?? [];
-	const rules = topic?.content?.rules ?? [];
-	const vocabulary = topic?.content?.vocabulary ?? [];
-	const notes = topic?.content?.notes ?? [];
-	const quickMap = topic
+	const rules = content?.rules ?? [];
+	const vocabulary = content?.vocabulary ?? [];
+	const notes = content?.notes ?? [];
+	const structuredExplanation = content?.explanation;
+	const structuredQuickMap = content?.quickMap;
+	const legacyQuickMap = topic
 		? buildQuickMap({
 				title: topic.title,
 				category: topic.category,
 				rules,
 			})
 		: null;
+	const hasPreviewContent =
+		Boolean(structuredExplanation) ||
+		Boolean(structuredQuickMap) ||
+		rules.length > 0 ||
+		vocabulary.length > 0;
 
 	const handleStart = () => {
 		if (!topic || startDrill.isPending) return;
@@ -203,14 +226,6 @@ export function GrammarTopicDetailView({
 		}
 		if (!hasDrills) return;
 		startDrill.mutate({ topicId: topic.id });
-	};
-
-	const handlePreview = () => {
-		onClose();
-		navigate({
-			to: "/practice/grammar/$slug",
-			params: { slug },
-		});
 	};
 
 	return (
@@ -273,22 +288,10 @@ export function GrammarTopicDetailView({
 								</div>
 							) : null}
 
-							{rules.length > 0 ? (
-								<div className="flex flex-col gap-4">
-									<div>
-										<p className="font-semibold text-slate-900">Explanation</p>
-										<p className="text-muted-foreground text-sm">
-											Read the rule, then use the quick map while practicing.
-										</p>
-									</div>
-									{rules.map((rule, index) => (
-										<ExplanationCard
-											key={`${rule.title}-${index}`}
-											rule={rule}
-											index={index}
-										/>
-									))}
-								</div>
+							{structuredExplanation ? (
+								<ExplanationRenderer explanation={structuredExplanation} />
+							) : rules.length > 0 ? (
+								<LegacyExplanationRenderer rules={rules} />
 							) : null}
 
 							{notes.length > 0 ? (
@@ -320,7 +323,7 @@ export function GrammarTopicDetailView({
 							<Skeleton className="h-14 w-full rounded-xl" />
 							<Skeleton className="h-14 w-full rounded-xl" />
 						</>
-					) : rules.length === 0 && vocabulary.length === 0 ? (
+					) : !hasPreviewContent ? (
 						<div className="flex h-full flex-col items-center justify-center rounded-xl border border-border/60 border-dashed bg-white p-6 text-center">
 							<BookOpenIcon className="mb-2 size-5 text-muted-foreground" />
 							<p className="text-muted-foreground text-sm">
@@ -329,8 +332,10 @@ export function GrammarTopicDetailView({
 						</div>
 					) : (
 						<div>
-							{quickMap ? (
-								<QuickMapCard map={quickMap} />
+							{structuredQuickMap ? (
+								<QuickMapRenderer map={structuredQuickMap} />
+							) : legacyQuickMap ? (
+								<QuickMapCard map={legacyQuickMap} />
 							) : (
 								<div className="rounded-2xl border border-border/60 border-dashed bg-white p-4 text-muted-foreground text-sm">
 									Quick reference coming soon for this topic.
@@ -386,6 +391,26 @@ export function GrammarTopicDetailView({
 				</Button>
 			</div>
 		</>
+	);
+}
+
+function LegacyExplanationRenderer({ rules }: { rules: GrammarRule[] }) {
+	return (
+		<div className="flex flex-col gap-4">
+			<div>
+				<p className="font-semibold text-slate-900">Explanation</p>
+				<p className="text-muted-foreground text-sm">
+					Read the rule, then use the quick map while practicing.
+				</p>
+			</div>
+			{rules.map((rule, index) => (
+				<ExplanationCard
+					key={`${rule.title}-${index}`}
+					rule={rule}
+					index={index}
+				/>
+			))}
+		</div>
 	);
 }
 
@@ -468,7 +493,7 @@ function ExplanationCard({
 	);
 }
 
-function QuickMapCard({ map }: { map: QuickMap }) {
+function QuickMapCard({ map }: { map: LegacyQuickMap }) {
 	return (
 		<div className="overflow-hidden rounded-2xl border border-border/60 bg-white">
 			<div className="flex items-center gap-2 px-3 py-3">

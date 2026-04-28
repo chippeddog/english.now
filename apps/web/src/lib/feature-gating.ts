@@ -8,6 +8,10 @@ type PracticeAccessSummary = {
 		hasAccess: boolean;
 		latestResourceId: string | null;
 	};
+	grammar: {
+		hasAccess: boolean;
+		latestResourceId: string | null;
+	};
 };
 
 type AiActivity = {
@@ -45,7 +49,10 @@ export function getActivityGateState(
 		return "available";
 	}
 
-	if (activity.sessionId && activity.sessionId === featureAccess?.latestResourceId) {
+	if (
+		activity.sessionId &&
+		activity.sessionId === featureAccess?.latestResourceId
+	) {
 		return "resume";
 	}
 
@@ -57,5 +64,8 @@ export function isFreePracticeLimitError(error: unknown) {
 		return false;
 	}
 
-	return error.message.includes("FREE_DAILY_LIMIT_REACHED");
+	return (
+		error.message.includes("FREE_WEEKLY_PRACTICE_LIMIT_REACHED") ||
+		error.message.includes("FREE_DAILY_LIMIT_REACHED")
+	);
 }

@@ -115,9 +115,10 @@ export function GrammarLevelSection({
 						const Icon = getCategoryIcon(category);
 						return (
 							<div key={category} className="flex flex-col gap-3">
-								<div className="flex items-center gap-2 px-1 text-muted-foreground">
+								<div className="flex items-center gap-1.5 px-1 text-muted-foreground">
 									<Icon className="size-4" />
 									<h4 className="font-medium text-sm">{category}</h4>
+									<span className="h-px flex-1 bg-neutral-200" />
 								</div>
 								<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
 									{categoryTopics.map((topic) => (

@@ -65,6 +65,215 @@ const topicPlanSchema = z.object({
 	),
 });
 
+const grammarBlockColorSchema = z.enum(["success", "error", "ai"]);
+
+const grammarPatternPartSchema = z.object({
+	text: z.string(),
+	role: z.enum(["subject", "verb", "auxiliary", "object", "rest", "modifier"]),
+	highlight: z.boolean().nullable(),
+});
+
+const grammarPatternSchema = z.object({
+	slots: z.array(z.string()).min(2).max(6),
+	example: z.object({
+		parts: z.array(grammarPatternPartSchema).min(2).max(8),
+	}),
+});
+
+const grammarMistakeSchema = z.object({
+	wrong: z.string(),
+	correct: z.string(),
+	why: z.string(),
+});
+
+const grammarContrastItemSchema = z.object({
+	wrong: z.string(),
+	right: z.string(),
+	why: z.string(),
+});
+
+const grammarPairSideSchema = z.object({
+	label: z.string(),
+	sentence: z.string(),
+	highlight: z.string(),
+	hint: z.string(),
+});
+
+type DecisionTreeNode =
+	| {
+			question: string;
+			yes: DecisionTreeNode;
+			no: DecisionTreeNode;
+	  }
+	| {
+			answer: string;
+			example: string;
+	  };
+
+const decisionTreeNodeSchema: z.ZodType<DecisionTreeNode> = z.lazy(() =>
+	z.union([
+		z.object({
+			question: z.string().max(80),
+			yes: decisionTreeNodeSchema,
+			no: decisionTreeNodeSchema,
+		}),
+		z.object({
+			answer: z.string().max(30),
+			example: z.string().max(80),
+		}),
+	]),
+);
+
+const grammarExplanationSectionSchema = z.discriminatedUnion("kind", [
+	z.object({
+		kind: z.literal("rule"),
+		text: z.string().min(10).max(300),
+	}),
+	z.object({
+		kind: z.literal("form"),
+		title: z.string().min(2).max(60),
+		color: grammarBlockColorSchema,
+		pattern: grammarPatternSchema,
+		examples: z.array(z.string().min(2).max(100)).min(2).max(5),
+		note: z.string().max(160).nullable(),
+	}),
+	z.object({
+		kind: z.literal("contrast"),
+		title: z.string().max(40).nullable(),
+		items: z.array(grammarContrastItemSchema).min(1).max(4),
+	}),
+	z.object({
+		kind: z.literal("signal"),
+		title: z.string().max(40).nullable(),
+		rule: z.string().min(5).max(200),
+		cues: z.array(z.string().min(1).max(40)).min(2).max(12),
+	}),
+	z.object({
+		kind: z.literal("table"),
+		title: z.string().max(40).nullable(),
+		columns: z.array(z.string()).length(2),
+		rows: z.array(z.array(z.string()).length(2)).min(2).max(12),
+		note: z.string().max(160).nullable(),
+	}),
+	z.object({
+		kind: z.literal("pair"),
+		title: z.string().max(40).nullable(),
+		left: grammarPairSideSchema,
+		right: grammarPairSideSchema,
+	}),
+]);
+
+const grammarExplanationSchema = z.object({
+	intro: z.string().min(10).max(240),
+	sections: z.array(grammarExplanationSectionSchema).min(1).max(8),
+});
+
+const grammarQuickMapSchema = z.discriminatedUnion("type", [
+	z.object({
+		type: z.literal("forms_table"),
+		title: z.string(),
+		icon: z.string().nullable(),
+		columns: z.array(z.string()).length(2),
+		rows: z
+			.array(
+				z.object({
+					from: z.string(),
+					to: z.string(),
+				}),
+			)
+			.min(2)
+			.max(12),
+	}),
+	z.object({
+		type: z.literal("tense_card"),
+		title: z.string(),
+		icon: z.string().nullable(),
+		blocks: z
+			.array(
+				z.object({
+					label: z.string().max(20),
+					color: grammarBlockColorSchema,
+					formula: z.string().min(3).max(80),
+					example: z.string().min(2).max(80),
+				}),
+			)
+			.min(2)
+			.max(4),
+		signals: z.array(z.string().max(30)).max(10).nullable(),
+	}),
+	z.object({
+		type: z.literal("formula"),
+		title: z.string(),
+		icon: z.string().nullable(),
+		slots: z.array(z.string()).min(2).max(6),
+		example: z.string().min(3).max(80),
+	}),
+	z.object({
+		type: z.literal("decision_tree"),
+		title: z.string(),
+		icon: z.string().nullable(),
+		root: decisionTreeNodeSchema,
+	}),
+	z.object({
+		type: z.literal("timeline"),
+		title: z.string(),
+		icon: z.string().nullable(),
+		anchor: z.literal("now"),
+		events: z
+			.array(
+				z.object({
+					label: z.string().max(40),
+					position: z.enum([
+						"past",
+						"past-to-now",
+						"now",
+						"now-to-future",
+						"future",
+					]),
+					marker: z.enum(["point", "span"]),
+				}),
+			)
+			.min(1)
+			.max(5),
+		caption: z.string().max(120),
+	}),
+	z.object({
+		type: z.literal("minimal_pair"),
+		title: z.string(),
+		icon: z.string().nullable(),
+		left: grammarPairSideSchema,
+		right: grammarPairSideSchema,
+	}),
+	z.object({
+		type: z.literal("register_ladder"),
+		title: z.string(),
+		icon: z.string().nullable(),
+		tiers: z
+			.array(
+				z.object({
+					level: z.enum(["formal", "neutral", "casual"]),
+					example: z.string().max(80),
+				}),
+			)
+			.length(3),
+	}),
+	z.object({
+		type: z.literal("clock"),
+		title: z.string(),
+		icon: z.string().nullable(),
+		variant: z.enum(["day", "week", "year"]),
+		slots: z
+			.array(
+				z.object({
+					preposition: z.string().max(8),
+					examples: z.array(z.string().max(40)).min(1).max(4),
+				}),
+			)
+			.min(2)
+			.max(4),
+	}),
+]);
+
 const grammarContentSchema = z.object({
 	description: z.string(),
 	objectives: z.array(z.string()).min(2).max(4),
@@ -81,25 +290,12 @@ const grammarContentSchema = z.object({
 				}),
 			),
 			commonMistakes: z
-				.array(
-					z.object({
-						wrong: z.string(),
-						correct: z.string(),
-						why: z.string(),
-					}),
-				)
+				.array(grammarMistakeSchema)
 				.nullable(),
 		}),
 	),
-	vocabulary: z.array(
-		z.object({
-			word: z.string(),
-			pos: z.string().nullable(),
-			definition: z.string().nullable(),
-			pronunciation: z.string().nullable(),
-			examples: z.array(z.string()).nullable(),
-		}),
-	),
+	explanation: grammarExplanationSchema,
+	quickMap: grammarQuickMapSchema,
 	notes: z.array(z.string()).nullable(),
 	practice: z
 		.object({
@@ -314,8 +510,33 @@ Requirements:
 - Include 1-3 rules with clear explanations
 - Examples must be natural, level-appropriate, and highlight the target form
 - Include common mistakes learners really make
-- Include a small supporting vocabulary list
-- Keep content reusable across lessons, not lesson-specific`,
+- Keep content reusable across lessons, not lesson-specific
+- Legacy rules.commonMistakes must use fields wrong, correct, and why.
+
+Structured explanation requirements:
+- Also generate explanation.intro and explanation.sections for a premium visual lesson view.
+- Always include one rule section and one contrast section.
+- Structured contrast sections must use fields wrong, right, and why.
+- Use form sections for tense, modal, article, preposition, and pattern topics. For tense topics, include positive, negative, and question form sections with colors success, error, and ai.
+- Use table sections for closed form sets such as pronouns, possessives, plurals, irregular forms, and auxiliary tables.
+- Use pair sections for direct two-way contrasts such as for/since, this/that, much/many, and some/any.
+- Use signal sections for tense, modal, time, and frequency topics.
+- Keep section text concise and adult: work, travel, technology, relationships, study, and daily life.
+- Pattern example parts must mark the target grammar part with highlight: true.
+
+Quick map requirements:
+- Generate exactly one quickMap for the topic.
+- Pick the first matching type: tense_card, forms_table, minimal_pair, decision_tree, timeline, formula, register_ladder, clock.
+- Use tense_card for verb tenses and modals; exactly three blocks when the topic has positive, negative, and question forms.
+- Use forms_table for closed paired forms.
+- Use minimal_pair for exactly two confusing forms.
+- Use decision_tree for choosing among three or more options.
+- Use timeline for concepts mainly about when something happens.
+- Use formula for one reusable sentence pattern.
+- Use register_ladder for formality and politeness.
+- Use clock for in/on/at time prepositions.
+- Use camelCase field names exactly: quickMap, not quick_map.
+- For nullable fields such as title, note, icon, signals, and highlight, output null when the value is not needed.`,
 		prompt: `Create canonical grammar topic content for:
 Title: ${topic.title}
 Category: ${topic.category}
@@ -328,7 +549,10 @@ Prerequisites: ${topic.prerequisites.join(", ") || "none"}`,
 		throw new Error(`Failed to generate content for "${topic.title}"`);
 	}
 
-	return stripNulls(output) as GrammarTopicContent;
+	return {
+		...stripNulls(output),
+		vocabulary: [],
+	} as GrammarTopicContent;
 }
 
 async function loadPublishedGrammarLessons(

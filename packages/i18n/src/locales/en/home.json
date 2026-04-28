@@ -106,8 +106,8 @@
         "description": "Great for beginners.",
         "features": [
           "First unit free + 1 lesson per day",
-          "1 AI conversation per day",
-          "1 pronunciation session per day",
+          "3 AI practice sessions per week",
+          "Conversation, pronunciation, or grammar practice",
           "10 vocab adds + 15 review cards per day",
           "Basic feedback preview"
         ]
@@ -116,7 +116,7 @@
         "name": "Monthly",
         "description": "Great for intermediate learners.",
         "features": [
-          "Unlimited AI conversations and pronunciation",
+          "Unlimited AI practice",
           "Full lesson access",
           "Full AI feedback and corrections",
           "Unlimited vocabulary practice and saves",
@@ -127,7 +127,7 @@
         "name": "Yearly",
         "description": "Great for advanced learners.",
         "features": [
-          "Unlimited AI conversations and pronunciation",
+          "Unlimited AI practice",
           "Full lesson access",
           "Full AI feedback and corrections",
           "Unlimited vocabulary practice and saves",
@@ -147,7 +147,7 @@
       },
       "doINeedToPay": {
         "question": "Do I need to pay to use English Now?",
-        "answer": "We offer both free and premium plans. The free plan includes the first lesson unit, one new lesson per day, one AI conversation per day, one pronunciation session per day, and limited daily vocabulary practice. Our premium plan unlocks unlimited practice, full lesson access, detailed AI feedback, and personalized learning paths."
+        "answer": "We offer both free and premium plans. The free plan includes the first lesson unit, one new lesson per day, three AI practice sessions per week, and limited daily vocabulary practice. Our premium plan unlocks unlimited practice, full lesson access, detailed AI feedback, and personalized learning paths."
       },
       "canIPracticeSpeaking": {
         "question": "Can I practice speaking English with the app?",

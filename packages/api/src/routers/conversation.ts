@@ -13,12 +13,12 @@ import { generateText, Output } from "ai";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure, rateLimitedProcedure, router } from "../index";
-import { getConversationReviewData } from "../services/conversation-review";
 import { getConversationSessionMeta } from "../services/conversation-mode";
 import {
 	buildConversationHintSystemPrompt,
 	buildConversationSessionFromActivity,
 } from "../services/conversation-prompt";
+import { getConversationReviewData } from "../services/conversation-review";
 import {
 	getTodayPracticePlanRecord,
 	markDailyPracticeActivityStarted,
@@ -200,13 +200,16 @@ export const conversationRouter = router({
 			if (!access.isPro && !access.hasAccess) {
 				throw new TRPCError({
 					code: "FORBIDDEN",
-					message: "FREE_DAILY_LIMIT_REACHED",
+					message: "FREE_WEEKLY_PRACTICE_LIMIT_REACHED",
 					cause: access,
 				});
 			}
 
 			const level = profile[0]?.level ?? "beginner";
-			const sessionConfig = buildConversationSessionFromActivity(activity, level);
+			const sessionConfig = buildConversationSessionFromActivity(
+				activity,
+				level,
+			);
 
 			const newSession = {
 				id: sessionId,

@@ -267,7 +267,7 @@ conversation.post("/start", requireAuth, async (c) => {
 	if (!access.isPro && !access.hasAccess) {
 		return c.json(
 			{
-				error: "FREE_DAILY_LIMIT_REACHED",
+				error: "FREE_WEEKLY_PRACTICE_LIMIT_REACHED",
 				reason: access.reason,
 				usedPracticeSessionId: access.latestResourceId,
 			},

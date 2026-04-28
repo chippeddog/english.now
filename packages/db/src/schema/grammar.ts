@@ -62,6 +62,12 @@ export interface GrammarTopicMistake {
 	why: string;
 }
 
+export interface GrammarTopicContrastItem {
+	wrong: string;
+	right: string;
+	why: string;
+}
+
 export interface GrammarTopicRule {
 	title: string;
 	explanation: string;
@@ -86,6 +92,159 @@ export interface GrammarTopicPracticeConfig {
 	difficulty?: "easy" | "medium" | "hard";
 }
 
+export type GrammarTopicBlockColor = "success" | "error" | "ai";
+
+export type GrammarTopicPatternRole =
+	| "subject"
+	| "verb"
+	| "auxiliary"
+	| "object"
+	| "rest"
+	| "modifier";
+
+export interface GrammarTopicPatternPart {
+	text: string;
+	role: GrammarTopicPatternRole;
+	highlight?: boolean;
+}
+
+export interface GrammarTopicPattern {
+	slots: string[];
+	example: {
+		parts: GrammarTopicPatternPart[];
+	};
+}
+
+export interface GrammarTopicPairSide {
+	label: string;
+	sentence: string;
+	highlight: string;
+	hint: string;
+}
+
+export interface GrammarTopicDecisionTreeNode {
+	question?: string;
+	yes?: GrammarTopicDecisionTreeNode;
+	no?: GrammarTopicDecisionTreeNode;
+	answer?: string;
+	example?: string;
+}
+
+export type GrammarTopicExplanationSection =
+	| {
+			kind: "rule";
+			text: string;
+	  }
+	| {
+			kind: "form";
+			title: string;
+			color: GrammarTopicBlockColor;
+			pattern: GrammarTopicPattern;
+			examples: string[];
+			note?: string;
+	  }
+	| {
+			kind: "contrast";
+			title?: string;
+			items: GrammarTopicContrastItem[];
+	  }
+	| {
+			kind: "signal";
+			title?: string;
+			rule: string;
+			cues: string[];
+	  }
+	| {
+			kind: "table";
+			title?: string;
+			columns: [string, string];
+			rows: [string, string][];
+			note?: string;
+	  }
+	| {
+			kind: "pair";
+			title?: string;
+			left: GrammarTopicPairSide;
+			right: GrammarTopicPairSide;
+	  };
+
+export interface GrammarTopicExplanation {
+	intro: string;
+	sections: GrammarTopicExplanationSection[];
+}
+
+export type GrammarTopicQuickMap =
+	| {
+			type: "forms_table";
+			title: string;
+			icon?: string;
+			columns: [string, string];
+			rows: { from: string; to: string }[];
+	  }
+	| {
+			type: "tense_card";
+			title: string;
+			icon?: string;
+			blocks: {
+				label: string;
+				color: GrammarTopicBlockColor;
+				formula: string;
+				example: string;
+			}[];
+			signals?: string[];
+	  }
+	| {
+			type: "formula";
+			title: string;
+			icon?: string;
+			slots: string[];
+			example: string;
+	  }
+	| {
+			type: "decision_tree";
+			title: string;
+			icon?: string;
+			root: GrammarTopicDecisionTreeNode;
+	  }
+	| {
+			type: "timeline";
+			title: string;
+			icon?: string;
+			anchor: "now";
+			events: {
+				label: string;
+				position: "past" | "past-to-now" | "now" | "now-to-future" | "future";
+				marker: "point" | "span";
+			}[];
+			caption: string;
+	  }
+	| {
+			type: "minimal_pair";
+			title: string;
+			icon?: string;
+			left: GrammarTopicPairSide;
+			right: GrammarTopicPairSide;
+	  }
+	| {
+			type: "register_ladder";
+			title: string;
+			icon?: string;
+			tiers: {
+				level: "formal" | "neutral" | "casual";
+				example: string;
+			}[];
+	  }
+	| {
+			type: "clock";
+			title: string;
+			icon?: string;
+			variant: "day" | "week" | "year";
+			slots: {
+				preposition: string;
+				examples: string[];
+			}[];
+	  };
+
 export interface GrammarTopicContent {
 	description: string;
 	objectives: string[];
@@ -93,6 +252,8 @@ export interface GrammarTopicContent {
 	vocabulary: GrammarTopicVocabularyItem[];
 	notes?: string[];
 	practice?: GrammarTopicPracticeConfig;
+	explanation?: GrammarTopicExplanation;
+	quickMap?: GrammarTopicQuickMap;
 }
 
 export type GrammarItemPhase = "diagnose" | "controlled" | "semi" | "freer";

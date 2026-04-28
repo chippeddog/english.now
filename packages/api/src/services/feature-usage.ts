@@ -1,8 +1,10 @@
 import {
+	and,
 	db,
 	eq,
 	type FeatureUsageType,
 	featureUsage,
+	inArray,
 	sql,
 	userProfile,
 } from "@english.now/db";
@@ -20,6 +22,18 @@ export type UserDayContext = {
 	dayKey: string;
 	timezone: string;
 };
+
+function getWeekDayKeys(dayKey: string) {
+	const date = new Date(`${dayKey}T00:00:00.000Z`);
+	const daysSinceMonday = (date.getUTCDay() + 6) % 7;
+	date.setUTCDate(date.getUTCDate() - daysSinceMonday);
+
+	return Array.from({ length: 7 }, (_, index) => {
+		const weekDate = new Date(date);
+		weekDate.setUTCDate(date.getUTCDate() + index);
+		return weekDate.toISOString().slice(0, 10);
+	});
+}
 
 export function isUnsupportedFeatureUsageValue(
 	error: unknown,
@@ -76,6 +90,34 @@ export async function getDailyFeatureUsageTotal(
 	return rows.reduce((total, row) => total + row.count, 0);
 }
 
+export async function getWeeklyFeatureUsageRows(
+	userId: string,
+	features: FeatureUsageType[],
+) {
+	const { dayKey } = await getUserDayContext(userId);
+	const weekDayKeys = getWeekDayKeys(dayKey);
+
+	return db
+		.select()
+		.from(featureUsage)
+		.where(
+			and(
+				eq(featureUsage.userId, userId),
+				inArray(featureUsage.dayKey, weekDayKeys),
+				inArray(featureUsage.feature, features),
+			),
+		);
+}
+
+export async function getWeeklyFeatureUsageTotal(
+	userId: string,
+	features: FeatureUsageType[],
+) {
+	const rows = await getWeeklyFeatureUsageRows(userId, features);
+
+	return rows.reduce((total, row) => total + row.count, 0);
+}
+
 export async function getDailyFeatureUsageResource(
 	userId: string,
 	feature: FeatureUsageType,
@@ -99,6 +141,21 @@ export async function getLatestDailyFeatureUsage(
 	feature: FeatureUsageType,
 ) {
 	const rows = await getDailyFeatureUsageRows(userId, feature);
+
+	return (
+		rows.sort((a, b) => {
+			const aTime = a.updatedAt?.getTime() ?? a.createdAt?.getTime() ?? 0;
+			const bTime = b.updatedAt?.getTime() ?? b.createdAt?.getTime() ?? 0;
+			return bTime - aTime;
+		})[0] ?? null
+	);
+}
+
+export async function getLatestWeeklyFeatureUsage(
+	userId: string,
+	feature: FeatureUsageType,
+) {
+	const rows = await getWeeklyFeatureUsageRows(userId, [feature]);
 
 	return (
 		rows.sort((a, b) => {

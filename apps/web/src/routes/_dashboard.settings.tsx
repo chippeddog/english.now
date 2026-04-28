@@ -21,7 +21,7 @@ type DailyLimitSummary = {
 	used: number;
 	remaining: number | null;
 	hasAccess: boolean;
-	reason: "pro" | "free_available" | "free_daily_limit_reached";
+	reason: "pro" | "free_available" | "free_limit_reached";
 	latestResourceId: string | null;
 };
 
@@ -29,6 +29,7 @@ type PracticeUsageLimits = {
 	isPro: boolean;
 	conversation: DailyLimitSummary;
 	pronunciation: DailyLimitSummary;
+	grammar: DailyLimitSummary;
 	lessonStarts: DailyLimitSummary;
 	vocabularyAdds: DailyLimitSummary;
 	vocabularyReviews: DailyLimitSummary;
@@ -219,32 +220,22 @@ function PracticeLimitsCard({
 	const items: Array<{
 		key: keyof Omit<PracticeUsageLimits, "isPro">;
 		label: string;
-		description: string;
 	}> = [
 		{
 			key: "conversation",
-			label: "Conversation",
-			description: "Daily speaking sessions",
-		},
-		{
-			key: "pronunciation",
-			label: "Pronunciation",
-			description: "Daily read-aloud sessions",
+			label: "AI practice",
 		},
 		{
 			key: "lessonStarts",
 			label: "New lessons",
-			description: "Fresh lesson starts today",
 		},
 		{
 			key: "vocabularyAdds",
 			label: "Vocabulary adds",
-			description: "Words or phrases you can save",
 		},
 		{
 			key: "vocabularyReviews",
 			label: "Vocabulary reviews",
-			description: "Review cards left for today",
 		},
 	];
 
@@ -259,19 +250,18 @@ function PracticeLimitsCard({
 			{isLoading ? (
 				<div className="flex items-center gap-2 py-6 text-muted-foreground text-sm">
 					<Loader className="size-4 animate-spin" />
-					Loading today's limits...
+					Loading usage limits...
 				</div>
 			) : !limits ? (
 				<p className="py-6 text-muted-foreground text-sm">
-					Unable to load today's limits right now.
+					Unable to load usage limits right now.
 				</p>
 			) : (
-				<div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+				<div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-2">
 					{items.map((item) => (
 						<LimitProgressItem
 							key={item.key}
 							label={item.label}
-							description={item.description}
 							limit={limits[item.key]}
 						/>
 					))}
@@ -283,11 +273,9 @@ function PracticeLimitsCard({
 
 function LimitProgressItem({
 	label,
-	description,
 	limit,
 }: {
 	label: string;
-	description: string;
 	limit: DailyLimitSummary;
 }) {
 	const progressValue =
@@ -304,14 +292,14 @@ function LimitProgressItem({
 		limit.limit == null || limit.remaining == null
 			? "Unlimited access on your current plan."
 			: limit.remaining === 0
-				? `You used all ${limit.limit} for today.`
-				: `${limit.used} used, ${limit.remaining} left today.`;
+				? `You used all ${limit.limit} for this period.`
+				: `${limit.used} used, ${limit.remaining} left.`;
 
 	return (
 		<div>
 			<div className="mb-3 flex items-start justify-between gap-3">
 				<div className="min-w-0">
-					<p className="font-medium">{label}</p>
+					<p className="font-medium text-sm">{label}</p>
 				</div>
 				<span
 					className={cn(
@@ -337,7 +325,7 @@ function LimitProgressItem({
 							: "*:bg-primary",
 				)}
 			/>
-			<p className="mt-2 text-muted-foreground text-sm">{detailText}</p>
+			<p className="mt-2 text-muted-foreground text-xs">{detailText}</p>
 		</div>
 	);
 }

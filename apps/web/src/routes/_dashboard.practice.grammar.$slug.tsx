@@ -53,8 +53,9 @@ function GrammarTopicPage() {
 				toast.error(
 					err.message === "NO_DRILL_ITEMS_AVAILABLE"
 						? "No drill questions are available for this topic yet."
-						: err.message === "FREE_DAILY_GRAMMAR_LIMIT_REACHED"
-							? "You reached today's free grammar drill limit."
+						: err.message === "FREE_WEEKLY_PRACTICE_LIMIT_REACHED" ||
+								err.message === "FREE_DAILY_GRAMMAR_LIMIT_REACHED"
+							? "You reached this week's free practice limit."
 							: err.message === "GENERATION_FAILED"
 								? "We couldn't generate a fresh drill right now. Please try again."
 								: "Failed to start drill. Try again.",

@@ -6,13 +6,9 @@ import {
 	CheckIcon,
 	ClockIcon,
 	Flame,
-	GraduationCap,
 	Lock,
-	type LucideIcon,
-	MessageCircle,
 	Mic,
 	PlayIcon,
-	Sparkles,
 	TrendingUp,
 	Volume2,
 } from "lucide-react";
@@ -25,26 +21,17 @@ export const Route = createFileRoute("/_public/features")({
 	component: RouteComponent,
 });
 
-// ---------------------------------------------------------------------------
-// Shared styles
-// ---------------------------------------------------------------------------
-
 const CARD_SHADOW =
 	"0 0 0 1px rgba(0,0,0,.05),0 10px 10px -5px rgba(0,0,0,.04),0 20px 25px -5px rgba(0,0,0,.04),0 20px 32px -12px rgba(0,0,0,.04)";
 
 const BUBBLE_SHADOW =
 	"0 0 0 1px #0000000f,0 1px 1px #00000010,inset 0 1px #fff,inset 0 -1px 1px #fff3,inset 0 1px 4px 1px #fff3,inset 0 -2px 1px 1px #0000000f,inset 0 20px 20px #00000002";
 
-// ---------------------------------------------------------------------------
-// Feature definitions
-// ---------------------------------------------------------------------------
-
 const features: {
 	id: string;
 	title: string;
 	description: string;
 	badge: string;
-	icon: LucideIcon;
 	demo: () => ReactNode;
 }[] = [
 	{
@@ -53,7 +40,6 @@ const features: {
 		description:
 			"Practice speaking with our AI tutor in real-life scenarios. Get instant feedback on your pronunciation and grammar.",
 		badge: "Speaking",
-		icon: MessageCircle,
 		demo: ConversationsDemo,
 	},
 	{
@@ -62,7 +48,6 @@ const features: {
 		description:
 			"Receive detailed corrections and explanations for every mistake. Learn why something is wrong, not just that it's wrong.",
 		badge: "AI-Powered",
-		icon: Sparkles,
 		demo: FeedbackDemo,
 	},
 	{
@@ -71,7 +56,7 @@ const features: {
 		description:
 			"Build your vocabulary with spaced repetition. Words are introduced in context and reviewed at optimal intervals.",
 		badge: "Learning",
-		icon: BookOpen,
+
 		demo: VocabularyDemo,
 	},
 	{
@@ -80,7 +65,7 @@ const features: {
 		description:
 			"See your improvement over time with detailed analytics. Track streaks, accuracy, and areas that need work.",
 		badge: "Analytics",
-		icon: BarChart3,
+
 		demo: ProgressDemo,
 	},
 	{
@@ -89,7 +74,7 @@ const features: {
 		description:
 			"Perfect your accent with our speech recognition technology. Get word-by-word feedback on how to sound more natural.",
 		badge: "Speaking",
-		icon: Mic,
+
 		demo: PronunciationDemo,
 	},
 	{
@@ -98,7 +83,7 @@ const features: {
 		description:
 			"Lessons adapt to your level and goals. Whether you're preparing for a job interview or casual conversation.",
 		badge: "Adaptive",
-		icon: GraduationCap,
+
 		demo: LessonsDemo,
 	},
 ];
@@ -730,7 +715,6 @@ function LessonsDemo() {
 function RouteComponent() {
 	const [activeId, setActiveId] = useState<string>(features[0].id);
 	const active = features.find((f) => f.id === activeId) ?? features[0];
-	const Icon = active.icon;
 
 	return (
 		<div className="container relative z-10 mx-auto max-w-5xl px-4 py-2 pt-10 md:pt-18">
@@ -744,15 +728,15 @@ function RouteComponent() {
 				</p>
 			</div>
 
-			<div className="flex flex-col gap-10 pb-20 lg:flex-row lg:items-stretch lg:gap-12">
+			<div className="flex flex-col gap-10 pb-20">
 				<div
-					className="flex w-full shrink-0 flex-col lg:max-w-88"
+					className="flex w-full"
 					role="tablist"
 					aria-label="Product features"
 				>
 					{features.map((feature) => {
 						const isActive = activeId === feature.id;
-						const FeatureIcon = feature.icon;
+
 						return (
 							<button
 								key={feature.id}
@@ -768,21 +752,12 @@ function RouteComponent() {
 									"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500/40 focus-visible:ring-offset-2",
 								)}
 							>
-								<div className="flex gap-3.5">
-									<FeatureIcon
-										className={cn(
-											"mt-0.5 size-5 shrink-0 transition-colors",
-											isActive
-												? "text-lime-700"
-												: "text-muted-foreground group-hover:text-foreground",
-										)}
-										aria-hidden
-									/>
+								<div className="flex gap-2">
 									<div className="min-w-0 flex-1">
 										<div className="mb-1 flex flex-wrap items-center gap-2">
 											<h2
 												className={cn(
-													"font-bold font-lyon text-lg tracking-tight md:text-xl",
+													"font-semibold text-sm",
 													isActive
 														? "text-lime-800"
 														: "text-foreground group-hover:text-foreground/90",
@@ -790,22 +765,7 @@ function RouteComponent() {
 											>
 												{feature.title}
 											</h2>
-											<span
-												className={cn(
-													"rounded-md px-1.5 py-0.5 font-medium text-[10px] uppercase tracking-wide",
-													isActive
-														? "bg-lime-100 text-lime-800"
-														: "bg-muted text-muted-foreground",
-												)}
-											>
-												{feature.badge}
-											</span>
 										</div>
-										{isActive ? (
-											<p className="text-muted-foreground text-sm leading-relaxed">
-												{feature.description}
-											</p>
-										) : null}
 									</div>
 								</div>
 							</button>
@@ -817,7 +777,7 @@ function RouteComponent() {
 					id="features-page-scene"
 					role="tabpanel"
 					aria-labelledby={`features-page-tab-${activeId}`}
-					className="relative min-h-[380px] flex-1 overflow-hidden rounded-3xl border border-border/50"
+					className="relative min-h-[580px] w-full overflow-hidden rounded-3xl border border-border/50"
 				>
 					<div
 						className="absolute inset-1 flex min-h-[360px] flex-col rounded-tl-[1.25rem] px-4 py-5 pl-4 md:px-6 md:py-6"
@@ -830,10 +790,7 @@ function RouteComponent() {
 						}}
 					>
 						<div className="mb-3 flex items-center gap-2 border-border/40 border-b pb-3 md:hidden">
-							<Icon className="size-5 shrink-0 text-lime-700" aria-hidden />
-							<span className="font-bold font-lyon text-base">
-								{active.title}
-							</span>
+							<span className="font-bold text-base">{active.title}</span>
 						</div>
 						<div
 							key={activeId}

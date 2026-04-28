@@ -127,7 +127,7 @@ export const pronunciationRouter = router({
 			if (!access.isPro && !access.hasAccess) {
 				throw new TRPCError({
 					code: "FORBIDDEN",
-					message: "FREE_DAILY_LIMIT_REACHED",
+					message: "FREE_WEEKLY_PRACTICE_LIMIT_REACHED",
 					cause: access,
 				});
 			}
