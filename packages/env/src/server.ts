@@ -25,6 +25,12 @@ export const env = createEnv({
 		AZURE_SPEECH_KEY: z.string().min(1),
 		AZURE_SPEECH_REGION: z.string().min(1),
 
+		// LangFuse (optional)
+		// Set LANGFUSE_SECRET_KEY and LANGFUSE_PUBLIC_KEY to enable LangFuse.
+		LANGFUSE_SECRET_KEY: z.string().optional(),
+		LANGFUSE_PUBLIC_KEY: z.string().optional(),
+		LANGFUSE_BASE_URL: z.url().optional(),
+
 		// Cloudflare R2 Storage
 		R2_ENDPOINT: z.url(),
 		R2_ACCESS_KEY_ID: z.string().min(1),
@@ -54,6 +60,7 @@ export const env = createEnv({
 		SENTRY_DSN: z.url().optional(),
 		SENTRY_ENVIRONMENT: z.string().optional(),
 		SENTRY_RELEASE: z.string().optional(),
+		SENTRY_TRACES_SAMPLE_RATE: z.coerce.number().min(0).max(1).optional(),
 	},
 	runtimeEnv: process.env,
 	emptyStringAsUndefined: true,

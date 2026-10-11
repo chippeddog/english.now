@@ -3,7 +3,6 @@ import type {
 	CurriculumLessonContent,
 	ExerciseItem,
 } from "@english.now/db";
-import { FREE_LESSON_FREE_UNIT_COUNT } from "@english.now/shared/feature-limit-config";
 import {
 	and,
 	asc,
@@ -20,20 +19,22 @@ import {
 	lessonCompletion,
 	userProfile,
 } from "@english.now/db";
-import { grammarTopic, lessonGrammarTopic } from "@english.now/db/schema/grammar";
+import {
+	grammarTopic,
+	lessonGrammarTopic,
+} from "@english.now/db/schema/grammar";
+import { FREE_LESSON_FREE_UNIT_COUNT } from "@english.now/shared/feature-limit-config";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure, router } from "../index";
 import { profileLevelToCefr } from "../lib/cefr";
 import { getLessonAccessSummary } from "../services/feature-gating";
-import { generateLessonExercises } from "../services/generate-lesson-exercises";
 import { recordDailyFeatureUsage } from "../services/feature-usage";
+import { generateLessonExercises } from "../services/generate-lesson-exercises";
 import { recordActivity } from "../services/record-activity";
 
 const CEFR_LEVELS: CefrLevel[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
 const cefrLevelSchema = z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]);
-
-// ─── Status Computation ─────────────────────────────────────────────────────
 
 type LessonStatus = "completed" | "current" | "available" | "locked";
 type UnitStatus = "completed" | "active" | "locked";
@@ -117,7 +118,8 @@ function resolveLessonGate(input: {
 		return {
 			status: "completed" as const,
 			lockReason: null,
-			replayAllowed: input.unitOrder <= FREE_LESSON_FREE_UNIT_COUNT || input.isPro,
+			replayAllowed:
+				input.unitOrder <= FREE_LESSON_FREE_UNIT_COUNT || input.isPro,
 		};
 	}
 
@@ -194,9 +196,15 @@ async function getGrammarTopicsByLessonIds(lessonIds: string[]) {
 			category: grammarTopic.category,
 		})
 		.from(lessonGrammarTopic)
-		.innerJoin(grammarTopic, eq(grammarTopic.id, lessonGrammarTopic.grammarTopicId))
+		.innerJoin(
+			grammarTopic,
+			eq(grammarTopic.id, lessonGrammarTopic.grammarTopicId),
+		)
 		.where(inArray(lessonGrammarTopic.lessonId, lessonIds))
-		.orderBy(asc(lessonGrammarTopic.lessonId), asc(lessonGrammarTopic.sortOrder));
+		.orderBy(
+			asc(lessonGrammarTopic.lessonId),
+			asc(lessonGrammarTopic.sortOrder),
+		);
 
 	const topicsByLessonId = new Map<
 		string,
@@ -269,10 +277,7 @@ async function ensureEnrollmentForLevel(
 		.select({ id: enrollment.id })
 		.from(enrollment)
 		.where(
-			and(
-				eq(enrollment.userId, userId),
-				eq(enrollment.courseVersionId, cv.id),
-			),
+			and(eq(enrollment.userId, userId), eq(enrollment.courseVersionId, cv.id)),
 		)
 		.limit(1);
 
@@ -329,9 +334,7 @@ async function resolveActiveEnrollment(userId: string): Promise<{
 			courseVersionId: enrollment.courseVersionId,
 		})
 		.from(enrollment)
-		.where(
-			and(eq(enrollment.userId, userId), eq(enrollment.status, "active")),
-		)
+		.where(and(eq(enrollment.userId, userId), eq(enrollment.status, "active")))
 		.orderBy(desc(enrollment.enrolledAt))
 		.limit(1);
 
@@ -398,10 +401,7 @@ export const contentRouter = router({
 			.from(courseVersion)
 			.innerJoin(course, eq(course.id, courseVersion.courseId))
 			.where(
-				and(
-					eq(course.isActive, true),
-					eq(courseVersion.status, "published"),
-				),
+				and(eq(course.isActive, true), eq(courseVersion.status, "published")),
 			)
 			.orderBy(desc(courseVersion.version));
 
@@ -499,9 +499,7 @@ export const contentRouter = router({
 					? Math.round((counts.completed / counts.total) * 100)
 					: 0;
 
-			const isPrimary = e
-				? e.id === profile?.activeEnrollmentId
-				: false;
+			const isPrimary = e ? e.id === profile?.activeEnrollmentId : false;
 
 			const requiresUpgrade =
 				!lessonAccess.isPro && !e && courseVersionId !== null;
@@ -562,10 +560,7 @@ export const contentRouter = router({
 				)
 				.innerJoin(course, eq(course.id, courseVersion.courseId))
 				.where(
-					and(
-						eq(enrollment.userId, userId),
-						eq(course.level, input.level),
-					),
+					and(eq(enrollment.userId, userId), eq(course.level, input.level)),
 				)
 				.limit(1);
 
@@ -587,161 +582,167 @@ export const contentRouter = router({
 	getCourse: protectedProcedure
 		.input(z.object({ level: cefrLevelSchema.optional() }).optional())
 		.query(async ({ ctx, input }) => {
-		const userId = ctx.session.user.id;
-		const lessonAccess = await getLessonAccessSummary(userId);
+			const userId = ctx.session.user.id;
+			const lessonAccess = await getLessonAccessSummary(userId);
 
-		let resolved: { enrollmentId: string; courseVersionId: string } | null;
-		if (input?.level) {
-			// Resolve/create enrollment for the requested level WITHOUT touching
-			// user_profile.active_enrollment_id — that only changes via
-			// setActiveLevel.
-			resolved = await ensureEnrollmentForLevel(userId, input.level);
-		} else {
-			resolved = await resolveActiveEnrollment(userId);
-		}
+			let resolved: { enrollmentId: string; courseVersionId: string } | null;
+			if (input?.level) {
+				// Resolve/create enrollment for the requested level WITHOUT touching
+				// user_profile.active_enrollment_id — that only changes via
+				// setActiveLevel.
+				resolved = await ensureEnrollmentForLevel(userId, input.level);
+			} else {
+				resolved = await resolveActiveEnrollment(userId);
+			}
 
-		if (!resolved) return null;
+			if (!resolved) return null;
 
-		const [e] = await db
-			.select()
-			.from(enrollment)
-			.where(eq(enrollment.id, resolved.enrollmentId))
-			.limit(1);
+			const [e] = await db
+				.select()
+				.from(enrollment)
+				.where(eq(enrollment.id, resolved.enrollmentId))
+				.limit(1);
 
-		if (!e) return null;
+			if (!e) return null;
 
-		const [cv] = await db
-			.select()
-			.from(courseVersion)
-			.where(eq(courseVersion.id, e.courseVersionId))
-			.limit(1);
+			const [cv] = await db
+				.select()
+				.from(courseVersion)
+				.where(eq(courseVersion.id, e.courseVersionId))
+				.limit(1);
 
-		if (!cv) return null;
+			if (!cv) return null;
 
-		const [c] = await db
-			.select()
-			.from(course)
-			.where(eq(course.id, cv.courseId))
-			.limit(1);
+			const [c] = await db
+				.select()
+				.from(course)
+				.where(eq(course.id, cv.courseId))
+				.limit(1);
 
-		if (!c) return null;
+			if (!c) return null;
 
-		const units = await db
-			.select()
-			.from(curriculumUnit)
-			.where(eq(curriculumUnit.courseVersionId, cv.id))
-			.orderBy(asc(curriculumUnit.order));
+			const units = await db
+				.select()
+				.from(curriculumUnit)
+				.where(eq(curriculumUnit.courseVersionId, cv.id))
+				.orderBy(asc(curriculumUnit.order));
 
-		const unitIds = units.map((u) => u.id);
+			const unitIds = units.map((u) => u.id);
 
-		const lessons =
-			unitIds.length > 0
-				? await db
-						.select()
-						.from(curriculumLesson)
-						.where(inArray(curriculumLesson.unitId, unitIds))
-						.orderBy(asc(curriculumLesson.unitId), asc(curriculumLesson.order))
-				: [];
+			const lessons =
+				unitIds.length > 0
+					? await db
+							.select()
+							.from(curriculumLesson)
+							.where(inArray(curriculumLesson.unitId, unitIds))
+							.orderBy(
+								asc(curriculumLesson.unitId),
+								asc(curriculumLesson.order),
+							)
+					: [];
 
-		const completions = await db
-			.select({ lessonId: lessonCompletion.lessonId })
-			.from(lessonCompletion)
-			.where(eq(lessonCompletion.enrollmentId, e.id));
-		const activeAttempts = await db
-			.select({
-				lessonId: lessonAttempt.lessonId,
-				attemptId: lessonAttempt.id,
-			})
-			.from(lessonAttempt)
-			.where(
-				and(
-					eq(lessonAttempt.userId, userId),
-					eq(lessonAttempt.status, "active"),
-				),
+			const completions = await db
+				.select({ lessonId: lessonCompletion.lessonId })
+				.from(lessonCompletion)
+				.where(eq(lessonCompletion.enrollmentId, e.id));
+			const activeAttempts = await db
+				.select({
+					lessonId: lessonAttempt.lessonId,
+					attemptId: lessonAttempt.id,
+				})
+				.from(lessonAttempt)
+				.where(
+					and(
+						eq(lessonAttempt.userId, userId),
+						eq(lessonAttempt.status, "active"),
+					),
+				);
+
+			const completedLessonIds = new Set(completions.map((c) => c.lessonId));
+			const activeAttemptByLessonId = new Map(
+				activeAttempts.map((attempt) => [attempt.lessonId, attempt.attemptId]),
 			);
 
-		const completedLessonIds = new Set(completions.map((c) => c.lessonId));
-		const activeAttemptByLessonId = new Map(
-			activeAttempts.map((attempt) => [attempt.lessonId, attempt.attemptId]),
-		);
+			const lessonsByUnit = new Map<string, typeof lessons>();
+			for (const l of lessons) {
+				const existing = lessonsByUnit.get(l.unitId) ?? [];
+				existing.push(l);
+				lessonsByUnit.set(l.unitId, existing);
+			}
 
-		const lessonsByUnit = new Map<string, typeof lessons>();
-		for (const l of lessons) {
-			const existing = lessonsByUnit.get(l.unitId) ?? [];
-			existing.push(l);
-			lessonsByUnit.set(l.unitId, existing);
-		}
+			const unitsWithLessons = units.map((u) => ({
+				id: u.id,
+				order: u.order,
+				lessons: (lessonsByUnit.get(u.id) ?? []).map((l) => ({
+					id: l.id,
+					order: l.order,
+				})),
+			}));
 
-		const unitsWithLessons = units.map((u) => ({
-			id: u.id,
-			order: u.order,
-			lessons: (lessonsByUnit.get(u.id) ?? []).map((l) => ({
-				id: l.id,
-				order: l.order,
-			})),
-		}));
+			const statuses = computeStatuses(unitsWithLessons, completedLessonIds);
+			const statusMap = new Map(statuses.map((s) => [s.unitId, s]));
 
-		const statuses = computeStatuses(unitsWithLessons, completedLessonIds);
-		const statusMap = new Map(statuses.map((s) => [s.unitId, s]));
+			const totalLessons = lessons.length;
+			const totalCompleted = completedLessonIds.size;
+			const overallProgress =
+				totalLessons > 0
+					? Math.round((totalCompleted / totalLessons) * 100)
+					: 0;
+			const grammarTopicsByLessonId = await getGrammarTopicsByLessonIds(
+				lessons.map((lesson) => lesson.id),
+			);
 
-		const totalLessons = lessons.length;
-		const totalCompleted = completedLessonIds.size;
-		const overallProgress =
-			totalLessons > 0 ? Math.round((totalCompleted / totalLessons) * 100) : 0;
-		const grammarTopicsByLessonId = await getGrammarTopicsByLessonIds(
-			lessons.map((lesson) => lesson.id),
-		);
+			return {
+				enrollmentId: e.id,
+				level: c.level,
+				title: c.title,
+				progress: overallProgress,
+				access: lessonAccess,
+				units: units.map((u) => {
+					const s = statusMap.get(u.id);
+					const unitLessons = lessonsByUnit.get(u.id) ?? [];
+					const lessonStatusMap = new Map(
+						(s?.lessons ?? []).map((ls) => [ls.lessonId, ls.status]),
+					);
+					const isFreeLockedUnit =
+						!lessonAccess.isPro && u.order > FREE_LESSON_FREE_UNIT_COUNT;
 
-		return {
-			enrollmentId: e.id,
-			level: c.level,
-			title: c.title,
-			progress: overallProgress,
-			access: lessonAccess,
-			units: units.map((u) => {
-				const s = statusMap.get(u.id);
-				const unitLessons = lessonsByUnit.get(u.id) ?? [];
-				const lessonStatusMap = new Map(
-					(s?.lessons ?? []).map((ls) => [ls.lessonId, ls.status]),
-				);
-				const isFreeLockedUnit =
-					!lessonAccess.isPro && u.order > FREE_LESSON_FREE_UNIT_COUNT;
-
-				return {
-					id: u.id,
-					title: u.title,
-					description: u.description,
-					order: u.order,
-					status: isFreeLockedUnit ? "locked" : (s?.unitStatus ?? "locked"),
-					lockReason: isFreeLockedUnit ? "free_unit_locked" : null,
-					unlockMessage: isFreeLockedUnit
-						? "Upgrade to unlock this unit."
-						: undefined,
-					progress: s?.unitProgress ?? 0,
-					lessons: unitLessons.map((l) => ({
-						...resolveLessonGate({
-							isPro: lessonAccess.isPro,
-							unitOrder: u.order,
-							baseStatus: lessonStatusMap.get(l.id) ?? "locked",
-							isCompleted: completedLessonIds.has(l.id),
-							hasActiveAttempt: activeAttemptByLessonId.has(l.id),
-							dailyNewLessonLimitReached:
-								!lessonAccess.newLessonStarts.hasAccess,
-						}),
-						id: l.id,
-						title: l.title,
-						subtitle: l.subtitle,
-						type: l.blockType,
-						lessonType: l.lessonType ?? blockTypeToLessonType(l.blockType),
-						progress: completedLessonIds.has(l.id) ? 100 : 0,
-						activeAttemptId: activeAttemptByLessonId.get(l.id) ?? null,
-						content: l.content,
-						grammarTopics: grammarTopicsByLessonId.get(l.id) ?? [],
-					})),
-				};
-			}),
-		};
-	}),
+					return {
+						id: u.id,
+						title: u.title,
+						description: u.description,
+						order: u.order,
+						status: isFreeLockedUnit ? "locked" : (s?.unitStatus ?? "locked"),
+						lockReason: isFreeLockedUnit ? "free_unit_locked" : null,
+						unlockMessage: isFreeLockedUnit
+							? "Upgrade to unlock this unit."
+							: undefined,
+						progress: s?.unitProgress ?? 0,
+						lessons: unitLessons.map((l) => ({
+							...resolveLessonGate({
+								isPro: lessonAccess.isPro,
+								unitOrder: u.order,
+								baseStatus: lessonStatusMap.get(l.id) ?? "locked",
+								isCompleted: completedLessonIds.has(l.id),
+								hasActiveAttempt: activeAttemptByLessonId.has(l.id),
+								dailyNewLessonLimitReached:
+									!lessonAccess.newLessonStarts.hasAccess,
+							}),
+							id: l.id,
+							title: l.title,
+							subtitle: l.subtitle,
+							type: l.blockType,
+							lessonType: l.lessonType ?? blockTypeToLessonType(l.blockType),
+							estimatedMinutes: l.estimatedMinutes,
+							progress: completedLessonIds.has(l.id) ? 100 : 0,
+							activeAttemptId: activeAttemptByLessonId.get(l.id) ?? null,
+							content: l.content,
+							grammarTopics: grammarTopicsByLessonId.get(l.id) ?? [],
+						})),
+					};
+				}),
+			};
+		}),
 
 	getLesson: protectedProcedure
 		.input(z.object({ lessonId: z.string() }))
@@ -805,7 +806,9 @@ export const contentRouter = router({
 					order: curriculumUnit.order,
 				})
 				.from(curriculumUnit)
-				.where(eq(curriculumUnit.courseVersionId, enrollmentRow.courseVersionId))
+				.where(
+					eq(curriculumUnit.courseVersionId, enrollmentRow.courseVersionId),
+				)
 				.orderBy(asc(curriculumUnit.order));
 			const courseUnitIds = courseUnits.map((unit) => unit.id);
 			const courseLessons =
@@ -818,7 +821,10 @@ export const contentRouter = router({
 							})
 							.from(curriculumLesson)
 							.where(inArray(curriculumLesson.unitId, courseUnitIds))
-							.orderBy(asc(curriculumLesson.unitId), asc(curriculumLesson.order))
+							.orderBy(
+								asc(curriculumLesson.unitId),
+								asc(curriculumLesson.order),
+							)
 					: [];
 
 			const [completions, activeAttemptRow, lessonAccess] = await Promise.all([
@@ -840,8 +846,13 @@ export const contentRouter = router({
 					.then((rows) => rows[0] ?? null),
 				getLessonAccessSummary(userId),
 			]);
-			const completedLessonIds = new Set(completions.map((item) => item.lessonId));
-			const lessonsByUnit = new Map<string, Array<{ id: string; order: number }>>();
+			const completedLessonIds = new Set(
+				completions.map((item) => item.lessonId),
+			);
+			const lessonsByUnit = new Map<
+				string,
+				Array<{ id: string; order: number }>
+			>();
 			for (const lesson of courseLessons) {
 				const existing = lessonsByUnit.get(lesson.unitId) ?? [];
 				existing.push({ id: lesson.id, order: lesson.order });
@@ -855,7 +866,9 @@ export const contentRouter = router({
 				})),
 				completedLessonIds,
 			);
-			const statusMap = new Map(statuses.map((status) => [status.unitId, status]));
+			const statusMap = new Map(
+				statuses.map((status) => [status.unitId, status]),
+			);
 			const lessonStatusMap = new Map<string, LessonStatus>();
 			for (const unitStatus of statusMap.values()) {
 				for (const lessonStatus of unitStatus.lessons) {
@@ -1003,7 +1016,10 @@ export const contentRouter = router({
 							})
 							.from(curriculumLesson)
 							.where(inArray(curriculumLesson.unitId, courseUnitIds))
-							.orderBy(asc(curriculumLesson.unitId), asc(curriculumLesson.order))
+							.orderBy(
+								asc(curriculumLesson.unitId),
+								asc(curriculumLesson.order),
+							)
 					: [];
 
 			const [completions, lessonAccess] = await Promise.all([
@@ -1013,8 +1029,13 @@ export const contentRouter = router({
 					.where(eq(lessonCompletion.enrollmentId, e.id)),
 				getLessonAccessSummary(userId),
 			]);
-			const completedLessonIds = new Set(completions.map((item) => item.lessonId));
-			const lessonsByUnit = new Map<string, Array<{ id: string; order: number }>>();
+			const completedLessonIds = new Set(
+				completions.map((item) => item.lessonId),
+			);
+			const lessonsByUnit = new Map<
+				string,
+				Array<{ id: string; order: number }>
+			>();
 			for (const lesson of courseLessons) {
 				const existing = lessonsByUnit.get(lesson.unitId) ?? [];
 				existing.push({ id: lesson.id, order: lesson.order });
@@ -1028,7 +1049,9 @@ export const contentRouter = router({
 				})),
 				completedLessonIds,
 			);
-			const statusMap = new Map(statuses.map((status) => [status.unitId, status]));
+			const statusMap = new Map(
+				statuses.map((status) => [status.unitId, status]),
+			);
 			const lessonStatusMap = new Map<string, LessonStatus>();
 			for (const unitStatus of statusMap.values()) {
 				for (const lessonStatus of unitStatus.lessons) {

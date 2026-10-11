@@ -1,5 +1,5 @@
-import type { WritingLessonContent } from "@/types/lesson";
 import { ArrowRight, FileText, Layers, PenTool } from "lucide-react";
+import type { WritingLessonContent } from "@/types/lesson";
 
 interface WritingTheoryProps {
 	content: WritingLessonContent;

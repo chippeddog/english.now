@@ -137,9 +137,7 @@ export default function WordMatching({
 									isMatchedTo &&
 										!answered &&
 										"border-sky-300 bg-sky-50 text-sky-800",
-									!selectedLeft &&
-										!answered &&
-										"cursor-default opacity-60",
+									!selectedLeft && !answered && "cursor-default opacity-60",
 									answered &&
 										result.isCorrect &&
 										"border-lime-300 bg-lime-50 text-lime-800",

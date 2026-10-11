@@ -104,7 +104,10 @@ export default function EditWordDialog({
 		}
 
 		const trimmedTranslation = translation.trim();
-		if (trimmedTranslation && trimmedTranslation !== (target.translation ?? "")) {
+		if (
+			trimmedTranslation &&
+			trimmedTranslation !== (target.translation ?? "")
+		) {
 			next.translation = trimmedTranslation;
 		} else if (!trimmedTranslation && target.customTranslation) {
 			next.translation = null;
@@ -114,7 +117,8 @@ export default function EditWordDialog({
 	};
 
 	const resetField = (field: keyof EditWordTarget) => {
-		if (field === "customPartOfSpeech") setPartOfSpeech(target.partOfSpeech ?? "");
+		if (field === "customPartOfSpeech")
+			setPartOfSpeech(target.partOfSpeech ?? "");
 		if (field === "customDefinition") setDefinition(target.definition ?? "");
 		if (field === "customExampleSentence")
 			setExampleSentence(target.exampleSentence ?? "");

@@ -5,6 +5,7 @@ import {
 	type SupportedLanguage,
 	useTranslation,
 } from "@english.now/i18n";
+import { PostHogProvider, usePostHog } from "@posthog/react";
 import type { QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import {
@@ -15,11 +16,15 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import type { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
+import { useEffect } from "react";
 import { UpgradeDialogProvider } from "@/components/dashboard/upgrade-dialog";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { getLanguageCookie } from "@/functions/get-language";
+import { authClient } from "@/lib/auth-client";
 import appCss from "../index.css?url";
+
+const POSTHOG_IDENTIFIED_USER_ID_KEY = "posthog_identified_user_id";
 
 export interface RouterAppContext {
 	trpc: TRPCOptionsProxy<AppRouter>;
@@ -129,23 +134,63 @@ function RootDocument() {
 		>
 			<head>
 				<HeadContent />
-				{/* <script
-					dangerouslySetInnerHTML={{
-						__html: `window.helploomSettings={clientId:'hl-_q4ptbUWr8VbQJTB9EcV_'};(function(){var w=window;var hl=w.Helploom;if(typeof hl==="function"){hl('update',w.helploomSettings);}else{var q=function(){q.c(arguments);};q.q=[];q.c=function(args){q.q.push(args);};w.Helploom=q;var l=function(){var s=document.createElement('script');s.type='text/javascript';s.async=true;s.src='https://helploom.com/widget.js';var x=document.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);};if(document.readyState==='complete'){l();}else if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})();`,
-					}}
-				/> */}
 			</head>
 			<body>
-				<ThemeProvider>
-					<UpgradeDialogProvider>
-						<Outlet />
-						<Toaster richColors />
-					</UpgradeDialogProvider>
-				</ThemeProvider>
+				<PostHogProvider
+					apiKey={import.meta.env.VITE_PUBLIC_POSTHOG_PROJECT_TOKEN}
+					options={{
+						api_host: "/ingest",
+						ui_host:
+							import.meta.env.VITE_PUBLIC_POSTHOG_HOST ||
+							"https://eu.posthog.com",
+						defaults: "2026-01-30",
+						capture_exceptions: true,
+						debug: import.meta.env.DEV,
+					}}
+				>
+					<ThemeProvider>
+						<UpgradeDialogProvider>
+							<PostHogSessionIdentify />
+							<Outlet />
+							<Toaster richColors />
+						</UpgradeDialogProvider>
+					</ThemeProvider>
+				</PostHogProvider>
 				<TanStackRouterDevtools position="top-right" />
 				<ReactQueryDevtools position="bottom" buttonPosition="bottom-right" />
 				<Scripts />
 			</body>
 		</html>
 	);
+}
+
+function PostHogSessionIdentify() {
+	const posthog = usePostHog();
+	const { data: session, isPending } = authClient.useSession();
+	const user = session?.user;
+
+	useEffect(() => {
+		if (isPending) return;
+
+		if (!user) {
+			if (localStorage.getItem(POSTHOG_IDENTIFIED_USER_ID_KEY)) {
+				posthog.reset();
+				localStorage.removeItem(POSTHOG_IDENTIFIED_USER_ID_KEY);
+			}
+			return;
+		}
+
+		const identifiedUserId = localStorage.getItem(POSTHOG_IDENTIFIED_USER_ID_KEY);
+		if (identifiedUserId !== user.id) {
+			posthog.reset();
+			localStorage.setItem(POSTHOG_IDENTIFIED_USER_ID_KEY, user.id);
+		}
+
+		posthog.identify(user.id, {
+			email: user.email,
+			name: user.name,
+		});
+	}, [isPending, posthog, user?.email, user?.id, user?.name]);
+
+	return null;
 }

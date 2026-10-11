@@ -7,7 +7,7 @@ import {
 } from "@tanstack/react-router";
 import { useEffect } from "react";
 import Navbar from "@/components/app/navbar";
-import RouteLoader, { RouteShellLoader } from "@/components/loader";
+import RouteLoader from "@/components/loader";
 import { getProfile } from "@/functions/get-profile";
 import { getUser } from "@/functions/get-user";
 import { useTRPC } from "@/utils/trpc";
@@ -70,7 +70,7 @@ function DashboardLayout() {
 
 	return (
 		<div className="flex w-full bg-neutral-50 dark:bg-neutral-900">
-			<main className="relative flex h-fit min-h-screen w-full flex-1 flex-col overflow-auto">
+			<main className="relative flex h-fit min-h-screen w-full flex-1 flex-col overflow-visible">
 				<Navbar />
 				<Outlet />
 			</main>

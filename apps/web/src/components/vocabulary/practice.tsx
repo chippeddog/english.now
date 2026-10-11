@@ -1,3 +1,4 @@
+import { usePostHog } from "@posthog/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BookOpen, Mic, Sparkles } from "lucide-react";
 import { useState } from "react";
@@ -33,6 +34,7 @@ type VocabularyActivity = {
 
 export default function Practice() {
 	const trpc = useTRPC();
+	const posthog = usePostHog();
 	const queryClient = useQueryClient();
 	const { openDialog } = useUpgradeDialog();
 
@@ -95,6 +97,12 @@ export default function Practice() {
 			});
 		}
 
+		posthog.capture("vocabulary_practice_started", {
+			activity_id: selectedActivity.id,
+			card_count: selectedActivity.payload.cards.length,
+			focus: selectedActivity.payload.focus,
+		});
+
 		setSetupOpen(false);
 		setSessionActivity(selectedActivity);
 		setSessionKey((key) => key + 1);
@@ -147,8 +155,8 @@ export default function Practice() {
 							Quick Practice
 						</DialogTitle>
 						<DialogDescription className="text-neutral-500">
-						{reviewHelperText ??
-							"Choose from today&apos;s prepared vocabulary sets"}
+							{reviewHelperText ??
+								"Choose from today&apos;s prepared vocabulary sets"}
 						</DialogDescription>
 					</DialogHeader>
 
@@ -244,6 +252,11 @@ export default function Practice() {
 					onClose={handleSessionClose}
 					onRestart={handleRestart}
 					onComplete={() => {
+						posthog.capture("vocabulary_practice_completed", {
+							activity_id: sessionActivity.id,
+							card_count: sessionActivity.payload.cards.length,
+							focus: sessionActivity.payload.focus,
+						});
 						markDone.mutate({
 							activityId: sessionActivity.id,
 							sessionId: `vocabulary:${sessionActivity.id}`,

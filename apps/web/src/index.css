@@ -60,6 +60,22 @@
 	font-display: swap;
 }
 
+@font-face {
+	font-family: "CooperLtBT";
+	src: url("/fonts/cooper-ltbt/CooperLtBT_Regular.woff2") format("woff2");
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "CooperLtBT";
+	src: url("/fonts/cooper-ltbt/CooperLtBT_Italic.woff2") format("woff2");
+	font-weight: 400;
+	font-style: italic;
+	font-display: swap;
+}
+
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
@@ -67,12 +83,13 @@
 		"Inter", "Geist", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
 		"Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 	--font-lyon: "Lyon", sans-serif;
+	--font-cooper: "CooperLtBT", serif;
 	--font-fkroman: "FKRomanStandard", serif;
 	--font-arabic: "Noto Sans Arabic", sans-serif;
 }
 
 html:lang(uk) {
-	--font-lyon: "FKRomanStandard", serif;
+	--font-lyon: "CooperLtBT", serif;
 }
 
 html,

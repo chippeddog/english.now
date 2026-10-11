@@ -1,3 +1,4 @@
+import { usePostHog } from "@posthog/react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, BookOpen, Loader, Sparkles, Target } from "lucide-react";
@@ -41,6 +42,7 @@ function LessonPage() {
 	const { lessonId } = Route.useParams();
 	const navigate = useNavigate();
 	const trpc = useTRPC();
+	const posthog = usePostHog();
 	const { getElapsedSeconds } = usePracticeTimer();
 	const { openDialog } = useUpgradeDialog();
 	const { setAttemptId: setNavbarAttemptId } = useLessonReportIssue();
@@ -113,6 +115,13 @@ function LessonPage() {
 				setCorrectCount(data.correctCount);
 				setTotalCount(data.totalCount);
 
+				posthog.capture("lesson_started", {
+					lesson_id: lessonId,
+					attempt_id: data.attemptId,
+					total_exercises: data.totalCount,
+					has_theory: hasTheory,
+				});
+
 				if (hasTheory) {
 					setPhase("intro");
 				} else {
@@ -133,6 +142,13 @@ function LessonPage() {
 	const completeMutation = useMutation(
 		trpc.content.completeLesson.mutationOptions({
 			onSuccess: (data) => {
+				posthog.capture("lesson_completed", {
+					lesson_id: lessonId,
+					score: data.score,
+					correct_count: data.correctCount,
+					total_count: data.totalCount,
+					duration_seconds: getElapsedSeconds(),
+				});
 				setFinalScore(data.score);
 				setCorrectCount(data.correctCount);
 				setTotalCount(data.totalCount);

@@ -1,4 +1,5 @@
 import { useTranslation } from "@english.now/i18n";
+import { usePostHog } from "@posthog/react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { CheckIcon, Loader, Zap } from "lucide-react";
@@ -67,15 +68,19 @@ export function useUpgradeDialog() {
 }
 
 export function UpgradeDialogProvider({ children }: { children: ReactNode }) {
+	const posthog = usePostHog();
 	const [open, setOpen] = useState(false);
 	const value = useMemo(
 		() => ({
 			open,
-			openDialog: () => setOpen(true),
+			openDialog: () => {
+				posthog.capture("upgrade_dialog_opened");
+				setOpen(true);
+			},
 			closeDialog: () => setOpen(false),
 			setOpen,
 		}),
-		[open],
+		[open, posthog],
 	);
 
 	return (
@@ -125,6 +130,7 @@ export default function UpgradeDialog({
 	onOpenChange: (open: boolean) => void;
 }) {
 	const trpc = useTRPC();
+	const posthog = usePostHog();
 	const [isLoading, setIsLoading] = useState(false);
 	const [plan, setPlan] = useState<"monthly" | "yearly">("monthly");
 	const { data: session, isPending: isSessionPending } =
@@ -266,6 +272,10 @@ export default function UpgradeDialog({
 								toast.error("Checkout is not configured.");
 								return;
 							}
+							posthog.capture("checkout_started", {
+								plan,
+								price_id: selected.paddlePriceId,
+							});
 							setIsLoading(true);
 							await openCheckout({
 								priceId: selected.paddlePriceId,

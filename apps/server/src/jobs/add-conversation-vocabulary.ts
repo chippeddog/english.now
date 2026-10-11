@@ -3,6 +3,11 @@ import {
 	addConversationVocabularyItem,
 	type ConversationVocabularyMode,
 } from "../services/conversation-vocabulary";
+import {
+	processTracedJob,
+	sendTracedJob,
+	type TracedQueuePayload,
+} from "../utils/sentry-queue";
 
 const QUEUE_NAME = "add-conversation-vocabulary";
 
@@ -26,24 +31,26 @@ export async function registerAddConversationVocabularyWorker(boss: PgBoss) {
 		expireInSeconds: 10 * 60,
 	});
 
-	boss.work<AddConversationVocabularyJobData>(
+	boss.work<TracedQueuePayload<AddConversationVocabularyJobData>>(
 		QUEUE_NAME,
-		{ localConcurrency: 4 },
+		{ includeMetadata: true, localConcurrency: 4 },
 		async (jobs) => {
 			for (const job of jobs) {
-				console.log(
-					`[${QUEUE_NAME}] processing job ${job.id} for user ${job.data.userId}`,
-				);
+				await processTracedJob(QUEUE_NAME, job, async (job) => {
+					console.log(
+						`[${QUEUE_NAME}] processing job ${job.id} for user ${job.data.userId}`,
+					);
 
-				const result = await addConversationVocabularyItem({
-					userId: job.data.userId,
-					mode: job.data.mode,
-					text: job.data.text,
+					const result = await addConversationVocabularyItem({
+						userId: job.data.userId,
+						mode: job.data.mode,
+						text: job.data.text,
+					});
+
+					console.log(
+						`[${QUEUE_NAME}] ${result.status} ${job.data.mode} "${job.data.text}" for user ${job.data.userId}`,
+					);
 				});
-
-				console.log(
-					`[${QUEUE_NAME}] ${result.status} ${job.data.mode} "${job.data.text}" for user ${job.data.userId}`,
-				);
 			}
 		},
 	);
@@ -53,7 +60,7 @@ export async function enqueueAddConversationVocabulary(
 	boss: PgBoss,
 	data: AddConversationVocabularyJobData,
 ) {
-	const jobId = await boss.send(QUEUE_NAME, data, {
+	const jobId = await sendTracedJob(boss, QUEUE_NAME, data, {
 		singletonKey: getSingletonKey(data),
 		retryLimit: 2,
 		retryDelay: 10,

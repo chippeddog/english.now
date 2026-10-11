@@ -48,10 +48,8 @@ export default function TrueFalse({
 				{(["True", "False"] as const).map((option) => {
 					const isSelected = selected === option;
 					const isCorrectAnswer =
-						answered &&
-						correctAnswer?.toLowerCase() === option.toLowerCase();
-					const isWrongSelection =
-						answered && isSelected && !result.isCorrect;
+						answered && correctAnswer?.toLowerCase() === option.toLowerCase();
+					const isWrongSelection = answered && isSelected && !result.isCorrect;
 
 					return (
 						<button
@@ -67,10 +65,8 @@ export default function TrueFalse({
 								!answered &&
 									isSelected &&
 									"border-blue-500 bg-blue-50 text-blue-800",
-								isCorrectAnswer &&
-									"border-lime-500 bg-lime-50 text-lime-900",
-								isWrongSelection &&
-									"border-red-400 bg-red-50 text-red-900",
+								isCorrectAnswer && "border-lime-500 bg-lime-50 text-lime-900",
+								isWrongSelection && "border-red-400 bg-red-50 text-red-900",
 								answered &&
 									!isCorrectAnswer &&
 									!isWrongSelection &&

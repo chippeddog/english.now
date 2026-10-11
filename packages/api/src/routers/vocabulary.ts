@@ -75,24 +75,27 @@ export const vocabularyRouter = router({
 					lemma: word.lemma,
 					ipa: word.ipa,
 					audioUrl: word.audioUrl,
-					partOfSpeech:
-						sql<string | null>`coalesce(${userWord.customPartOfSpeech}, ${word.partOfSpeech})`.as(
-							"part_of_speech",
-						),
+					partOfSpeech: sql<
+						string | null
+					>`coalesce(${userWord.customPartOfSpeech}, ${word.partOfSpeech})`.as(
+						"part_of_speech",
+					),
 					definition:
 						sql<string>`coalesce(${userWord.customDefinition}, ${word.definition})`.as(
 							"definition",
 						),
-					exampleSentence:
-						sql<string | null>`coalesce(${userWord.customExampleSentence}, ${word.exampleSentence})`.as(
-							"example_sentence",
-						),
+					exampleSentence: sql<
+						string | null
+					>`coalesce(${userWord.customExampleSentence}, ${word.exampleSentence})`.as(
+						"example_sentence",
+					),
 					level: word.level,
 					frequencyRank: word.frequencyRank,
-					translation:
-						sql<string | null>`coalesce(${userWord.customTranslation}, ${wordTranslation.translation})`.as(
-							"translation",
-						),
+					translation: sql<
+						string | null
+					>`coalesce(${userWord.customTranslation}, ${wordTranslation.translation})`.as(
+						"translation",
+					),
 					customPartOfSpeech: userWord.customPartOfSpeech,
 					customDefinition: userWord.customDefinition,
 					customExampleSentence: userWord.customExampleSentence,
@@ -131,6 +134,63 @@ export const vocabularyRouter = router({
 				...row,
 				isDue: isVocabularyItemDue(row.nextReviewAt),
 			}));
+		}),
+
+	getWordDetails: protectedProcedure
+		.input(
+			z.object({
+				word: z.string().trim().min(1).max(80),
+			}),
+		)
+		.query(async ({ ctx, input }) => {
+			const userId = ctx.session.user.id;
+			const isEnglish = await validateEnglishWord(input.word);
+
+			if (!isEnglish) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Please choose a valid English word.",
+				});
+			}
+
+			const language = await getUserLanguage(userId);
+			const wordId = await getOrCreateWord(input.word);
+			await ensureWordTranslation(wordId, language);
+
+			const [details] = await db
+				.select({
+					id: word.id,
+					lemma: word.lemma,
+					ipa: word.ipa,
+					audioUrl: word.audioUrl,
+					partOfSpeech: word.partOfSpeech,
+					definition: word.definition,
+					exampleSentence: word.exampleSentence,
+					level: word.level,
+					translation: wordTranslation.translation,
+				})
+				.from(word)
+				.leftJoin(
+					wordTranslation,
+					and(
+						eq(wordTranslation.wordId, word.id),
+						eq(wordTranslation.language, language),
+					),
+				)
+				.where(eq(word.id, wordId))
+				.limit(1);
+
+			if (!details) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Word details were not found.",
+				});
+			}
+
+			return {
+				...details,
+				language,
+			};
 		}),
 
 	addWord: protectedProcedure
@@ -213,13 +273,7 @@ export const vocabularyRouter = router({
 		.input(
 			z.object({
 				userWordId: z.string(),
-				partOfSpeech: z
-					.string()
-					.trim()
-					.min(1)
-					.max(40)
-					.nullable()
-					.optional(),
+				partOfSpeech: z.string().trim().min(1).max(40).nullable().optional(),
 				definition: z.string().trim().min(1).max(500).nullable().optional(),
 				exampleSentence: z
 					.string()
@@ -228,13 +282,7 @@ export const vocabularyRouter = router({
 					.max(500)
 					.nullable()
 					.optional(),
-				translation: z
-					.string()
-					.trim()
-					.min(1)
-					.max(300)
-					.nullable()
-					.optional(),
+				translation: z.string().trim().min(1).max(300).nullable().optional(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -386,18 +434,21 @@ export const vocabularyRouter = router({
 						sql<string>`coalesce(${userPhrase.customMeaning}, ${phrase.meaning})`.as(
 							"meaning",
 						),
-					exampleUsage:
-						sql<string | null>`coalesce(${userPhrase.customExampleUsage}, ${phrase.exampleUsage})`.as(
-							"example_usage",
-						),
-					translation:
-						sql<string | null>`coalesce(${userPhrase.customTranslation}, ${phraseTranslation.translation})`.as(
-							"translation",
-						),
-					literalTranslation:
-						sql<string | null>`coalesce(${userPhrase.customLiteralTranslation}, ${phraseTranslation.literalTranslation})`.as(
-							"literal_translation",
-						),
+					exampleUsage: sql<
+						string | null
+					>`coalesce(${userPhrase.customExampleUsage}, ${phrase.exampleUsage})`.as(
+						"example_usage",
+					),
+					translation: sql<
+						string | null
+					>`coalesce(${userPhrase.customTranslation}, ${phraseTranslation.translation})`.as(
+						"translation",
+					),
+					literalTranslation: sql<
+						string | null
+					>`coalesce(${userPhrase.customLiteralTranslation}, ${phraseTranslation.literalTranslation})`.as(
+						"literal_translation",
+					),
 					customMeaning: userPhrase.customMeaning,
 					customExampleUsage: userPhrase.customExampleUsage,
 					customTranslation: userPhrase.customTranslation,
@@ -511,20 +562,8 @@ export const vocabularyRouter = router({
 			z.object({
 				userPhraseId: z.string(),
 				meaning: z.string().trim().min(1).max(500).nullable().optional(),
-				exampleUsage: z
-					.string()
-					.trim()
-					.min(1)
-					.max(500)
-					.nullable()
-					.optional(),
-				translation: z
-					.string()
-					.trim()
-					.min(1)
-					.max(300)
-					.nullable()
-					.optional(),
+				exampleUsage: z.string().trim().min(1).max(500).nullable().optional(),
+				translation: z.string().trim().min(1).max(300).nullable().optional(),
 				literalTranslation: z
 					.string()
 					.trim()

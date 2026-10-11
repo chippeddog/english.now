@@ -8,6 +8,28 @@ import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
+	server: {
+		proxy: {
+			"/ingest/static": {
+				target: "https://eu-assets.i.posthog.com",
+				changeOrigin: true,
+				rewrite: (path) => path.replace(/^\/ingest/, ""),
+				secure: false,
+			},
+			"/ingest/array": {
+				target: "https://eu-assets.i.posthog.com",
+				changeOrigin: true,
+				rewrite: (path) => path.replace(/^\/ingest/, ""),
+				secure: false,
+			},
+			"/ingest": {
+				target: "https://eu.i.posthog.com",
+				changeOrigin: true,
+				rewrite: (path) => path.replace(/^\/ingest/, ""),
+				secure: false,
+			},
+		},
+	},
 	plugins: [
 		contentCollections(),
 		cloudflare({ viteEnvironment: { name: "ssr" } }),

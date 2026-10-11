@@ -28,11 +28,7 @@ export default function LessonSummary({
 			{/* Score circle */}
 			<div className="mb-8 flex flex-col items-center gap-4">
 				<div className="relative flex size-36 items-center justify-center">
-					<svg
-						className="size-36"
-						viewBox="0 0 144 144"
-						aria-hidden="true"
-					>
+					<svg className="size-36" viewBox="0 0 144 144" aria-hidden="true">
 						<title>Score</title>
 						<circle
 							cx="72"
@@ -80,9 +76,7 @@ export default function LessonSummary({
 							{correctCount}
 						</span>{" "}
 						out of{" "}
-						<span className="font-semibold text-foreground">
-							{totalCount}
-						</span>{" "}
+						<span className="font-semibold text-foreground">{totalCount}</span>{" "}
 						correct
 					</p>
 				</div>
@@ -136,17 +130,13 @@ export default function LessonSummary({
 									{displayUserAnswer && !ex.isCorrect && (
 										<p className="mt-1 text-red-600 text-xs">
 											Your answer:{" "}
-											<span className="font-medium">
-												{displayUserAnswer}
-											</span>
+											<span className="font-medium">{displayUserAnswer}</span>
 										</p>
 									)}
 									{!ex.isCorrect && (
 										<p className="mt-0.5 text-lime-700 text-xs">
 											Correct:{" "}
-											<span className="font-medium">
-												{displayAnswer}
-											</span>
+											<span className="font-medium">{displayAnswer}</span>
 										</p>
 									)}
 								</div>

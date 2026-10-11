@@ -1,4 +1,3 @@
-import { createOpenAI } from "@ai-sdk/openai";
 import {
 	conversationMessage,
 	conversationReviewAttempt,
@@ -7,17 +6,28 @@ import {
 	db,
 	userProfile,
 } from "@english.now/db";
-import { env } from "@english.now/env/server";
 import { TRPCError } from "@trpc/server";
 import { generateText, Output } from "ai";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { openai } from "../ai/providers";
+import { buildAiTelemetry } from "../ai/telemetry";
 import { protectedProcedure, rateLimitedProcedure, router } from "../index";
-import { getConversationSessionMeta } from "../services/conversation-mode";
 import {
 	buildConversationHintSystemPrompt,
 	buildConversationSessionFromActivity,
-} from "../services/conversation-prompt";
+	buildConversationTranslationSystemPrompt,
+	conversationHintModel,
+	conversationHintPromptKey,
+	conversationHintPromptVersion,
+	conversationHintSchema,
+	conversationHintTemperature,
+	conversationTranslationModel,
+	conversationTranslationPromptKey,
+	conversationTranslationPromptVersion,
+	conversationTranslationTemperature,
+} from "../prompts/conversation";
+import { getConversationSessionMeta } from "../services/conversation-mode";
 import { getConversationReviewData } from "../services/conversation-review";
 import {
 	getTodayPracticePlanRecord,
@@ -30,11 +40,6 @@ import {
 import { recordDailyFeatureUsage } from "../services/feature-usage";
 import { generateSuggestions } from "../services/generate-suggestions";
 
-const openai = createOpenAI({ apiKey: env.OPENAI_API_KEY });
-const conversationHintSchema = z.object({
-	text: z.string(),
-	translation: z.string(),
-});
 const LANGUAGE_NAMES: Record<string, string> = {
 	uk: "Ukrainian",
 	en: "English",
@@ -431,11 +436,24 @@ export const conversationRouter = router({
 			const nativeLanguage = getLanguageName(profile[0]?.nativeLanguage);
 
 			const { output } = await generateText({
-				model: openai("gpt-4o-mini"),
+				model: openai(conversationTranslationModel),
 				output: Output.text(),
-				system: `You are a translator. Translate the following English text to ${nativeLanguage}. Return ONLY the translation, nothing else.`,
+				system: buildConversationTranslationSystemPrompt(nativeLanguage),
 				prompt: input.text,
-				temperature: 0.3,
+				temperature: conversationTranslationTemperature,
+				experimental_telemetry: buildAiTelemetry({
+					functionId: conversationTranslationPromptKey,
+					metadata: {
+						feature: "conversation",
+						userAction: "translate_message",
+						promptKey: conversationTranslationPromptKey,
+						promptVersion: conversationTranslationPromptVersion,
+						model: conversationTranslationModel,
+						userId: ctx.session.user.id,
+						targetLanguage: nativeLanguage,
+						textLength: input.text.length,
+					},
+				}),
 			});
 
 			if (!output) {
@@ -481,16 +499,34 @@ export const conversationRouter = router({
 				)
 				.join("\n");
 
+			const systemPrompt = buildConversationHintSystemPrompt({
+				meta: sessionMeta,
+				level,
+				nativeLanguage,
+			});
+
 			const { output } = await generateText({
-				model: openai("gpt-4o-mini"),
+				model: openai(conversationHintModel),
 				output: Output.object({ schema: conversationHintSchema }),
-				system: buildConversationHintSystemPrompt({
-					meta: sessionMeta,
-					level,
-					nativeLanguage,
-				}),
+				system: systemPrompt,
 				prompt: conversationHistory,
-				temperature: 0.7,
+				temperature: conversationHintTemperature,
+				experimental_telemetry: buildAiTelemetry({
+					functionId: conversationHintPromptKey,
+					metadata: {
+						feature: "conversation",
+						userAction: "generate_hint",
+						promptKey: conversationHintPromptKey,
+						promptVersion: conversationHintPromptVersion,
+						model: conversationHintModel,
+						userId: ctx.session.user.id,
+						sessionId: input.sessionId,
+						level,
+						nativeLanguage,
+						mode: sessionMeta.mode,
+						messageCount: history.length,
+					},
+				}),
 			});
 
 			if (!output) {

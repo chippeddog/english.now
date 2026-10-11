@@ -12,9 +12,9 @@ import {
 	Volume2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useUpgradeDialog } from "@/components/dashboard/upgrade-dialog";
 import { OverallScore, ScoreBreakdown } from "@/components/pronunciation/score";
 import WeakPhonemesSection from "@/components/pronunciation/weak-phonemes";
-import { useUpgradeDialog } from "@/components/dashboard/upgrade-dialog";
 import { Button } from "@/components/ui/button";
 import {
 	Popover,
@@ -439,341 +439,348 @@ export default function SessionReview({
 	return (
 		<>
 			<div className="grid grid-cols-5 gap-4 space-y-6">
-			{/* {summary.paragraph && (
+				{/* {summary.paragraph && (
 				<div className="rounded-2xl border bg-card p-8">
 					<p className="text-foreground leading-relaxed">{summary.paragraph}</p>
 				</div>
 			)} */}
-			{/* Transcript Feedback */}
-			{paragraphText && (
-				<div className="col-span-3">
-					{!isPreviewLocked ? (
-						<TranscriptFeedback
-							paragraphText={paragraphText}
-							attempts={attempts}
-						/>
-					) : null}
-					<div className="rounded-2xl border bg-card p-8">
-						<OverallScore score={summary.averageScore} />
+				{/* Transcript Feedback */}
+				{paragraphText && (
+					<div className="col-span-3">
+						{!isPreviewLocked ? (
+							<TranscriptFeedback
+								paragraphText={paragraphText}
+								attempts={attempts}
+							/>
+						) : null}
+						<div className="rounded-2xl border bg-card p-8">
+							<OverallScore score={summary.averageScore} />
 
-						{!isPreviewLocked &&
-							(summary.averageAccuracy > 0 ||
-							summary.averageFluency > 0 ||
-							summary.averageProsody > 0 ||
-							summary.averageCompleteness > 0) && (
-							<div className="mt-6 border-t pt-6">
-								<ScoreBreakdown
-									accuracy={summary.averageAccuracy}
-									fluency={summary.averageFluency}
-									completeness={summary.averageCompleteness}
-									prosody={summary.averageProsody}
-								/>
-							</div>
-						)}
+							{!isPreviewLocked &&
+								(summary.averageAccuracy > 0 ||
+									summary.averageFluency > 0 ||
+									summary.averageProsody > 0 ||
+									summary.averageCompleteness > 0) && (
+									<div className="mt-6 border-t pt-6">
+										<ScoreBreakdown
+											accuracy={summary.averageAccuracy}
+											fluency={summary.averageFluency}
+											completeness={summary.averageCompleteness}
+											prosody={summary.averageProsody}
+										/>
+									</div>
+								)}
 
-						<div className="mt-6 grid grid-cols-3 gap-4 border-t pt-6">
-							{!isPreviewLocked ? (
-								<div className="text-center">
-									<p className="font-bold text-2xl text-green-600">
-										{summary.bestScore}%
-									</p>
-									<p className="text-muted-foreground text-sm">Best Score</p>
-								</div>
-							) : (
-								<div className="text-center">
-									<p className="font-bold text-2xl text-primary">
-										{summary.averageScore}%
-									</p>
-									<p className="text-muted-foreground text-sm">Overall Score</p>
-								</div>
-							)}
-							<div className="text-center">
-								<p className="font-bold text-2xl">{summary.totalAttempts}</p>
-								<p className="text-muted-foreground text-sm">Attempts</p>
-							</div>
-							{!isPreviewLocked ? (
-								<div className="text-center">
-									<p className="font-bold text-2xl text-red-500">
-										{summary.worstScore}%
-									</p>
-									<p className="text-muted-foreground text-sm">Lowest</p>
-								</div>
-							) : (
+							<div className="mt-6 grid grid-cols-3 gap-4 border-t pt-6">
+								{!isPreviewLocked ? (
+									<div className="text-center">
+										<p className="font-bold text-2xl text-green-600">
+											{summary.bestScore}%
+										</p>
+										<p className="text-muted-foreground text-sm">Best Score</p>
+									</div>
+								) : (
+									<div className="text-center">
+										<p className="font-bold text-2xl text-primary">
+											{summary.averageScore}%
+										</p>
+										<p className="text-muted-foreground text-sm">
+											Overall Score
+										</p>
+									</div>
+								)}
 								<div className="text-center">
 									<p className="font-bold text-2xl">{summary.totalAttempts}</p>
-									<p className="text-muted-foreground text-sm">Recorded Takes</p>
+									<p className="text-muted-foreground text-sm">Attempts</p>
 								</div>
-							)}
+								{!isPreviewLocked ? (
+									<div className="text-center">
+										<p className="font-bold text-2xl text-red-500">
+											{summary.worstScore}%
+										</p>
+										<p className="text-muted-foreground text-sm">Lowest</p>
+									</div>
+								) : (
+									<div className="text-center">
+										<p className="font-bold text-2xl">
+											{summary.totalAttempts}
+										</p>
+										<p className="text-muted-foreground text-sm">
+											Recorded Takes
+										</p>
+									</div>
+								)}
+							</div>
 						</div>
 					</div>
-				</div>
-			)}
-			<div className="col-span-2">
-				{/* Weak Phonemes */}
-				{!isPreviewLocked && summary.weakPhonemes?.length > 0 && (
-					<WeakPhonemesSection phonemes={summary.weakPhonemes} />
 				)}
+				<div className="col-span-2">
+					{/* Weak Phonemes */}
+					{!isPreviewLocked && summary.weakPhonemes?.length > 0 && (
+						<WeakPhonemesSection phonemes={summary.weakPhonemes} />
+					)}
 
-				{/* Weak Words */}
-				{!isPreviewLocked && summary.weakWords?.length > 0 && (
-					<div className="rounded-2xl border border-red-200 bg-red-50 p-6 dark:border-red-800 dark:bg-red-900/20">
-						<h3 className="mb-3 font-semibold text-lg text-red-700 dark:text-red-300">
-							Words to Practice
-						</h3>
-						<div className="flex flex-wrap gap-2">
-							{summary.weakWords.map((word) => (
-								<span
-									key={word}
-									className="rounded-lg bg-red-100 px-3 py-1.5 font-medium text-red-700 dark:bg-red-900/40 dark:text-red-300"
-								>
-									{word}
+					{/* Weak Words */}
+					{!isPreviewLocked && summary.weakWords?.length > 0 && (
+						<div className="rounded-2xl border border-red-200 bg-red-50 p-6 dark:border-red-800 dark:bg-red-900/20">
+							<h3 className="mb-3 font-semibold text-lg text-red-700 dark:text-red-300">
+								Words to Practice
+							</h3>
+							<div className="flex flex-wrap gap-2">
+								{summary.weakWords.map((word) => (
+									<span
+										key={word}
+										className="rounded-lg bg-red-100 px-3 py-1.5 font-medium text-red-700 dark:bg-red-900/40 dark:text-red-300"
+									>
+										{word}
+									</span>
+								))}
+							</div>
+						</div>
+					)}
+
+					{/* AI Feedback Section */}
+					<div className="space-y-4">
+						<div className="flex items-center gap-2">
+							<Sparkles className="size-5 text-primary" />
+							<h3 className="font-semibold text-lg">AI Coach Feedback</h3>
+							{isPreviewLocked && (
+								<span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 font-medium text-[11px] text-amber-700 uppercase tracking-wide">
+									Preview
 								</span>
-							))}
+							)}
 						</div>
-					</div>
-				)}
 
-				{/* AI Feedback Section */}
-				<div className="space-y-4">
-					<div className="flex items-center gap-2">
-						<Sparkles className="size-5 text-primary" />
-						<h3 className="font-semibold text-lg">AI Coach Feedback</h3>
-						{isPreviewLocked && (
-							<span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 font-medium text-[11px] text-amber-700 uppercase tracking-wide">
-								Preview
-							</span>
+						{(feedbackStatus === "pending" ||
+							feedbackStatus === "processing" ||
+							isFeedbackLoading) && (
+							<div className="flex items-center justify-center gap-3 rounded-2xl border border-dashed p-8">
+								<Loader2 className="size-5 animate-spin text-muted-foreground" />
+								<p className="text-muted-foreground">
+									Generating personalized feedback...
+								</p>
+							</div>
 						)}
-					</div>
 
-					{(feedbackStatus === "pending" ||
-						feedbackStatus === "processing" ||
-						isFeedbackLoading) && (
-						<div className="flex items-center justify-center gap-3 rounded-2xl border border-dashed p-8">
-							<Loader2 className="size-5 animate-spin text-muted-foreground" />
-							<p className="text-muted-foreground">
-								Generating personalized feedback...
-							</p>
-						</div>
-					)}
+						{feedbackStatus === "failed" && (
+							<div className="flex items-center justify-center gap-3 rounded-2xl border border-red-200 bg-red-50 p-6 dark:border-red-800 dark:bg-red-900/20">
+								<AlertCircle className="size-5 text-red-500" />
+								<p className="text-red-700 dark:text-red-300">
+									Failed to generate feedback. Please try again.
+								</p>
+								<Button variant="outline" size="sm" onClick={() => refetch()}>
+									Retry
+								</Button>
+							</div>
+						)}
 
-					{feedbackStatus === "failed" && (
-						<div className="flex items-center justify-center gap-3 rounded-2xl border border-red-200 bg-red-50 p-6 dark:border-red-800 dark:bg-red-900/20">
-							<AlertCircle className="size-5 text-red-500" />
-							<p className="text-red-700 dark:text-red-300">
-								Failed to generate feedback. Please try again.
-							</p>
-							<Button variant="outline" size="sm" onClick={() => refetch()}>
-								Retry
-							</Button>
-						</div>
-					)}
+						{feedbackStatus === "completed" && isPreviewLocked && (
+							<div className="rounded-2xl border border-amber-200 bg-amber-50 p-6">
+								<h4 className="font-semibold text-amber-800">
+									Unlock Your AI Coach
+								</h4>
+								<p className="mt-2 text-amber-700 text-sm leading-relaxed">
+									Upgrade to see detailed mistake patterns, personalized mini
+									exercises, weak-area analysis, and practice word sets for this
+									session.
+								</p>
+								<Button className="mt-4 rounded-xl" onClick={openUpgradeDialog}>
+									Unlock Full Feedback
+								</Button>
+							</div>
+						)}
 
-					{feedbackStatus === "completed" && isPreviewLocked && (
-						<div className="rounded-2xl border border-amber-200 bg-amber-50 p-6">
-							<h4 className="font-semibold text-amber-800">
-								Unlock Your AI Coach
-							</h4>
-							<p className="mt-2 text-amber-700 text-sm leading-relaxed">
-								Upgrade to see detailed mistake patterns, personalized mini
-								exercises, weak-area analysis, and practice word sets for this
-								session.
-							</p>
-							<Button
-								className="mt-4 rounded-xl"
-								onClick={openUpgradeDialog}
-							>
-								Unlock Full Feedback
-							</Button>
-						</div>
-					)}
-
-					{feedbackStatus === "completed" && feedback && (
-						<div className="space-y-4">
-							{/* Mistake Patterns */}
-							{feedback.mistakePatterns?.length > 0 && (
-								<div className="space-y-3">
-									<h4 className="font-semibold text-lg">Mistake Patterns</h4>
-									{feedback.mistakePatterns.map((pattern) => {
-										const Icon = MISTAKE_ICONS[pattern.type] ?? Target;
-										return (
-											<div
-												key={pattern.description}
-												className={cn(
-													"rounded-xl border p-4",
-													PRIORITY_STYLES[pattern.priority] ??
-														PRIORITY_STYLES.medium,
-												)}
-											>
-												<div className="mb-2 flex items-center gap-2">
-													<Icon className="size-4" />
-													<span className="font-medium">
-														{pattern.description}
-													</span>
-													{pattern.sound && (
-														<span className="rounded-md bg-white/60 px-2 py-0.5 font-mono text-xs dark:bg-black/20">
-															{pattern.sound}
-														</span>
+						{feedbackStatus === "completed" && feedback && (
+							<div className="space-y-4">
+								{/* Mistake Patterns */}
+								{feedback.mistakePatterns?.length > 0 && (
+									<div className="space-y-3">
+										<h4 className="font-semibold text-lg">Mistake Patterns</h4>
+										{feedback.mistakePatterns.map((pattern) => {
+											const Icon = MISTAKE_ICONS[pattern.type] ?? Target;
+											return (
+												<div
+													key={pattern.description}
+													className={cn(
+														"rounded-xl border p-4",
+														PRIORITY_STYLES[pattern.priority] ??
+															PRIORITY_STYLES.medium,
 													)}
-													<span className="ml-auto rounded-full bg-white/50 px-2 py-0.5 text-xs uppercase dark:bg-black/20">
-														{pattern.priority}
-													</span>
-												</div>
-
-												{pattern.words.length > 0 && (
-													<div className="mb-2">
-														<p className="mb-1 text-muted-foreground text-xs">
-															Your mistakes
-														</p>
-														<div className="flex flex-wrap gap-1.5">
-															{pattern.words.map((w) => (
-																<span
-																	key={w}
-																	className="rounded-md bg-red-100 px-2 py-0.5 font-mono text-red-700 text-sm dark:bg-red-900/40 dark:text-red-300"
-																>
-																	{w}
-																</span>
-															))}
-														</div>
-													</div>
-												)}
-
-												{pattern.practiceWords.length > 0 && (
-													<div>
-														<p className="mb-1 text-muted-foreground text-xs">
-															Practice these
-														</p>
-														<div className="flex flex-wrap gap-1.5">
-															{pattern.practiceWords.map((w) => (
-																<span
-																	key={w}
-																	className="rounded-md bg-white/60 px-2 py-0.5 font-mono text-sm dark:bg-black/20"
-																>
-																	{w}
-																</span>
-															))}
-														</div>
-													</div>
-												)}
-											</div>
-										);
-									})}
-								</div>
-							)}
-
-							{/* Mini Exercises */}
-							{feedback.exercises?.length > 0 && (
-								<div className="space-y-3">
-									<h4 className="font-semibold text-lg">Mini Practice</h4>
-									{feedback.exercises.map((exercise) => {
-										const Icon = EXERCISE_ICONS[exercise.type] ?? Dumbbell;
-										return (
-											<div
-												key={exercise.title}
-												className="rounded-xl border bg-card p-4"
-											>
-												<div className="mb-2 flex items-center gap-2">
-													<Icon className="size-4 text-primary" />
-													<span className="font-medium">{exercise.title}</span>
-													<span className="ml-auto rounded-full bg-primary/10 px-2 py-0.5 text-primary text-xs">
-														{exercise.targetSkill}
-													</span>
-												</div>
-												<p className="mb-3 text-muted-foreground text-sm">
-													{exercise.instruction}
-												</p>
-												<div className="flex flex-wrap gap-2">
-													{exercise.items.map((item) => (
-														<span
-															key={item}
-															className="rounded-lg border bg-muted/50 px-3 py-1.5 font-mono text-sm"
-														>
-															{item}
+												>
+													<div className="mb-2 flex items-center gap-2">
+														<Icon className="size-4" />
+														<span className="font-medium">
+															{pattern.description}
 														</span>
-													))}
-												</div>
-											</div>
-										);
-									})}
-								</div>
-							)}
+														{pattern.sound && (
+															<span className="rounded-md bg-white/60 px-2 py-0.5 font-mono text-xs dark:bg-black/20">
+																{pattern.sound}
+															</span>
+														)}
+														<span className="ml-auto rounded-full bg-white/50 px-2 py-0.5 text-xs uppercase dark:bg-black/20">
+															{pattern.priority}
+														</span>
+													</div>
 
-							{/* Weak Areas */}
-							{feedback.weakAreas?.length > 0 && (
-								<div className="space-y-3">
-									<h4 className="font-semibold text-lg">Weak Areas</h4>
-									{feedback.weakAreas.map((area) => (
-										<div
-											key={`${area.category}-${area.description}`}
-											className="flex items-start gap-3 rounded-xl border p-4"
-										>
-											<span
-												className={cn(
-													"mt-0.5 shrink-0 rounded-full px-2 py-0.5 font-medium text-xs capitalize",
-													SEVERITY_STYLES[area.severity] ??
-														SEVERITY_STYLES.medium,
-												)}
-											>
-												{area.severity}
-											</span>
-											<div className="min-w-0 flex-1">
-												<p className="font-medium capitalize">
-													{area.category.replace("_", " ")}
-												</p>
-												<p className="text-muted-foreground text-sm">
-													{area.description}
-												</p>
-												{area.sounds.length > 0 && (
-													<div className="mt-2 flex flex-wrap gap-1.5">
-														{area.sounds.map((s) => (
+													{pattern.words.length > 0 && (
+														<div className="mb-2">
+															<p className="mb-1 text-muted-foreground text-xs">
+																Your mistakes
+															</p>
+															<div className="flex flex-wrap gap-1.5">
+																{pattern.words.map((w) => (
+																	<span
+																		key={w}
+																		className="rounded-md bg-red-100 px-2 py-0.5 font-mono text-red-700 text-sm dark:bg-red-900/40 dark:text-red-300"
+																	>
+																		{w}
+																	</span>
+																))}
+															</div>
+														</div>
+													)}
+
+													{pattern.practiceWords.length > 0 && (
+														<div>
+															<p className="mb-1 text-muted-foreground text-xs">
+																Practice these
+															</p>
+															<div className="flex flex-wrap gap-1.5">
+																{pattern.practiceWords.map((w) => (
+																	<span
+																		key={w}
+																		className="rounded-md bg-white/60 px-2 py-0.5 font-mono text-sm dark:bg-black/20"
+																	>
+																		{w}
+																	</span>
+																))}
+															</div>
+														</div>
+													)}
+												</div>
+											);
+										})}
+									</div>
+								)}
+
+								{/* Mini Exercises */}
+								{feedback.exercises?.length > 0 && (
+									<div className="space-y-3">
+										<h4 className="font-semibold text-lg">Mini Practice</h4>
+										{feedback.exercises.map((exercise) => {
+											const Icon = EXERCISE_ICONS[exercise.type] ?? Dumbbell;
+											return (
+												<div
+													key={exercise.title}
+													className="rounded-xl border bg-card p-4"
+												>
+													<div className="mb-2 flex items-center gap-2">
+														<Icon className="size-4 text-primary" />
+														<span className="font-medium">
+															{exercise.title}
+														</span>
+														<span className="ml-auto rounded-full bg-primary/10 px-2 py-0.5 text-primary text-xs">
+															{exercise.targetSkill}
+														</span>
+													</div>
+													<p className="mb-3 text-muted-foreground text-sm">
+														{exercise.instruction}
+													</p>
+													<div className="flex flex-wrap gap-2">
+														{exercise.items.map((item) => (
 															<span
-																key={s}
-																className="rounded-md bg-muted px-2 py-0.5 font-mono text-xs"
+																key={item}
+																className="rounded-lg border bg-muted/50 px-3 py-1.5 font-mono text-sm"
 															>
-																{s}
+																{item}
 															</span>
 														))}
 													</div>
-												)}
-											</div>
-										</div>
-									))}
-								</div>
-							)}
-
-							{/* Practice Word Sets */}
-							{feedback.practiceWordSets?.length > 0 && (
-								<div className="space-y-3">
-									<h4 className="font-semibold text-lg">Word Practice Sets</h4>
-									<div className="grid gap-3">
-										{feedback.practiceWordSets.map((set) => (
-											<div key={set.word} className="rounded-xl border p-4">
-												<div className="mb-2 flex items-center gap-2">
-													<span className="rounded-md bg-red-100 px-2.5 py-1 font-mono font-semibold text-red-700 dark:bg-red-900/40 dark:text-red-300">
-														{set.word}
-													</span>
-													<span className="text-muted-foreground text-sm">
-														{set.issue}
-													</span>
 												</div>
-												<div className="flex flex-wrap gap-1.5">
-													{set.relatedWords.map((rw) => (
-														<span
-															key={rw}
-															className="rounded-md bg-muted/50 px-2 py-0.5 font-mono text-sm"
-														>
-															{rw}
-														</span>
-													))}
+											);
+										})}
+									</div>
+								)}
+
+								{/* Weak Areas */}
+								{feedback.weakAreas?.length > 0 && (
+									<div className="space-y-3">
+										<h4 className="font-semibold text-lg">Weak Areas</h4>
+										{feedback.weakAreas.map((area) => (
+											<div
+												key={`${area.category}-${area.description}`}
+												className="flex items-start gap-3 rounded-xl border p-4"
+											>
+												<span
+													className={cn(
+														"mt-0.5 shrink-0 rounded-full px-2 py-0.5 font-medium text-xs capitalize",
+														SEVERITY_STYLES[area.severity] ??
+															SEVERITY_STYLES.medium,
+													)}
+												>
+													{area.severity}
+												</span>
+												<div className="min-w-0 flex-1">
+													<p className="font-medium capitalize">
+														{area.category.replace("_", " ")}
+													</p>
+													<p className="text-muted-foreground text-sm">
+														{area.description}
+													</p>
+													{area.sounds.length > 0 && (
+														<div className="mt-2 flex flex-wrap gap-1.5">
+															{area.sounds.map((s) => (
+																<span
+																	key={s}
+																	className="rounded-md bg-muted px-2 py-0.5 font-mono text-xs"
+																>
+																	{s}
+																</span>
+															))}
+														</div>
+													)}
 												</div>
 											</div>
 										))}
 									</div>
-								</div>
-							)}
-						</div>
-					)}
+								)}
+
+								{/* Practice Word Sets */}
+								{feedback.practiceWordSets?.length > 0 && (
+									<div className="space-y-3">
+										<h4 className="font-semibold text-lg">
+											Word Practice Sets
+										</h4>
+										<div className="grid gap-3">
+											{feedback.practiceWordSets.map((set) => (
+												<div key={set.word} className="rounded-xl border p-4">
+													<div className="mb-2 flex items-center gap-2">
+														<span className="rounded-md bg-red-100 px-2.5 py-1 font-mono font-semibold text-red-700 dark:bg-red-900/40 dark:text-red-300">
+															{set.word}
+														</span>
+														<span className="text-muted-foreground text-sm">
+															{set.issue}
+														</span>
+													</div>
+													<div className="flex flex-wrap gap-1.5">
+														{set.relatedWords.map((rw) => (
+															<span
+																key={rw}
+																className="rounded-md bg-muted/50 px-2 py-0.5 font-mono text-sm"
+															>
+																{rw}
+															</span>
+														))}
+													</div>
+												</div>
+											))}
+										</div>
+									</div>
+								)}
+							</div>
+						)}
+					</div>
 				</div>
-			</div>
 			</div>
 		</>
 	);

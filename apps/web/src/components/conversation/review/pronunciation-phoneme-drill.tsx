@@ -93,8 +93,7 @@ export function PronunciationPhonemeDrill({
 							(group.phoneme &&
 							group.phoneme !== "_target" &&
 							!group.phoneme.startsWith("err:")
-								? group.phoneme.startsWith("/") &&
-									group.phoneme.endsWith("/")
+								? group.phoneme.startsWith("/") && group.phoneme.endsWith("/")
 									? `Sound ${group.phoneme}`
 									: `Sound /${group.phoneme.replace(/^\/|\/$/g, "")}/`
 								: "Practice word")}

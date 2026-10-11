@@ -1,5 +1,5 @@
-import type { ListeningLessonContent } from "@/types/lesson";
 import { ArrowRight, Headphones, Lightbulb } from "lucide-react";
+import type { ListeningLessonContent } from "@/types/lesson";
 
 interface ListeningTheoryProps {
 	content: ListeningLessonContent;

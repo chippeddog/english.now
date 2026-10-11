@@ -69,7 +69,10 @@ export default function EditPhraseDialog({
 		}
 
 		const trimmedTranslation = translation.trim();
-		if (trimmedTranslation && trimmedTranslation !== (target.translation ?? "")) {
+		if (
+			trimmedTranslation &&
+			trimmedTranslation !== (target.translation ?? "")
+		) {
 			next.translation = trimmedTranslation;
 		} else if (!trimmedTranslation && target.customTranslation) {
 			next.translation = null;

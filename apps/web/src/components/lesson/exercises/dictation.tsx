@@ -55,7 +55,7 @@ export default function Dictation({
 				<form onSubmit={handleSubmit} className="flex flex-col gap-3">
 					<label
 						htmlFor="dictation-input"
-						className="font-medium text-sm text-neutral-700"
+						className="font-medium text-neutral-700 text-sm"
 					>
 						Type what you hear:
 					</label>

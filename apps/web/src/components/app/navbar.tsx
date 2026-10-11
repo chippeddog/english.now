@@ -6,19 +6,35 @@ import {
 	supportedLanguages,
 	useTranslation,
 } from "@english.now/i18n";
+import * as Sentry from "@sentry/tanstackstart-react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { Headphones, Languages, LogOutIcon, Settings, Zap } from "lucide-react";
-import { useEffect, useState } from "react";
+import {
+	Headphones,
+	Languages,
+	LogOutIcon,
+	MessageSquarePlus,
+	Settings,
+	Zap,
+} from "lucide-react";
+import { type FormEvent, useEffect, useState } from "react";
+import { toast } from "sonner";
 import MobileMenu from "@/components/app/navbar/mobile-menu";
 import Streak from "@/components/app/navbar/streak";
-import {
-	UpgradeDialogButton,
-	useUpgradeDialog,
-} from "@/components/dashboard/upgrade-dialog";
+import { useUpgradeDialog } from "@/components/dashboard/upgrade-dialog";
 import VoicesDialog from "@/components/dashboard/voices-dialog";
 import Logo from "@/components/logo";
+import { Button } from "@/components/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/utils/trpc";
@@ -39,6 +55,9 @@ export default function Navbar() {
 	const trpc = useTRPC();
 	const [voicesOpen, setVoicesOpen] = useState(false);
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+	const [feedbackOpen, setFeedbackOpen] = useState(false);
+	const [feedbackComments, setFeedbackComments] = useState("");
+	const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
 	const { openDialog } = useUpgradeDialog();
 
 	const [isScrolled, setIsScrolled] = useState(false);
@@ -57,6 +76,43 @@ export default function Navbar() {
 	const { data: practiceTimeData, isLoading: isPracticeTimeLoading } = useQuery(
 		trpc.profile.getDailyPracticeTime.queryOptions({ timezone }),
 	);
+
+	const handleFeedbackSubmit = (event: FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+		const comments = feedbackComments.trim();
+
+		if (!comments) {
+			toast.error("Please enter your feedback first.");
+			return;
+		}
+
+		if (!Sentry.isEnabled()) {
+			toast.error("Feedback is unavailable right now.");
+			return;
+		}
+
+		setIsSubmittingFeedback(true);
+
+		try {
+			const eventId = Sentry.captureMessage("User Feedback");
+
+			Sentry.captureFeedback({
+				associatedEventId: eventId,
+				email: session?.user.email ?? undefined,
+				message: comments,
+				name: session?.user.name ?? undefined,
+				source: "navbar",
+			});
+
+			setFeedbackComments("");
+			setFeedbackOpen(false);
+			toast.success("Thanks for your feedback!");
+		} catch {
+			toast.error("Failed to send feedback.");
+		} finally {
+			setIsSubmittingFeedback(false);
+		}
+	};
 
 	useEffect(() => {
 		const handleLanguageChanged = (lng: string) => {
@@ -301,6 +357,17 @@ export default function Navbar() {
 									{t("nav.voices")}
 								</DropdownMenuItem>
 								<DropdownMenuSeparator />
+								<DropdownMenuItem
+									onSelect={() => {
+										setIsDropdownOpen(false);
+										setFeedbackOpen(true);
+									}}
+									className="flex cursor-pointer items-center gap-2"
+								>
+									<MessageSquarePlus className="size-4" />
+									Leave feedback
+								</DropdownMenuItem>
+								<DropdownMenuSeparator />
 								<DropdownMenuItem asChild>
 									<button
 										type="button"
@@ -324,6 +391,44 @@ export default function Navbar() {
 							</DropdownMenuContent>
 							<VoicesDialog open={voicesOpen} onOpenChange={setVoicesOpen} />
 						</DropdownMenu>
+						<Dialog open={feedbackOpen} onOpenChange={setFeedbackOpen}>
+							<DialogContent className="sm:max-w-md">
+								<form onSubmit={handleFeedbackSubmit} className="space-y-4">
+									<DialogHeader>
+										<DialogTitle>Leave feedback</DialogTitle>
+										<DialogDescription>
+											Tell us what worked, what did not, or what you would like
+											to see next.
+										</DialogDescription>
+									</DialogHeader>
+									<Textarea
+										value={feedbackComments}
+										onChange={(event) =>
+											setFeedbackComments(event.target.value)
+										}
+										placeholder="Share your feedback..."
+										className="min-h-32 resize-none"
+									/>
+									<DialogFooter>
+										<Button
+											type="button"
+											variant="outline"
+											onClick={() => setFeedbackOpen(false)}
+										>
+											Cancel
+										</Button>
+										<Button
+											type="submit"
+											disabled={
+												isSubmittingFeedback || !feedbackComments.trim()
+											}
+										>
+											{isSubmittingFeedback ? "Sending..." : "Send feedback"}
+										</Button>
+									</DialogFooter>
+								</form>
+							</DialogContent>
+						</Dialog>
 					</div>
 				</nav>
 			</div>

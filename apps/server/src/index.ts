@@ -1,5 +1,6 @@
 import "dotenv/config";
 import "./instrument";
+import { shutdownLangfuseTelemetry } from "@english.now/api/ai/langfuse";
 import { createContext } from "@english.now/api/context";
 import { appRouter } from "@english.now/api/routers/index";
 import { auth } from "@english.now/auth";
@@ -29,6 +30,15 @@ async function flushSentry() {
 	await Sentry.flush(2_000).catch((error) => {
 		console.error("[sentry] flush failed", error);
 	});
+}
+
+async function flushTelemetry() {
+	await Promise.all([
+		flushSentry(),
+		shutdownLangfuseTelemetry().catch((error) => {
+			console.error("[langfuse] shutdown failed", error);
+		}),
+	]);
 }
 
 /**
@@ -102,7 +112,7 @@ void boss
 	.catch(async (error) => {
 		Sentry.captureException(error);
 		console.error("[pg-boss] failed to start", error);
-		await flushSentry();
+		await flushTelemetry();
 		process.exit(1);
 	});
 
@@ -144,7 +154,7 @@ async function shutdown(signal: NodeJS.Signals) {
 	}
 
 	server.close();
-	await flushSentry();
+	await flushTelemetry();
 	process.exit(0);
 }
 

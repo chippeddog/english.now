@@ -1,4 +1,5 @@
 import { Trans, useTranslation } from "@english.now/i18n";
+import { usePostHog } from "@posthog/react";
 import { useForm } from "@tanstack/react-form";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
@@ -13,6 +14,7 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 export default function SignInForm() {
 	const { t } = useTranslation("common");
+	const posthog = usePostHog();
 	const navigate = useNavigate({
 		from: "/",
 	});
@@ -37,7 +39,14 @@ export default function SignInForm() {
 					password: value.password,
 				},
 				{
-					onSuccess: () => {
+					onSuccess: (ctx) => {
+						posthog.identify(ctx.data.user.id, {
+							email: ctx.data.user.email,
+							name: ctx.data.user.name,
+						});
+						posthog.capture("user_logged_in", {
+							method: "email",
+						});
 						navigate({
 							to: "/home",
 						});

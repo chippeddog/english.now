@@ -69,11 +69,11 @@ export default function Streak({
 					"0 0 0 1px rgba(0,0,0,.05),0 10px 10px -5px rgba(0,0,0,.04),0 20px 25px -5px rgba(0,0,0,.04),0 20px 32px -12px rgba(0,0,0,.04)",
 			}}
 		>
-			<div className="mt-1 mb-3 flex items-center justify-between gap-3 pr-1.5 pl-1.5 font-medium">
+			<div className="mt-1 mb-3 flex flex-col gap-3 pr-1.5 pl-1.5 font-medium">
 				<div className="relative flex items-center gap-1.5">
-					<span className="font-lyon text-4xl">{streak}</span>
+					<span className="font-lyon text-3xl">{streak}</span>
 					<sub className="flex items-center gap-2 font-semibold text-sm">
-						day streak
+						Day Streak
 						{/* <Trans>{t("streak.title", { count: streak })}</Trans> */}
 					</sub>
 					{/* <Tooltip>
@@ -101,10 +101,10 @@ export default function Streak({
 							</p>
 						</TooltipContent>
 					</Tooltip> */}
-					{/* <p className="text-muted-foreground text-sm">
-						Time to start your first lesson!
-					</p> */}
 				</div>
+				{/* <p className="text-muted-foreground text-sm">
+					Time to start your first lesson!
+				</p> */}
 			</div>
 
 			<div className="rounded-2xl border border-border/50 p-3">
@@ -123,7 +123,7 @@ export default function Streak({
 								) : (
 									<div
 										className={cn(
-											"flex size-8.5 items-center justify-center rounded-full transition-all",
+											"relative flex size-8.5 items-center justify-center rounded-full transition-all",
 											isCompleted
 												? "border border-amber-400 bg-radial from-text-amber-200 to-amber-400"
 												: isToday

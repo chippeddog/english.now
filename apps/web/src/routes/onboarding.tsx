@@ -1,5 +1,6 @@
 import { env } from "@english.now/env/client";
 import { useTranslation } from "@english.now/i18n";
+import { usePostHog } from "@posthog/react";
 import { useMutation } from "@tanstack/react-query";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import {
@@ -215,6 +216,7 @@ function loadSavedProgress(): { data: OnboardingData; step: number } | null {
 
 function OnboardingPage() {
 	const { t } = useTranslation("onboarding");
+	const posthog = usePostHog();
 	const [isScrolled, setIsScrolled] = useState(false);
 	const navigate = useNavigate();
 	const { data: session } = authClient.useSession();
@@ -305,6 +307,16 @@ function OnboardingPage() {
 				timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
 			});
 
+			posthog.capture("onboarding_completed", {
+				selected_plan: selectedPlan,
+				level: data.level,
+				goal: data.goal,
+				daily_goal_minutes: Number.parseInt(data.time) || 15,
+				focus_areas: data.focus,
+				native_language: data.nativeLanguage || "en",
+				has_paid_plan: Boolean(plan?.paddlePriceId),
+			});
+
 			// Clear local progress
 			localStorage.removeItem("onboarding-progress");
 			localStorage.setItem("selected-plan", selectedPlan);
@@ -324,7 +336,7 @@ function OnboardingPage() {
 		} catch (error) {
 			console.error("Failed to save onboarding:", error);
 		}
-	}, [navigate, selectedPlan, data, saveOnboardingMutation, session]);
+	}, [navigate, selectedPlan, data, saveOnboardingMutation, session, posthog]);
 
 	const handleSkip = useCallback(async () => {
 		try {
@@ -338,12 +350,18 @@ function OnboardingPage() {
 				timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
 			});
 
+			posthog.capture("onboarding_skipped", {
+				step_skipped_at: currentStep,
+				level: data.level || "beginner",
+				goal: data.goal || "personal",
+			});
+
 			localStorage.removeItem("onboarding-progress");
 			navigate({ to: "/generating" });
 		} catch (error) {
 			console.error("Failed to save onboarding:", error);
 		}
-	}, [navigate, data, saveOnboardingMutation]);
+	}, [navigate, data, saveOnboardingMutation, posthog, currentStep]);
 
 	const toggleFocus = (focusId: string) => {
 		setData((prev) => ({

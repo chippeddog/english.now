@@ -1,0 +1,19 @@
+{
+  "name": "@english.now/trigger",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "trigger:dev": "trigger dev",
+    "trigger:deploy": "trigger deploy"
+  },
+  "dependencies": {
+    "@trigger.dev/sdk": "^4.4.5"
+  },
+  "devDependencies": {
+    "@trigger.dev/build": "^4.4.5",
+    "@types/node": "^22.13.11",
+    "trigger.dev": "^4.4.5",
+    "typescript": "catalog:"
+  }
+}

@@ -1,6 +1,6 @@
-import type { SpeakingLessonContent } from "@/types/lesson";
 import { ArrowRight, MessageCircle, Mic, Volume2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { SpeakingLessonContent } from "@/types/lesson";
 
 interface SpeakingTheoryProps {
 	content: SpeakingLessonContent;

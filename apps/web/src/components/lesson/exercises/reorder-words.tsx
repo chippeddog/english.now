@@ -68,7 +68,7 @@ export default function ReorderWords({
 			)}
 
 			{/* Selected words (sentence being built) */}
-			<div className="min-h-[56px] rounded-2xl border-2 border-dashed border-blue-200 bg-blue-50/50 p-3">
+			<div className="min-h-[56px] rounded-2xl border-2 border-blue-200 border-dashed bg-blue-50/50 p-3">
 				{selected.length === 0 ? (
 					<p className="py-1 text-center text-muted-foreground text-sm">
 						Tap words below to build the sentence

@@ -24,8 +24,9 @@ export const PAGE_TITLE = {
 	verifyEmail: "Verify Email",
 	//Dashboard
 	dashboard: "Dashboard",
-	pronunciation: "Pronunciation",
+	lessons: "Lessons",
 	practice: "Practice",
+	pronunciation: "Pronunciation",
 	vocabulary: "Vocabulary",
 	settings: "Settings",
 };

@@ -1,6 +1,7 @@
 import { env } from "@english.now/env/client";
-import { useMutation } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Loader2, Volume2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { useUpgradeDialog } from "@/components/dashboard/upgrade-dialog";
@@ -10,8 +11,10 @@ import AttemptsList, {
 import PronunciationSettingsDrawer from "@/components/pronunciation/settings-drawer";
 import useAudioDevices from "@/hooks/use-audio-devices";
 import usePronunciationRecorder from "@/hooks/use-pronunciation-recorder";
+import useTextToSpeech from "@/hooks/use-text-to-speech";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/utils/trpc";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Separator } from "../ui/separator";
 import ControlBar from "./real-aloud/control-bar";
 
@@ -24,10 +27,29 @@ type ParagraphItem = {
 	tips: string;
 };
 
+type WordToken = {
+	word: string;
+	lookupWord: string;
+	key: string;
+};
+
 const RECORDING_COUNTDOWN_START = 3;
 
 function normalizeWord(w: string): string {
 	return w.toLowerCase().replace(/[^a-z0-9']/g, "");
+}
+
+function tokenizeParagraphWords(text: string): WordToken[] {
+	let offset = 0;
+	return text.split(/\s+/).map((word) => {
+		const token = {
+			word,
+			lookupWord: normalizeWord(word),
+			key: `word-${offset}`,
+		};
+		offset += word.length + 1;
+		return token;
+	});
 }
 
 function wordsMatch(a: string, b: string): boolean {
@@ -158,6 +180,8 @@ export default function ReadAloudMode({
 	const [isSaving, setIsSaving] = useState(false);
 	const [isFinishing, setIsFinishing] = useState(false);
 	const [countdownValue, setCountdownValue] = useState<number | null>(null);
+	const [selectedWord, setSelectedWord] = useState<WordToken | null>(null);
+	const [playingWordKey, setPlayingWordKey] = useState<string | null>(null);
 	const [attempts, setAttempts] = useState<SavedAttempt[]>(() =>
 		(initialAttempts ?? [])
 			.filter((a) => a.audioUrl)
@@ -211,6 +235,13 @@ export default function ReadAloudMode({
 		resetTranscript,
 	} = usePronunciationRecorder(selectedDevice);
 	const countdownTimeoutRef = useRef<number | null>(null);
+	const wordAudioRef = useRef<HTMLAudioElement | null>(null);
+	const {
+		isLoading: isWordTtsLoading,
+		isSpeaking: isWordTtsSpeaking,
+		speak: speakWord,
+		stop: stopWordSpeech,
+	} = useTextToSpeech();
 
 	const submitAttempt = useMutation(
 		trpc.pronunciation.submitAttempt.mutationOptions({}),
@@ -223,6 +254,57 @@ export default function ReadAloudMode({
 			},
 		}),
 	);
+
+	const wordDetailsDisabled =
+		isRecording ||
+		isPaused ||
+		countdownValue != null ||
+		isSaving ||
+		submitAttempt.isPending ||
+		isFinishing;
+
+	const wordDetails = useQuery({
+		...trpc.vocabulary.getWordDetails.queryOptions({
+			word: selectedWord?.lookupWord ?? "",
+		}),
+		enabled: Boolean(selectedWord?.lookupWord) && !wordDetailsDisabled,
+	});
+
+	const stopWordAudio = useCallback(() => {
+		if (wordAudioRef.current) {
+			wordAudioRef.current.pause();
+			wordAudioRef.current.currentTime = 0;
+			wordAudioRef.current = null;
+		}
+		stopWordSpeech();
+		setPlayingWordKey(null);
+	}, [stopWordSpeech]);
+
+	const handlePlayWordAudio = useCallback(() => {
+		if (!selectedWord) return;
+		stopWordAudio();
+		setPlayingWordKey(selectedWord.key);
+
+		if (wordDetails.data?.audioUrl) {
+			const audio = new Audio(wordDetails.data.audioUrl);
+			wordAudioRef.current = audio;
+			audio.onended = () => {
+				wordAudioRef.current = null;
+				setPlayingWordKey(null);
+			};
+			audio.onerror = () => {
+				wordAudioRef.current = null;
+				setPlayingWordKey(null);
+			};
+			void audio.play().catch(() => {
+				wordAudioRef.current = null;
+				setPlayingWordKey(null);
+			});
+			return;
+		}
+
+		void speakWord(selectedWord.lookupWord);
+	}, [selectedWord, speakWord, stopWordAudio, wordDetails.data?.audioUrl]);
 
 	async function uploadAudio(audioBlob: Blob): Promise<string> {
 		const audio = await blobToBase64(audioBlob);
@@ -355,9 +437,13 @@ export default function ReadAloudMode({
 		}
 	};
 
-	const paragraphWords = useMemo(
-		() => paragraph.text.split(/\s+/),
+	const paragraphTokens = useMemo(
+		() => tokenizeParagraphWords(paragraph.text),
 		[paragraph.text],
+	);
+	const paragraphWords = useMemo(
+		() => paragraphTokens.map((token) => token.word),
+		[paragraphTokens],
 	);
 
 	const maxConfirmedRef = useRef(0);
@@ -406,6 +492,28 @@ export default function ReadAloudMode({
 			}
 		};
 	}, [countdownValue, startRecording]);
+
+	useEffect(() => {
+		if (!wordDetailsDisabled) return;
+
+		setSelectedWord(null);
+		stopWordAudio();
+	}, [stopWordAudio, wordDetailsDisabled]);
+
+	useEffect(() => {
+		if (!isWordTtsLoading && !isWordTtsSpeaking && !wordAudioRef.current) {
+			setPlayingWordKey(null);
+		}
+	}, [isWordTtsLoading, isWordTtsSpeaking]);
+
+	useEffect(() => {
+		return () => {
+			if (wordAudioRef.current) {
+				wordAudioRef.current.pause();
+				wordAudioRef.current = null;
+			}
+		};
+	}, []);
 
 	useEffect(() => {
 		return () => {
@@ -491,25 +599,175 @@ export default function ReadAloudMode({
 				</div>
 				<Separator className="my-4 border-dashed bg-border/50" />
 				<p className="font-medium leading-relaxed tracking-wide md:text-lg">
-					{showTracking
-						? paragraphWords.map((word, i) => (
-								<span key={`${i}-${word}`}>
+					{paragraphTokens.map((token, i) => {
+						const canOpenDetails =
+							Boolean(token.lookupWord) && !wordDetailsDisabled;
+						const isOpen =
+							selectedWord?.key === token.key && !wordDetailsDisabled;
+						const isPlaying =
+							playingWordKey === token.key &&
+							(Boolean(wordAudioRef.current) ||
+								isWordTtsLoading ||
+								isWordTtsSpeaking);
+
+						if (!token.lookupWord) {
+							return (
+								<span key={token.key}>
 									<span
 										className={cn(
 											"rounded px-0.5 transition-colors duration-200",
-											i < confirmedUpTo && "bg-primary/10 text-primary",
-											i >= confirmedUpTo &&
+											showTracking &&
+												i < confirmedUpTo &&
+												"bg-primary/10 text-primary",
+											showTracking &&
+												i >= confirmedUpTo &&
 												i < activeUpTo &&
 												"bg-primary/5 text-primary/70",
-											i >= activeUpTo && "text-muted-foreground/40",
+											showTracking &&
+												i >= activeUpTo &&
+												"text-muted-foreground/40",
 										)}
 									>
-										{word}
+										{token.word}
 									</span>
-									{i < paragraphWords.length - 1 ? " " : ""}
+									{i < paragraphTokens.length - 1 ? " " : ""}
 								</span>
-							))
-						: paragraph.text}
+							);
+						}
+
+						return (
+							<span key={token.key}>
+								<Popover
+									open={isOpen}
+									onOpenChange={(open) => {
+										if (!canOpenDetails) return;
+
+										if (open) {
+											if (selectedWord?.key !== token.key) {
+												stopWordAudio();
+											}
+											setSelectedWord(token);
+											return;
+										}
+
+										if (selectedWord?.key === token.key) {
+											setSelectedWord(null);
+											stopWordAudio();
+										}
+									}}
+								>
+									<PopoverTrigger asChild>
+										<button
+											type="button"
+											disabled={!canOpenDetails}
+											onClick={() => {
+												if (!canOpenDetails) return;
+												if (selectedWord?.key !== token.key) {
+													stopWordAudio();
+												}
+												setSelectedWord(token);
+											}}
+											className={cn(
+												"rounded px-0.5 text-left transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+												canOpenDetails &&
+													"cursor-pointer hover:bg-primary/10 hover:text-primary",
+												!canOpenDetails && "cursor-default",
+												showTracking &&
+													i < confirmedUpTo &&
+													"bg-primary/10 text-primary",
+												showTracking &&
+													i >= confirmedUpTo &&
+													i < activeUpTo &&
+													"bg-primary/5 text-primary/70",
+												showTracking &&
+													i >= activeUpTo &&
+													"text-muted-foreground/40",
+											)}
+										>
+											{token.word}
+										</button>
+									</PopoverTrigger>
+									<PopoverContent className="w-80 p-4" side="top">
+										<div className="space-y-3">
+											<div className="flex items-start justify-between gap-3">
+												<div>
+													<div className="flex flex-wrap items-baseline gap-2">
+														<span className="font-semibold text-lg">
+															{wordDetails.data?.lemma ?? token.lookupWord}
+														</span>
+														{wordDetails.data?.partOfSpeech ? (
+															<span className="text-muted-foreground text-xs italic">
+																{wordDetails.data.partOfSpeech}
+															</span>
+														) : null}
+													</div>
+													{wordDetails.data?.ipa ? (
+														<p className="text-muted-foreground text-sm">
+															{wordDetails.data.ipa}
+														</p>
+													) : null}
+												</div>
+												<button
+													type="button"
+													disabled={wordDetails.isLoading}
+													onClick={handlePlayWordAudio}
+													className={cn(
+														"flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors hover:bg-primary/15",
+														wordDetails.isLoading &&
+															"cursor-not-allowed opacity-60",
+													)}
+													aria-label={`Play ${token.lookupWord}`}
+												>
+													{isPlaying ? (
+														<Loader2 className="size-4 animate-spin" />
+													) : (
+														<Volume2 className="size-4" />
+													)}
+												</button>
+											</div>
+
+											{wordDetails.isLoading ? (
+												<p className="text-muted-foreground text-sm">
+													Loading word details...
+												</p>
+											) : wordDetails.isError ? (
+												<p className="text-muted-foreground text-sm">
+													Word details are unavailable right now.
+												</p>
+											) : wordDetails.data ? (
+												<div className="space-y-3">
+													{wordDetails.data.translation ? (
+														<div>
+															<p className="text-muted-foreground text-xs">
+																Translation
+															</p>
+															<p className="font-medium text-primary">
+																{wordDetails.data.translation}
+															</p>
+														</div>
+													) : null}
+													<div>
+														<p className="text-muted-foreground text-xs">
+															Definition
+														</p>
+														<p className="text-sm">
+															{wordDetails.data.definition}
+														</p>
+													</div>
+													{wordDetails.data.exampleSentence ? (
+														<p className="rounded-lg bg-muted/50 p-2 text-muted-foreground text-sm italic">
+															{wordDetails.data.exampleSentence}
+														</p>
+													) : null}
+												</div>
+											) : null}
+										</div>
+									</PopoverContent>
+								</Popover>
+								{i < paragraphTokens.length - 1 ? " " : ""}
+							</span>
+						);
+					})}
 				</p>
 				<p className="mt-4 flex gap-1 rounded-xl bg-neutral-50 p-3 text-left text-muted-foreground text-xs italic md:text-sm">
 					{paragraph.tips}

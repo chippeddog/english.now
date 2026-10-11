@@ -98,16 +98,16 @@ export default function Categorization({
 							key={cat}
 							type="button"
 							onClick={() =>
-								!answered && !disabled && setActiveCategory(isActive ? null : cat)
+								!answered &&
+								!disabled &&
+								setActiveCategory(isActive ? null : cat)
 							}
 							disabled={answered || disabled}
 							className={cn(
 								"flex min-h-[100px] flex-col rounded-2xl border-2 p-3 text-left transition-all",
 								!isActive && "border-border/50 bg-neutral-50",
 								isActive && "border-blue-400 bg-blue-50/50",
-								answered &&
-									result.isCorrect &&
-									"border-lime-300 bg-lime-50/50",
+								answered && result.isCorrect && "border-lime-300 bg-lime-50/50",
 								answered &&
 									!result.isCorrect &&
 									"border-neutral-200 bg-neutral-50",
@@ -127,7 +127,8 @@ export default function Categorization({
 										}}
 										className={cn(
 											"cursor-pointer rounded-lg px-2 py-1 text-xs",
-											!answered && "bg-blue-100 text-blue-800 hover:bg-red-100 hover:text-red-800",
+											!answered &&
+												"bg-blue-100 text-blue-800 hover:bg-red-100 hover:text-red-800",
 											answered && "bg-neutral-200",
 										)}
 									>

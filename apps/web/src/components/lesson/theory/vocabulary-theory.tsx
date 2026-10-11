@@ -1,7 +1,7 @@
-import type { VocabularyLessonContent } from "@/types/lesson";
 import { ArrowLeft, ArrowRight, Volume2 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import type { VocabularyLessonContent } from "@/types/lesson";
 
 interface VocabularyTheoryProps {
 	content: VocabularyLessonContent;

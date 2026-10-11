@@ -703,7 +703,7 @@ export default function PracticeView({
 			<div className="sticky bottom-0 z-20 shrink-0 bg-linear-to-t from-neutral-50 via-neutral-50/95 to-transparent pt-3 dark:from-neutral-900 dark:via-neutral-900/95">
 				{showHint && (
 					<div className="mx-auto mb-3 max-w-xs">
-						<div className="rounded-3xl border border-amber-200 bg-amber-50 px-4 py-3 pb-4 text-amber-700 shadow-[0_1px_1px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.75)]">
+						<div className="rounded-3xl border border-amber-200 bg-amber-50 px-4 py-4 text-amber-700 shadow-[0_1px_1px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.75)]">
 							<div className="mb-4 flex items-center justify-between gap-3">
 								<div className="flex items-center gap-1">
 									<Lightbulb className="size-4 shrink-0" />

@@ -1,4 +1,3 @@
-import type { ReadingLessonContent } from "@/types/lesson";
 import { ArrowRight, BookOpen } from "lucide-react";
 import { useState } from "react";
 import {
@@ -7,6 +6,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import type { ReadingLessonContent } from "@/types/lesson";
 
 interface ReadingTheoryProps {
 	content: ReadingLessonContent;

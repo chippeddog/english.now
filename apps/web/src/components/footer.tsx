@@ -73,6 +73,7 @@ export default function Footer() {
 								{tHome("footer.descriptionNote")}
 							</p>
 						</div>
+						<LanguageSwitcher />
 					</div>
 					<div className="col-span-2 md:pl-18">
 						<div className="grid grid-cols-4 md:gap-4">
@@ -101,7 +102,7 @@ export default function Footer() {
 
 				<div className="mt-8 flex flex-row items-center justify-between border-border/50 border-t py-4">
 					<div className="flex items-center text-center">
-						<div className="font-medium text-muted-foreground text-xs">
+						<div className="text-muted-foreground text-xs">
 							© {new Date().getFullYear()} English Now.{" "}
 							{tHome("footer.copyright")}{" "}
 						</div>
@@ -127,11 +128,15 @@ export default function Footer() {
 					</div>
 
 					<div className="flex items-center gap-2">
-						<LanguageSwitcher />
 						{/* <ThemeSwitcher /> */}
+						<div className="flex items-center gap-1 text-muted-foreground text-xs">
+							<span>Payments by</span>
+							<img src="/paddle-logo.svg" alt="Paddle" className="size-10" />
+						</div>
 					</div>
 				</div>
 			</div>
 		</footer>
 	);
 }
+c;

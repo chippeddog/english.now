@@ -38,7 +38,6 @@ export default function Hero() {
 	];
 
 	const renderCorrectedSentence = (mistake: (typeof mistakes)[number]) => {
-		// In a real app, this would dynamically render based on original/corrected
 		return (
 			<p className="text-[11px] leading-relaxed">
 				I am so grateful to you{" "}
@@ -61,7 +60,7 @@ export default function Hero() {
 				<div className="mb-16 flex flex-1 flex-col items-start gap-6 text-center sm:mb-6 md:mb-0 md:text-left">
 					<h1
 						className={cn(
-							"font-bold font-lyon text-5xl text-neutral-900 tracking-tight lg:text-6xl dark:text-white",
+							"font-bold font-lyon text-5xl text-zinc-900 tracking-tight lg:text-6xl dark:text-white",
 							// {
 							// 	"text-4xl  sm:text-4xl lg:text-5xl":
 							// 		i18n.language === "uk",

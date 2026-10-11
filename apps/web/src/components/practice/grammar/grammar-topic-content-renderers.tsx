@@ -288,10 +288,7 @@ function FormSection({
 
 	return (
 		<section
-			className={cn(
-				"rounded-2xl border bg-white p-4 shadow-sm",
-				colors.border,
-			)}
+			className={cn("rounded-2xl border bg-white p-4 shadow-sm", colors.border)}
 		>
 			<SectionHeading index={index} title={section.title} />
 			<div className="mt-3 flex flex-wrap gap-2">
@@ -311,7 +308,9 @@ function FormSection({
 					</div>
 				))}
 			</div>
-			<div className={cn("mt-3 rounded-xl border p-3", colors.border, colors.bg)}>
+			<div
+				className={cn("mt-3 rounded-xl border p-3", colors.border, colors.bg)}
+			>
 				<p className="text-sm leading-relaxed">
 					{section.pattern.example.parts.map((part, partIndex) => (
 						<span
@@ -438,7 +437,9 @@ function TableSection({
 						className="grid grid-cols-2 border-border/60 border-t text-sm"
 					>
 						<div className="px-3 py-2 text-muted-foreground">{left}</div>
-						<div className="px-3 py-2 font-semibold text-slate-900">{right}</div>
+						<div className="px-3 py-2 font-semibold text-slate-900">
+							{right}
+						</div>
 					</div>
 				))}
 			</div>
@@ -626,9 +627,7 @@ function QuickMapBody({ map }: { map: StructuredQuickMap }) {
 
 	return (
 		<div className="flex flex-col gap-3 p-4">
-			<p className="text-muted-foreground text-sm">
-				Time view: {map.variant}
-			</p>
+			<p className="text-muted-foreground text-sm">Time view: {map.variant}</p>
 			{map.slots.map((slot) => (
 				<div
 					key={slot.preposition}

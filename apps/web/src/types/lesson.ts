@@ -25,6 +25,7 @@ export interface LessonTreeLesson {
 	type: LessonTypeValue;
 	status: LessonStatus;
 	progress?: number;
+	estimatedMinutes?: number | null;
 	lockReason?: string | null;
 	replayAllowed?: boolean;
 	detail: LessonDetail;

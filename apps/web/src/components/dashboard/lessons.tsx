@@ -7,7 +7,6 @@ import {
 	ChevronRight,
 	FileText,
 	GraduationCap,
-	LibraryBig,
 	Lock,
 	PenTool,
 	Play,
@@ -106,66 +105,6 @@ const lessonTypeConfig: Record<
 	},
 };
 
-function UnitProgressCircle({
-	progress,
-	status,
-}: {
-	progress: number;
-	status: UnitStatus;
-}) {
-	if (status === "locked") {
-		return (
-			<div className="flex size-11 items-center justify-center rounded-full bg-neutral-100 text-neutral-400">
-				<Lock className="size-4" />
-			</div>
-		);
-	}
-
-	const circumference = 2 * Math.PI * 18;
-	const dashOffset = circumference - (progress / 100) * circumference;
-
-	return (
-		<div className="relative flex size-11 items-center justify-center">
-			<svg className="size-12" viewBox="0 0 44 44" aria-hidden="true">
-				<title>Unit progress</title>
-				<circle
-					cx="22"
-					cy="22"
-					r="18"
-					fill="none"
-					stroke="currentColor"
-					strokeWidth="3.5"
-					className="text-neutral-100"
-				/>
-				<circle
-					cx="22"
-					cy="22"
-					r="18"
-					fill="none"
-					stroke="currentColor"
-					strokeWidth="3.5"
-					strokeLinecap="round"
-					strokeDasharray={`${circumference}`}
-					strokeDashoffset={dashOffset}
-					transform="rotate(-90 22 22)"
-					className={cn(
-						"text-orange-500",
-						status === "completed" && "text-lime-500",
-					)}
-				/>
-			</svg>
-			<span
-				className={cn(
-					"absolute font-bold text-[10px]",
-					status === "completed" && "text-lime-600",
-				)}
-			>
-				{progress}%
-			</span>
-		</div>
-	);
-}
-
 function LessonIcon({ lesson }: { lesson: DashboardLesson }) {
 	const config =
 		lessonTypeConfig[lesson.lessonType ?? lesson.type] ??
@@ -173,7 +112,7 @@ function LessonIcon({ lesson }: { lesson: DashboardLesson }) {
 
 	if (lesson.status === "completed") {
 		return (
-			<div className="flex size-7.5 items-center justify-center rounded-full border border-lime-400 bg-lime-200 text-lime-600">
+			<div className="flex size-7 items-center justify-center rounded-full border border-emerald-600 bg-emerald-600 text-white">
 				<CheckIcon className="size-4" strokeWidth={2.5} />
 			</div>
 		);
@@ -181,7 +120,7 @@ function LessonIcon({ lesson }: { lesson: DashboardLesson }) {
 
 	if (lesson.status === "locked") {
 		return (
-			<div className="flex size-7.5 items-center justify-center rounded-full bg-neutral-100 text-neutral-300">
+			<div className="flex size-7 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-300">
 				<Lock className="size-3.5" />
 			</div>
 		);
@@ -191,13 +130,37 @@ function LessonIcon({ lesson }: { lesson: DashboardLesson }) {
 	return (
 		<div
 			className={cn(
-				"flex size-7.5 items-center justify-center rounded-full",
+				"flex size-7 items-center justify-center rounded-full border bg-white",
 				lesson.status === "current"
-					? "border border-amber-400 bg-amber-200 text-amber-600"
-					: "border border-neutral-200 bg-neutral-100 text-neutral-400",
+					? "border-lime-300 bg-lime-200 text-lime-700 ring-4 ring-lime-100"
+					: "border-neutral-200 text-neutral-400",
 			)}
 		>
-			<Icon className="size-4" />
+			<Icon className="size-3.5" />
+		</div>
+	);
+}
+
+function UnitStatusIcon({ status }: { status: UnitStatus }) {
+	if (status === "completed") {
+		return (
+			<div className="flex size-7 items-center justify-center rounded-full border border-emerald-600 bg-emerald-600 text-white">
+				<CheckIcon className="size-4" strokeWidth={2.5} />
+			</div>
+		);
+	}
+
+	if (status === "locked") {
+		return (
+			<div className="flex size-7 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-300">
+				<Lock className="size-3.5" />
+			</div>
+		);
+	}
+
+	return (
+		<div className="flex size-7 items-center justify-center rounded-full border border-lime-300 bg-lime-200 text-lime-700 ring-4 ring-lime-100">
+			<Play className="ml-0.5 size-3.5 fill-current" />
 		</div>
 	);
 }
@@ -205,15 +168,15 @@ function LessonIcon({ lesson }: { lesson: DashboardLesson }) {
 function NextUnitIcon({ status }: { status: UnitStatus }) {
 	if (status === "locked") {
 		return (
-			<div className="flex size-8 items-center justify-center rounded-full bg-neutral-100 text-neutral-300">
+			<div className="flex size-7 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-300">
 				<Lock className="size-3.5" />
 			</div>
 		);
 	}
 
 	return (
-		<div className="flex size-8 items-center justify-center rounded-full border border-neutral-200 bg-neutral-100 text-neutral-400">
-			<ArrowRight className="size-4" />
+		<div className="flex size-7 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-400">
+			<ArrowRight className="size-3.5" />
 		</div>
 	);
 }
@@ -277,28 +240,34 @@ function SummaryRow({
 	title,
 	subtitle,
 	muted,
+	active,
 	action,
 }: {
 	title: string;
 	subtitle: string;
 	muted?: boolean;
+	active?: boolean;
 	action?: ReactNode;
 }) {
 	return (
-		<div className="flex min-h-12 flex-1 items-center justify-between gap-3 px-1 py-1">
+		<div
+			className={cn(
+				"flex min-h-14 flex-1 items-center justify-between gap-3 rounded-xl px-3 py-2 transition-colors",
+				active && "bg-neutral-100",
+			)}
+		>
 			<div className="min-w-0 flex-1">
 				<p
 					className={cn(
-						"font-medium text-xs leading-5",
+						"truncate font-semibold text-sm leading-5",
 						muted ? "text-neutral-400" : "text-neutral-900",
 					)}
 				>
-					{title.slice(0, 30)}
-					{title.length > 30 && "..."}
+					{title}
 				</p>
 				<p
 					className={cn(
-						"text-xs leading-4",
+						"truncate text-xs leading-4",
 						muted ? "text-neutral-400" : "text-muted-foreground",
 					)}
 				>
@@ -330,10 +299,13 @@ export default function Lessons({
 	isLoading = false,
 }: LessonsProps) {
 	const summary = getLessonsSummary(courseData);
+	const unitIndex = courseData?.units.findIndex(
+		(unit) => unit.id === summary?.currentUnit.id,
+	);
 
 	return (
 		<div
-			className="relative overflow-hidden rounded-3xl bg-white p-2.5"
+			className="relative overflow-hidden rounded-3xl bg-white p-4"
 			style={{
 				boxShadow:
 					"0 0 0 1px rgba(0,0,0,.05),0 10px 10px -5px rgba(0,0,0,.04),0 20px 25px -5px rgba(0,0,0,.04),0 20px 32px -12px rgba(0,0,0,.04)",
@@ -342,8 +314,14 @@ export default function Lessons({
 			{!isLoading && summary && summary?.currentLesson && (
 				<div className="-bottom-3 absolute right-0 left-0 z-20 h-24 w-full bg-linear-to-t from-white to-transparent" />
 			)}
-			<div className="mt-1 mb-3 flex items-center justify-between pr-1.5 pl-1.5">
-				<div className="font-semibold text-sm">Lessons</div>
+			<div className="mb-5 flex items-center justify-between px-1">
+				<p className="font-semibold text-sm">Learning Path</p>
+				<Link
+					to="/lessons"
+					className="font-medium text-muted-foreground text-xs transition-colors hover:text-foreground"
+				>
+					View all
+				</Link>
 			</div>
 
 			{isLoading ? (
@@ -359,28 +337,43 @@ export default function Lessons({
 					</p>
 				</div>
 			) : (
-				<div className="relative flex flex-col gap-4">
+				<div className="relative flex flex-col gap-1">
 					<div
-						className="-translate-x-1/2 absolute top-12 bottom-5 left-6 h-full w-px border-neutral-200 border-l border-dashed"
+						className="absolute top-9 bottom-9 left-3.5 border-neutral-200 border-l border-dashed"
 						aria-hidden="true"
 					/>
 
-					<div className="flex min-h-12 items-center gap-1">
-						<div className="relative z-10 flex w-12 shrink-0 items-center justify-center">
-							<UnitProgressCircle
-								progress={summary.currentUnit.progress}
-								status={summary.currentUnit.status}
-							/>
+					<div className="grid min-h-14 grid-cols-[2rem_minmax(0,1fr)] gap-2">
+						<div className="relative z-10 flex justify-center pt-2">
+							<UnitStatusIcon status={summary.currentUnit.status} />
 						</div>
-						<div className="min-w-0 flex-1">
-							<h2 className="truncate font-semibold text-sm">
+						<div className="rounded-xl px-3 py-2">
+							<div className="mb-0.5 flex items-center gap-2">
+								<p className="font-medium text-[11px] text-muted-foreground uppercase italic">
+									Unit {(unitIndex ?? -1) >= 0 ? (unitIndex ?? 0) + 1 : ""}
+								</p>
+								{summary.currentUnit.status === "active" && (
+									<span className="rounded-full bg-lime-200 px-2 py-0.5 font-bold text-[9px] text-lime-700 uppercase tracking-wide">
+										Now
+									</span>
+								)}
+							</div>
+							<h2
+								className={cn(
+									"truncate font-semibold text-sm",
+									summary.currentUnit.status === "locked" && "text-neutral-400",
+								)}
+							>
 								{summary.currentUnit.title}
 							</h2>
+							{/* <p className="text-muted-foreground text-xs">
+								{summary.currentUnit.lessons.length} lessons
+							</p> */}
 						</div>
 					</div>
 
-					<div className="flex min-h-12 items-center">
-						<div className="relative z-10 flex w-12 shrink-0 items-center justify-center">
+					<div className="grid min-h-14 grid-cols-[2rem_minmax(0,1fr)] gap-2">
+						<div className="relative z-10 flex justify-center pt-2">
 							<LessonIcon lesson={summary.currentLesson} />
 						</div>
 						<SummaryRow
@@ -393,10 +386,11 @@ export default function Lessons({
 										)
 									: summary.currentLesson.subtitle || "Current lesson"
 							}
+							active={summary.currentLesson.status === "current"}
 							action={
 								summary.currentLesson.status !== "locked" ? (
 									<Link
-										className="text-muted-foreground"
+										className="flex items-center justify-center rounded-full text-muted-foreground"
 										to="/lesson/$lessonId"
 										params={{ lessonId: summary.currentLesson.id }}
 									>
@@ -408,8 +402,8 @@ export default function Lessons({
 					</div>
 
 					{summary.nextStep && (
-						<div className="flex min-h-12 items-center">
-							<div className="relative z-10 flex w-12 shrink-0 items-center justify-center">
+						<div className="grid min-h-14 grid-cols-[2rem_minmax(0,1fr)] gap-2">
+							<div className="relative z-10 flex justify-center pt-2">
 								{summary.nextStep.kind === "lesson" ? (
 									<LessonIcon lesson={summary.nextStep.lesson} />
 								) : (
@@ -443,14 +437,18 @@ export default function Lessons({
 									summary.nextStep.kind === "lesson" &&
 									summary.nextStep.lesson.status !== "locked" ? (
 										<Link
+											className="flex size-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-neutral-100 hover:text-foreground"
 											to="/lesson/$lessonId"
 											params={{ lessonId: summary.nextStep.lesson.id }}
 										>
-											<ChevronRight className="size-4 text-muted-foreground" />
+											<ChevronRight className="size-4" />
 										</Link>
 									) : summary.nextStep.kind === "unit" ? (
-										<Link to="/lessons">
-											<ChevronRight className="size-4 text-muted-foreground" />
+										<Link
+											to="/lessons"
+											className="flex size-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-neutral-100 hover:text-foreground"
+										>
+											<ChevronRight className="size-4" />
 										</Link>
 									) : null
 								}

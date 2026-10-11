@@ -48,7 +48,7 @@ export default function SentenceCorrection({
 				<form onSubmit={handleSubmit} className="flex flex-col gap-3">
 					<label
 						htmlFor="correction-input"
-						className="font-medium text-sm text-neutral-700"
+						className="font-medium text-neutral-700 text-sm"
 					>
 						Write the corrected sentence:
 					</label>

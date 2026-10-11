@@ -20,8 +20,7 @@ export function ThemeSwitcher() {
 					onClick={() => setTheme(value)}
 					className={cn(
 						"flex h-full cursor-pointer items-center justify-center rounded-md px-2 text-muted-foreground transition-all",
-						theme === value &&
-							"bg-background text-foreground shadow-sm",
+						theme === value && "bg-background text-foreground shadow-sm",
 					)}
 					title={label}
 					aria-label={`Switch to ${label} theme`}

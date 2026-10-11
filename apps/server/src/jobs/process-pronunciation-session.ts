@@ -13,6 +13,11 @@ import {
 import type { PgBoss } from "pg-boss";
 import { generatePronunciationFeedback } from "../services/generate-pronunciation-feedback";
 import { assessPronunciation } from "../services/pronunciation-assessment";
+import {
+	processTracedJob,
+	sendTracedJob,
+	type TracedQueuePayload,
+} from "../utils/sentry-queue";
 
 const QUEUE_NAME = "process-pronunciation-session";
 
@@ -31,21 +36,23 @@ export async function registerProcessPronunciationSessionWorker(
 		expireInSeconds: 10 * 60,
 	});
 
-	boss.work<ProcessPronunciationSessionJobData>(
+	boss.work<TracedQueuePayload<ProcessPronunciationSessionJobData>>(
 		QUEUE_NAME,
-		{ localConcurrency: 1 },
+		{ includeMetadata: true, localConcurrency: 1 },
 		async (jobs) => {
 			for (const job of jobs) {
-				console.log(
-					`[${QUEUE_NAME}] processing job ${job.id} for session ${job.data.sessionId}`,
-				);
-				await processPronunciationSession(
-					job.data.sessionId,
-					job.data.userId,
-				);
-				console.log(
-					`[${QUEUE_NAME}] done for session ${job.data.sessionId}`,
-				);
+				await processTracedJob(QUEUE_NAME, job, async (job) => {
+					console.log(
+						`[${QUEUE_NAME}] processing job ${job.id} for session ${job.data.sessionId}`,
+					);
+					await processPronunciationSession(
+						job.data.sessionId,
+						job.data.userId,
+					);
+					console.log(
+						`[${QUEUE_NAME}] done for session ${job.data.sessionId}`,
+					);
+				});
 			}
 		},
 	);
@@ -55,7 +62,7 @@ export async function enqueueProcessPronunciationSession(
 	boss: PgBoss,
 	data: ProcessPronunciationSessionJobData,
 ) {
-	const jobId = await boss.send(QUEUE_NAME, data, {
+	const jobId = await sendTracedJob(boss, QUEUE_NAME, data, {
 		singletonKey: data.sessionId,
 		retryLimit: 2,
 		retryDelay: 10,

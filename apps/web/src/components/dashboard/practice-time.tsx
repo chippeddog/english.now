@@ -149,7 +149,7 @@ function formatMinutes(minutes: number, t: (key: string) => string): string {
 function PracticeTimeSkeleton() {
 	return (
 		<div className="w-full rounded-xl pt-0">
-			<div className="h-[220px] w-full rounded-xl border border-border/40 bg-neutral-50/70">
+			<div className="h-[170px] w-full rounded-xl border border-border/40 bg-neutral-50/70">
 				<div className="flex h-full items-center justify-center text-neutral-400">
 					<Loader className="size-5 animate-spin" />
 				</div>
@@ -249,7 +249,7 @@ export default function DailyPracticeTime({
 				<PracticeTimeSkeleton />
 			) : (
 				<>
-					<div className="absolute top-11 left-5 flex items-end justify-between">
+					<div className="absolute top-11 left-5 flex items-end justify-between gap-1">
 						<div>
 							<div className="font-semibold text-neutral-900 text-xl tabular-nums">
 								{formatMinutes(totalWeekMinutes, t)}
@@ -258,15 +258,15 @@ export default function DailyPracticeTime({
 								{t("practiceTime.thisWeek")}
 							</div>
 						</div>
-						{/* <div
+						<div
 							className={cn(
-								"flex items-center gap-1 font-medium text-xs",
+								"flex items-center gap-1 font-medium text-[11px] italic",
 								trendColor,
 							)}
 						>
-							<TrendIcon className="size-3.5" strokeWidth={2.5} />
+							<TrendIcon className="size-3" strokeWidth={2} />
 							{trendLabel}
-						</div> */}
+						</div>
 					</div>
 
 					<ChartContainer
@@ -408,7 +408,7 @@ export default function DailyPracticeTime({
 						</ComposedChart>
 					</ChartContainer>
 
-					<div className="mt-2 flex items-center gap-5 text-[11px] text-neutral-500">
+					{/* <div className="mt-2 flex items-center gap-5 text-[11px] text-neutral-500">
 						<div className="flex items-center gap-1.5">
 							<span
 								className="inline-block h-[2px] w-4 rounded-full"
@@ -427,7 +427,7 @@ export default function DailyPracticeTime({
 							/>
 							<span>{t("practiceTime.goal")}</span>
 						</div>
-					</div>
+					</div> */}
 				</>
 			)}
 		</div>

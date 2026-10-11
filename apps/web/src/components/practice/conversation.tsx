@@ -1,4 +1,5 @@
 import { resolveConversationActivityMode } from "@english.now/api/services/conversation-mode";
+import { usePostHog } from "@posthog/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { ChevronRight, Loader2, MessageCircleIcon } from "lucide-react";
@@ -56,6 +57,7 @@ function DialogTopics({
 	onUpgradeClick: () => void;
 }) {
 	const navigate = useNavigate();
+	const posthog = usePostHog();
 	const trpc = useTRPC();
 	const queryClient = useQueryClient();
 
@@ -87,6 +89,15 @@ function DialogTopics({
 				queryClient.invalidateQueries({
 					queryKey: trpc.practice.getHomeTodayPlan.queryKey(),
 				});
+
+				if (selectedActivity) {
+					posthog.capture("conversation_started", {
+						session_id: data.sessionId,
+						scenario: selectedActivity.payload.scenario,
+						scenario_name: selectedActivity.payload.scenarioName,
+						mode: resolveConversationActivityMode(selectedActivity.payload),
+					});
+				}
 
 				setOpen(false);
 				navigate({
