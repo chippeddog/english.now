@@ -29,9 +29,19 @@ export const auth = betterAuth<BetterAuthOptions>({
 	trustedOrigins: [
 		env.CORS_ORIGIN,
 		"https://api.english.now",
+		"englishnow://",
 		"mybettertapp://",
 		"exp://",
 		"https://appleid.apple.com",
+		"https://english.now",
+		...(env.NODE_ENV === "development"
+			? [
+					"http://localhost:*",
+					"http://127.0.0.1:*",
+					"http://192.168.*.*:*",
+					"http://10.*.*.*:*",
+				]
+			: []),
 	],
 	emailAndPassword: {
 		enabled: true,
@@ -71,6 +81,11 @@ export const auth = betterAuth<BetterAuthOptions>({
 			// disableSignUp: true,
 			clientId: env.APPLE_CLIENT_ID ?? "",
 			clientSecret: env.APPLE_CLIENT_SECRET ?? "",
+			appBundleIdentifier: env.APPLE_APP_BUNDLE_IDENTIFIER,
+			// ID tokens from the web Services ID and from the native iOS app carry different audiences.
+			audience: [env.APPLE_CLIENT_ID, env.APPLE_APP_BUNDLE_IDENTIFIER].filter(
+				(value): value is string => !!value,
+			),
 		},
 	},
 	rateLimit: {
@@ -100,7 +115,8 @@ export const auth = betterAuth<BetterAuthOptions>({
 			httpOnly: true,
 		},
 		crossSubDomainCookies: {
-			enabled: true,
+			// Browsers reject a ".english.now" cookie set from localhost, which breaks local sessions.
+			enabled: env.NODE_ENV === "production",
 			domain: ".english.now",
 		},
 	},

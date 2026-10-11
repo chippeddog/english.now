@@ -18,6 +18,7 @@ export const env = createEnv({
 		// Apple OAuth (optional)
 		APPLE_CLIENT_ID: z.string().optional(),
 		APPLE_CLIENT_SECRET: z.string().optional(),
+		APPLE_APP_BUNDLE_IDENTIFIER: z.string().optional(),
 
 		// AI Services
 		OPENAI_API_KEY: z.string().min(1),

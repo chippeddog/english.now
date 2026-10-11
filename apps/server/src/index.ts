@@ -26,6 +26,9 @@ import { getQueue } from "./utils/queue";
 const app = new Hono();
 let isShuttingDown = false;
 
+const LOCAL_DEV_ORIGIN =
+	/^http:\/\/(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}):\d+$/;
+
 async function flushSentry() {
 	await Sentry.flush(2_000).catch((error) => {
 		console.error("[sentry] flush failed", error);
@@ -49,7 +52,16 @@ app.use(requestId());
 app.use(
 	"/*",
 	cors({
-		origin: env.CORS_ORIGIN,
+		origin: (origin) => {
+			if (origin === env.CORS_ORIGIN) {
+				return origin;
+			}
+			// Expo web and LAN devices run on dynamic local origins during development.
+			if (env.NODE_ENV === "development" && LOCAL_DEV_ORIGIN.test(origin)) {
+				return origin;
+			}
+			return null;
+		},
 		allowMethods: ["GET", "POST", "PUT", "OPTIONS"],
 		allowHeaders: ["Content-Type", "Authorization"],
 		credentials: true,

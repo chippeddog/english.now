@@ -1,3 +1,38 @@
+import Constants from "expo-constants";
+import { Platform } from "react-native";
+
+export const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL || "https://english.now";
+
+const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1"]);
+
+// A physical device can't reach the dev machine through a loopback URL, so in development
+// native builds swap it for the host Metro is served from. Web keeps the loopback host because
+// the session cookie is Secure + SameSite=Lax, which browsers only accept over http on localhost.
+function resolveServerUrl() {
+	const configured = process.env.EXPO_PUBLIC_SERVER_URL ?? "";
+	if (!__DEV__ || Platform.OS === "web") {
+		return configured;
+	}
+
+	const devHost = Constants.expoConfig?.hostUri?.split(":")[0];
+	if (!devHost) {
+		return configured;
+	}
+
+	try {
+		const url = new URL(configured);
+		if (!LOOPBACK_HOSTS.has(url.hostname)) {
+			return configured;
+		}
+		url.hostname = devHost;
+		return url.origin;
+	} catch {
+		return configured;
+	}
+}
+
+export const SERVER_URL = resolveServerUrl();
+
 export const NAV_THEME = {
 	light: {
 		background: "hsl(0 0% 100%)",
