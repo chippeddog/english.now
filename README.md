@@ -1,3 +1,5 @@
+
+
 # english.now
 
 An open-source language learning platform built to help learners practice real English in realistic situations. The project combines an AI-powered web experience, a mobile app, and a shared TypeScript backend so new features can ship across platforms without duplicating business logic.
@@ -48,6 +50,7 @@ Most language products are either too generic, too game-like, or too disconnecte
 ├── packages/
 │   ├── api/       # Shared API routers, services, and domain logic
 │   ├── auth/      # Better Auth configuration and auth helpers
+│   ├── content/   # Curriculum and grammar content scripts
 │   ├── db/        # Drizzle schema, DB client, and migration scripts
 │   ├── env/       # Shared environment validation
 │   ├── email/     # Email helpers and templates
