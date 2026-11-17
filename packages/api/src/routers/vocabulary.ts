@@ -13,9 +13,13 @@ import {
 } from "@english.now/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { protectedProcedure, router } from "../index";
-import { getVocabularyAccessSummary } from "../services/feature-gating";
-import { recordDailyFeatureUsage } from "../services/feature-usage";
+import { protectedProcedure, rateLimitedProcedure, router } from "../index";
+import {
+	consumeVocabularyAdd,
+	consumeVocabularyReview,
+	getVocabularyAccessSummary,
+} from "../services/feature-gating";
+import { releaseFeatureUsage } from "../services/feature-usage";
 import {
 	applySm2Review,
 	deriveVocabularyMastery,
@@ -37,6 +41,37 @@ async function getUserLanguage(userId: string): Promise<string> {
 		.where(eq(userProfile.userId, userId))
 		.limit(1);
 	return profile?.nativeLanguage ?? "uk";
+}
+
+async function reserveVocabularyAdd(
+	userId: string,
+	resourceId: string,
+	metadata: Record<string, unknown>,
+) {
+	const { consumed, access } = await consumeVocabularyAdd(userId, {
+		resourceId,
+		metadata,
+	});
+	if (!consumed) {
+		throw new TRPCError({
+			code: "FORBIDDEN",
+			message: "FREE_VOCAB_ADD_LIMIT_REACHED",
+			cause: access,
+		});
+	}
+}
+
+async function reserveVocabularyReview(userId: string, resourceId: string) {
+	const { consumed, access } = await consumeVocabularyReview(userId, {
+		resourceId,
+	});
+	if (!consumed) {
+		throw new TRPCError({
+			code: "FORBIDDEN",
+			message: "FREE_VOCAB_REVIEW_LIMIT_REACHED",
+			cause: access,
+		});
+	}
 }
 
 export const vocabularyRouter = router({
@@ -136,7 +171,7 @@ export const vocabularyRouter = router({
 			}));
 		}),
 
-	getWordDetails: protectedProcedure
+	getWordDetails: rateLimitedProcedure(30, 60_000)
 		.input(
 			z.object({
 				word: z.string().trim().min(1).max(80),
@@ -227,6 +262,12 @@ export const vocabularyRouter = router({
 			const wordId = await getOrCreateWord(input.word);
 			await ensureWordTranslation(wordId, language);
 
+			const resourceId = `word:${wordId}`;
+			await reserveVocabularyAdd(userId, resourceId, {
+				wordId,
+				source: input.source,
+			});
+
 			const id = crypto.randomUUID();
 			const inserted = await db
 				.insert(userWord)
@@ -240,15 +281,11 @@ export const vocabularyRouter = router({
 				.onConflictDoNothing()
 				.returning({ id: userWord.id });
 
-			if (inserted[0]) {
-				await recordDailyFeatureUsage({
+			if (!inserted[0]) {
+				await releaseFeatureUsage({
 					userId,
 					feature: "vocabulary_add",
-					resourceId: `word:${wordId}`,
-					metadata: {
-						wordId,
-						source: input.source,
-					},
+					resourceId,
 				});
 			}
 
@@ -360,6 +397,11 @@ export const vocabularyRouter = router({
 					message: "Vocabulary word not found.",
 				});
 			}
+
+			await reserveVocabularyReview(
+				ctx.session.user.id,
+				`word:${input.userWordId}`,
+			);
 
 			const review = applySm2Review({
 				repetition: existingWord.repetition,
@@ -515,6 +557,12 @@ export const vocabularyRouter = router({
 			const phraseId = await getOrCreatePhrase(input.phrase);
 			await ensurePhraseTranslation(phraseId, language);
 
+			const resourceId = `phrase:${phraseId}`;
+			await reserveVocabularyAdd(userId, resourceId, {
+				phraseId,
+				source: input.source,
+			});
+
 			const id = crypto.randomUUID();
 			const inserted = await db
 				.insert(userPhrase)
@@ -528,15 +576,11 @@ export const vocabularyRouter = router({
 				.onConflictDoNothing()
 				.returning({ id: userPhrase.id });
 
-			if (inserted[0]) {
-				await recordDailyFeatureUsage({
+			if (!inserted[0]) {
+				await releaseFeatureUsage({
 					userId,
 					feature: "vocabulary_add",
-					resourceId: `phrase:${phraseId}`,
-					metadata: {
-						phraseId,
-						source: input.source,
-					},
+					resourceId,
 				});
 			}
 
@@ -648,6 +692,11 @@ export const vocabularyRouter = router({
 					message: "Vocabulary phrase not found.",
 				});
 			}
+
+			await reserveVocabularyReview(
+				ctx.session.user.id,
+				`phrase:${input.userPhraseId}`,
+			);
 
 			const review = applySm2Review({
 				repetition: existingPhrase.repetition,

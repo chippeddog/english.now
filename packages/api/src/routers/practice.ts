@@ -17,6 +17,7 @@ import {
 	lt,
 	pronunciationSession,
 } from "@english.now/db";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure, router } from "../index";
 import {
@@ -27,7 +28,6 @@ import {
 	markDailyPracticeActivityStarted,
 } from "../services/daily-practice-plan";
 import { getPracticeAccessSummary } from "../services/feature-gating";
-import { recordDailyFeatureUsage } from "../services/feature-usage";
 import { recordActivity } from "../services/record-activity";
 
 export const practiceRouter = router({
@@ -102,32 +102,16 @@ export const practiceRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
-			const { plan } = await getTodayPracticePlanRecord(ctx.session.user.id);
-			const activity = plan?.activities.find(
-				(item) => item.id === input.activityId,
-			);
+			// Vocabulary reviews are counted per card in vocabulary.reviewWord/reviewPhrase.
 			const success = await markDailyPracticeActivityCompleted(
 				ctx.session.user.id,
 				input,
 			);
 
 			if (!success) {
-				throw new Error("Activity not found");
-			}
-
-			if (
-				activity?.type === "vocabulary" &&
-				!activity.completedAt &&
-				activity.payload.cards.length > 0
-			) {
-				await recordDailyFeatureUsage({
-					userId: ctx.session.user.id,
-					feature: "vocabulary_review",
-					resourceId: activity.id,
-					count: activity.payload.cards.length,
-					metadata: {
-						focus: activity.payload.focus,
-					},
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Activity not found",
 				});
 			}
 
@@ -198,8 +182,19 @@ export const practiceRouter = router({
 	recordPracticeTime: protectedProcedure
 		.input(
 			z.object({
-				activityType: z.string(),
-				durationSeconds: z.number(),
+				activityType: z.enum([
+					"vocabulary",
+					"conversation",
+					"pronunciation",
+					"grammar",
+					"lesson",
+				]),
+				// Practice time feeds streaks and stats; cap a single entry at 4 hours.
+				durationSeconds: z
+					.number()
+					.int()
+					.min(0)
+					.max(4 * 60 * 60),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {

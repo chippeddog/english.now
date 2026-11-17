@@ -30,8 +30,9 @@ pnpm dev:web          # web only
 pnpm dev:server       # server only
 pnpm dev:native       # native only
 
-# Validation (no test suite; use type/build checks)
-pnpm check-types                # full workspace typecheck
+# Validation
+pnpm check-types                # full workspace typecheck (web app excluded: pre-existing errors)
+pnpm test                       # unit tests (Vitest, packages/api)
 pnpm -F server check-types      # server only
 pnpm -F web build               # web build (catches type + bundle errors)
 

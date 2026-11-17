@@ -34,10 +34,10 @@ import {
 	markDailyPracticeActivityStarted,
 } from "../services/daily-practice-plan";
 import {
-	getConversationAccessSummary,
+	consumePracticeSession,
 	getConversationReplyAccessSummary,
 } from "../services/feature-gating";
-import { recordDailyFeatureUsage } from "../services/feature-usage";
+import { releaseFeatureUsage } from "../services/feature-usage";
 import { generateSuggestions } from "../services/generate-suggestions";
 
 const LANGUAGE_NAMES: Record<string, string> = {
@@ -112,56 +112,58 @@ export const conversationRouter = router({
 	}),
 
 	// Regenerate personalized suggestions (called when stale)
-	regenerateSuggestions: protectedProcedure.mutation(async ({ ctx }) => {
-		const userId = ctx.session.user.id;
+	regenerateSuggestions: rateLimitedProcedure(3, 60_000).mutation(
+		async ({ ctx }) => {
+			const userId = ctx.session.user.id;
 
-		const profile = await db
-			.select()
-			.from(userProfile)
-			.where(eq(userProfile.userId, userId))
-			.limit(1);
+			const profile = await db
+				.select()
+				.from(userProfile)
+				.where(eq(userProfile.userId, userId))
+				.limit(1);
 
-		const suggestions = await generateSuggestions({
-			level: profile[0]?.level ?? null,
-			interests: profile[0]?.interests ?? null,
-			focusAreas: profile[0]?.focusAreas ?? null,
-			goal: profile[0]?.goal ?? null,
-			nativeLanguage: profile[0]?.nativeLanguage ?? null,
-		});
+			const suggestions = await generateSuggestions({
+				level: profile[0]?.level ?? null,
+				interests: profile[0]?.interests ?? null,
+				focusAreas: profile[0]?.focusAreas ?? null,
+				goal: profile[0]?.goal ?? null,
+				nativeLanguage: profile[0]?.nativeLanguage ?? null,
+			});
 
-		// Upsert: delete existing then insert new
-		const existing = await db
-			.select()
-			.from(conversationSuggestion)
-			.where(eq(conversationSuggestion.userId, userId))
-			.limit(1);
+			// Upsert: delete existing then insert new
+			const existing = await db
+				.select()
+				.from(conversationSuggestion)
+				.where(eq(conversationSuggestion.userId, userId))
+				.limit(1);
 
-		if (existing[0]) {
-			await db
-				.update(conversationSuggestion)
-				.set({
+			if (existing[0]) {
+				await db
+					.update(conversationSuggestion)
+					.set({
+						topics: suggestions.topics,
+						roleplays: suggestions.roleplays,
+						generatedAt: new Date(),
+					})
+					.where(eq(conversationSuggestion.userId, userId));
+			} else {
+				await db.insert(conversationSuggestion).values({
+					id: crypto.randomUUID(),
+					userId,
 					topics: suggestions.topics,
 					roleplays: suggestions.roleplays,
 					generatedAt: new Date(),
-				})
-				.where(eq(conversationSuggestion.userId, userId));
-		} else {
-			await db.insert(conversationSuggestion).values({
-				id: crypto.randomUUID(),
-				userId,
+				});
+			}
+
+			return {
 				topics: suggestions.topics,
 				roleplays: suggestions.roleplays,
 				generatedAt: new Date(),
-			});
-		}
-
-		return {
-			topics: suggestions.topics,
-			roleplays: suggestions.roleplays,
-			generatedAt: new Date(),
-			isStale: false,
-		};
-	}),
+				isStale: false,
+			};
+		},
+	),
 
 	start: protectedProcedure
 		.input(
@@ -200,21 +202,32 @@ export const conversationRouter = router({
 				});
 			}
 
-			const access = await getConversationAccessSummary(userId);
+			const level = profile[0]?.level ?? "beginner";
+			const sessionConfig = buildConversationSessionFromActivity(
+				activity,
+				level,
+			);
 
-			if (!access.isPro && !access.hasAccess) {
+			const { consumed, access } = await consumePracticeSession(
+				userId,
+				"conversation_session",
+				{
+					resourceId: sessionId,
+					metadata: {
+						activityId: activity.id,
+						scenario: activity.payload.scenario,
+						mode: sessionConfig.mode,
+					},
+				},
+			);
+
+			if (!consumed) {
 				throw new TRPCError({
 					code: "FORBIDDEN",
 					message: "FREE_WEEKLY_PRACTICE_LIMIT_REACHED",
 					cause: access,
 				});
 			}
-
-			const level = profile[0]?.level ?? "beginner";
-			const sessionConfig = buildConversationSessionFromActivity(
-				activity,
-				level,
-			);
 
 			const newSession = {
 				id: sessionId,
@@ -245,22 +258,16 @@ export const conversationRouter = router({
 			});
 
 			if (!markedStarted) {
+				await releaseFeatureUsage({
+					userId,
+					feature: "conversation_session",
+					resourceId: sessionId,
+				});
 				throw new TRPCError({
 					code: "NOT_FOUND",
 					message: "PRACTICE_ACTIVITY_NOT_FOUND",
 				});
 			}
-
-			await recordDailyFeatureUsage({
-				userId,
-				feature: "conversation_session",
-				resourceId: sessionId,
-				metadata: {
-					activityId: activity.id,
-					scenario: activity.payload.scenario,
-					mode: sessionConfig.mode,
-				},
-			});
 
 			return {
 				sessionId,

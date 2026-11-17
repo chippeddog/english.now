@@ -1,30 +1,33 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PUBLIC_PAGES, seo } from "@/utils/seo";
 
 export const Route = createFileRoute("/_public/refund")({
+	head: () => seo(PUBLIC_PAGES.refund),
 	component: RouteComponent,
 });
 
 function RouteComponent() {
 	return (
-		<div className="container relative mx-auto max-w-4xl px-4 py-16 pb-24">
-			<article className="prose prose-neutral dark:prose-invert max-w-none">
-				<header className="mb-12 text-center">
-					<h1 className="mb-4 font-bold font-lyon text-3xl tracking-tight md:text-4xl">
-						Refund & Cancellation Policy
+		<div className="container relative mx-auto max-w-6xl px-4 py-16 pb-24">
+			<article className="typeset typeset-docs mx-auto max-w-[40em]">
+				<header className="text-center">
+					<h1 className="mb-2 font-bold font-geist-serif text-4xl tracking-tight md:text-5xl">
+						Refund Policy
 					</h1>
-					<p className="text-muted-foreground">Last updated: March 2, 2026</p>
+					<p className="text-muted-foreground">
+						Last updated: <time dateTime="2026-03-02">March 2, 2026</time>
+					</p>
 				</header>
 
-				<section className="mb-10">
-					<h2 className="mb-4 font-semibold text-2xl">Overview</h2>
-					<p className="mb-4 text-muted-foreground">
+				<section>
+					<h2>Overview</h2>
+					<p>
 						english.now is an open-source, self-study English learning platform.
 						All payments for english.now are processed by{" "}
 						<a
 							href="https://paddle.com"
 							target="_blank"
 							rel="noopener noreferrer"
-							className="underline"
 						>
 							Paddle.com
 						</a>
@@ -36,7 +39,6 @@ function RouteComponent() {
 							href="https://paddle.com/legal/terms"
 							target="_blank"
 							rel="noopener noreferrer"
-							className="underline"
 						>
 							Terms & Conditions
 						</a>{" "}
@@ -44,15 +46,13 @@ function RouteComponent() {
 					</p>
 				</section>
 
-				<section className="mb-8">
-					<h2 className="mb-4 font-semibold text-xl">
-						Subscription Cancellation
-					</h2>
-					<p className="mb-4 text-muted-foreground">
+				<section>
+					<h2>Subscription Cancellation</h2>
+					<p>
 						You may cancel your subscription at any time from your account
 						settings. Upon cancellation:
 					</p>
-					<ul className="mb-4 list-disc space-y-1 pl-6 text-muted-foreground">
+					<ul>
 						<li>
 							Your subscription will remain active until the end of your current
 							billing period.
@@ -69,14 +69,14 @@ function RouteComponent() {
 					</ul>
 				</section>
 
-				<section className="mb-8">
-					<h2 className="mb-4 font-semibold text-xl">Refund Eligibility</h2>
-					<p className="mb-4 text-muted-foreground">
+				<section>
+					<h2>Refund Eligibility</h2>
+					<p>
 						We want you to be satisfied with english.now. If you are unhappy
 						with your purchase, you may request a refund under the following
 						conditions:
 					</p>
-					<ul className="mb-4 list-disc space-y-1 pl-6 text-muted-foreground">
+					<ul>
 						<li>
 							<strong>Monthly subscriptions:</strong> Refund requests must be
 							made within 14 days of the initial purchase or the most recent
@@ -93,22 +93,20 @@ function RouteComponent() {
 							charge in full regardless of the timeframe.
 						</li>
 					</ul>
-					<p className="text-muted-foreground">
+					<p>
 						Refunds are issued at our discretion and are generally provided as a
 						full refund to your original payment method. Partial refunds may be
 						offered on a case-by-case basis.
 					</p>
 				</section>
 
-				<section className="mb-8">
-					<h2 className="mb-4 font-semibold text-xl">
-						When Refunds May Not Apply
-					</h2>
-					<p className="mb-2 text-muted-foreground">
+				<section>
+					<h2>When Refunds May Not Apply</h2>
+					<p>
 						We reserve the right to decline refund requests in the following
 						cases:
 					</p>
-					<ul className="list-disc space-y-1 pl-6 text-muted-foreground">
+					<ul>
 						<li>
 							The request is made after the applicable refund window has
 							expired.
@@ -124,14 +122,10 @@ function RouteComponent() {
 					</ul>
 				</section>
 
-				<section className="mb-8">
-					<h2 className="mb-4 font-semibold text-xl">
-						How to Request a Refund
-					</h2>
-					<p className="mb-4 text-muted-foreground">
-						To request a refund, you can use any of the following methods:
-					</p>
-					<ul className="mb-4 list-disc space-y-1 pl-6 text-muted-foreground">
+				<section>
+					<h2>How to Request a Refund</h2>
+					<p>To request a refund, you can use any of the following methods:</p>
+					<ul>
 						<li>
 							<strong>Via Paddle:</strong> Locate your payment receipt email
 							from Paddle and use the cancellation or support link included in
@@ -140,27 +134,27 @@ function RouteComponent() {
 								href="https://paddle.net"
 								target="_blank"
 								rel="noopener noreferrer"
-								className="underline"
 							>
 								Paddle customer portal
 							</a>
 							.
 						</li>
 						<li>
-							<strong>Contact us directly:</strong> Email us with your account
-							email address and the reason for your refund request.
+							<strong>Contact us directly:</strong> Email us at{" "}
+							<a href="mailto:support@english.now">support@english.now</a> with
+							your account email address and the reason for your refund request.
 						</li>
 					</ul>
-					<p className="text-muted-foreground">
+					<p>
 						Refunds are typically processed within 5–10 business days after
 						approval. The exact timing depends on your payment provider and
 						financial institution.
 					</p>
 				</section>
 
-				<section className="mb-8">
-					<h2 className="mb-4 font-semibold text-xl">Currency & Sales Tax</h2>
-					<p className="text-muted-foreground">
+				<section>
+					<h2>Currency & Sales Tax</h2>
+					<p>
 						Because Paddle is the Merchant of Record, all transactions are
 						processed in the currency displayed at checkout. Paddle calculates
 						and remits any applicable sales tax, VAT, or GST on your behalf.
@@ -169,9 +163,9 @@ function RouteComponent() {
 					</p>
 				</section>
 
-				<section className="mb-8">
-					<h2 className="mb-4 font-semibold text-xl">Changes to This Policy</h2>
-					<p className="text-muted-foreground">
+				<section>
+					<h2>Changes to This Policy</h2>
+					<p>
 						We may update this Refund & Cancellation Policy from time to time.
 						If we make significant changes, we will notify you via email or
 						through a notice on our platform. The "Last updated" date at the top
@@ -180,13 +174,27 @@ function RouteComponent() {
 				</section>
 
 				<section>
-					<h2 className="mb-4 font-semibold text-xl">Contact Us</h2>
-					<p className="text-muted-foreground">
-						If you have any questions about this policy, need help with a
-						refund, or want to manage your subscription, please reach out to us
-						through our community channels or open an issue on our GitHub
-						repository.
+					<h2>Contact Us</h2>
+					<p>
+						If you have any questions about this Refund Policy, please contact
+						us:
 					</p>
+					<ul>
+						<li>
+							<strong>GitHub:</strong>{" "}
+							<a
+								href="https://github.com/chippeddog/english.now"
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								github.com/chippeddog/english.now
+							</a>
+						</li>
+						<li>
+							<strong>Email:</strong>{" "}
+							<a href="mailto:support@english.now">support@english.now</a>
+						</li>
+					</ul>
 				</section>
 			</article>
 		</div>

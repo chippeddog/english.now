@@ -3,11 +3,11 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./src/index.ts",
       "default": "./src/index.ts"
     },
     "./*": {
-      "types": "./dist/*.d.ts",
+      "types": "./src/*.ts",
       "default": "./src/*.ts"
     }
   },
@@ -15,6 +15,8 @@
     "build": "tsdown",
     "check-types": "tsc -b",
     "grammar:seed": "tsx src/seeds/grammar-topics.ts",
+    "db:seed": "tsx src/seeds/index.ts",
+    "seed:export": "tsx src/seeds/curriculum-snapshot.ts export",
     "backfill:active-enrollment": "tsx src/seeds/backfill-active-enrollment.ts",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",

@@ -25,8 +25,10 @@ import {
 	word,
 	wordTranslation,
 } from "@english.now/db";
+import { capabilities } from "@english.now/env/server";
 import { FREE_DAILY_VOCAB_REVIEW_LIMIT } from "@english.now/shared/feature-limit-config";
 import { profileLevelToCefr } from "../lib/cefr";
+import { safeTimeZone } from "../lib/timezone";
 import {
 	buildDefaultConversationGoals,
 	buildDefaultConversationModeConfig,
@@ -137,7 +139,7 @@ async function getPracticeProfile(userId: string): Promise<PracticeProfile> {
 
 export function getDayKey(date: Date, timezone: string): string {
 	return new Intl.DateTimeFormat("en-CA", {
-		timeZone: timezone,
+		timeZone: safeTimeZone(timezone),
 		year: "numeric",
 		month: "2-digit",
 		day: "2-digit",
@@ -331,6 +333,11 @@ async function createPronunciationActivities(
 	level: CefrLevel,
 	interests: string[] | null,
 ): Promise<DailyPronunciationActivity[]> {
+	// Read-aloud needs live transcription (Deepgram) and assessment (Azure).
+	if (!capabilities.pronunciationAssessment || !capabilities.deepgram) {
+		return [];
+	}
+
 	const paragraphs = await Promise.all(
 		Array.from({ length: 3 }, () =>
 			generateParagraph(level, interests ?? undefined),

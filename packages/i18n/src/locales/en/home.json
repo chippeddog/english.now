@@ -1,6 +1,6 @@
 {
   "hero": {
-    "title": "The last English learning app you <br/> will ever need.",
+    "title": "The last English learning app<br/> you will ever need.",
     "subtitle": "AI-powered English learning app that helps you learn faster and easier through personalized lessons, real conversations, and instant feedback.",
     "getStarted": "Get Started",
     "watchDemo": "Watch Demo",
@@ -58,17 +58,89 @@
   "pricing": {
     "title": "Pricing",
     "subtitle": "Choose the plan that's right for you.",
-    "pageTitle": "Which plan is right for you?",
+    "pageTitle": "Pricing",
     "pageSubtitle": "All plans include access to our AI-powered learning tools.",
     "save20": "Save 20%",
     "mostPopular": "Most Popular",
     "whatsIncluded": "What's included",
     "startTrial": "Start 7-day trial",
     "getStarted": "Get started",
+    "contactSales": "Contact sales",
+    "learnMoreBusiness": "Learn more about Business",
+    "billing": {
+      "label": "Billing period",
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "save": "Save {{percent}}%"
+    },
+    "customPrice": "Custom",
+    "priceSuffix": {
+      "forever": "/forever",
+      "month": "/month"
+    },
+    "billedNote": {
+      "free": "No credit card required",
+      "monthly": "Billed monthly",
+      "yearly": "{{price}} billed yearly",
+      "custom": "Tailored to your team's size and needs"
+    },
     "duration": {
       "forever": "forever",
       "month": "month",
       "year": "year"
+    },
+    "compare": {
+      "title": "Compare plans",
+      "subtitle": "See exactly what you get with each plan.",
+      "featureColumn": "Features",
+      "included": "Included",
+      "notIncluded": "Not included",
+      "sections": {
+        "lessons": "Lessons",
+        "practice": "AI practice",
+        "vocabulary": "Vocabulary",
+        "progress": "Progress",
+        "team": "Team and admin",
+        "support": "Support"
+      },
+      "rows": {
+        "lessonAccess": "Lesson access",
+        "cefrLevels": "All CEFR levels (A1 to C2)",
+        "learningPath": "Personalized learning path",
+        "practiceSessions": "AI practice sessions",
+        "conversationLength": "AI conversation length",
+        "voiceCalls": "AI voice call length",
+        "pronunciationAttempts": "Pronunciation attempts per phrase",
+        "feedback": "AI feedback and corrections",
+        "vocabAdds": "New words per day",
+        "vocabReviews": "Review cards per day",
+        "spacedRepetition": "Spaced repetition",
+        "progressTracking": "Progress tracking",
+        "analytics": "Detailed analytics",
+        "adminDashboard": "Admin dashboard and seat management",
+        "teamReports": "Team progress reports",
+        "roleTracks": "Role-specific learning paths",
+        "invoiceBilling": "Centralized billing and invoices",
+        "support": "Support"
+      },
+      "values": {
+        "unlimited": "Unlimited",
+        "allLessons": "All lessons",
+        "freeLessons": "1 unit + 1 lesson/day",
+        "threePerWeek": "3 per week",
+        "eightReplies": "Up to 8 replies",
+        "threeMinutes": "3 minutes",
+        "twentyMinutes": "20 minutes",
+        "one": "1",
+        "three": "3",
+        "ten": "10",
+        "fifteen": "15",
+        "preview": "Preview",
+        "full": "Full",
+        "email": "Email",
+        "priorityEmail": "Priority email",
+        "dedicatedManager": "Dedicated manager"
+      }
     },
     "faqSection": {
       "title": "FAQs",
@@ -133,6 +205,31 @@
           "Unlimited vocabulary practice and saves",
           "Personalized learning path"
         ]
+      },
+      "pro": {
+        "name": "Pro",
+        "description": "For learners who want to improve fast.",
+        "includedLabel": "Everything in Free, plus",
+        "features": [
+          "Unlimited AI practice",
+          "All lessons, A1 to C2",
+          "Full AI feedback and corrections",
+          "Unlimited vocabulary practice",
+          "Personalized learning path",
+          "20-minute AI voice calls"
+        ]
+      },
+      "business": {
+        "name": "Business",
+        "description": "For teams that need English at work.",
+        "includedLabel": "Everything in Pro, plus",
+        "features": [
+          "Admin dashboard and seat management",
+          "Team progress reports",
+          "Role-specific learning paths",
+          "Centralized billing and invoices",
+          "Dedicated success manager"
+        ]
       }
     }
   },
@@ -182,6 +279,6 @@
     "copyright": "All rights reserved.",
     "privacy": "Privacy Policy",
     "terms": "Terms of Service",
-    "cancellation": "Cancellation Policy"
+    "cancellation": "Refund Policy"
   }
 }

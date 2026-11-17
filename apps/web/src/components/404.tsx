@@ -43,7 +43,7 @@ export default function NotFound() {
 				</Link>
 			</div>
 			<div className="text-center">
-				<div className="mb-2 font-bold font-lyon text-4xl italic">
+				<div className="mb-2 font-bold font-geist-serif text-3xl">
 					Page Not Found
 				</div>
 				<p className="mb-3 text-muted-foreground text-sm italic tabular-nums">
@@ -53,19 +53,14 @@ export default function NotFound() {
 					The page you're looking for cannot be found. <br />
 					If this keeps happening, please{" "}
 					<a
-						className="text-primary underline"
+						className="text-blue-600 underline"
 						href="mailto:support@english.now"
 					>
 						contact us
 					</a>
 					.
 				</div>
-				<Button
-					variant="outline"
-					size="lg"
-					className="group mt-5 inline-flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-2xl border border-neutral-200 bg-linear-to-b from-neutral-50 to-neutral-100 px-6 py-1.5 font-medium text-neutral-700 italic shadow-none transition duration-150 ease-in-out will-change-transform hover:brightness-95 focus:shadow-none focus:outline-none focus-visible:shadow-none"
-					asChild
-				>
+				<Button variant="link" size="lg" asChild>
 					<Link to="/">Back to home</Link>
 				</Button>
 			</div>

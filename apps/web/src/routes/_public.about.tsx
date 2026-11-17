@@ -9,9 +9,11 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
+import { PUBLIC_PAGES, seo } from "@/utils/seo";
 
 export const Route = createFileRoute("/_public/about")({
 	component: About,
+	head: () => seo(PUBLIC_PAGES.about),
 });
 
 type ComparisonKey = "tutors" | "gpt" | "englishNow";
@@ -98,7 +100,7 @@ export default function About() {
 	return (
 		<div className="container relative z-10 mx-auto max-w-4xl px-4 py-2 pt-10 pb-18 md:pt-18">
 			<div className="mx-auto mb-16 flex max-w-2xl flex-col items-center gap-4 text-center">
-				<h1 className="font-bold font-lyon text-4xl text-neutral-900 tracking-tight md:text-5xl dark:text-white">
+				<h1 className="font-bold font-geist-serif text-4xl text-neutral-900 tracking-tight md:text-5xl dark:text-white">
 					About English.now
 				</h1>
 				<p className="mx-auto max-w-2xl text-balance text-muted-foreground md:text-lg">
@@ -123,7 +125,7 @@ export default function About() {
 			<hr className="my-16 border-border/50 border-t md:my-24" />
 
 			<div className="mx-auto mb-10 max-w-xl text-center md:mb-14">
-				<h2 className="mb-4 font-bold font-lyon text-4xl tracking-tight md:text-5xl">
+				<h2 className="mb-4 font-bold font-geist-serif text-4xl tracking-tight md:text-5xl">
 					{t("letter.title")}
 				</h2>
 				<p className="text-balance text-center text-muted-foreground text-sm md:mx-auto md:max-w-boundary-sm md:text-lg">

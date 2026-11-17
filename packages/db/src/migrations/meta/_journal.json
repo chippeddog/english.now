@@ -309,6 +309,13 @@
       "when": 1777111479468,
       "tag": "0043_skinny_blizzard",
       "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1794392321959,
+      "tag": "0044_security_hardening",
+      "breakpoints": true
     }
   ]
 }

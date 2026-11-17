@@ -630,7 +630,7 @@ export function Features() {
 		<div className="relative mx-auto md:mt-24">
 			<div>
 				<div className="mb-10 md:mb-14">
-					<h2 className="mb-4 text-center font-bold font-lyon text-4xl tracking-tight md:text-5xl">
+					<h2 className="mb-4 text-center font-bold font-geist-serif text-4xl tracking-tight md:text-5xl">
 						{t("features.title")}
 						<br />
 						{t("features.titleLine2")}

@@ -1,4 +1,3 @@
-import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import type {
 	PronunciationSessionSummary,
 	WeakPhoneme,
@@ -14,57 +13,42 @@ import {
 	pronunciationSession,
 	userProfile,
 } from "@english.now/db";
-import { env } from "@english.now/env/server";
+import {
+	FREE_PRONUNCIATION_MAX_ATTEMPTS,
+	PRO_PRONUNCIATION_MAX_ATTEMPTS,
+} from "@english.now/shared/feature-limit-config";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure, rateLimitedProcedure, router } from "../index";
 import { profileLevelToCefr } from "../lib/cefr";
+import { getOwnedStorageKey, storage } from "../lib/storage";
 import {
 	getTodayPracticePlanRecord,
 	markDailyPracticeActivityStarted,
 } from "../services/daily-practice-plan";
 import {
-	getPronunciationAccessSummary,
+	buildSessionCapAccessSummary,
+	consumePracticeSession,
 	getPronunciationAttemptAccessSummary,
 	getReportAccessSummary,
 } from "../services/feature-gating";
-import { recordDailyFeatureUsage } from "../services/feature-usage";
+import {
+	releaseFeatureUsage,
+	withAdvisoryLock,
+} from "../services/feature-usage";
 import { generateParagraph } from "../services/generate-paragraph";
 import { recordActivity } from "../services/record-activity";
+import { getSubscriptionSummaryForUser } from "../services/subscription";
 
-const pronunciationAudioBucket = "_audio";
-
-const s3 = new S3Client({
-	region: "auto",
-	endpoint: env.R2_ENDPOINT,
-	credentials: {
-		accessKeyId: env.R2_ACCESS_KEY_ID,
-		secretAccessKey: env.R2_SECRET_ACCESS_KEY,
-	},
-});
-
-function getAudioStorageKey(audioUrl: string) {
-	const publicUrl = new URL(env.R2_PUBLIC_URL);
-	const fileUrl = new URL(audioUrl);
-
-	if (fileUrl.origin !== publicUrl.origin) {
+function getOwnedAudioKeyOrThrow(userId: string, audioUrl: string) {
+	const key = getOwnedStorageKey(userId, "audio", audioUrl);
+	if (!key) {
 		throw new TRPCError({
-			code: "INTERNAL_SERVER_ERROR",
+			code: "BAD_REQUEST",
 			message: "INVALID_ATTEMPT_AUDIO_URL",
 		});
 	}
-
-	const pathSegments = fileUrl.pathname.split("/").filter(Boolean);
-	const bucketIndex = pathSegments.indexOf(pronunciationAudioBucket);
-
-	if (bucketIndex === -1 || bucketIndex === pathSegments.length - 1) {
-		throw new TRPCError({
-			code: "INTERNAL_SERVER_ERROR",
-			message: "INVALID_ATTEMPT_AUDIO_URL",
-		});
-	}
-
-	return decodeURIComponent(pathSegments.slice(bucketIndex + 1).join("/"));
+	return key;
 }
 
 export const pronunciationRouter = router({
@@ -122,20 +106,27 @@ export const pronunciationRouter = router({
 				});
 			}
 
-			const access = await getPronunciationAccessSummary(userId);
+			const level = profileLevelToCefr(profile[0]?.level);
+			const paragraph = activity.payload.paragraph;
 
-			if (!access.isPro && !access.hasAccess) {
+			const sessionId = crypto.randomUUID();
+
+			const { consumed, access } = await consumePracticeSession(
+				userId,
+				"pronunciation_session",
+				{
+					resourceId: sessionId,
+					metadata: { activityId: activity.id },
+				},
+			);
+
+			if (!consumed) {
 				throw new TRPCError({
 					code: "FORBIDDEN",
 					message: "FREE_WEEKLY_PRACTICE_LIMIT_REACHED",
 					cause: access,
 				});
 			}
-
-			const level = profileLevelToCefr(profile[0]?.level);
-			const paragraph = activity.payload.paragraph;
-
-			const sessionId = crypto.randomUUID();
 
 			await db.insert(pronunciationSession).values({
 				id: sessionId,
@@ -153,25 +144,21 @@ export const pronunciationRouter = router({
 			});
 
 			if (!markedStarted) {
+				await releaseFeatureUsage({
+					userId,
+					feature: "pronunciation_session",
+					resourceId: sessionId,
+				});
 				throw new TRPCError({
 					code: "NOT_FOUND",
 					message: "PRACTICE_ACTIVITY_NOT_FOUND",
 				});
 			}
 
-			await recordDailyFeatureUsage({
-				userId,
-				feature: "pronunciation_session",
-				resourceId: sessionId,
-				metadata: {
-					activityId: activity.id,
-				},
-			});
-
 			return { sessionId, paragraph, level };
 		}),
 
-	submitAttempt: protectedProcedure
+	submitAttempt: rateLimitedProcedure(30, 60_000)
 		.input(
 			z.object({
 				sessionId: z.string(),
@@ -191,6 +178,10 @@ export const pronunciationRouter = router({
 				});
 			}
 
+			if (input.audioUrl) {
+				getOwnedAudioKeyOrThrow(userId, input.audioUrl);
+			}
+
 			const [session] = await db
 				.select()
 				.from(pronunciationSession)
@@ -202,38 +193,50 @@ export const pronunciationRouter = router({
 				)
 				.limit(1);
 
-			if (!session) throw new Error("Session not found");
-
-			const existingAttempts = await db
-				.select({ id: pronunciationAttempt.id })
-				.from(pronunciationAttempt)
-				.where(eq(pronunciationAttempt.sessionId, input.sessionId));
-			const attemptAccess = await getPronunciationAttemptAccessSummary(
-				userId,
-				existingAttempts.length,
-			);
-
-			if (attemptAccess.reachedLimit) {
+			if (!session) {
 				throw new TRPCError({
-					code: "FORBIDDEN",
-					message: attemptAccess.isPro
-						? "PRO_ATTEMPT_LIMIT_REACHED"
-						: "FREE_ATTEMPT_LIMIT_REACHED",
-					cause: attemptAccess,
+					code: "NOT_FOUND",
+					message: "Session not found",
 				});
 			}
 
+			const subscription = await getSubscriptionSummaryForUser(userId);
 			const attemptId = crypto.randomUUID();
 
-			await db.insert(pronunciationAttempt).values({
-				id: attemptId,
-				sessionId: input.sessionId,
-				itemIndex: input.itemIndex,
-				transcript,
-				score: 0,
-				wordResults: [],
-				audioUrl: input.audioUrl,
-			});
+			await withAdvisoryLock(
+				`pronunciation-attempts:${input.sessionId}`,
+				async (tx) => {
+					const existingAttempts = await tx
+						.select({ id: pronunciationAttempt.id })
+						.from(pronunciationAttempt)
+						.where(eq(pronunciationAttempt.sessionId, input.sessionId));
+					const attemptAccess = buildSessionCapAccessSummary({
+						isPro: subscription.isPro,
+						used: existingAttempts.length,
+						freeLimit: FREE_PRONUNCIATION_MAX_ATTEMPTS,
+						proLimit: PRO_PRONUNCIATION_MAX_ATTEMPTS,
+					});
+
+					if (attemptAccess.reachedLimit) {
+						throw new TRPCError({
+							code: "FORBIDDEN",
+							message: attemptAccess.isPro
+								? "PRO_ATTEMPT_LIMIT_REACHED"
+								: "FREE_ATTEMPT_LIMIT_REACHED",
+							cause: attemptAccess,
+						});
+					}
+
+					await tx.insert(pronunciationAttempt).values({
+						id: attemptId,
+						sessionId: input.sessionId,
+						transcript,
+						score: 0,
+						wordResults: [],
+						audioUrl: input.audioUrl,
+					});
+				},
+			);
 
 			return { attemptId };
 		}),
@@ -410,12 +413,10 @@ export const pronunciationRouter = router({
 			if (!attempt) throw new Error("Attempt not found");
 
 			if (attempt.audioUrl) {
-				await s3.send(
-					new DeleteObjectCommand({
-						Bucket: pronunciationAudioBucket,
-						Key: getAudioStorageKey(attempt.audioUrl),
-					}),
-				);
+				const key = getOwnedStorageKey(userId, "audio", attempt.audioUrl);
+				if (key) {
+					await storage.delete("audio", key);
+				}
 			}
 
 			const [deleted] = await db

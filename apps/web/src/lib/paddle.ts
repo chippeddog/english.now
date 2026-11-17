@@ -22,15 +22,17 @@ export type PaddlePricePreview = {
 export async function getPaddle(): Promise<Paddle | undefined> {
 	if (paddleInstance) return paddleInstance;
 
+	const token = import.meta.env.VITE_PADDLE_CLIENT_TOKEN;
+	if (!token) {
+		return undefined;
+	}
+
 	if (!paddlePromise) {
 		paddlePromise = initializePaddle({
 			environment:
 				(import.meta.env.VITE_PADDLE_ENVIRONMENT as "sandbox" | "production") ??
 				"sandbox",
-			token:
-				import.meta.env.VITE_PADDLE_ENVIRONMENT === "production"
-					? import.meta.env.VITE_PADDLE_CLIENT_TOKEN
-					: "test_ff78a1c2ad0b539c77ae84ed3b7",
+			token,
 		});
 	}
 

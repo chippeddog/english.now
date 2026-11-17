@@ -1,4 +1,4 @@
-import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { getOwnedStorageKey, storage } from "@english.now/api/lib/storage";
 import { getConversationSessionMeta } from "@english.now/api/services/conversation-mode";
 import { buildConversationReviewGuidance } from "@english.now/api/services/conversation-prompt";
 import {
@@ -13,10 +13,10 @@ import {
 	db,
 	eq,
 } from "@english.now/db";
+import { capabilities } from "@english.now/env/server";
 import { generateText, Output } from "ai";
 import { z } from "zod";
 import { openai } from "../utils/ai";
-import s3Client from "../utils/r2";
 import {
 	assessPronunciation,
 	type PronunciationAssessmentResult,
@@ -312,21 +312,18 @@ function emptyReview(
 	};
 }
 
-async function downloadAudioFromR2(audioUrl: string): Promise<Buffer | null> {
+async function downloadOwnedAudio(
+	userId: string,
+	audioUrl: string,
+): Promise<Buffer | null> {
+	const key = getOwnedStorageKey(userId, "audio", audioUrl);
+	if (!key) {
+		console.warn("[feedback] Skipping audio outside the user's storage");
+		return null;
+	}
+
 	try {
-		const url = new URL(audioUrl);
-		const key = url.pathname.replace(/^\/_audio\//, "");
-
-		const response = await s3Client.send(
-			new GetObjectCommand({
-				Bucket: "_audio",
-				Key: key,
-			}),
-		);
-
-		if (!response.Body) return null;
-		const bytes = await response.Body.transformToByteArray();
-		return Buffer.from(bytes);
+		return await storage.get("audio", key);
 	} catch (err) {
 		console.error("[feedback] Failed to download audio:", audioUrl, err);
 		return null;
@@ -334,6 +331,7 @@ async function downloadAudioFromR2(audioUrl: string): Promise<Buffer | null> {
 }
 
 async function assessVoiceMessages(
+	userId: string,
 	voiceMessages: Array<{
 		id: string;
 		content: string;
@@ -357,7 +355,7 @@ async function assessVoiceMessages(
 
 	for (const msg of voiceMessages) {
 		try {
-			const audioBuffer = await downloadAudioFromR2(msg.audioUrl);
+			const audioBuffer = await downloadOwnedAudio(userId, msg.audioUrl);
 			if (!audioBuffer) continue;
 
 			const result = await assessPronunciation(audioBuffer, msg.content);
@@ -1490,8 +1488,8 @@ export async function generateConversationFeedback(
 		const sessionMeta = getConversationSessionMeta(session[0]);
 		const reviewGuidance = buildConversationReviewGuidance(sessionMeta);
 		const [pronunciationResult, aiAnalysis] = await Promise.all([
-			voiceMessages.length > 0
-				? assessVoiceMessages(voiceMessages)
+			voiceMessages.length > 0 && capabilities.pronunciationAssessment
+				? assessVoiceMessages(userId, voiceMessages)
 				: Promise.resolve({ pronunciationScore: null, results: [] }),
 			analyzeWithAI(conversationTurns, level, reviewGuidance),
 		]);

@@ -26,12 +26,16 @@ import {
 import { FREE_LESSON_FREE_UNIT_COUNT } from "@english.now/shared/feature-limit-config";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { protectedProcedure, router } from "../index";
+import { protectedProcedure, rateLimitedProcedure, router } from "../index";
 import { profileLevelToCefr } from "../lib/cefr";
-import { getLessonAccessSummary } from "../services/feature-gating";
-import { recordDailyFeatureUsage } from "../services/feature-usage";
+import {
+	consumeLessonStart,
+	getLessonAccessSummary,
+} from "../services/feature-gating";
+import { releaseFeatureUsage } from "../services/feature-usage";
 import { generateLessonExercises } from "../services/generate-lesson-exercises";
 import { recordActivity } from "../services/record-activity";
+import { getSubscriptionSummaryForUser } from "../services/subscription";
 
 const CEFR_LEVELS: CefrLevel[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
 const cefrLevelSchema = z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]);
@@ -261,6 +265,31 @@ async function getLatestPublishedCourseVersion(level: CefrLevel) {
 	return cv ?? null;
 }
 
+/**
+ * Free learners keep the level they were enrolled in at onboarding; opening
+ * another CEFR level requires Pro. This mirrors `requiresUpgrade` in the UI.
+ */
+async function assertCanStartNewLevel(userId: string, level: CefrLevel) {
+	const subscription = await getSubscriptionSummaryForUser(userId);
+	if (subscription.isPro) return;
+
+	const enrolledLevels = await db
+		.select({ level: course.level })
+		.from(enrollment)
+		.innerJoin(courseVersion, eq(courseVersion.id, enrollment.courseVersionId))
+		.innerJoin(course, eq(course.id, courseVersion.courseId))
+		.where(eq(enrollment.userId, userId));
+
+	const isFirstEnrollment = enrolledLevels.length === 0;
+	const isSameLevel = enrolledLevels.some((row) => row.level === level);
+	if (isFirstEnrollment || isSameLevel) return;
+
+	throw new TRPCError({
+		code: "FORBIDDEN",
+		message: "PRO_REQUIRED_FOR_LEVEL",
+	});
+}
+
 async function ensureEnrollmentForLevel(
 	userId: string,
 	level: CefrLevel,
@@ -284,6 +313,8 @@ async function ensureEnrollmentForLevel(
 	if (existing) {
 		return { enrollmentId: existing.id, courseVersionId: cv.id };
 	}
+
+	await assertCanStartNewLevel(userId, level);
 
 	const enrollmentId = crypto.randomUUID();
 	await db.insert(enrollment).values({
@@ -917,7 +948,7 @@ export const contentRouter = router({
 			};
 		}),
 
-	startLesson: protectedProcedure
+	startLesson: rateLimitedProcedure(10, 60_000)
 		.input(z.object({ lessonId: z.string() }))
 		.mutation(async ({ ctx, input }) => {
 			const userId = ctx.session.user.id;
@@ -1096,12 +1127,42 @@ export const contentRouter = router({
 				lessonRecord.lessonType ??
 				blockTypeToLessonType(lessonRecord.blockType);
 
-			const exercises = await generateLessonExercises(
-				lessonRecord.title,
-				effectiveLessonType,
-				content,
-				profile?.nativeLanguage ?? "uk",
-			);
+			let lessonStartRecorded = false;
+			if (!lessonAccess.isPro && !completedLessonIds.has(input.lessonId)) {
+				const lessonStart = await consumeLessonStart(userId, input.lessonId, {
+					unitId: unitRow.id,
+				});
+				if (!lessonStart.consumed) {
+					throw new TRPCError({
+						code: "FORBIDDEN",
+						message: "daily_new_lesson_limit",
+						cause: {
+							lockReason: "daily_new_lesson_limit",
+							access: lessonStart.access,
+						},
+					});
+				}
+				lessonStartRecorded = lessonStart.recorded;
+			}
+
+			let exercises: Awaited<ReturnType<typeof generateLessonExercises>>;
+			try {
+				exercises = await generateLessonExercises(
+					lessonRecord.title,
+					effectiveLessonType,
+					content,
+					profile?.nativeLanguage ?? "uk",
+				);
+			} catch (error) {
+				if (lessonStartRecorded) {
+					await releaseFeatureUsage({
+						userId,
+						feature: "lesson_start",
+						resourceId: input.lessonId,
+					}).catch(console.error);
+				}
+				throw error;
+			}
 
 			const attemptId = crypto.randomUUID();
 			await db.insert(lessonAttempt).values({
@@ -1115,17 +1176,6 @@ export const contentRouter = router({
 				correctCount: 0,
 				status: "active",
 			});
-
-			if (!lessonAccess.isPro && !completedLessonIds.has(input.lessonId)) {
-				await recordDailyFeatureUsage({
-					userId,
-					feature: "lesson_start",
-					resourceId: input.lessonId,
-					metadata: {
-						unitId: unitRow.id,
-					},
-				});
-			}
 
 			return {
 				attemptId,

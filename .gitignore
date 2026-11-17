@@ -42,6 +42,13 @@ lerna-debug.log*
 # Better-T-Stack
 .alchemy
 
+# Package manager / Expo
+.pnpm-store
+.expo
+
+# Local file storage (used when R2 is not configured)
+apps/server/storage
+
 # Testing
 coverage
 .nyc_output

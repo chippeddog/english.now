@@ -22,6 +22,20 @@ export function buildConversationReviewGuidance(meta: ConversationSessionMeta) {
 		].join("\n");
 	}
 
+	if (meta.mode === "phone-call") {
+		const topic =
+			meta.modeConfig.kind === "phone-call" ? meta.modeConfig.topic : null;
+
+		return [
+			"Session context:",
+			"- Mode: live spoken phone call with an English tutor",
+			`- Tutor: ${meta.participants.aiRole}`,
+			`- Topic: ${topic ?? "open small talk"}`,
+			"- Learner turns are automatic speech transcripts. Ignore punctuation, capitalization, filler words (um, uh, like), and false starts.",
+			"- Do not flag likely speech-recognition artifacts; focus on grammar and word choice that would sound wrong when spoken.",
+		].join("\n");
+	}
+
 	if (meta.mode === "mini-class") {
 		return [
 			"Session context:",

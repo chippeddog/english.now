@@ -31,10 +31,10 @@ import {
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure, rateLimitedProcedure, router } from "../index";
-import { getGrammarAccessSummary } from "../services/feature-gating";
+import { consumePracticeSession } from "../services/feature-gating";
 import {
 	isUnsupportedFeatureUsageValue,
-	recordDailyFeatureUsage,
+	releaseFeatureUsage,
 } from "../services/feature-usage";
 import { generateGrammarDrill } from "../services/generate-grammar-drill";
 import { gradeGrammarFreeAnswer } from "../services/grade-grammar-free-answer";
@@ -963,12 +963,29 @@ export const grammarRouter = router({
 				return { sessionId: existingActive.id };
 			}
 
-			const access = await getGrammarAccessSummary(userId);
-			if (!access.hasAccess) {
-				throw new TRPCError({
-					code: "PRECONDITION_FAILED",
-					message: "FREE_WEEKLY_PRACTICE_LIMIT_REACHED",
-				});
+			const sessionId = crypto.randomUUID();
+			let usageReserved = false;
+
+			try {
+				const { consumed } = await consumePracticeSession(
+					userId,
+					"grammar_session",
+					{
+						resourceId: sessionId,
+						metadata: { topicId: resolvedTopic.id },
+					},
+				);
+				if (!consumed) {
+					throw new TRPCError({
+						code: "PRECONDITION_FAILED",
+						message: "FREE_WEEKLY_PRACTICE_LIMIT_REACHED",
+					});
+				}
+				usageReserved = true;
+			} catch (error) {
+				if (!isUnsupportedFeatureUsageValue(error, "grammar_session")) {
+					throw error;
+				}
 			}
 
 			const nativeLanguage = await getUserNativeLanguage(userId);
@@ -978,8 +995,6 @@ export const grammarRouter = router({
 					topic: resolvedTopic,
 					nativeLanguage,
 				});
-
-				const sessionId = crypto.randomUUID();
 
 				await db.insert(grammarSession).values({
 					id: sessionId,
@@ -991,24 +1006,16 @@ export const grammarRouter = router({
 					items,
 				});
 
-				try {
-					await recordDailyFeatureUsage({
-						userId,
-						feature: "grammar_session",
-						resourceId: sessionId,
-						metadata: {
-							topicId: resolvedTopic.id,
-						},
-					});
-				} catch (error) {
-					if (!isUnsupportedFeatureUsageValue(error, "grammar_session")) {
-						throw error;
-					}
-				}
-
 				return { sessionId };
 			} catch (error) {
 				console.error(error);
+				if (usageReserved) {
+					await releaseFeatureUsage({
+						userId,
+						feature: "grammar_session",
+						resourceId: sessionId,
+					}).catch(console.error);
+				}
 				if (error instanceof TRPCError) {
 					throw error;
 				}
@@ -1243,7 +1250,7 @@ export const grammarRouter = router({
 			};
 		}),
 
-	submitAttempt: protectedProcedure
+	submitAttempt: rateLimitedProcedure(30, 60_000)
 		.input(
 			z.object({
 				sessionId: z.string(),

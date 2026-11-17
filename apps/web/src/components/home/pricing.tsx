@@ -1,234 +1,35 @@
 import { useTranslation } from "@english.now/i18n";
-import { useNavigate } from "@tanstack/react-router";
-import { CheckIcon, Loader2, StarIcon } from "lucide-react";
-import { useEffect, useState } from "react";
-import { authClient } from "@/lib/auth-client";
-import { openCheckout } from "@/lib/paddle";
-import _plans from "@/lib/plans";
-import { cn } from "@/lib/utils";
-import { Button } from "../ui/button";
+import { useState } from "react";
 import {
-	Carousel,
-	type CarouselApi,
-	CarouselContent,
-	CarouselItem,
-} from "../ui/carousel";
+	BillingToggle,
+	PlanCards,
+	usePlanCheckout,
+} from "@/components/pricing/plan-cards";
+import type { BillingPeriod } from "@/lib/plans";
 
 export function Pricing() {
 	const { t } = useTranslation("home");
-	const { data: session } = authClient.useSession();
-	const [isLoading, setIsLoading] = useState(false);
-	const navigate = useNavigate();
-	const [carouselApi, setCarouselApi] = useState<CarouselApi>();
-	const [currentSlide, setCurrentSlide] = useState(1);
+	const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("yearly");
+	const { checkoutTier, selectPlan } = usePlanCheckout(billingPeriod);
 
-	useEffect(() => {
-		if (!carouselApi) return;
-
-		const onSelect = () => {
-			setCurrentSlide(carouselApi.selectedScrollSnap());
-		};
-
-		setCurrentSlide(carouselApi.selectedScrollSnap());
-		carouselApi.on("select", onSelect);
-
-		return () => {
-			carouselApi.off("select", onSelect);
-		};
-	}, [carouselApi]);
-
-	const renderPlanCard = (_plan: (typeof _plans)[number]) => {
-		const features = t(`pricing.plans.${_plan.key}.features`, {
-			returnObjects: true,
-		}) as string[];
-		return (
-			<div
-				className={`relative min-h-[478px] w-full gap-6 overflow-hidden rounded-3xl bg-background p-6 ${_plan.isPopular ? "border-[#C6F64D]" : ""}`}
-				style={{
-					boxShadow:
-						"0 0 0 1px rgba(0,0,0,.05),0 10px 10px -5px rgba(0,0,0,.04),0 20px 25px -5px rgba(0,0,0,.04),0 20px 32px -12px rgba(0,0,0,.04)",
-				}}
-			>
-				<div className="relative z-10 mb-4">
-					<div className="flex flex-col gap-1.5">
-						<div
-							data-slot="card-title"
-							className="flex items-center gap-2 font-semibold text-lg"
-						>
-							<span className="font-bold font-lyon text-2xl">
-								{t(`pricing.plans.${_plan.key}.name`)}
-							</span>
-							{_plan.duration === "year" && (
-								<span className="rounded-md bg-radial from-[#EFFF9B] to-[#D8FF76] px-1 py-1 font-semibold text-lime-900 text-xs normal-case tracking-normal md:py-[0.250rem]">
-									{t("pricing.save20")}
-								</span>
-							)}
-						</div>
-						<div className="text-muted-foreground text-sm">
-							{t(`pricing.plans.${_plan.key}.description`)}
-						</div>
-					</div>
-				</div>
-				<div className="relative z-10 flex items-baseline">
-					<div className="font-semibold text-3xl leading-none tracking-snug md:text-4xl">
-						${_plan.price}
-					</div>
-					<div className="ml-1 text-muted-foreground text-sm md:text-sm md:leading-7">
-						/{t(`pricing.duration.${_plan.duration}`)}
-					</div>
-				</div>
-				<div className="relative z-10 my-6 flex items-center gap-4">
-					<Button
-						disabled={isLoading}
-						variant={_plan.isPopular ? "default" : "outline"}
-						onClick={() => handlePlanClick(_plan)}
-						className={cn(
-							"inline-flex h-9 w-full cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-xl px-4 py-2 font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
-							_plan.isPopular
-								? "h-9 bg-linear-to-t from-[#202020] to-[#2F2F2F] text-white shadow-[inset_0_1px_4px_0_rgba(255,255,255,0.4)] outline-none transition-all hover:opacity-90 focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:shadow-[inset_0_1px_4px_0_rgba(128,128,128,0.2)] [&_svg]:pointer-events-none"
-								: "h-9 border border-border/50 bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
-						)}
-					>
-						{isLoading ? (
-							<Loader2 className="size-4 animate-spin" />
-						) : _plan.price > 0 ? (
-							t("pricing.startTrial")
-						) : (
-							t("pricing.getStarted")
-						)}
-					</Button>
-				</div>
-				<div className="relative z-10 mb-4 font-medium text-black/50 text-sm">
-					{t("pricing.whatsIncluded")}
-				</div>
-				<ul className="relative z-10 space-y-3 text-sm">
-					{features.map((feature) => (
-						<li className="flex items-center justify-start gap-2" key={feature}>
-							<CheckIcon className="size-4 shrink-0 text-muted-foreground" />
-							{feature}
-						</li>
-					))}
-				</ul>
-			</div>
-		);
-	};
-
-	const renderPopularWrapper = (
-		children: React.ReactNode,
-		extraClassName?: string,
-	) => (
-		<div
-			className={cn("rounded-[1.7rem] p-2", extraClassName)}
-			style={{
-				background:
-					"linear-gradient(180deg, #EFFF9B 0%, #D8FF76 60%, #C6F64D 100%)",
-				boxShadow: "inset 0 0 0 1px #C6F64D, inset 0 0 8px 2px #C6F64D",
-			}}
-		>
-			<div className="mt-1.5 mb-2.5 flex items-center justify-center gap-1.5 text-center font-medium text-lime-900 text-sm">
-				<StarIcon fill="currentColor" className="size-4" />
-				{t("pricing.mostPopular")}
-			</div>
-			{children}
-		</div>
-	);
-
-	const renderPlans = () => (
-		<>
-			{/* Desktop */}
-			<div className="relative hidden w-full flex-row items-end justify-between gap-3 md:flex">
-				{_plans.map((_plan) => (
-					<div className="w-full" key={_plan.key}>
-						{_plan.isPopular ? (
-							<div className="relative">
-								{renderPopularWrapper(renderPlanCard(_plan))}
-							</div>
-						) : (
-							<div className="relative">
-								<div className="p-2">{renderPlanCard(_plan)}</div>
-							</div>
-						)}
-					</div>
-				))}
-			</div>
-
-			{/* Mobile carousel */}
-			<div className="overflow-hidden md:hidden">
-				<Carousel
-					opts={{
-						align: "center",
-						startIndex: 1,
-					}}
-					setApi={setCarouselApi}
-				>
-					<CarouselContent className="items-end pb-4">
-						{_plans.map((_plan) => (
-							<CarouselItem
-								key={_plan.key}
-								className={cn(
-									"basis-[80%] pr-4 pl-4",
-									_plan.isPopular ? "basis-[80%] pr-1 pl-1" : "",
-								)}
-							>
-								{_plan.isPopular
-									? renderPopularWrapper(renderPlanCard(_plan))
-									: renderPlanCard(_plan)}
-							</CarouselItem>
-						))}
-					</CarouselContent>
-				</Carousel>
-
-				{/* <div className="mt-4 flex justify-center gap-1.5">
-					{_plans.map((_, index) => (
-						<button
-							key={_plans[index].key}
-							type="button"
-							aria-label={`Go to ${t(`pricing.plans.${_plans[index].key}.name`)} plan`}
-							onClick={() => carouselApi?.scrollTo(index)}
-							className={cn(
-								"h-1.5 rounded-full transition-all",
-								currentSlide === index
-									? "w-6 bg-lime-600"
-									: "w-1.5 bg-neutral-300",
-							)}
-						/>
-					))}
-				</div> */}
-			</div>
-		</>
-	);
-
-	async function handlePlanClick(plan: (typeof _plans)[number]) {
-		setIsLoading(true);
-		if (!plan.paddlePriceId) {
-			navigate({ to: "/signup" });
-			return;
-		}
-
-		if (!session?.user) {
-			navigate({ to: "/signup" });
-			return;
-		}
-
-		await openCheckout({
-			priceId: plan.paddlePriceId,
-			userId: session.user.id,
-			email: session.user.email,
-		}).finally(() => {
-			setIsLoading(false);
-		});
-	}
 	return (
 		<div className="mx-auto mt-16 md:mt-24">
 			<div className="mb-10 text-center md:mb-14">
-				<h2 className="mb-4 font-bold font-lyon text-4xl tracking-tight md:text-5xl">
+				<h2 className="mb-4 text-center font-bold font-geist-serif text-4xl tracking-tight md:text-5xl">
 					{t("pricing.title")}
 				</h2>
 				<p className="text-balance text-center text-muted-foreground text-sm md:mx-auto md:max-w-boundary-sm md:text-lg">
 					{t("pricing.subtitle")}
 				</p>
+				<div className="mt-8">
+					<BillingToggle value={billingPeriod} onChange={setBillingPeriod} />
+				</div>
 			</div>
-			{renderPlans()}
+			<PlanCards
+				billingPeriod={billingPeriod}
+				checkoutTier={checkoutTier}
+				onSelect={selectPlan}
+			/>
 		</div>
 	);
 }

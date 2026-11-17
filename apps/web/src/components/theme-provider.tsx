@@ -1,4 +1,3 @@
-import { useRouterState } from "@tanstack/react-router";
 import * as React from "react";
 
 type Theme = "light" | "dark" | "system";
@@ -21,12 +20,7 @@ function applyTheme(resolved: "light" | "dark") {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-	const pathname = useRouterState({
-		select: (state) => state.location.pathname,
-	});
-	const resolvedTheme: "light" | "dark" = pathname.startsWith("/b2b")
-		? "dark"
-		: "light";
+	const resolvedTheme: "light" | "dark" = "light";
 	const theme: Theme = resolvedTheme;
 	const setTheme = React.useCallback((_theme: Theme) => {}, []);
 

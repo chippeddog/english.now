@@ -22,6 +22,15 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { getLanguageCookie } from "@/functions/get-language";
 import { authClient } from "@/lib/auth-client";
+import {
+	absoluteUrl,
+	jsonLd,
+	organizationSchema,
+	SITE_DESCRIPTION,
+	SITE_NAME,
+	websiteSchema,
+} from "@/utils/seo";
+import { DEFAULT_TITLE } from "@/utils/title";
 import appCss from "../index.css?url";
 
 const POSTHOG_IDENTIFIED_USER_ID_KEY = "posthog_identified_user_id";
@@ -52,12 +61,20 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 				content: "English Now",
 			},
 			{
+				name: "description",
+				content: SITE_DESCRIPTION,
+			},
+			{
+				property: "og:site_name",
+				content: SITE_NAME,
+			},
+			{
 				property: "og:type",
 				content: "website",
 			},
 			{
 				property: "og:image",
-				content: "/og-image.png",
+				content: absoluteUrl("/og-image.png"),
 			},
 			{
 				property: "og:image:alt",
@@ -69,10 +86,10 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 			},
 			{
 				name: "twitter:image",
-				content: "/og-image.png",
+				content: absoluteUrl("/og-image.png"),
 			},
 			{
-				title: "English Now - Learn English with AI",
+				title: DEFAULT_TITLE,
 			},
 		],
 		links: [
@@ -109,7 +126,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 			},
 			{
 				rel: "preload",
-				href: "/fonts/Lyon-Roman.woff2",
+				href: "/fonts/geist-serif/GeistSerif-Regular.woff2",
 				as: "font",
 				type: "font/woff2",
 				crossOrigin: "anonymous",
@@ -119,7 +136,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 				href: appCss,
 			},
 		],
-		scripts: [],
+		scripts: [jsonLd({ "@graph": [organizationSchema, websiteSchema] })],
 	}),
 	component: RootDocument,
 });
@@ -180,7 +197,9 @@ function PostHogSessionIdentify() {
 			return;
 		}
 
-		const identifiedUserId = localStorage.getItem(POSTHOG_IDENTIFIED_USER_ID_KEY);
+		const identifiedUserId = localStorage.getItem(
+			POSTHOG_IDENTIFIED_USER_ID_KEY,
+		);
 		if (identifiedUserId !== user.id) {
 			posthog.reset();
 			localStorage.setItem(POSTHOG_IDENTIFIED_USER_ID_KEY, user.id);

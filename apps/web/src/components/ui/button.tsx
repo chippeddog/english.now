@@ -20,17 +20,20 @@ const buttonVariants = cva(
 				ghost:
 					"hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
 				link: "text-primary underline-offset-4 hover:underline",
+				progress:
+					"cursor-pointer bg-now-gradient font-semibold text-now-deep hover:brightness-95",
+				logo: "cursor-pointer bg-logo-gradient text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.18),inset_0_-1px_0_rgb(65_147_255/0.45)] hover:brightness-125",
 				gradientblack:
 					"bg-linear-to-t from-[#202020] to-[#2F2F2F] text-base text-white shadow-[inset_0_1px_4px_0_rgba(255,255,255,0.4)] hover:opacity-90 dark:from-[rgb(192,192,192)] dark:to-[rgb(255,255,255)] dark:shadow-[inset_0_1px_4px_0_rgba(128,128,128,0.2)]",
 				gradientBlue:
-					"bg-linear-to-t from-[#007AFF] to-[#0066CC] text-base text-white shadow-[inset_0_1px_4px_0_rgba(255,255,255,0.4)] hover:opacity-90 dark:from-[rgb(192,192,192)] dark:to-[rgb(255,255,255)] dark:shadow-[inset_0_1px_4px_0_rgba(128,128,128,0.2)]",
+					"bg-linear-to-t from-[#1D92FB] to-[#28A4FE] text-white shadow-[inset_0_1px_4px_0_rgba(255,255,255,0.4)] hover:opacity-90 dark:from-[rgb(192,192,192)] dark:to-[rgb(255,255,255)] dark:shadow-[inset_0_1px_4px_0_rgba(128,128,128,0.2)]",
 				gradientRed:
 					"bg-linear-to-t from-[#FF453A] to-[#FF3B30] text-base text-white shadow-[inset_0_1px_4px_0_rgba(255,255,255,0.4)] hover:opacity-90 dark:from-[rgb(192,192,192)] dark:to-[rgb(255,255,255)] dark:shadow-[inset_0_1px_4px_0_rgba(128,128,128,0.2)]",
 			},
 			size: {
 				default: "h-9 px-4 py-2 has-[>svg]:px-3",
 				sm: "h-8 gap-1.5 rounded-md px-3 has-[>svg]:px-2.5",
-				lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
+				lg: "h-10 rounded-lg px-6 has-[>svg]:px-4",
 				xl: "h-12 rounded-2xl px-8 has-[>svg]:px-6",
 				icon: "size-9",
 			},

@@ -7,6 +7,7 @@ import { Billing } from "@/components/settings/billing";
 import { Personalization } from "@/components/settings/personalization";
 import { Profile } from "@/components/settings/profile";
 import { Progress } from "@/components/ui/progress";
+import { useCapabilities } from "@/hooks/use-capabilities";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import { createTitle, PAGE_TITLE } from "@/utils/title";
@@ -60,6 +61,7 @@ function RouteComponent() {
 	const trpc = useTRPC();
 	const { t } = useTranslation("app");
 	const { tab } = Route.useSearch();
+	const capabilities = useCapabilities();
 	const { data: usageLimits, isLoading: isLoadingUsageLimits } = useQuery(
 		trpc.profile.getUsageLimits.queryOptions(),
 	);
@@ -92,11 +94,15 @@ function RouteComponent() {
 			value: "learning",
 			icon: Brain,
 		},
-		{
-			label: t("settings.billing"),
-			value: "billing",
-			icon: Zap,
-		},
+		...(capabilities.billing
+			? [
+					{
+						label: t("settings.billing"),
+						value: "billing",
+						icon: Zap,
+					},
+				]
+			: []),
 	];
 
 	const tabButtonClass = (isActive: boolean, fullWidth: boolean) =>
@@ -196,7 +202,7 @@ function RouteComponent() {
 					<section hidden={activeTab !== "learning"}>
 						<Personalization />
 					</section>
-					<section hidden={activeTab !== "billing"}>
+					<section hidden={activeTab !== "billing" || !capabilities.billing}>
 						<Billing />
 						<hr className="my-5 border-border/50" />
 						<PracticeLimitsCard

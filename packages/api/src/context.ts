@@ -1,5 +1,6 @@
 import { auth } from "@english.now/auth";
 import type { Context as HonoContext } from "hono";
+import { getClientIp } from "./lib/client-ip";
 import type { DailyPracticePlanJobData } from "./services/daily-practice-plan";
 
 export type CreateContextOptions = {
@@ -16,11 +17,7 @@ export async function createContext({
 	const session = await auth.api.getSession({
 		headers: context.req.raw.headers,
 	});
-	const forwarded = context.req.header("x-forwarded-for");
-	const clientIp =
-		forwarded?.split(",")[0]?.trim() ??
-		context.req.header("cf-connecting-ip") ??
-		"unknown";
+	const clientIp = getClientIp((name) => context.req.header(name));
 	return {
 		session,
 		enqueueDailyPracticePlan,

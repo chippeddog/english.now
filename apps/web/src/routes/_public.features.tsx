@@ -16,9 +16,11 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { PUBLIC_PAGES, seo } from "@/utils/seo";
 
 export const Route = createFileRoute("/_public/features")({
 	component: RouteComponent,
+	head: () => seo(PUBLIC_PAGES.features),
 });
 
 const CARD_SHADOW =

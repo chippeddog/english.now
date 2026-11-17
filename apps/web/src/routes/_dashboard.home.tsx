@@ -73,7 +73,7 @@ function RouteComponent() {
 			<div className="container relative z-10 mx-auto max-w-5xl px-4 py-6 pb-8">
 				<div className="mb-6 flex flex-col gap-2">
 					<div className="flex items-center gap-3">
-						<h1 className="font-bold font-lyon text-3xl tracking-tight">
+						<h1 className="font-bold font-geist-serif text-2xl tracking-tight">
 							<Trans>{t("home.welcomeBack", { firstName })}</Trans>
 						</h1>
 					</div>

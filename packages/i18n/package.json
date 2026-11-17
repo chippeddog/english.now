@@ -3,13 +3,14 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./src/index.ts",
       "default": "./src/index.ts"
     }
   },
   "scripts": {
     "build": "tsdown",
-    "translate": "tsx scripts/translate.ts"
+    "translate": "tsx scripts/translate.ts",
+    "check-types": "tsc --noEmit"
   },
   "dependencies": {
     "i18next": "^24.2.3",

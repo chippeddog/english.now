@@ -9,65 +9,105 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as OnboardingRouteImport } from './routes/onboarding'
-import { Route as GeneratingRouteImport } from './routes/generating'
-import { Route as SessionRouteImport } from './routes/_session'
-import { Route as PublicRouteImport } from './routes/_public'
-import { Route as PronunciationRouteImport } from './routes/_pronunciation'
-import { Route as LoginRouteImport } from './routes/_login'
-import { Route as LessonRouteImport } from './routes/_lesson'
-import { Route as GrammarRouteImport } from './routes/_grammar'
-import { Route as DashboardRouteImport } from './routes/_dashboard'
+import { Route as CallRouteImport } from './routes/_call'
 import { Route as ConversationRouteImport } from './routes/_conversation'
-import { Route as PublicIndexRouteImport } from './routes/_public.index'
-import { Route as PublicTermsRouteImport } from './routes/_public.terms'
-import { Route as PublicRefundRouteImport } from './routes/_public.refund'
-import { Route as PublicPrivacyRouteImport } from './routes/_public.privacy'
-import { Route as PublicPricingRouteImport } from './routes/_public.pricing'
-import { Route as PublicFeaturesRouteImport } from './routes/_public.features'
-import { Route as PublicContactRouteImport } from './routes/_public.contact'
-import { Route as PublicBlogRouteImport } from './routes/_public.blog'
-import { Route as PublicB2bRouteImport } from './routes/_public.b2b'
-import { Route as PublicAboutRouteImport } from './routes/_public.about'
-import { Route as LoginVerifyRouteImport } from './routes/_login.verify'
-import { Route as LoginSignupRouteImport } from './routes/_login.signup'
-import { Route as LoginResetPasswordRouteImport } from './routes/_login.reset-password'
-import { Route as LoginLoginRouteImport } from './routes/_login.login'
-import { Route as LoginForgotPasswordRouteImport } from './routes/_login.forgot-password'
-import { Route as DashboardVocabularyRouteImport } from './routes/_dashboard.vocabulary'
-import { Route as DashboardSettingsRouteImport } from './routes/_dashboard.settings'
-import { Route as DashboardProgressRouteImport } from './routes/_dashboard.progress'
-import { Route as DashboardPracticeRouteImport } from './routes/_dashboard.practice'
-import { Route as DashboardLessonsRouteImport } from './routes/_dashboard.lessons'
-import { Route as DashboardHomeRouteImport } from './routes/_dashboard.home'
-import { Route as DashboardGrammar2RouteImport } from './routes/_dashboard.grammar2'
+import { Route as DashboardRouteImport } from './routes/_dashboard'
+import { Route as GrammarRouteImport } from './routes/_grammar'
+import { Route as LessonRouteImport } from './routes/_lesson'
+import { Route as LoginRouteImport } from './routes/_login'
+import { Route as PronunciationRouteImport } from './routes/_pronunciation'
+import { Route as PublicRouteImport } from './routes/_public'
+import { Route as SessionRouteImport } from './routes/_session'
+import { Route as BusinessRouteImport } from './routes/business'
+import { Route as GeneratingRouteImport } from './routes/generating'
+import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as DashboardCoursesRouteImport } from './routes/_dashboard.courses'
-import { Route as SessionSessionIndexRouteImport } from './routes/_session.session.index'
-import { Route as PublicBlogIndexRouteImport } from './routes/_public.blog.index'
-import { Route as PronunciationPronunciationIndexRouteImport } from './routes/_pronunciation.pronunciation.index'
-import { Route as DashboardCoursesIndexRouteImport } from './routes/_dashboard.courses.index'
+import { Route as DashboardGrammar2RouteImport } from './routes/_dashboard.grammar2'
+import { Route as DashboardHomeRouteImport } from './routes/_dashboard.home'
+import { Route as DashboardLessonsRouteImport } from './routes/_dashboard.lessons'
+import { Route as DashboardPracticeRouteImport } from './routes/_dashboard.practice'
+import { Route as DashboardProgressRouteImport } from './routes/_dashboard.progress'
+import { Route as DashboardSettingsRouteImport } from './routes/_dashboard.settings'
+import { Route as DashboardVocabularyRouteImport } from './routes/_dashboard.vocabulary'
+import { Route as LoginForgotPasswordRouteImport } from './routes/_login.forgot-password'
+import { Route as LoginLoginRouteImport } from './routes/_login.login'
+import { Route as LoginResetPasswordRouteImport } from './routes/_login.reset-password'
+import { Route as LoginSignupRouteImport } from './routes/_login.signup'
+import { Route as LoginVerifyRouteImport } from './routes/_login.verify'
+import { Route as PublicIndexRouteImport } from './routes/_public.index'
+import { Route as PublicAboutRouteImport } from './routes/_public.about'
+import { Route as PublicBlogRouteImport } from './routes/_public.blog'
+import { Route as PublicBookADemoRouteImport } from './routes/_public.book-a-demo'
+import { Route as PublicContactRouteImport } from './routes/_public.contact'
+import { Route as PublicFeaturesRouteImport } from './routes/_public.features'
+import { Route as PublicForBusinessRouteImport } from './routes/_public.for-business'
+import { Route as PublicPricingRouteImport } from './routes/_public.pricing'
+import { Route as PublicPrivacyRouteImport } from './routes/_public.privacy'
+import { Route as PublicRefundRouteImport } from './routes/_public.refund'
+import { Route as PublicTermsRouteImport } from './routes/_public.terms'
+import { Route as PublicToolsRouteImport } from './routes/_public.tools'
+import { Route as BusinessIndexRouteImport } from './routes/business.index'
+import { Route as BusinessMembersRouteImport } from './routes/business.members'
+import { Route as CallCallSessionIdRouteImport } from './routes/_call.call.$sessionId'
 import { Route as ConversationConversationIndexRouteImport } from './routes/_conversation.conversation.index'
-import { Route as SessionSessionSessionIdRouteImport } from './routes/_session.session.$sessionId'
-import { Route as SessionFeedbackSessionIdRouteImport } from './routes/_session.feedback.$sessionId'
-import { Route as PublicBlogSlugRouteImport } from './routes/_public.blog.$slug'
-import { Route as PronunciationPronunciationSessionIdRouteImport } from './routes/_pronunciation.pronunciation.$sessionId'
-import { Route as LessonLessonLessonIdRouteImport } from './routes/_lesson.lesson.$lessonId'
-import { Route as GrammarGrammarReviewRouteImport } from './routes/_grammar.grammar.review'
-import { Route as GrammarGrammarSessionIdRouteImport } from './routes/_grammar.grammar.$sessionId'
-import { Route as DashboardPracticeGrammarRouteImport } from './routes/_dashboard.practice.grammar'
-import { Route as DashboardCoursesCourseIdRouteImport } from './routes/_dashboard.courses.$courseId'
 import { Route as ConversationConversationSessionIdRouteImport } from './routes/_conversation.conversation.$sessionId'
+import { Route as DashboardCoursesIndexRouteImport } from './routes/_dashboard.courses.index'
+import { Route as DashboardCoursesCourseIdRouteImport } from './routes/_dashboard.courses.$courseId'
+import { Route as DashboardPracticeCallRouteImport } from './routes/_dashboard.practice.call'
+import { Route as DashboardPracticeGrammarRouteImport } from './routes/_dashboard.practice.grammar'
+import { Route as GrammarGrammarSessionIdRouteImport } from './routes/_grammar.grammar.$sessionId'
+import { Route as GrammarGrammarReviewRouteImport } from './routes/_grammar.grammar.review'
+import { Route as LessonLessonLessonIdRouteImport } from './routes/_lesson.lesson.$lessonId'
+import { Route as PronunciationPronunciationIndexRouteImport } from './routes/_pronunciation.pronunciation.index'
+import { Route as PronunciationPronunciationSessionIdRouteImport } from './routes/_pronunciation.pronunciation.$sessionId'
+import { Route as PublicBlogIndexRouteImport } from './routes/_public.blog.index'
+import { Route as PublicBlogSlugRouteImport } from './routes/_public.blog.$slug'
+import { Route as SessionFeedbackSessionIdRouteImport } from './routes/_session.feedback.$sessionId'
+import { Route as SessionSessionIndexRouteImport } from './routes/_session.session.index'
+import { Route as SessionSessionSessionIdRouteImport } from './routes/_session.session.$sessionId'
 import { Route as DashboardPracticeGrammarSlugRouteImport } from './routes/_dashboard.practice.grammar.$slug'
 
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
+const CallRoute = CallRouteImport.update({
+  id: '/_call',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OnboardingRoute = OnboardingRouteImport.update({
-  id: '/onboarding',
-  path: '/onboarding',
+const ConversationRoute = ConversationRouteImport.update({
+  id: '/_conversation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/_dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GrammarRoute = GrammarRouteImport.update({
+  id: '/_grammar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LessonRoute = LessonRouteImport.update({
+  id: '/_lesson',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/_login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PronunciationRoute = PronunciationRouteImport.update({
+  id: '/_pronunciation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PublicRoute = PublicRouteImport.update({
+  id: '/_public',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SessionRoute = SessionRouteImport.update({
+  id: '/_session',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BusinessRoute = BusinessRouteImport.update({
+  id: '/business',
+  path: '/business',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GeneratingRoute = GeneratingRouteImport.update({
@@ -75,141 +115,24 @@ const GeneratingRoute = GeneratingRouteImport.update({
   path: '/generating',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SessionRoute = SessionRouteImport.update({
-  id: '/_session',
+const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
+  id: '/llms.txt',
+  path: '/llms.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PublicRoute = PublicRouteImport.update({
-  id: '/_public',
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PronunciationRoute = PronunciationRouteImport.update({
-  id: '/_pronunciation',
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/_login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LessonRoute = LessonRouteImport.update({
-  id: '/_lesson',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GrammarRoute = GrammarRouteImport.update({
-  id: '/_grammar',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/_dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ConversationRoute = ConversationRouteImport.update({
-  id: '/_conversation',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PublicIndexRoute = PublicIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => PublicRoute,
-} as any)
-const PublicTermsRoute = PublicTermsRouteImport.update({
-  id: '/terms',
-  path: '/terms',
-  getParentRoute: () => PublicRoute,
-} as any)
-const PublicRefundRoute = PublicRefundRouteImport.update({
-  id: '/refund',
-  path: '/refund',
-  getParentRoute: () => PublicRoute,
-} as any)
-const PublicPrivacyRoute = PublicPrivacyRouteImport.update({
-  id: '/privacy',
-  path: '/privacy',
-  getParentRoute: () => PublicRoute,
-} as any)
-const PublicPricingRoute = PublicPricingRouteImport.update({
-  id: '/pricing',
-  path: '/pricing',
-  getParentRoute: () => PublicRoute,
-} as any)
-const PublicFeaturesRoute = PublicFeaturesRouteImport.update({
-  id: '/features',
-  path: '/features',
-  getParentRoute: () => PublicRoute,
-} as any)
-const PublicContactRoute = PublicContactRouteImport.update({
-  id: '/contact',
-  path: '/contact',
-  getParentRoute: () => PublicRoute,
-} as any)
-const PublicBlogRoute = PublicBlogRouteImport.update({
-  id: '/blog',
-  path: '/blog',
-  getParentRoute: () => PublicRoute,
-} as any)
-const PublicB2bRoute = PublicB2bRouteImport.update({
-  id: '/b2b',
-  path: '/b2b',
-  getParentRoute: () => PublicRoute,
-} as any)
-const PublicAboutRoute = PublicAboutRouteImport.update({
-  id: '/about',
-  path: '/about',
-  getParentRoute: () => PublicRoute,
-} as any)
-const LoginVerifyRoute = LoginVerifyRouteImport.update({
-  id: '/verify',
-  path: '/verify',
-  getParentRoute: () => LoginRoute,
-} as any)
-const LoginSignupRoute = LoginSignupRouteImport.update({
-  id: '/signup',
-  path: '/signup',
-  getParentRoute: () => LoginRoute,
-} as any)
-const LoginResetPasswordRoute = LoginResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => LoginRoute,
-} as any)
-const LoginLoginRoute = LoginLoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => LoginRoute,
-} as any)
-const LoginForgotPasswordRoute = LoginForgotPasswordRouteImport.update({
-  id: '/forgot-password',
-  path: '/forgot-password',
-  getParentRoute: () => LoginRoute,
-} as any)
-const DashboardVocabularyRoute = DashboardVocabularyRouteImport.update({
-  id: '/vocabulary',
-  path: '/vocabulary',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardProgressRoute = DashboardProgressRouteImport.update({
-  id: '/progress',
-  path: '/progress',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardPracticeRoute = DashboardPracticeRouteImport.update({
-  id: '/practice',
-  path: '/practice',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardLessonsRoute = DashboardLessonsRouteImport.update({
-  id: '/lessons',
-  path: '/lessons',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardHomeRoute = DashboardHomeRouteImport.update({
-  id: '/home',
-  path: '/home',
+const DashboardCoursesRoute = DashboardCoursesRouteImport.update({
+  id: '/courses',
+  path: '/courses',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardGrammar2Route = DashboardGrammar2RouteImport.update({
@@ -217,31 +140,135 @@ const DashboardGrammar2Route = DashboardGrammar2RouteImport.update({
   path: '/grammar2',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardCoursesRoute = DashboardCoursesRouteImport.update({
-  id: '/courses',
-  path: '/courses',
+const DashboardHomeRoute = DashboardHomeRouteImport.update({
+  id: '/home',
+  path: '/home',
   getParentRoute: () => DashboardRoute,
 } as any)
-const SessionSessionIndexRoute = SessionSessionIndexRouteImport.update({
-  id: '/session/',
-  path: '/session/',
-  getParentRoute: () => SessionRoute,
+const DashboardLessonsRoute = DashboardLessonsRouteImport.update({
+  id: '/lessons',
+  path: '/lessons',
+  getParentRoute: () => DashboardRoute,
 } as any)
-const PublicBlogIndexRoute = PublicBlogIndexRouteImport.update({
+const DashboardPracticeRoute = DashboardPracticeRouteImport.update({
+  id: '/practice',
+  path: '/practice',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardProgressRoute = DashboardProgressRouteImport.update({
+  id: '/progress',
+  path: '/progress',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardVocabularyRoute = DashboardVocabularyRouteImport.update({
+  id: '/vocabulary',
+  path: '/vocabulary',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const LoginForgotPasswordRoute = LoginForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => LoginRoute,
+} as any)
+const LoginLoginRoute = LoginLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => LoginRoute,
+} as any)
+const LoginResetPasswordRoute = LoginResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => LoginRoute,
+} as any)
+const LoginSignupRoute = LoginSignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => LoginRoute,
+} as any)
+const LoginVerifyRoute = LoginVerifyRouteImport.update({
+  id: '/verify',
+  path: '/verify',
+  getParentRoute: () => LoginRoute,
+} as any)
+const PublicIndexRoute = PublicIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => PublicBlogRoute,
+  getParentRoute: () => PublicRoute,
 } as any)
-const PronunciationPronunciationIndexRoute =
-  PronunciationPronunciationIndexRouteImport.update({
-    id: '/pronunciation/',
-    path: '/pronunciation/',
-    getParentRoute: () => PronunciationRoute,
-  } as any)
-const DashboardCoursesIndexRoute = DashboardCoursesIndexRouteImport.update({
+const PublicAboutRoute = PublicAboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicBlogRoute = PublicBlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicBookADemoRoute = PublicBookADemoRouteImport.update({
+  id: '/book-a-demo',
+  path: '/book-a-demo',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicContactRoute = PublicContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicFeaturesRoute = PublicFeaturesRouteImport.update({
+  id: '/features',
+  path: '/features',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicForBusinessRoute = PublicForBusinessRouteImport.update({
+  id: '/for-business',
+  path: '/for-business',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicPricingRoute = PublicPricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicPrivacyRoute = PublicPrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicRefundRoute = PublicRefundRouteImport.update({
+  id: '/refund',
+  path: '/refund',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicTermsRoute = PublicTermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicToolsRoute = PublicToolsRouteImport.update({
+  id: '/tools',
+  path: '/tools',
+  getParentRoute: () => PublicRoute,
+} as any)
+const BusinessIndexRoute = BusinessIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => DashboardCoursesRoute,
+  getParentRoute: () => BusinessRoute,
+} as any)
+const BusinessMembersRoute = BusinessMembersRouteImport.update({
+  id: '/members',
+  path: '/members',
+  getParentRoute: () => BusinessRoute,
+} as any)
+const CallCallSessionIdRoute = CallCallSessionIdRouteImport.update({
+  id: '/call/$sessionId',
+  path: '/call/$sessionId',
+  getParentRoute: () => CallRoute,
 } as any)
 const ConversationConversationIndexRoute =
   ConversationConversationIndexRouteImport.update({
@@ -249,42 +276,27 @@ const ConversationConversationIndexRoute =
     path: '/conversation/',
     getParentRoute: () => ConversationRoute,
   } as any)
-const SessionSessionSessionIdRoute = SessionSessionSessionIdRouteImport.update({
-  id: '/session/$sessionId',
-  path: '/session/$sessionId',
-  getParentRoute: () => SessionRoute,
-} as any)
-const SessionFeedbackSessionIdRoute =
-  SessionFeedbackSessionIdRouteImport.update({
-    id: '/feedback/$sessionId',
-    path: '/feedback/$sessionId',
-    getParentRoute: () => SessionRoute,
+const ConversationConversationSessionIdRoute =
+  ConversationConversationSessionIdRouteImport.update({
+    id: '/conversation/$sessionId',
+    path: '/conversation/$sessionId',
+    getParentRoute: () => ConversationRoute,
   } as any)
-const PublicBlogSlugRoute = PublicBlogSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => PublicBlogRoute,
+const DashboardCoursesIndexRoute = DashboardCoursesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardCoursesRoute,
 } as any)
-const PronunciationPronunciationSessionIdRoute =
-  PronunciationPronunciationSessionIdRouteImport.update({
-    id: '/pronunciation/$sessionId',
-    path: '/pronunciation/$sessionId',
-    getParentRoute: () => PronunciationRoute,
+const DashboardCoursesCourseIdRoute =
+  DashboardCoursesCourseIdRouteImport.update({
+    id: '/$courseId',
+    path: '/$courseId',
+    getParentRoute: () => DashboardCoursesRoute,
   } as any)
-const LessonLessonLessonIdRoute = LessonLessonLessonIdRouteImport.update({
-  id: '/lesson/$lessonId',
-  path: '/lesson/$lessonId',
-  getParentRoute: () => LessonRoute,
-} as any)
-const GrammarGrammarReviewRoute = GrammarGrammarReviewRouteImport.update({
-  id: '/grammar/review',
-  path: '/grammar/review',
-  getParentRoute: () => GrammarRoute,
-} as any)
-const GrammarGrammarSessionIdRoute = GrammarGrammarSessionIdRouteImport.update({
-  id: '/grammar/$sessionId',
-  path: '/grammar/$sessionId',
-  getParentRoute: () => GrammarRoute,
+const DashboardPracticeCallRoute = DashboardPracticeCallRouteImport.update({
+  id: '/call',
+  path: '/call',
+  getParentRoute: () => DashboardPracticeRoute,
 } as any)
 const DashboardPracticeGrammarRoute =
   DashboardPracticeGrammarRouteImport.update({
@@ -292,18 +304,59 @@ const DashboardPracticeGrammarRoute =
     path: '/grammar',
     getParentRoute: () => DashboardPracticeRoute,
   } as any)
-const DashboardCoursesCourseIdRoute =
-  DashboardCoursesCourseIdRouteImport.update({
-    id: '/$courseId',
-    path: '/$courseId',
-    getParentRoute: () => DashboardCoursesRoute,
+const GrammarGrammarSessionIdRoute = GrammarGrammarSessionIdRouteImport.update({
+  id: '/grammar/$sessionId',
+  path: '/grammar/$sessionId',
+  getParentRoute: () => GrammarRoute,
+} as any)
+const GrammarGrammarReviewRoute = GrammarGrammarReviewRouteImport.update({
+  id: '/grammar/review',
+  path: '/grammar/review',
+  getParentRoute: () => GrammarRoute,
+} as any)
+const LessonLessonLessonIdRoute = LessonLessonLessonIdRouteImport.update({
+  id: '/lesson/$lessonId',
+  path: '/lesson/$lessonId',
+  getParentRoute: () => LessonRoute,
+} as any)
+const PronunciationPronunciationIndexRoute =
+  PronunciationPronunciationIndexRouteImport.update({
+    id: '/pronunciation/',
+    path: '/pronunciation/',
+    getParentRoute: () => PronunciationRoute,
   } as any)
-const ConversationConversationSessionIdRoute =
-  ConversationConversationSessionIdRouteImport.update({
-    id: '/conversation/$sessionId',
-    path: '/conversation/$sessionId',
-    getParentRoute: () => ConversationRoute,
+const PronunciationPronunciationSessionIdRoute =
+  PronunciationPronunciationSessionIdRouteImport.update({
+    id: '/pronunciation/$sessionId',
+    path: '/pronunciation/$sessionId',
+    getParentRoute: () => PronunciationRoute,
   } as any)
+const PublicBlogIndexRoute = PublicBlogIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PublicBlogRoute,
+} as any)
+const PublicBlogSlugRoute = PublicBlogSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => PublicBlogRoute,
+} as any)
+const SessionFeedbackSessionIdRoute =
+  SessionFeedbackSessionIdRouteImport.update({
+    id: '/feedback/$sessionId',
+    path: '/feedback/$sessionId',
+    getParentRoute: () => SessionRoute,
+  } as any)
+const SessionSessionIndexRoute = SessionSessionIndexRouteImport.update({
+  id: '/session/',
+  path: '/session/',
+  getParentRoute: () => SessionRoute,
+} as any)
+const SessionSessionSessionIdRoute = SessionSessionSessionIdRouteImport.update({
+  id: '/session/$sessionId',
+  path: '/session/$sessionId',
+  getParentRoute: () => SessionRoute,
+} as any)
 const DashboardPracticeGrammarSlugRoute =
   DashboardPracticeGrammarSlugRouteImport.update({
     id: '/$slug',
@@ -312,7 +365,10 @@ const DashboardPracticeGrammarSlugRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof PublicIndexRoute
+  '/business': typeof BusinessRouteWithChildren
   '/generating': typeof GeneratingRoute
+  '/llms.txt': typeof LlmsDottxtRoute
   '/onboarding': typeof OnboardingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/courses': typeof DashboardCoursesRouteWithChildren
@@ -329,17 +385,22 @@ export interface FileRoutesByFullPath {
   '/signup': typeof LoginSignupRoute
   '/verify': typeof LoginVerifyRoute
   '/about': typeof PublicAboutRoute
-  '/b2b': typeof PublicB2bRoute
   '/blog': typeof PublicBlogRouteWithChildren
+  '/book-a-demo': typeof PublicBookADemoRoute
   '/contact': typeof PublicContactRoute
   '/features': typeof PublicFeaturesRoute
+  '/for-business': typeof PublicForBusinessRoute
   '/pricing': typeof PublicPricingRoute
   '/privacy': typeof PublicPrivacyRoute
   '/refund': typeof PublicRefundRoute
   '/terms': typeof PublicTermsRoute
-  '/': typeof PublicIndexRoute
+  '/tools': typeof PublicToolsRoute
+  '/business/members': typeof BusinessMembersRoute
+  '/business/': typeof BusinessIndexRoute
+  '/call/$sessionId': typeof CallCallSessionIdRoute
   '/conversation/$sessionId': typeof ConversationConversationSessionIdRoute
   '/courses/$courseId': typeof DashboardCoursesCourseIdRoute
+  '/practice/call': typeof DashboardPracticeCallRoute
   '/practice/grammar': typeof DashboardPracticeGrammarRouteWithChildren
   '/grammar/$sessionId': typeof GrammarGrammarSessionIdRoute
   '/grammar/review': typeof GrammarGrammarReviewRoute
@@ -348,15 +409,17 @@ export interface FileRoutesByFullPath {
   '/blog/$slug': typeof PublicBlogSlugRoute
   '/feedback/$sessionId': typeof SessionFeedbackSessionIdRoute
   '/session/$sessionId': typeof SessionSessionSessionIdRoute
-  '/conversation': typeof ConversationConversationIndexRoute
+  '/conversation/': typeof ConversationConversationIndexRoute
   '/courses/': typeof DashboardCoursesIndexRoute
-  '/pronunciation': typeof PronunciationPronunciationIndexRoute
+  '/pronunciation/': typeof PronunciationPronunciationIndexRoute
   '/blog/': typeof PublicBlogIndexRoute
-  '/session': typeof SessionSessionIndexRoute
+  '/session/': typeof SessionSessionIndexRoute
   '/practice/grammar/$slug': typeof DashboardPracticeGrammarSlugRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof PublicIndexRoute
   '/generating': typeof GeneratingRoute
+  '/llms.txt': typeof LlmsDottxtRoute
   '/onboarding': typeof OnboardingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/grammar2': typeof DashboardGrammar2Route
@@ -372,16 +435,21 @@ export interface FileRoutesByTo {
   '/signup': typeof LoginSignupRoute
   '/verify': typeof LoginVerifyRoute
   '/about': typeof PublicAboutRoute
-  '/b2b': typeof PublicB2bRoute
+  '/book-a-demo': typeof PublicBookADemoRoute
   '/contact': typeof PublicContactRoute
   '/features': typeof PublicFeaturesRoute
+  '/for-business': typeof PublicForBusinessRoute
   '/pricing': typeof PublicPricingRoute
   '/privacy': typeof PublicPrivacyRoute
   '/refund': typeof PublicRefundRoute
   '/terms': typeof PublicTermsRoute
-  '/': typeof PublicIndexRoute
+  '/tools': typeof PublicToolsRoute
+  '/business/members': typeof BusinessMembersRoute
+  '/business': typeof BusinessIndexRoute
+  '/call/$sessionId': typeof CallCallSessionIdRoute
   '/conversation/$sessionId': typeof ConversationConversationSessionIdRoute
   '/courses/$courseId': typeof DashboardCoursesCourseIdRoute
+  '/practice/call': typeof DashboardPracticeCallRoute
   '/practice/grammar': typeof DashboardPracticeGrammarRouteWithChildren
   '/grammar/$sessionId': typeof GrammarGrammarSessionIdRoute
   '/grammar/review': typeof GrammarGrammarReviewRoute
@@ -399,6 +467,7 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/_call': typeof CallRouteWithChildren
   '/_conversation': typeof ConversationRouteWithChildren
   '/_dashboard': typeof DashboardRouteWithChildren
   '/_grammar': typeof GrammarRouteWithChildren
@@ -407,7 +476,9 @@ export interface FileRoutesById {
   '/_pronunciation': typeof PronunciationRouteWithChildren
   '/_public': typeof PublicRouteWithChildren
   '/_session': typeof SessionRouteWithChildren
+  '/business': typeof BusinessRouteWithChildren
   '/generating': typeof GeneratingRoute
+  '/llms.txt': typeof LlmsDottxtRoute
   '/onboarding': typeof OnboardingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_dashboard/courses': typeof DashboardCoursesRouteWithChildren
@@ -424,17 +495,23 @@ export interface FileRoutesById {
   '/_login/signup': typeof LoginSignupRoute
   '/_login/verify': typeof LoginVerifyRoute
   '/_public/about': typeof PublicAboutRoute
-  '/_public/b2b': typeof PublicB2bRoute
   '/_public/blog': typeof PublicBlogRouteWithChildren
+  '/_public/book-a-demo': typeof PublicBookADemoRoute
   '/_public/contact': typeof PublicContactRoute
   '/_public/features': typeof PublicFeaturesRoute
+  '/_public/for-business': typeof PublicForBusinessRoute
   '/_public/pricing': typeof PublicPricingRoute
   '/_public/privacy': typeof PublicPrivacyRoute
   '/_public/refund': typeof PublicRefundRoute
   '/_public/terms': typeof PublicTermsRoute
+  '/_public/tools': typeof PublicToolsRoute
+  '/business/members': typeof BusinessMembersRoute
   '/_public/': typeof PublicIndexRoute
+  '/business/': typeof BusinessIndexRoute
+  '/_call/call/$sessionId': typeof CallCallSessionIdRoute
   '/_conversation/conversation/$sessionId': typeof ConversationConversationSessionIdRoute
   '/_dashboard/courses/$courseId': typeof DashboardCoursesCourseIdRoute
+  '/_dashboard/practice/call': typeof DashboardPracticeCallRoute
   '/_dashboard/practice/grammar': typeof DashboardPracticeGrammarRouteWithChildren
   '/_grammar/grammar/$sessionId': typeof GrammarGrammarSessionIdRoute
   '/_grammar/grammar/review': typeof GrammarGrammarReviewRoute
@@ -453,7 +530,10 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
+    | '/business'
     | '/generating'
+    | '/llms.txt'
     | '/onboarding'
     | '/sitemap.xml'
     | '/courses'
@@ -470,17 +550,22 @@ export interface FileRouteTypes {
     | '/signup'
     | '/verify'
     | '/about'
-    | '/b2b'
     | '/blog'
+    | '/book-a-demo'
     | '/contact'
     | '/features'
+    | '/for-business'
     | '/pricing'
     | '/privacy'
     | '/refund'
     | '/terms'
-    | '/'
+    | '/tools'
+    | '/business/members'
+    | '/business/'
+    | '/call/$sessionId'
     | '/conversation/$sessionId'
     | '/courses/$courseId'
+    | '/practice/call'
     | '/practice/grammar'
     | '/grammar/$sessionId'
     | '/grammar/review'
@@ -489,15 +574,17 @@ export interface FileRouteTypes {
     | '/blog/$slug'
     | '/feedback/$sessionId'
     | '/session/$sessionId'
-    | '/conversation'
+    | '/conversation/'
     | '/courses/'
-    | '/pronunciation'
+    | '/pronunciation/'
     | '/blog/'
-    | '/session'
+    | '/session/'
     | '/practice/grammar/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/generating'
+    | '/llms.txt'
     | '/onboarding'
     | '/sitemap.xml'
     | '/grammar2'
@@ -513,16 +600,21 @@ export interface FileRouteTypes {
     | '/signup'
     | '/verify'
     | '/about'
-    | '/b2b'
+    | '/book-a-demo'
     | '/contact'
     | '/features'
+    | '/for-business'
     | '/pricing'
     | '/privacy'
     | '/refund'
     | '/terms'
-    | '/'
+    | '/tools'
+    | '/business/members'
+    | '/business'
+    | '/call/$sessionId'
     | '/conversation/$sessionId'
     | '/courses/$courseId'
+    | '/practice/call'
     | '/practice/grammar'
     | '/grammar/$sessionId'
     | '/grammar/review'
@@ -539,6 +631,7 @@ export interface FileRouteTypes {
     | '/practice/grammar/$slug'
   id:
     | '__root__'
+    | '/_call'
     | '/_conversation'
     | '/_dashboard'
     | '/_grammar'
@@ -547,7 +640,9 @@ export interface FileRouteTypes {
     | '/_pronunciation'
     | '/_public'
     | '/_session'
+    | '/business'
     | '/generating'
+    | '/llms.txt'
     | '/onboarding'
     | '/sitemap.xml'
     | '/_dashboard/courses'
@@ -564,17 +659,23 @@ export interface FileRouteTypes {
     | '/_login/signup'
     | '/_login/verify'
     | '/_public/about'
-    | '/_public/b2b'
     | '/_public/blog'
+    | '/_public/book-a-demo'
     | '/_public/contact'
     | '/_public/features'
+    | '/_public/for-business'
     | '/_public/pricing'
     | '/_public/privacy'
     | '/_public/refund'
     | '/_public/terms'
+    | '/_public/tools'
+    | '/business/members'
     | '/_public/'
+    | '/business/'
+    | '/_call/call/$sessionId'
     | '/_conversation/conversation/$sessionId'
     | '/_dashboard/courses/$courseId'
+    | '/_dashboard/practice/call'
     | '/_dashboard/practice/grammar'
     | '/_grammar/grammar/$sessionId'
     | '/_grammar/grammar/review'
@@ -592,6 +693,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  CallRoute: typeof CallRouteWithChildren
   ConversationRoute: typeof ConversationRouteWithChildren
   DashboardRoute: typeof DashboardRouteWithChildren
   GrammarRoute: typeof GrammarRouteWithChildren
@@ -600,25 +702,83 @@ export interface RootRouteChildren {
   PronunciationRoute: typeof PronunciationRouteWithChildren
   PublicRoute: typeof PublicRouteWithChildren
   SessionRoute: typeof SessionRouteWithChildren
+  BusinessRoute: typeof BusinessRouteWithChildren
   GeneratingRoute: typeof GeneratingRoute
+  LlmsDottxtRoute: typeof LlmsDottxtRoute
   OnboardingRoute: typeof OnboardingRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
+    '/_call': {
+      id: '/_call'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof CallRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/onboarding': {
-      id: '/onboarding'
-      path: '/onboarding'
-      fullPath: '/onboarding'
-      preLoaderRoute: typeof OnboardingRouteImport
+    '/_conversation': {
+      id: '/_conversation'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof ConversationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_dashboard': {
+      id: '/_dashboard'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_grammar': {
+      id: '/_grammar'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof GrammarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_lesson': {
+      id: '/_lesson'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof LessonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_login': {
+      id: '/_login'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_pronunciation': {
+      id: '/_pronunciation'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof PronunciationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_public': {
+      id: '/_public'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof PublicRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_session': {
+      id: '/_session'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof SessionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/business': {
+      id: '/business'
+      path: '/business'
+      fullPath: '/business'
+      preLoaderRoute: typeof BusinessRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/generating': {
@@ -628,207 +788,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GeneratingRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_session': {
-      id: '/_session'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof SessionRouteImport
+    '/llms.txt': {
+      id: '/llms.txt'
+      path: '/llms.txt'
+      fullPath: '/llms.txt'
+      preLoaderRoute: typeof LlmsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_public': {
-      id: '/_public'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof PublicRouteImport
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_pronunciation': {
-      id: '/_pronunciation'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof PronunciationRouteImport
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_login': {
-      id: '/_login'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_lesson': {
-      id: '/_lesson'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof LessonRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_grammar': {
-      id: '/_grammar'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof GrammarRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_dashboard': {
-      id: '/_dashboard'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_conversation': {
-      id: '/_conversation'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof ConversationRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_public/': {
-      id: '/_public/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof PublicIndexRouteImport
-      parentRoute: typeof PublicRoute
-    }
-    '/_public/terms': {
-      id: '/_public/terms'
-      path: '/terms'
-      fullPath: '/terms'
-      preLoaderRoute: typeof PublicTermsRouteImport
-      parentRoute: typeof PublicRoute
-    }
-    '/_public/refund': {
-      id: '/_public/refund'
-      path: '/refund'
-      fullPath: '/refund'
-      preLoaderRoute: typeof PublicRefundRouteImport
-      parentRoute: typeof PublicRoute
-    }
-    '/_public/privacy': {
-      id: '/_public/privacy'
-      path: '/privacy'
-      fullPath: '/privacy'
-      preLoaderRoute: typeof PublicPrivacyRouteImport
-      parentRoute: typeof PublicRoute
-    }
-    '/_public/pricing': {
-      id: '/_public/pricing'
-      path: '/pricing'
-      fullPath: '/pricing'
-      preLoaderRoute: typeof PublicPricingRouteImport
-      parentRoute: typeof PublicRoute
-    }
-    '/_public/features': {
-      id: '/_public/features'
-      path: '/features'
-      fullPath: '/features'
-      preLoaderRoute: typeof PublicFeaturesRouteImport
-      parentRoute: typeof PublicRoute
-    }
-    '/_public/contact': {
-      id: '/_public/contact'
-      path: '/contact'
-      fullPath: '/contact'
-      preLoaderRoute: typeof PublicContactRouteImport
-      parentRoute: typeof PublicRoute
-    }
-    '/_public/blog': {
-      id: '/_public/blog'
-      path: '/blog'
-      fullPath: '/blog'
-      preLoaderRoute: typeof PublicBlogRouteImport
-      parentRoute: typeof PublicRoute
-    }
-    '/_public/b2b': {
-      id: '/_public/b2b'
-      path: '/b2b'
-      fullPath: '/b2b'
-      preLoaderRoute: typeof PublicB2bRouteImport
-      parentRoute: typeof PublicRoute
-    }
-    '/_public/about': {
-      id: '/_public/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof PublicAboutRouteImport
-      parentRoute: typeof PublicRoute
-    }
-    '/_login/verify': {
-      id: '/_login/verify'
-      path: '/verify'
-      fullPath: '/verify'
-      preLoaderRoute: typeof LoginVerifyRouteImport
-      parentRoute: typeof LoginRoute
-    }
-    '/_login/signup': {
-      id: '/_login/signup'
-      path: '/signup'
-      fullPath: '/signup'
-      preLoaderRoute: typeof LoginSignupRouteImport
-      parentRoute: typeof LoginRoute
-    }
-    '/_login/reset-password': {
-      id: '/_login/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof LoginResetPasswordRouteImport
-      parentRoute: typeof LoginRoute
-    }
-    '/_login/login': {
-      id: '/_login/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginLoginRouteImport
-      parentRoute: typeof LoginRoute
-    }
-    '/_login/forgot-password': {
-      id: '/_login/forgot-password'
-      path: '/forgot-password'
-      fullPath: '/forgot-password'
-      preLoaderRoute: typeof LoginForgotPasswordRouteImport
-      parentRoute: typeof LoginRoute
-    }
-    '/_dashboard/vocabulary': {
-      id: '/_dashboard/vocabulary'
-      path: '/vocabulary'
-      fullPath: '/vocabulary'
-      preLoaderRoute: typeof DashboardVocabularyRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/_dashboard/settings': {
-      id: '/_dashboard/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof DashboardSettingsRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/_dashboard/progress': {
-      id: '/_dashboard/progress'
-      path: '/progress'
-      fullPath: '/progress'
-      preLoaderRoute: typeof DashboardProgressRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/_dashboard/practice': {
-      id: '/_dashboard/practice'
-      path: '/practice'
-      fullPath: '/practice'
-      preLoaderRoute: typeof DashboardPracticeRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/_dashboard/lessons': {
-      id: '/_dashboard/lessons'
-      path: '/lessons'
-      fullPath: '/lessons'
-      preLoaderRoute: typeof DashboardLessonsRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/_dashboard/home': {
-      id: '/_dashboard/home'
-      path: '/home'
-      fullPath: '/home'
-      preLoaderRoute: typeof DashboardHomeRouteImport
+    '/_dashboard/courses': {
+      id: '/_dashboard/courses'
+      path: '/courses'
+      fullPath: '/courses'
+      preLoaderRoute: typeof DashboardCoursesRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/_dashboard/grammar2': {
@@ -838,33 +823,201 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardGrammar2RouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/_dashboard/courses': {
-      id: '/_dashboard/courses'
-      path: '/courses'
-      fullPath: '/courses'
-      preLoaderRoute: typeof DashboardCoursesRouteImport
+    '/_dashboard/home': {
+      id: '/_dashboard/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof DashboardHomeRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/_session/session/': {
-      id: '/_session/session/'
-      path: '/session'
-      fullPath: '/session'
-      preLoaderRoute: typeof SessionSessionIndexRouteImport
-      parentRoute: typeof SessionRoute
+    '/_dashboard/lessons': {
+      id: '/_dashboard/lessons'
+      path: '/lessons'
+      fullPath: '/lessons'
+      preLoaderRoute: typeof DashboardLessonsRouteImport
+      parentRoute: typeof DashboardRoute
     }
-    '/_public/blog/': {
-      id: '/_public/blog/'
+    '/_dashboard/practice': {
+      id: '/_dashboard/practice'
+      path: '/practice'
+      fullPath: '/practice'
+      preLoaderRoute: typeof DashboardPracticeRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/progress': {
+      id: '/_dashboard/progress'
+      path: '/progress'
+      fullPath: '/progress'
+      preLoaderRoute: typeof DashboardProgressRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/settings': {
+      id: '/_dashboard/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof DashboardSettingsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/vocabulary': {
+      id: '/_dashboard/vocabulary'
+      path: '/vocabulary'
+      fullPath: '/vocabulary'
+      preLoaderRoute: typeof DashboardVocabularyRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_login/forgot-password': {
+      id: '/_login/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof LoginForgotPasswordRouteImport
+      parentRoute: typeof LoginRoute
+    }
+    '/_login/login': {
+      id: '/_login/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginLoginRouteImport
+      parentRoute: typeof LoginRoute
+    }
+    '/_login/reset-password': {
+      id: '/_login/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof LoginResetPasswordRouteImport
+      parentRoute: typeof LoginRoute
+    }
+    '/_login/signup': {
+      id: '/_login/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof LoginSignupRouteImport
+      parentRoute: typeof LoginRoute
+    }
+    '/_login/verify': {
+      id: '/_login/verify'
+      path: '/verify'
+      fullPath: '/verify'
+      preLoaderRoute: typeof LoginVerifyRouteImport
+      parentRoute: typeof LoginRoute
+    }
+    '/_public/': {
+      id: '/_public/'
       path: '/'
-      fullPath: '/blog/'
-      preLoaderRoute: typeof PublicBlogIndexRouteImport
-      parentRoute: typeof PublicBlogRoute
+      fullPath: '/'
+      preLoaderRoute: typeof PublicIndexRouteImport
+      parentRoute: typeof PublicRoute
     }
-    '/_pronunciation/pronunciation/': {
-      id: '/_pronunciation/pronunciation/'
-      path: '/pronunciation'
-      fullPath: '/pronunciation'
-      preLoaderRoute: typeof PronunciationPronunciationIndexRouteImport
-      parentRoute: typeof PronunciationRoute
+    '/_public/about': {
+      id: '/_public/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof PublicAboutRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/blog': {
+      id: '/_public/blog'
+      path: '/blog'
+      fullPath: '/blog'
+      preLoaderRoute: typeof PublicBlogRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/book-a-demo': {
+      id: '/_public/book-a-demo'
+      path: '/book-a-demo'
+      fullPath: '/book-a-demo'
+      preLoaderRoute: typeof PublicBookADemoRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/contact': {
+      id: '/_public/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof PublicContactRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/features': {
+      id: '/_public/features'
+      path: '/features'
+      fullPath: '/features'
+      preLoaderRoute: typeof PublicFeaturesRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/for-business': {
+      id: '/_public/for-business'
+      path: '/for-business'
+      fullPath: '/for-business'
+      preLoaderRoute: typeof PublicForBusinessRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/pricing': {
+      id: '/_public/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PublicPricingRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/privacy': {
+      id: '/_public/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PublicPrivacyRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/refund': {
+      id: '/_public/refund'
+      path: '/refund'
+      fullPath: '/refund'
+      preLoaderRoute: typeof PublicRefundRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/terms': {
+      id: '/_public/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof PublicTermsRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/tools': {
+      id: '/_public/tools'
+      path: '/tools'
+      fullPath: '/tools'
+      preLoaderRoute: typeof PublicToolsRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/business/': {
+      id: '/business/'
+      path: '/'
+      fullPath: '/business/'
+      preLoaderRoute: typeof BusinessIndexRouteImport
+      parentRoute: typeof BusinessRoute
+    }
+    '/business/members': {
+      id: '/business/members'
+      path: '/members'
+      fullPath: '/business/members'
+      preLoaderRoute: typeof BusinessMembersRouteImport
+      parentRoute: typeof BusinessRoute
+    }
+    '/_call/call/$sessionId': {
+      id: '/_call/call/$sessionId'
+      path: '/call/$sessionId'
+      fullPath: '/call/$sessionId'
+      preLoaderRoute: typeof CallCallSessionIdRouteImport
+      parentRoute: typeof CallRoute
+    }
+    '/_conversation/conversation/': {
+      id: '/_conversation/conversation/'
+      path: '/conversation'
+      fullPath: '/conversation/'
+      preLoaderRoute: typeof ConversationConversationIndexRouteImport
+      parentRoute: typeof ConversationRoute
+    }
+    '/_conversation/conversation/$sessionId': {
+      id: '/_conversation/conversation/$sessionId'
+      path: '/conversation/$sessionId'
+      fullPath: '/conversation/$sessionId'
+      preLoaderRoute: typeof ConversationConversationSessionIdRouteImport
+      parentRoute: typeof ConversationRoute
     }
     '/_dashboard/courses/': {
       id: '/_dashboard/courses/'
@@ -873,61 +1026,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardCoursesIndexRouteImport
       parentRoute: typeof DashboardCoursesRoute
     }
-    '/_conversation/conversation/': {
-      id: '/_conversation/conversation/'
-      path: '/conversation'
-      fullPath: '/conversation'
-      preLoaderRoute: typeof ConversationConversationIndexRouteImport
-      parentRoute: typeof ConversationRoute
+    '/_dashboard/courses/$courseId': {
+      id: '/_dashboard/courses/$courseId'
+      path: '/$courseId'
+      fullPath: '/courses/$courseId'
+      preLoaderRoute: typeof DashboardCoursesCourseIdRouteImport
+      parentRoute: typeof DashboardCoursesRoute
     }
-    '/_session/session/$sessionId': {
-      id: '/_session/session/$sessionId'
-      path: '/session/$sessionId'
-      fullPath: '/session/$sessionId'
-      preLoaderRoute: typeof SessionSessionSessionIdRouteImport
-      parentRoute: typeof SessionRoute
-    }
-    '/_session/feedback/$sessionId': {
-      id: '/_session/feedback/$sessionId'
-      path: '/feedback/$sessionId'
-      fullPath: '/feedback/$sessionId'
-      preLoaderRoute: typeof SessionFeedbackSessionIdRouteImport
-      parentRoute: typeof SessionRoute
-    }
-    '/_public/blog/$slug': {
-      id: '/_public/blog/$slug'
-      path: '/$slug'
-      fullPath: '/blog/$slug'
-      preLoaderRoute: typeof PublicBlogSlugRouteImport
-      parentRoute: typeof PublicBlogRoute
-    }
-    '/_pronunciation/pronunciation/$sessionId': {
-      id: '/_pronunciation/pronunciation/$sessionId'
-      path: '/pronunciation/$sessionId'
-      fullPath: '/pronunciation/$sessionId'
-      preLoaderRoute: typeof PronunciationPronunciationSessionIdRouteImport
-      parentRoute: typeof PronunciationRoute
-    }
-    '/_lesson/lesson/$lessonId': {
-      id: '/_lesson/lesson/$lessonId'
-      path: '/lesson/$lessonId'
-      fullPath: '/lesson/$lessonId'
-      preLoaderRoute: typeof LessonLessonLessonIdRouteImport
-      parentRoute: typeof LessonRoute
-    }
-    '/_grammar/grammar/review': {
-      id: '/_grammar/grammar/review'
-      path: '/grammar/review'
-      fullPath: '/grammar/review'
-      preLoaderRoute: typeof GrammarGrammarReviewRouteImport
-      parentRoute: typeof GrammarRoute
-    }
-    '/_grammar/grammar/$sessionId': {
-      id: '/_grammar/grammar/$sessionId'
-      path: '/grammar/$sessionId'
-      fullPath: '/grammar/$sessionId'
-      preLoaderRoute: typeof GrammarGrammarSessionIdRouteImport
-      parentRoute: typeof GrammarRoute
+    '/_dashboard/practice/call': {
+      id: '/_dashboard/practice/call'
+      path: '/call'
+      fullPath: '/practice/call'
+      preLoaderRoute: typeof DashboardPracticeCallRouteImport
+      parentRoute: typeof DashboardPracticeRoute
     }
     '/_dashboard/practice/grammar': {
       id: '/_dashboard/practice/grammar'
@@ -936,19 +1047,75 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardPracticeGrammarRouteImport
       parentRoute: typeof DashboardPracticeRoute
     }
-    '/_dashboard/courses/$courseId': {
-      id: '/_dashboard/courses/$courseId'
-      path: '/$courseId'
-      fullPath: '/courses/$courseId'
-      preLoaderRoute: typeof DashboardCoursesCourseIdRouteImport
-      parentRoute: typeof DashboardCoursesRoute
+    '/_grammar/grammar/$sessionId': {
+      id: '/_grammar/grammar/$sessionId'
+      path: '/grammar/$sessionId'
+      fullPath: '/grammar/$sessionId'
+      preLoaderRoute: typeof GrammarGrammarSessionIdRouteImport
+      parentRoute: typeof GrammarRoute
     }
-    '/_conversation/conversation/$sessionId': {
-      id: '/_conversation/conversation/$sessionId'
-      path: '/conversation/$sessionId'
-      fullPath: '/conversation/$sessionId'
-      preLoaderRoute: typeof ConversationConversationSessionIdRouteImport
-      parentRoute: typeof ConversationRoute
+    '/_grammar/grammar/review': {
+      id: '/_grammar/grammar/review'
+      path: '/grammar/review'
+      fullPath: '/grammar/review'
+      preLoaderRoute: typeof GrammarGrammarReviewRouteImport
+      parentRoute: typeof GrammarRoute
+    }
+    '/_lesson/lesson/$lessonId': {
+      id: '/_lesson/lesson/$lessonId'
+      path: '/lesson/$lessonId'
+      fullPath: '/lesson/$lessonId'
+      preLoaderRoute: typeof LessonLessonLessonIdRouteImport
+      parentRoute: typeof LessonRoute
+    }
+    '/_pronunciation/pronunciation/': {
+      id: '/_pronunciation/pronunciation/'
+      path: '/pronunciation'
+      fullPath: '/pronunciation/'
+      preLoaderRoute: typeof PronunciationPronunciationIndexRouteImport
+      parentRoute: typeof PronunciationRoute
+    }
+    '/_pronunciation/pronunciation/$sessionId': {
+      id: '/_pronunciation/pronunciation/$sessionId'
+      path: '/pronunciation/$sessionId'
+      fullPath: '/pronunciation/$sessionId'
+      preLoaderRoute: typeof PronunciationPronunciationSessionIdRouteImport
+      parentRoute: typeof PronunciationRoute
+    }
+    '/_public/blog/': {
+      id: '/_public/blog/'
+      path: '/'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof PublicBlogIndexRouteImport
+      parentRoute: typeof PublicBlogRoute
+    }
+    '/_public/blog/$slug': {
+      id: '/_public/blog/$slug'
+      path: '/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof PublicBlogSlugRouteImport
+      parentRoute: typeof PublicBlogRoute
+    }
+    '/_session/feedback/$sessionId': {
+      id: '/_session/feedback/$sessionId'
+      path: '/feedback/$sessionId'
+      fullPath: '/feedback/$sessionId'
+      preLoaderRoute: typeof SessionFeedbackSessionIdRouteImport
+      parentRoute: typeof SessionRoute
+    }
+    '/_session/session/': {
+      id: '/_session/session/'
+      path: '/session'
+      fullPath: '/session/'
+      preLoaderRoute: typeof SessionSessionIndexRouteImport
+      parentRoute: typeof SessionRoute
+    }
+    '/_session/session/$sessionId': {
+      id: '/_session/session/$sessionId'
+      path: '/session/$sessionId'
+      fullPath: '/session/$sessionId'
+      preLoaderRoute: typeof SessionSessionSessionIdRouteImport
+      parentRoute: typeof SessionRoute
     }
     '/_dashboard/practice/grammar/$slug': {
       id: '/_dashboard/practice/grammar/$slug'
@@ -959,6 +1126,16 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface CallRouteChildren {
+  CallCallSessionIdRoute: typeof CallCallSessionIdRoute
+}
+
+const CallRouteChildren: CallRouteChildren = {
+  CallCallSessionIdRoute: CallCallSessionIdRoute,
+}
+
+const CallRouteWithChildren = CallRoute._addFileChildren(CallRouteChildren)
 
 interface ConversationRouteChildren {
   ConversationConversationSessionIdRoute: typeof ConversationConversationSessionIdRoute
@@ -1003,10 +1180,12 @@ const DashboardPracticeGrammarRouteWithChildren =
   )
 
 interface DashboardPracticeRouteChildren {
+  DashboardPracticeCallRoute: typeof DashboardPracticeCallRoute
   DashboardPracticeGrammarRoute: typeof DashboardPracticeGrammarRouteWithChildren
 }
 
 const DashboardPracticeRouteChildren: DashboardPracticeRouteChildren = {
+  DashboardPracticeCallRoute: DashboardPracticeCallRoute,
   DashboardPracticeGrammarRoute: DashboardPracticeGrammarRouteWithChildren,
 }
 
@@ -1112,27 +1291,31 @@ const PublicBlogRouteWithChildren = PublicBlogRoute._addFileChildren(
 
 interface PublicRouteChildren {
   PublicAboutRoute: typeof PublicAboutRoute
-  PublicB2bRoute: typeof PublicB2bRoute
   PublicBlogRoute: typeof PublicBlogRouteWithChildren
+  PublicBookADemoRoute: typeof PublicBookADemoRoute
   PublicContactRoute: typeof PublicContactRoute
   PublicFeaturesRoute: typeof PublicFeaturesRoute
+  PublicForBusinessRoute: typeof PublicForBusinessRoute
   PublicPricingRoute: typeof PublicPricingRoute
   PublicPrivacyRoute: typeof PublicPrivacyRoute
   PublicRefundRoute: typeof PublicRefundRoute
   PublicTermsRoute: typeof PublicTermsRoute
+  PublicToolsRoute: typeof PublicToolsRoute
   PublicIndexRoute: typeof PublicIndexRoute
 }
 
 const PublicRouteChildren: PublicRouteChildren = {
   PublicAboutRoute: PublicAboutRoute,
-  PublicB2bRoute: PublicB2bRoute,
   PublicBlogRoute: PublicBlogRouteWithChildren,
+  PublicBookADemoRoute: PublicBookADemoRoute,
   PublicContactRoute: PublicContactRoute,
   PublicFeaturesRoute: PublicFeaturesRoute,
+  PublicForBusinessRoute: PublicForBusinessRoute,
   PublicPricingRoute: PublicPricingRoute,
   PublicPrivacyRoute: PublicPrivacyRoute,
   PublicRefundRoute: PublicRefundRoute,
   PublicTermsRoute: PublicTermsRoute,
+  PublicToolsRoute: PublicToolsRoute,
   PublicIndexRoute: PublicIndexRoute,
 }
 
@@ -1154,7 +1337,22 @@ const SessionRouteChildren: SessionRouteChildren = {
 const SessionRouteWithChildren =
   SessionRoute._addFileChildren(SessionRouteChildren)
 
+interface BusinessRouteChildren {
+  BusinessMembersRoute: typeof BusinessMembersRoute
+  BusinessIndexRoute: typeof BusinessIndexRoute
+}
+
+const BusinessRouteChildren: BusinessRouteChildren = {
+  BusinessMembersRoute: BusinessMembersRoute,
+  BusinessIndexRoute: BusinessIndexRoute,
+}
+
+const BusinessRouteWithChildren = BusinessRoute._addFileChildren(
+  BusinessRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
+  CallRoute: CallRouteWithChildren,
   ConversationRoute: ConversationRouteWithChildren,
   DashboardRoute: DashboardRouteWithChildren,
   GrammarRoute: GrammarRouteWithChildren,
@@ -1163,7 +1361,9 @@ const rootRouteChildren: RootRouteChildren = {
   PronunciationRoute: PronunciationRouteWithChildren,
   PublicRoute: PublicRouteWithChildren,
   SessionRoute: SessionRouteWithChildren,
+  BusinessRoute: BusinessRouteWithChildren,
   GeneratingRoute: GeneratingRoute,
+  LlmsDottxtRoute: LlmsDottxtRoute,
   OnboardingRoute: OnboardingRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
 }

@@ -1,5 +1,8 @@
-import { getVocabularyAccessSummary } from "@english.now/api/services/feature-gating";
-import { recordDailyFeatureUsage } from "@english.now/api/services/feature-usage";
+import {
+	consumeVocabularyAdd,
+	getVocabularyAccessSummary,
+} from "@english.now/api/services/feature-gating";
+import { releaseFeatureUsage } from "@english.now/api/services/feature-usage";
 import {
 	ensurePhraseTranslation,
 	ensureWordTranslation,
@@ -40,83 +43,76 @@ export async function addConversationVocabularyItem(input: {
 
 	const language = await getUserLanguage(input.userId);
 
+	let itemId: string;
+	let resourceId: string;
+	let insert: () => Promise<boolean>;
+
 	if (input.mode === "word") {
 		const normalizedWord = input.text.trim().toLowerCase();
-		const isEnglish = await validateEnglishWord(normalizedWord);
-
-		if (!isEnglish) {
+		if (!(await validateEnglishWord(normalizedWord))) {
 			return { status: "skipped_invalid", itemId: null };
 		}
 
 		const wordId = await getOrCreateWord(normalizedWord);
 		await ensureWordTranslation(wordId, language);
-
-		const inserted = await db
-			.insert(userWord)
-			.values({
-				id: crypto.randomUUID(),
-				userId: input.userId,
-				wordId,
-				mastery: "new",
-				source: "chat",
-			})
-			.onConflictDoNothing()
-			.returning({ id: userWord.id });
-
-		if (inserted[0]) {
-			await recordDailyFeatureUsage({
-				userId: input.userId,
-				feature: "vocabulary_add",
-				resourceId: `word:${wordId}`,
-				metadata: {
+		itemId = wordId;
+		resourceId = `word:${wordId}`;
+		insert = async () => {
+			const inserted = await db
+				.insert(userWord)
+				.values({
+					id: crypto.randomUUID(),
+					userId: input.userId,
 					wordId,
+					mastery: "new",
 					source: "chat",
-				},
-			});
+				})
+				.onConflictDoNothing()
+				.returning({ id: userWord.id });
+			return inserted.length > 0;
+		};
+	} else {
+		const normalizedPhrase = input.text.trim();
+		if (!(await validateEnglishPhrase(normalizedPhrase))) {
+			return { status: "skipped_invalid", itemId: null };
 		}
 
-		return {
-			status: inserted[0] ? "added" : "already_exists",
-			itemId: wordId,
+		const phraseId = await getOrCreatePhrase(normalizedPhrase);
+		await ensurePhraseTranslation(phraseId, language);
+		itemId = phraseId;
+		resourceId = `phrase:${phraseId}`;
+		insert = async () => {
+			const inserted = await db
+				.insert(userPhrase)
+				.values({
+					id: crypto.randomUUID(),
+					userId: input.userId,
+					phraseId,
+					mastery: "new",
+					source: "chat",
+				})
+				.onConflictDoNothing()
+				.returning({ id: userPhrase.id });
+			return inserted.length > 0;
 		};
 	}
 
-	const normalizedPhrase = input.text.trim();
-	const isEnglish = await validateEnglishPhrase(normalizedPhrase);
-
-	if (!isEnglish) {
-		return { status: "skipped_invalid", itemId: null };
+	const reservation = await consumeVocabularyAdd(input.userId, {
+		resourceId,
+		metadata: { [`${input.mode}Id`]: itemId, source: "chat" },
+	});
+	if (!reservation.consumed) {
+		return { status: "skipped_limit", itemId: null };
 	}
 
-	const phraseId = await getOrCreatePhrase(normalizedPhrase);
-	await ensurePhraseTranslation(phraseId, language);
-
-	const inserted = await db
-		.insert(userPhrase)
-		.values({
-			id: crypto.randomUUID(),
-			userId: input.userId,
-			phraseId,
-			mastery: "new",
-			source: "chat",
-		})
-		.onConflictDoNothing()
-		.returning({ id: userPhrase.id });
-
-	if (inserted[0]) {
-		await recordDailyFeatureUsage({
+	const added = await insert();
+	if (!added) {
+		await releaseFeatureUsage({
 			userId: input.userId,
 			feature: "vocabulary_add",
-			resourceId: `phrase:${phraseId}`,
-			metadata: {
-				phraseId,
-				source: "chat",
-			},
+			resourceId,
 		});
 	}
 
-	return {
-		status: inserted[0] ? "added" : "already_exists",
-		itemId: phraseId,
-	};
+	return { status: added ? "added" : "already_exists", itemId };
 }

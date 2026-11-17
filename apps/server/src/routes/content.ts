@@ -37,12 +37,8 @@ content.post("/generate", requireAuth, async (c) => {
 		const { enrollmentId } = await enrollUser(userId);
 		return c.json({ status: "enrolled", enrollmentId });
 	} catch (error) {
-		return c.json(
-			{
-				error: error instanceof Error ? error.message : "Enrollment failed",
-			},
-			500,
-		);
+		console.error("[content] enrollment failed:", error);
+		return c.json({ error: "Enrollment failed" }, 500);
 	}
 });
 

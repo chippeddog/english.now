@@ -13,10 +13,12 @@
   "type": "module",
   "scripts": {
     "build": "tsdown",
-    "check-types": "tsc -b"
+    "check-types": "tsc -b",
+    "test": "vitest run"
   },
   "devDependencies": {
-    "tsdown": "catalog:"
+    "tsdown": "catalog:",
+    "vitest": "^3.2.4"
   },
   "peerDependencies": {
     "typescript": "^5"

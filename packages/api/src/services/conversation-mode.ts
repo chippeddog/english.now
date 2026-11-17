@@ -58,6 +58,8 @@ export function getConversationModeLabel(mode: ConversationPracticeMode) {
 			return "Roleplay";
 		case "mini-class":
 			return "Mini-class";
+		case "phone-call":
+			return "Phone call";
 		default:
 			return "Conversation";
 	}
@@ -85,6 +87,12 @@ export function buildDefaultConversationGoals(input: {
 				"Follow the lesson steps",
 				"Practice the target skill aloud",
 				"Use the new language in context",
+			];
+		case "phone-call":
+			return [
+				"Keep talking without long pauses",
+				"Answer with full sentences",
+				"Ask the tutor questions too",
 			];
 		default:
 			return [
@@ -168,7 +176,8 @@ export function normalizeConversationActivityPayload(
 export function getConversationSessionMeta(
 	session: Pick<ConversationSession, "scenario" | "mode" | "context">,
 ): ConversationSessionMeta {
-	const context = (session.context ?? null) as ConversationSessionContext | null;
+	const context = (session.context ??
+		null) as ConversationSessionContext | null;
 	const mode =
 		context?.mode ??
 		session.mode ??

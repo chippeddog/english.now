@@ -38,8 +38,8 @@ export default defineConfig({
 		tanstackStart(),
 		viteReact(),
 		sentryTanstackStart({
-			org: "chippeddog",
-			project: "english-now",
+			org: process.env.SENTRY_ORG ?? "chippeddog",
+			project: process.env.SENTRY_PROJECT ?? "english-now",
 			authToken: process.env.SENTRY_AUTH_TOKEN,
 		}),
 	],

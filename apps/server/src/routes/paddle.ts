@@ -1,7 +1,7 @@
-import crypto from "node:crypto";
+import { getCurrentSubscription } from "@english.now/api/services/subscription";
 import { auth } from "@english.now/auth";
-import { db, desc, eq, sql, subscription } from "@english.now/db";
-import { env } from "@english.now/env/server";
+import { db, sql, subscription } from "@english.now/db";
+import { capabilities, env } from "@english.now/env/server";
 import {
 	Environment,
 	type EventEntity,
@@ -9,39 +9,31 @@ import {
 	Paddle,
 	type SubscriptionNotification,
 } from "@paddle/paddle-node-sdk";
+import * as Sentry from "@sentry/node";
 import { Hono } from "hono";
-
-const paddle = new Paddle(env.PADDLE_API_KEY, {
-	environment:
-		env.PADDLE_ENVIRONMENT === "production"
-			? Environment.production
-			: Environment.sandbox,
-});
 
 const paddleRoutes = new Hono();
 
-async function getCurrentSubscription(userId: string) {
-	const [sub] = await db
-		.select()
-		.from(subscription)
-		.where(eq(subscription.userId, userId))
-		.orderBy(
-			sql`CASE
-				WHEN ${subscription.status} = 'active' THEN 0
-				WHEN ${subscription.status} = 'trialing' THEN 1
-				WHEN ${subscription.status} = 'paused' THEN 2
-				WHEN ${subscription.status} = 'past_due' THEN 3
-				WHEN ${subscription.status} = 'canceled' THEN 4
-				ELSE 5
-			END`,
-			desc(subscription.createdAt),
-		)
-		.limit(1);
+const paddle =
+	capabilities.billing && env.PADDLE_API_KEY
+		? new Paddle(env.PADDLE_API_KEY, {
+				environment:
+					env.PADDLE_ENVIRONMENT === "production"
+						? Environment.production
+						: Environment.sandbox,
+			})
+		: null;
 
-	return sub ?? null;
-}
+paddleRoutes.use("*", async (c, next) => {
+	if (!paddle) {
+		return c.json({ error: "Billing is not configured" }, 404);
+	}
+	return next();
+});
 
 paddleRoutes.post("/customer-portal", async (c) => {
+	if (!paddle) return c.json({ error: "Billing is not configured" }, 404);
+
 	const session = await auth.api.getSession({
 		headers: c.req.raw.headers,
 	});
@@ -77,6 +69,17 @@ paddleRoutes.post("/customer-portal", async (c) => {
 	}
 });
 
+const SUBSCRIPTION_EVENTS = new Set<string>([
+	EventName.SubscriptionCreated,
+	EventName.SubscriptionUpdated,
+	EventName.SubscriptionActivated,
+	EventName.SubscriptionTrialing,
+	EventName.SubscriptionCanceled,
+	EventName.SubscriptionPaused,
+	EventName.SubscriptionResumed,
+	EventName.SubscriptionPastDue,
+]);
+
 /**
  * Paddle Webhook Handler
  *
@@ -85,6 +88,10 @@ paddleRoutes.post("/customer-portal", async (c) => {
  * of each incoming request.
  */
 paddleRoutes.post("/webhook", async (c) => {
+	if (!paddle || !env.PADDLE_WEBHOOK_SECRET) {
+		return c.json({ error: "Billing is not configured" }, 404);
+	}
+
 	const signature = c.req.header("paddle-signature");
 	if (!signature) {
 		return c.json({ error: "Missing Paddle-Signature header" }, 400);
@@ -105,44 +112,13 @@ paddleRoutes.post("/webhook", async (c) => {
 	}
 
 	try {
-		switch (event.eventType) {
-			case EventName.SubscriptionCreated:
-			case EventName.SubscriptionUpdated:
-			case EventName.SubscriptionActivated:
-			case EventName.SubscriptionTrialing: {
-				const data = event.data as SubscriptionNotification;
-				await upsertSubscription(data);
-				break;
-			}
-
-			case EventName.SubscriptionCanceled: {
-				const data = event.data as SubscriptionNotification;
-				await upsertSubscription(data);
-				break;
-			}
-
-			case EventName.SubscriptionPaused: {
-				const data = event.data as SubscriptionNotification;
-				await upsertSubscription(data);
-				break;
-			}
-
-			case EventName.SubscriptionResumed: {
-				const data = event.data as SubscriptionNotification;
-				await upsertSubscription(data);
-				break;
-			}
-
-			case EventName.SubscriptionPastDue: {
-				const data = event.data as SubscriptionNotification;
-				await upsertSubscription(data);
-				break;
-			}
-
-			default:
-				console.log(
-					`[Paddle Webhook] Unhandled event type: ${event.eventType}`,
-				);
+		if (SUBSCRIPTION_EVENTS.has(event.eventType)) {
+			await upsertSubscription(
+				event.data as SubscriptionNotification,
+				new Date(event.occurredAt),
+			);
+		} else {
+			console.log(`[Paddle Webhook] Unhandled event type: ${event.eventType}`);
 		}
 	} catch (e) {
 		console.error("[Paddle Webhook] Error processing event:", e);
@@ -153,16 +129,23 @@ paddleRoutes.post("/webhook", async (c) => {
 });
 
 /**
- * Upserts a subscription record in the database from a Paddle subscription notification.
+ * Upserts a subscription record from a Paddle subscription notification.
  * The userId is extracted from customData that was passed during checkout.
+ * Events older than the last applied one are ignored, since Paddle does not
+ * guarantee delivery order.
  */
-async function upsertSubscription(data: SubscriptionNotification) {
+async function upsertSubscription(
+	data: SubscriptionNotification,
+	occurredAt: Date,
+) {
 	const userId = (data.customData as Record<string, string> | null)?.userId;
 	if (!userId) {
-		console.error(
-			"[Paddle Webhook] No userId in customData for subscription:",
-			data.id,
-		);
+		const message = `[Paddle Webhook] No userId in customData for subscription ${data.id}`;
+		console.error(message);
+		Sentry.captureMessage(message, {
+			level: "error",
+			extra: { subscriptionId: data.id, customerId: data.customerId },
+		});
 		return;
 	}
 
@@ -173,28 +156,12 @@ async function upsertSubscription(data: SubscriptionNotification) {
 	const periodEnd = data.currentBillingPeriod?.endsAt
 		? new Date(data.currentBillingPeriod.endsAt)
 		: null;
+	const canceledAt = data.canceledAt ? new Date(data.canceledAt) : null;
+	const now = new Date();
 
-	// Check if this subscription already exists
-	const [existing] = await db
-		.select()
-		.from(subscription)
-		.where(eq(subscription.paddleSubscriptionId, data.id))
-		.limit(1);
-
-	if (existing) {
-		await db
-			.update(subscription)
-			.set({
-				status: data.status,
-				paddlePriceId: priceId,
-				currentPeriodStart: periodStart,
-				currentPeriodEnd: periodEnd,
-				canceledAt: data.canceledAt ? new Date(data.canceledAt) : null,
-				updatedAt: new Date(),
-			})
-			.where(eq(subscription.paddleSubscriptionId, data.id));
-	} else {
-		await db.insert(subscription).values({
+	const result = await db
+		.insert(subscription)
+		.values({
 			id: crypto.randomUUID(),
 			userId,
 			paddleSubscriptionId: data.id,
@@ -203,8 +170,29 @@ async function upsertSubscription(data: SubscriptionNotification) {
 			status: data.status,
 			currentPeriodStart: periodStart,
 			currentPeriodEnd: periodEnd,
-			canceledAt: data.canceledAt ? new Date(data.canceledAt) : null,
-		});
+			canceledAt,
+			paddleEventOccurredAt: occurredAt,
+		})
+		.onConflictDoUpdate({
+			target: subscription.paddleSubscriptionId,
+			set: {
+				status: data.status,
+				paddlePriceId: priceId,
+				currentPeriodStart: periodStart,
+				currentPeriodEnd: periodEnd,
+				canceledAt,
+				paddleEventOccurredAt: occurredAt,
+				updatedAt: now,
+			},
+			setWhere: sql`${subscription.paddleEventOccurredAt} is null or ${subscription.paddleEventOccurredAt} <= ${occurredAt.toISOString()}::timestamp`,
+		})
+		.returning({ id: subscription.id });
+
+	if (result.length === 0) {
+		console.log(
+			`[Paddle Webhook] Ignored stale event for subscription ${data.id} (${occurredAt.toISOString()})`,
+		);
+		return;
 	}
 
 	console.log(

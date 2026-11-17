@@ -5,6 +5,7 @@ import { conversationRouter } from "./conversation";
 import { feedbackRouter } from "./feedback";
 import { grammarRouter } from "./grammar";
 import { issueReportRouter } from "./issue-report";
+import { metaRouter } from "./meta";
 import { practiceRouter } from "./practice";
 import { profileRouter } from "./profile";
 import { pronunciationRouter } from "./pronunciation";
@@ -22,6 +23,7 @@ export const appRouter = router({
 	conversation: conversationRouter,
 	feedback: feedbackRouter,
 	issueReport: issueReportRouter,
+	meta: metaRouter,
 	practice: practiceRouter,
 	profile: profileRouter,
 });

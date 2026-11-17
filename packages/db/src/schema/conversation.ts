@@ -28,7 +28,8 @@ export type ConversationScenarioType = "topic" | "roleplay";
 export type ConversationPracticeMode =
 	| "general-conversation"
 	| "roleplay"
-	| "mini-class";
+	| "mini-class"
+	| "phone-call";
 
 export type ConversationSessionDisplay = {
 	title: string;
@@ -61,10 +62,20 @@ export type ConversationMiniClassModeConfig = {
 	steps: string[];
 };
 
+export type ConversationPhoneCallModeConfig = {
+	kind: "phone-call";
+	tutorId: string;
+	topic?: string | null;
+	maxSeconds: number;
+	/** ISO timestamp of the first successful connection; caps reconnects. */
+	connectedAt?: string | null;
+};
+
 export type ConversationSessionModeConfig =
 	| ConversationGeneralConversationModeConfig
 	| ConversationRoleplayModeConfig
-	| ConversationMiniClassModeConfig;
+	| ConversationMiniClassModeConfig
+	| ConversationPhoneCallModeConfig;
 
 export type ConversationSessionContext = {
 	mode: ConversationPracticeMode;

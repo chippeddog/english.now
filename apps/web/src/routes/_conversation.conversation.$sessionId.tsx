@@ -90,12 +90,26 @@ function ConversationPage() {
 		}
 	}, [sessionError, navigate]);
 
+	const isActivePhoneCall =
+		sessionData?.session.mode === "phone-call" &&
+		sessionData.session.status === "active";
+
+	useEffect(() => {
+		if (isActivePhoneCall) {
+			navigate({
+				to: "/call/$sessionId",
+				params: { sessionId },
+				replace: true,
+			});
+		}
+	}, [isActivePhoneCall, navigate, sessionId]);
+
 	const handleLogoClick = (event: MouseEvent<HTMLAnchorElement>) => {
 		event.preventDefault();
 		setLeaveDialogOpen(true);
 	};
 
-	if (isSessionLoading) {
+	if (isSessionLoading || isActivePhoneCall) {
 		return <SessionLoader />;
 	}
 

@@ -57,8 +57,8 @@ export default function Footer() {
 
 	return (
 		<footer>
-			<div className="container relative z-10 mx-auto max-w-5xl px-4">
-				<div className="mx-auto grid grid-cols-1 border-border/50 border-t pt-12 md:grid-cols-3">
+			<div className="container relative z-10 mx-auto max-w-6xl px-4">
+				<div className="mx-auto grid grid-cols-1 pt-12 md:grid-cols-3">
 					<div className="col-span-1">
 						<div className="mb-5 flex items-center gap-2">
 							<Link to="/" className="flex items-center gap-3">
@@ -79,14 +79,14 @@ export default function Footer() {
 						<div className="grid grid-cols-4 md:gap-4">
 							{navigation.map(({ label, items }) => (
 								<div key={label} className="flex flex-col">
-									<h5 className="mb-2 text-muted-foreground text-xs uppercase leading-relaxed tracking-tight md:mb-3 md:text-sm">
+									<h5 className="mb-2 font-semibold text-xs leading-relaxed tracking-tight md:mb-3 md:text-sm">
 										{label}
 									</h5>
 									<ul className="flex flex-col gap-2 md:gap-3">
 										{items.map(({ label, to }) => (
 											<li key={to}>
 												<Link
-													className="font-medium text-xs hover:text-neutral-700 md:text-sm"
+													className="text-muted-foreground text-xs hover:text-foreground md:text-sm"
 													to={to}
 												>
 													{label}

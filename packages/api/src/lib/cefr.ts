@@ -170,6 +170,30 @@ const CEFR_PRONUACIATION_CONFIG: Record<CefrLevel, CefrPronunciationConfig> = {
 			"a critical review of a book or film",
 		],
 	},
+	C2: {
+		wordRange: [180, 230],
+		styles: [
+			"Near-native literary prose. Dense subordination, inversion and cleft sentences. Precise, low-frequency vocabulary and idiom. Subtle prosodic contrast.",
+			"Scholarly argument. Layered hedging and concession, nominalisation, and tightly controlled cohesion across long sentences.",
+			"Rhetorical oratory. Parallelism, antithesis and tricolon. Deliberate shifts in pace and register for persuasive effect.",
+		],
+		topics: [
+			"Whether translation can ever be faithful to an original text",
+			"The ethics of memory: what societies choose to forget",
+			"Irony as a survival strategy in authoritarian cultures",
+			"The limits of scientific explanation for consciousness",
+			"How metaphors quietly shape public policy debates",
+			"The paradox of tolerance in open societies",
+			"Craft versus genius in the making of great art",
+			"Nostalgia as a political and commercial force",
+		],
+		genres: [
+			"a literary criticism excerpt",
+			"an academic lecture transcript",
+			"a commemorative or ceremonial speech",
+			"a reflective essay on language and identity",
+		],
+	},
 };
 
 function pickRandom<T>(arr: T[]): T {

@@ -1,11 +1,13 @@
 import { and, db, eq, sql, userActivity, userProfile } from "@english.now/db";
 import { z } from "zod";
 import { protectedProcedure, router } from "../index";
+import { timeZoneSchema } from "../lib/timezone";
 import {
 	getLessonAccessSummary,
 	getPracticeAccessSummary,
 	getVocabularyAccessSummary,
 } from "../services/feature-gating";
+import { getTimeZoneUpdate } from "../services/profile-timezone";
 import {
 	getCurrentSubscription,
 	getSubscriptionSummary,
@@ -44,7 +46,7 @@ export const profileRouter = router({
 		return profile ?? null;
 	}),
 	getWeeklyActivity: protectedProcedure
-		.input(z.object({ timezone: z.string() }))
+		.input(z.object({ timezone: timeZoneSchema }))
 		.query(async ({ ctx, input }) => {
 			const rows = await db
 				.selectDistinct({
@@ -63,7 +65,7 @@ export const profileRouter = router({
 			return rows.map((r) => r.date);
 		}),
 	getDailyPracticeTime: protectedProcedure
-		.input(z.object({ timezone: z.string() }))
+		.input(z.object({ timezone: timeZoneSchema }))
 		.query(async ({ ctx, input }) => {
 			const rows = await db
 				.select({
@@ -109,25 +111,29 @@ export const profileRouter = router({
 	saveOnboarding: protectedProcedure
 		.input(
 			z.object({
-				nativeLanguage: z.string(),
-				proficiencyLevel: z.string(),
-				dailyGoal: z.number(),
-				focusAreas: z.array(z.string()),
-				goal: z.string(),
-				timezone: z.string(),
+				nativeLanguage: z.string().max(16),
+				proficiencyLevel: z.string().max(32),
+				dailyGoal: z.number().int().min(0).max(1440),
+				focusAreas: z.array(z.string().max(64)).max(20),
+				goal: z.string().max(200),
+				timezone: timeZoneSchema,
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
+			const timeZoneUpdate = await getTimeZoneUpdate(
+				ctx.session.user.id,
+				input.timezone,
+			);
+
 			await db
 				.update(userProfile)
 				.set({
-					userId: ctx.session.user.id,
 					nativeLanguage: input.nativeLanguage,
 					level: input.proficiencyLevel,
 					dailyGoal: input.dailyGoal,
 					focusAreas: input.focusAreas,
 					goal: input.goal,
-					timezone: input.timezone,
+					...timeZoneUpdate,
 					isOnboardingCompleted: true,
 				})
 				.where(eq(userProfile.userId, ctx.session.user.id));
@@ -137,14 +143,14 @@ export const profileRouter = router({
 	updateProfile: protectedProcedure
 		.input(
 			z.object({
-				nativeLanguage: z.string().optional(),
-				level: z.string().optional(),
-				dailyGoal: z.number().optional(),
-				focusAreas: z.array(z.string()).optional(),
-				interests: z.array(z.string()).optional(),
-				goal: z.string().optional(),
-				timezone: z.string().optional(),
-				voiceModel: z.string().optional(),
+				nativeLanguage: z.string().max(16).optional(),
+				level: z.string().max(32).optional(),
+				dailyGoal: z.number().int().min(0).max(1440).optional(),
+				focusAreas: z.array(z.string().max(64)).max(20).optional(),
+				interests: z.array(z.string().max(64)).max(20).optional(),
+				goal: z.string().max(200).optional(),
+				timezone: timeZoneSchema.optional(),
+				voiceModel: z.string().max(64).optional(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -158,7 +164,12 @@ export const profileRouter = router({
 			if (input.focusAreas !== undefined) updates.focusAreas = input.focusAreas;
 			if (input.interests !== undefined) updates.interests = input.interests;
 			if (input.goal !== undefined) updates.goal = input.goal;
-			if (input.timezone !== undefined) updates.timezone = input.timezone;
+			if (input.timezone !== undefined) {
+				Object.assign(
+					updates,
+					await getTimeZoneUpdate(ctx.session.user.id, input.timezone),
+				);
+			}
 			if (input.voiceModel !== undefined) updates.voiceModel = input.voiceModel;
 
 			await db

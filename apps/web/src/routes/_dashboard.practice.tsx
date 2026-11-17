@@ -12,6 +12,7 @@ import {
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import CallTutorCard from "@/components/practice/call-tutor-card";
 import Conversation from "@/components/practice/conversation";
 import DeleteSessionDialog, {
 	type DeleteSessionTarget,
@@ -23,6 +24,8 @@ import RecentSessionsSection, {
 } from "@/components/practice/recent-sessions-section";
 import type { PracticeSessionItem } from "@/components/practice/session-row";
 import { Separator } from "@/components/ui/separator";
+import { useCapabilities } from "@/hooks/use-capabilities";
+import { cn } from "@/lib/utils";
 import { createTitle, PAGE_TITLE } from "@/utils/title";
 import { useTRPC } from "@/utils/trpc";
 
@@ -52,6 +55,7 @@ function PracticeHome() {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 	const { t } = useTranslation("app");
+	const capabilities = useCapabilities();
 
 	const [filter, setFilter] = useState<RecentSessionsFilter>("all");
 
@@ -120,11 +124,17 @@ function PracticeHome() {
 						</h1>
 					</div>
 				</div>
-				<div>
-					<div className="grid grid-cols-1 gap-4 sm:grid-cols-3 md:gap-5">
+				<div className="flex flex-col gap-4 md:gap-5">
+					<CallTutorCard />
+					<div
+						className={cn(
+							"grid grid-cols-1 gap-4 md:gap-5",
+							capabilities.pronunciation ? "sm:grid-cols-3" : "sm:grid-cols-2",
+						)}
+					>
 						<Conversation />
 						<Grammar />
-						<Pronunciation />
+						{capabilities.pronunciation && <Pronunciation />}
 					</div>
 				</div>
 				<Separator className="my-6 bg-border/50" />

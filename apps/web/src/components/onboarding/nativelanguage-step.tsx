@@ -105,7 +105,8 @@ export default function NativeLanguageStep({
 				<div className="mt-8">
 					<Button
 						size="lg"
-						className="en-button-gradient h-14 w-full rounded-2xl text-base text-lime-900"
+						variant="progress"
+						className="h-14 w-full rounded-2xl text-base"
 						disabled={!canProceed}
 						onClick={onNext}
 					>

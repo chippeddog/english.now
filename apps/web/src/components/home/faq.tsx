@@ -23,7 +23,7 @@ export default function FAQ() {
 			<div className="flex flex-col gap-4 md:flex-row">
 				<div className="md:w-1/4">
 					<div className="mb-10 text-center md:mb-14">
-						<h2 className="mb-4 text-center font-bold font-lyon text-4xl tracking-tight md:text-left md:text-5xl">
+						<h2 className="mb-4 text-center font-bold font-geist-serif text-4xl tracking-tight md:text-left md:text-5xl">
 							{t("faq.title")}
 						</h2>
 						<div className="flex flex-col gap-0 text-center md:gap-3 md:text-left">
@@ -32,7 +32,7 @@ export default function FAQ() {
 							</p>
 							<a
 								href="mailto:support@english.now"
-								className="text-lime-700 text-sm underline transition-all duration-300 hover:text-lime-700/80 md:text-base"
+								className="text-blue-700 text-sm underline transition-all duration-300 hover:text-blue-700/80 md:text-base"
 							>
 								{t("faq.contact")}
 							</a>
@@ -40,21 +40,13 @@ export default function FAQ() {
 					</div>
 				</div>
 				<div className="md:w-3/4">
-					<div className="overflow-hidden rounded-3xl bg-neutral-100 p-2">
-						<Accordion
-							type="single"
-							collapsible
-							className="w-full rounded-2xl"
-							style={{
-								boxShadow:
-									"0 0 0 1px rgba(0,0,0,.05),0 10px 10px -5px rgba(0,0,0,.04),0 20px 25px -5px rgba(0,0,0,.04),0 20px 32px -12px rgba(0,0,0,.04)",
-							}}
-						>
+					<div>
+						<Accordion type="single" collapsible className="w-full">
 							{faqData.map((item) => (
 								<AccordionItem
 									key={item.key}
 									value={item.key}
-									className="border-border/50 border-b bg-background px-6 transition-all duration-300 first:rounded-t-2xl last:rounded-b-2xl last:border-b-0"
+									className="border-border/50 border-b bg-background py-1 transition-all duration-300 first:rounded-t-2xl last:rounded-b-2xl last:border-b-0"
 								>
 									<AccordionTrigger className="cursor-pointer text-left font-medium text-sm transition-all duration-300 hover:no-underline md:text-base">
 										{t(`faq.items.${item.key}.question`)}

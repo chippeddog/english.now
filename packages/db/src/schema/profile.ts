@@ -13,6 +13,7 @@ export const userProfile = pgTable("user_profile", {
 	id: text("id").primaryKey(),
 	userId: text("user_id")
 		.notNull()
+		.unique()
 		.references(() => user.id, { onDelete: "cascade" }),
 	nativeLanguage: text("native_language"),
 	level: text("level"),
@@ -25,6 +26,8 @@ export const userProfile = pgTable("user_profile", {
 	focusAreas: jsonb("focus_areas").$type<string[]>(),
 	interests: jsonb("interests").$type<string[]>(),
 	timezone: text("timezone"),
+	// Daily limits are keyed by the profile timezone, so changes are throttled.
+	timezoneUpdatedAt: timestamp("timezone_updated_at"),
 	isOnboardingCompleted: boolean("is_onboarding_completed")
 		.notNull()
 		.default(false),

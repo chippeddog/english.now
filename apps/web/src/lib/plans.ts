@@ -64,3 +64,51 @@ const _plans = [
 ];
 
 export default _plans;
+
+export type BillingPeriod = "monthly" | "yearly";
+export type PricingTierKey = "free" | "pro" | "business";
+
+export type PricingTier = {
+	key: PricingTierKey;
+	isPopular: boolean;
+	/** `null` means custom pricing, quoted by sales. */
+	prices: Record<BillingPeriod, number> | null;
+	paddlePriceIds: Record<BillingPeriod, string> | null;
+	cta: "signup" | "checkout" | "contact";
+};
+
+export const pricingTiers: PricingTier[] = [
+	{
+		key: "free",
+		isPopular: false,
+		prices: { monthly: 0, yearly: 0 },
+		paddlePriceIds: null,
+		cta: "signup",
+	},
+	{
+		key: "pro",
+		isPopular: true,
+		prices: { monthly: 9.99, yearly: 89.99 },
+		paddlePriceIds: PADDLE_PRICE_IDS,
+		cta: "checkout",
+	},
+	{
+		key: "business",
+		isPopular: false,
+		prices: null,
+		paddlePriceIds: null,
+		cta: "contact",
+	},
+];
+
+export function getMonthlyEquivalent(tier: PricingTier, period: BillingPeriod) {
+	if (!tier.prices) return null;
+	return period === "yearly" ? tier.prices.yearly / 12 : tier.prices.monthly;
+}
+
+export function getYearlySavingsPercent(tier: PricingTier) {
+	if (!tier.prices) return 0;
+	const fullYear = tier.prices.monthly * 12;
+	if (fullYear === 0) return 0;
+	return Math.round((1 - tier.prices.yearly / fullYear) * 100);
+}

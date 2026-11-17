@@ -1,44 +1,36 @@
-import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { transcribeAudio } from "@english.now/api/lib/speech";
+import { getOwnedStorageKey, storage } from "@english.now/api/lib/storage";
+import { buildFallbackConversationSystemPrompt } from "@english.now/api/services/conversation-prompt";
+import { markDailyPracticeActivityCompleted } from "@english.now/api/services/daily-practice-plan";
 import {
-	buildConversationSessionFromActivity,
-	buildFallbackConversationSystemPrompt,
-} from "@english.now/api/services/conversation-prompt";
-import {
-	getTodayPracticePlanRecord,
-	markDailyPracticeActivityCompleted,
-	markDailyPracticeActivityStarted,
-} from "@english.now/api/services/daily-practice-plan";
-import {
-	getConversationAccessSummary,
-	getConversationReplyAccessSummary,
+	buildSessionCapAccessSummary,
+	countExpectedAssistantReplies,
 	getVocabularyAccessSummary,
 } from "@english.now/api/services/feature-gating";
-import { recordDailyFeatureUsage } from "@english.now/api/services/feature-usage";
+import { withAdvisoryLock } from "@english.now/api/services/feature-usage";
 import { recordActivity } from "@english.now/api/services/record-activity";
+import { getSubscriptionSummaryForUser } from "@english.now/api/services/subscription";
 import { auth } from "@english.now/auth";
 import {
 	conversationMessage,
 	conversationSession,
 	db,
 	eq,
-	userProfile,
 } from "@english.now/db";
 import { env } from "@english.now/env/server";
 import { FREE_CONVERSATION_MAX_AI_REPLIES } from "@english.now/shared/feature-limit-config";
-import { generateText, Output } from "ai";
 import type { Context, Next } from "hono";
 import { Hono } from "hono";
 import { streamText } from "hono/streaming";
 import { z } from "zod";
+import { audioBodyLimit, jsonBodyLimit } from "@/middleware/body-limit";
 import { rateLimit } from "@/middleware/rate-limit";
 import {
 	enqueueAddConversationVocabulary,
 	enqueueGenerateConversationFeedback,
 } from "../jobs";
 import { generateTTSBase64 } from "../services/tts";
-import { openai } from "../utils/ai";
 import { getQueue } from "../utils/queue";
-import s3Client from "../utils/r2";
 
 type Variables = {
 	session: Awaited<ReturnType<typeof auth.api.getSession>>;
@@ -237,6 +229,7 @@ const requireAuth = async (
 // Send message and stream AI response
 conversation.post(
 	"/send",
+	jsonBodyLimit,
 	requireAuth,
 	rateLimit({ max: 20, windowMs: 60_000 }),
 	async (c) => {
@@ -244,8 +237,20 @@ conversation.post(
 		if (!session) {
 			return c.json({ error: "Unauthorized" }, 401);
 		}
-		const body = await c.req.json();
-		const input = sendMessageSchema.parse(body);
+		const parsedInput = sendMessageSchema.safeParse(
+			await c.req.json().catch(() => null),
+		);
+		if (!parsedInput.success) {
+			return c.json({ error: "Invalid request" }, 400);
+		}
+		const input = parsedInput.data;
+
+		if (
+			input.audioUrl &&
+			!getOwnedStorageKey(session.user.id, "audio", input.audioUrl)
+		) {
+			return c.json({ error: "Invalid audio URL" }, 400);
+		}
 
 		// Verify session belongs to user
 		const conversationSessionResult = await db
@@ -259,42 +264,54 @@ conversation.post(
 			return c.json({ error: "Session not found" }, 404);
 		}
 
-		const existingMessages = await db
-			.select({
-				role: conversationMessage.role,
-			})
-			.from(conversationMessage)
-			.where(eq(conversationMessage.sessionId, input.sessionId));
-		const assistantReplies = existingMessages.filter(
-			(message) => message.role === "assistant",
-		).length;
-		const replyAccess = await getConversationReplyAccessSummary(
-			session.user.id,
-			assistantReplies,
+		const subscription = await getSubscriptionSummaryForUser(session.user.id);
+		const userMessageId = crypto.randomUUID();
+
+		// Count and insert under a per-session lock so parallel sends cannot exceed the cap.
+		const replyCheck = await withAdvisoryLock(
+			`conversation-replies:${input.sessionId}`,
+			async (tx) => {
+				const existingMessages = await tx
+					.select({ role: conversationMessage.role })
+					.from(conversationMessage)
+					.where(eq(conversationMessage.sessionId, input.sessionId))
+					.orderBy(conversationMessage.createdAt);
+				const assistantReplies = countExpectedAssistantReplies(
+					existingMessages.map((message) => message.role),
+				);
+				const replyAccess = buildSessionCapAccessSummary({
+					isPro: subscription.isPro,
+					used: assistantReplies,
+					freeLimit: FREE_CONVERSATION_MAX_AI_REPLIES,
+				});
+
+				if (!replyAccess.isPro && replyAccess.reachedLimit) {
+					return { allowed: false as const, used: assistantReplies };
+				}
+
+				await tx.insert(conversationMessage).values({
+					id: userMessageId,
+					sessionId: input.sessionId,
+					role: "user",
+					content: input.content,
+					audioUrl: input.audioUrl,
+					metadata: { transcribedFrom: input.inputType },
+					createdAt: new Date(),
+				});
+				return { allowed: true as const, used: assistantReplies };
+			},
 		);
 
-		if (!replyAccess.isPro && replyAccess.reachedLimit) {
+		if (!replyCheck.allowed) {
 			return c.json(
 				{
 					error: "FREE_REPLY_LIMIT_REACHED",
 					limit: FREE_CONVERSATION_MAX_AI_REPLIES,
-					used: assistantReplies,
+					used: replyCheck.used,
 				},
 				403,
 			);
 		}
-
-		// Save user message
-		const userMessageId = crypto.randomUUID();
-		await db.insert(conversationMessage).values({
-			id: userMessageId,
-			sessionId: input.sessionId,
-			role: "user",
-			content: input.content,
-			audioUrl: input.audioUrl,
-			metadata: { transcribedFrom: input.inputType },
-			createdAt: new Date(),
-		});
 
 		// Get conversation history
 		const history = await db
@@ -446,6 +463,7 @@ conversation.post(
 // Text-to-speech using Deepgram
 conversation.post(
 	"/speak",
+	jsonBodyLimit,
 	requireAuth,
 	rateLimit({ max: 20, windowMs: 60_000 }),
 	async (c) => {
@@ -470,84 +488,63 @@ conversation.post(
 	},
 );
 
-// Transcribe audio using Deepgram, then persist the recording in R2
-conversation.post("/transcribe", requireAuth, async (c) => {
-	const session = c.get("session");
-	if (!session) {
-		return c.json({ error: "Unauthorized" }, 401);
-	}
-
-	try {
-		const { audioBuffer, sessionId, mimeType } =
-			await parseTranscribeRequest(c);
-
-		// Send to Deepgram for transcription
-		const response = await fetch(
-			"https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&language=en",
-			{
-				method: "POST",
-				headers: {
-					Authorization: `Token ${env.DEEPGRAM_API_KEY}`,
-					"Content-Type": mimeType,
-				},
-				body: audioBuffer,
-			},
-		);
-
-		if (!response.ok) {
-			const errorText = await response.text();
-			console.error("Deepgram error:", errorText);
-			throw new Error(`Deepgram API error: ${response.statusText}`);
+// Transcribe audio, then persist the recording for later feedback
+conversation.post(
+	"/transcribe",
+	audioBodyLimit,
+	requireAuth,
+	rateLimit({ max: 30, windowMs: 60_000 }),
+	async (c) => {
+		const session = c.get("session");
+		if (!session) {
+			return c.json({ error: "Unauthorized" }, 401);
 		}
 
-		const result = (await response.json()) as {
-			results?: {
-				channels?: Array<{
-					alternatives?: Array<{
-						transcript?: string;
-						confidence?: number;
-					}>;
-				}>;
-			};
-		};
-		const transcript =
-			result.results?.channels?.[0]?.alternatives?.[0]?.transcript || "";
-
-		// Upload the raw audio to R2 for later feedback analysis
-		let audioUrl: string | undefined;
 		try {
-			const messageId = crypto.randomUUID();
-			const extension = getAudioFileExtension(mimeType);
-			const key = `${session.user.id}/${sessionId}/${messageId}.${extension}`;
+			const { audioBuffer, sessionId, mimeType } =
+				await parseTranscribeRequest(c);
 
-			await s3Client.send(
-				new PutObjectCommand({
-					Bucket: "_audio",
-					Key: key,
-					Body: audioBuffer,
-					ContentType: mimeType,
-				}),
+			const [ownedSession] = await db
+				.select({ userId: conversationSession.userId })
+				.from(conversationSession)
+				.where(eq(conversationSession.id, sessionId))
+				.limit(1);
+
+			if (!ownedSession || ownedSession.userId !== session.user.id) {
+				return c.json({ error: "Session not found" }, 404);
+			}
+
+			const { transcript, confidence } = await transcribeAudio(
+				audioBuffer,
+				mimeType,
 			);
 
-			audioUrl = `${env.R2_PUBLIC_URL}/_audio/${key}`;
-		} catch (uploadError) {
-			console.error("R2 audio upload error:", uploadError);
-		}
+			// Keep the raw audio for later feedback analysis
+			let audioUrl: string | undefined;
+			try {
+				const messageId = crypto.randomUUID();
+				const extension = getAudioFileExtension(mimeType);
+				const key = `${session.user.id}/${sessionId}/${messageId}.${extension}`;
+				audioUrl = await storage.put("audio", key, audioBuffer, mimeType);
+			} catch (uploadError) {
+				console.error("Audio upload error:", uploadError);
+			}
 
-		return c.json({
-			transcript,
-			confidence:
-				result.results?.channels?.[0]?.alternatives?.[0]?.confidence || 0,
-			audioUrl,
-		});
-	} catch (error) {
-		console.error("Transcription error:", error);
-		return c.json({ error: "Failed to transcribe audio" }, 500);
-	}
-});
+			return c.json({
+				transcript,
+				confidence,
+				audioUrl,
+			});
+		} catch (error) {
+			console.error("Transcription error:", error);
+			return c.json({ error: "Failed to transcribe audio" }, 500);
+		}
+	},
+);
 
 conversation.post(
 	"/vocabulary",
+	jsonBodyLimit,
 	requireAuth,
 	rateLimit({ max: 20, windowMs: 60_000 }),
 	async (c) => {
@@ -603,7 +600,7 @@ conversation.post(
 );
 
 // Finish a conversation session and enqueue feedback generation
-conversation.post("/finish", requireAuth, async (c) => {
+conversation.post("/finish", jsonBodyLimit, requireAuth, async (c) => {
 	const session = c.get("session");
 	if (!session) {
 		return c.json({ error: "Unauthorized" }, 401);

@@ -1,9 +1,35 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { allPosts } from "content-collections";
 import { formatCalendarDate } from "@/utils/date";
+import {
+	absoluteUrl,
+	jsonLd,
+	organizationSchema,
+	PUBLIC_PAGES,
+	seo,
+} from "@/utils/seo";
 
 export const Route = createFileRoute("/_public/blog/")({
 	component: RouteComponent,
+	head: () => ({
+		...seo(PUBLIC_PAGES.blog),
+		scripts: [
+			jsonLd({
+				"@type": "Blog",
+				name: PUBLIC_PAGES.blog.title,
+				description: PUBLIC_PAGES.blog.description,
+				url: absoluteUrl(PUBLIC_PAGES.blog.path),
+				publisher: organizationSchema,
+				blogPost: allPosts.map((post) => ({
+					"@type": "BlogPosting",
+					headline: post.title,
+					description: post.summary,
+					datePublished: post.published,
+					url: absoluteUrl(`/blog/${post.slug}`),
+				})),
+			}),
+		],
+	}),
 });
 
 function RouteComponent() {
@@ -12,9 +38,9 @@ function RouteComponent() {
 	);
 
 	return (
-		<div className="container relative z-10 mx-auto max-w-5xl px-4 py-10 md:py-20">
+		<div className="container relative z-10 mx-auto max-w-6xl px-4 py-10 md:py-20">
 			<div className="mx-auto mb-16 max-w-2xl text-center">
-				<h1 className="mb-4 font-bold font-lyon text-4xl text-neutral-900 tracking-tight md:text-5xl dark:text-white">
+				<h1 className="mb-4 font-bold font-geist-serif text-4xl text-neutral-900 tracking-tight md:text-5xl dark:text-white">
 					Blog
 				</h1>
 				<p className="mx-auto text-balance text-muted-foreground md:text-lg">

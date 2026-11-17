@@ -2,9 +2,36 @@ import { expo } from "@better-auth/expo";
 import { db, userProfile } from "@english.now/db";
 import * as schema from "@english.now/db/schema/auth";
 import { sendEmail } from "@english.now/email";
-import { env } from "@english.now/env/server";
+import { capabilities, env } from "@english.now/env/server";
 import { type BetterAuthOptions, betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+
+const isDevelopment = env.NODE_ENV === "development";
+
+const socialProviders: BetterAuthOptions["socialProviders"] = {};
+
+if (
+	capabilities.googleAuth &&
+	env.GOOGLE_CLIENT_ID &&
+	env.GOOGLE_CLIENT_SECRET
+) {
+	socialProviders.google = {
+		clientId: env.GOOGLE_CLIENT_ID,
+		clientSecret: env.GOOGLE_CLIENT_SECRET,
+	};
+}
+
+if (capabilities.appleAuth && env.APPLE_CLIENT_ID && env.APPLE_CLIENT_SECRET) {
+	socialProviders.apple = {
+		clientId: env.APPLE_CLIENT_ID,
+		clientSecret: env.APPLE_CLIENT_SECRET,
+		appBundleIdentifier: env.APPLE_APP_BUNDLE_IDENTIFIER,
+		// ID tokens from the web Services ID and from the native iOS app carry different audiences.
+		audience: [env.APPLE_CLIENT_ID, env.APPLE_APP_BUNDLE_IDENTIFIER].filter(
+			(value): value is string => !!value,
+		),
+	};
+}
 
 export const auth = betterAuth<BetterAuthOptions>({
 	database: drizzleAdapter(db, {
@@ -21,21 +48,20 @@ export const auth = betterAuth<BetterAuthOptions>({
 							id: crypto.randomUUID(),
 							userId: user.id as string,
 						})
-						.onConflictDoNothing();
+						.onConflictDoNothing({ target: userProfile.userId });
 				},
 			},
 		},
 	},
 	trustedOrigins: [
 		env.CORS_ORIGIN,
-		"https://api.english.now",
+		env.BETTER_AUTH_URL,
+		...(env.APP_URL ? [env.APP_URL] : []),
 		"englishnow://",
-		"mybettertapp://",
-		"exp://",
 		"https://appleid.apple.com",
-		"https://english.now",
-		...(env.NODE_ENV === "development"
+		...(isDevelopment
 			? [
+					"exp://",
 					"http://localhost:*",
 					"http://127.0.0.1:*",
 					"http://192.168.*.*:*",
@@ -45,8 +71,8 @@ export const auth = betterAuth<BetterAuthOptions>({
 	],
 	emailAndPassword: {
 		enabled: true,
-		requireEmailVerification: true,
-		// disableSignUp: true,
+		// Without an email provider, verification links could never be delivered.
+		requireEmailVerification: capabilities.email,
 		sendResetPassword: async ({ user, url }) => {
 			void sendEmail({
 				to: user.email,
@@ -71,23 +97,7 @@ export const auth = betterAuth<BetterAuthOptions>({
 			});
 		},
 	},
-	socialProviders: {
-		google: {
-			// disableSignUp: true,
-			clientId: env.GOOGLE_CLIENT_ID,
-			clientSecret: env.GOOGLE_CLIENT_SECRET,
-		},
-		apple: {
-			// disableSignUp: true,
-			clientId: env.APPLE_CLIENT_ID ?? "",
-			clientSecret: env.APPLE_CLIENT_SECRET ?? "",
-			appBundleIdentifier: env.APPLE_APP_BUNDLE_IDENTIFIER,
-			// ID tokens from the web Services ID and from the native iOS app carry different audiences.
-			audience: [env.APPLE_CLIENT_ID, env.APPLE_APP_BUNDLE_IDENTIFIER].filter(
-				(value): value is string => !!value,
-			),
-		},
-	},
+	socialProviders,
 	rateLimit: {
 		enabled: true,
 		window: 60,
@@ -115,9 +125,9 @@ export const auth = betterAuth<BetterAuthOptions>({
 			httpOnly: true,
 		},
 		crossSubDomainCookies: {
-			// Browsers reject a ".english.now" cookie set from localhost, which breaks local sessions.
-			enabled: env.NODE_ENV === "production",
-			domain: ".english.now",
+			// Browsers reject a parent-domain cookie set from localhost, which breaks local sessions.
+			enabled: env.NODE_ENV === "production" && !!env.COOKIE_DOMAIN,
+			domain: env.COOKIE_DOMAIN,
 		},
 	},
 	plugins: [expo()],

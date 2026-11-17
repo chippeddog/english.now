@@ -9,10 +9,13 @@
     "deploy": "pnpm run build && wrangler deploy"
   },
   "dependencies": {
+    "@calcom/embed-react": "^1.5.3",
     "@english.now/api": "workspace:*",
     "@english.now/auth": "workspace:*",
     "@english.now/env": "workspace:*",
     "@english.now/i18n": "workspace:*",
+    "@fontsource-variable/geist": "^5.3.0",
+    "@fontsource-variable/geist-mono": "^5.3.0",
     "@fontsource-variable/noto-sans-arabic": "^5.2.10",
     "@fontsource/pt-serif": "^5.2.8",
     "@paddle/paddle-js": "^1.6.2",
@@ -22,14 +25,12 @@
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-slot": "^1.2.4",
     "@radix-ui/react-tooltip": "^1.2.8",
-    "@sentry/tanstackstart-react": "^10.43.0",
+    "@sentry/tanstackstart-react": "^11.12.0",
     "@tailwindcss/vite": "^4.1.16",
     "@tanstack/react-form": "^1.23.8",
     "@tanstack/react-query": "^5.90.5",
-    "@tanstack/react-router": "^1.133.32",
-    "@tanstack/react-router-with-query": "^1.130.17",
-    "@tanstack/react-start": "^1.133.34",
-    "@tanstack/router-plugin": "^1.133.32",
+    "@tanstack/react-router": "^1.170.46",
+    "@tanstack/react-start": "^1.169.5",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "@trpc/tanstack-react-query": "^11.7.0",
@@ -67,11 +68,11 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "^1.25.6",
+    "@cloudflare/vite-plugin": "^1.69.1",
     "@content-collections/core": "^0.14.1",
     "@content-collections/vite": "^0.2.9",
     "@tanstack/react-query-devtools": "^5.90.2",
-    "@tanstack/react-router-devtools": "^1.133.34",
+    "@tanstack/react-router-devtools": "^1.167.3",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.0",
     "@types/canvas-confetti": "^1.9.0",
@@ -82,6 +83,6 @@
     "typescript": "catalog:",
     "vite": "^7.1.12",
     "web-vitals": "^5.1.0",
-    "wrangler": "^4.69.0"
+    "wrangler": "^4.162.0"
   }
 }

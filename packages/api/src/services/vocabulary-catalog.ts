@@ -1,5 +1,4 @@
 import { createOpenAI } from "@ai-sdk/openai";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import {
 	and,
 	db,
@@ -12,19 +11,10 @@ import {
 import { env } from "@english.now/env/server";
 import { generateText, Output } from "ai";
 import { z } from "zod";
+import { synthesizeSpeech } from "../lib/speech";
+import { storage } from "../lib/storage";
 
 const openai = createOpenAI({ apiKey: env.OPENAI_API_KEY });
-
-const vocabularyBucket = "_vocabulary";
-
-const s3 = new S3Client({
-	region: "auto",
-	endpoint: env.R2_ENDPOINT,
-	credentials: {
-		accessKeyId: env.R2_ACCESS_KEY_ID,
-		secretAccessKey: env.R2_SECRET_ACCESS_KEY,
-	},
-});
 
 // ─── Schemas ─────────────────────────────────────────────────────────────────
 
@@ -111,43 +101,8 @@ function normalizePhrase(text: string): string {
 	return text.toLowerCase().trim();
 }
 
-async function generateTTSBuffer(text: string): Promise<Buffer | null> {
-	try {
-		const response = await fetch(
-			"https://api.deepgram.com/v1/speak?model=aura-asteria-en",
-			{
-				method: "POST",
-				headers: {
-					Authorization: `Token ${env.DEEPGRAM_API_KEY}`,
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({ text }),
-			},
-		);
-
-		if (!response.ok) return null;
-
-		const arrayBuffer = await response.arrayBuffer();
-		return Buffer.from(arrayBuffer);
-	} catch {
-		return null;
-	}
-}
-
-async function uploadAudioToR2(key: string, buffer: Buffer): Promise<string> {
-	await s3.send(
-		new PutObjectCommand({
-			Bucket: vocabularyBucket,
-			Key: key,
-			Body: buffer,
-			ContentType: "audio/mp3",
-		}),
-	);
-	return `${env.R2_PUBLIC_URL}/${vocabularyBucket}/${key}`;
-}
-
 /**
- * Generate TTS audio, upload to R2, return public URL.
+ * Generate TTS audio, upload to storage, return public URL.
  * Returns null if TTS generation fails (non-critical).
  */
 async function generateAndCacheAudio(
@@ -155,11 +110,11 @@ async function generateAndCacheAudio(
 	prefix: string,
 	id: string,
 ): Promise<string | null> {
-	const buffer = await generateTTSBuffer(text);
+	const buffer = await synthesizeSpeech(text);
 	if (!buffer) return null;
 
 	const key = `${prefix}/${id}.mp3`;
-	return uploadAudioToR2(key, buffer);
+	return storage.put("vocabulary", key, buffer, "audio/mp3");
 }
 
 // ─── Word Catalog ────────────────────────────────────────────────────────────

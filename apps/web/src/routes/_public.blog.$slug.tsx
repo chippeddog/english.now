@@ -2,6 +2,15 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { allPosts } from "content-collections";
 import { Markdown } from "@/components/Markdown";
 import { formatCalendarDate } from "@/utils/date";
+import {
+	absoluteUrl,
+	breadcrumbSchema,
+	jsonLd,
+	organizationSchema,
+	PUBLIC_PAGES,
+	seo,
+} from "@/utils/seo";
+import { createTitle } from "@/utils/title";
 
 export const Route = createFileRoute("/_public/blog/$slug")({
 	component: RouteComponent,
@@ -11,6 +20,42 @@ export const Route = createFileRoute("/_public/blog/$slug")({
 			throw notFound();
 		}
 		return post;
+	},
+	head: ({ loaderData: post }) => {
+		if (!post) return {};
+
+		const path = `/blog/${post.slug}`;
+
+		return {
+			...seo({
+				title: createTitle(post.title),
+				description: post.summary,
+				path,
+				type: "article",
+				publishedTime: post.published,
+			}),
+			scripts: [
+				jsonLd({
+					"@type": "BlogPosting",
+					headline: post.title,
+					description: post.summary,
+					datePublished: post.published,
+					url: absoluteUrl(path),
+					mainEntityOfPage: absoluteUrl(path),
+					image: absoluteUrl("/og-image.png"),
+					wordCount: post.content.trim().split(/\s+/).length,
+					author: organizationSchema,
+					publisher: organizationSchema,
+				}),
+				jsonLd(
+					breadcrumbSchema([
+						{ name: PUBLIC_PAGES.home.name, path: PUBLIC_PAGES.home.path },
+						{ name: PUBLIC_PAGES.blog.name, path: PUBLIC_PAGES.blog.path },
+						{ name: post.title, path },
+					]),
+				),
+			],
+		};
 	},
 });
 
@@ -72,7 +117,7 @@ function RouteComponent() {
 
 				<Markdown
 					html={post.html}
-					className="text-base text-foreground leading-8 [&_.anchor]:no-underline [&_a]:text-primary [&_a]:underline-offset-4 hover:[&_a]:underline [&_blockquote]:border-primary [&_blockquote]:border-l-2 [&_blockquote]:pl-4 [&_h1]:mt-12 [&_h1]:mb-5 [&_h1]:font-bold [&_h1]:font-lyon [&_h1]:text-4xl [&_h2]:mt-12 [&_h2]:mb-4 [&_h2]:font-lyon [&_h2]:font-semibold [&_h2]:text-3xl [&_h3]:mt-8 [&_h3]:mb-3 [&_h3]:font-semibold [&_h3]:text-2xl [&_li]:mb-2 [&_ol]:my-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:my-5 [&_pre]:my-6 [&_pre]:overflow-x-auto [&_pre]:rounded-2xl [&_pre]:bg-muted [&_pre]:p-4 [&_strong]:font-semibold [&_ul]:my-6 [&_ul]:list-disc [&_ul]:pl-6"
+					className="typeset typeset-docs max-w-[37em]"
 				/>
 			</article>
 		</div>

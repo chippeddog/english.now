@@ -55,7 +55,7 @@ Useful package-level commands:
 
 ## Validation guidance
 
-There is no obvious repo-wide `test` script wired today. Default to the smallest relevant validation for the files you changed.
+`pnpm test` runs the Vitest unit tests in `packages/api` (pure services and helpers; no database needed). Default to the smallest relevant validation for the files you changed. CI (`.github/workflows/ci.yml`) runs Biome on changed files, `pnpm check-types`, `pnpm test`, the web build, and migrations against an empty Postgres.
 
 Recommended checks:
 

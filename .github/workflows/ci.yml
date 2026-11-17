@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Lint, typecheck, test, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Biome compares changed files against the default branch.
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Only files changed in this branch, so existing lint debt doesn't block contributors.
+      - name: Biome (changed files)
+        run: pnpm exec biome ci --changed --since=origin/main --no-errors-on-unmatched
+
+      - name: Typecheck
+        run: pnpm check-types
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Build web app
+        run: pnpm -F web build
+        env:
+          VITE_SERVER_URL: http://localhost:3000
+          VITE_APP_URL: http://localhost:3001
+
+  migrations:
+    name: Migrations apply to an empty database
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: english_now
+          POSTGRES_PASSWORD: english_now
+          POSTGRES_DB: english_now
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U english_now"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://english_now:english_now@localhost:5432/english_now
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Run migrations
+        run: pnpm -F @english.now/db db:migrate
+
+      - name: Seed starter content
+        run: pnpm db:seed

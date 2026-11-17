@@ -14,6 +14,7 @@ import {
 	db,
 	eq,
 } from "@english.now/db";
+import { FREE_CONVERSATION_PREVIEW_CORRECTIONS } from "@english.now/shared/feature-limit-config";
 import { TRPCError } from "@trpc/server";
 import { getReportAccessSummary } from "./feature-gating";
 
@@ -238,6 +239,25 @@ export function calculateConversationPracticeProgress(
 	return totals;
 }
 
+/**
+ * Free-tier preview: keep the first corrections and their practice tasks. The
+ * stats still report the full totals so the UI can show what Pro unlocks.
+ */
+export function limitReviewForPreview(
+	review: ConversationReview,
+	maxProblems: number,
+): ConversationReview {
+	const problems = review.problems.slice(0, maxProblems);
+	const keptProblemIds = new Set(problems.map((problem) => problem.id));
+
+	return {
+		...review,
+		problems,
+		tasks: review.tasks.filter((task) => keptProblemIds.has(task.problemId)),
+		stats: review.stats,
+	};
+}
+
 export async function getConversationReviewData(input: {
 	sessionId: string;
 	userId: string;
@@ -282,10 +302,14 @@ export async function getConversationReviewData(input: {
 		]);
 
 	const legacyFeedback = legacyFeedbackRows[0] ?? null;
-	const { review, reviewStatus } = getResolvedReview({
+	const { review: fullReview, reviewStatus } = getResolvedReview({
 		session,
 		legacyFeedback,
 	});
+	const review =
+		fullReview && reportAccess.locked
+			? limitReviewForPreview(fullReview, FREE_CONVERSATION_PREVIEW_CORRECTIONS)
+			: fullReview;
 
 	return {
 		session,

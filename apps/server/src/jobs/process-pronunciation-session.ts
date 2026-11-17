@@ -1,3 +1,4 @@
+import { getOwnedStorageKey, storage } from "@english.now/api/lib/storage";
 import type {
 	ParagraphItem,
 	PronunciationSessionSummary,
@@ -26,9 +27,7 @@ export interface ProcessPronunciationSessionJobData {
 	userId: string;
 }
 
-export async function registerProcessPronunciationSessionWorker(
-	boss: PgBoss,
-) {
+export async function registerProcessPronunciationSessionWorker(boss: PgBoss) {
 	await boss.createQueue(QUEUE_NAME, {
 		retryLimit: 2,
 		retryDelay: 10,
@@ -49,9 +48,7 @@ export async function registerProcessPronunciationSessionWorker(
 						job.data.sessionId,
 						job.data.userId,
 					);
-					console.log(
-						`[${QUEUE_NAME}] done for session ${job.data.sessionId}`,
-					);
+					console.log(`[${QUEUE_NAME}] done for session ${job.data.sessionId}`);
 				});
 			}
 		},
@@ -75,10 +72,7 @@ export async function enqueueProcessPronunciationSession(
 	return jobId;
 }
 
-async function processPronunciationSession(
-	sessionId: string,
-	userId: string,
-) {
+async function processPronunciationSession(sessionId: string, userId: string) {
 	const [session] = await db
 		.select()
 		.from(pronunciationSession)
@@ -105,15 +99,19 @@ async function processPronunciationSession(
 		attempts.map(async (attempt) => {
 			if (!attempt.audioUrl) return;
 
-			try {
-				const res = await fetch(attempt.audioUrl);
-				const arrayBuffer = await res.arrayBuffer();
-				const audioBuffer = Buffer.from(arrayBuffer);
-
-				const result = await assessPronunciation(
-					audioBuffer,
-					referenceText,
+			const key = getOwnedStorageKey(userId, "audio", attempt.audioUrl);
+			if (!key) {
+				console.warn(
+					`[${QUEUE_NAME}] skipping attempt ${attempt.id}: audio is outside the user's storage`,
 				);
+				return;
+			}
+
+			try {
+				const audioBuffer = await storage.get("audio", key);
+				if (!audioBuffer) return;
+
+				const result = await assessPronunciation(audioBuffer, referenceText);
 
 				const wordResults: WordResult[] = result.words.map((w) => ({
 					word: w.word,
@@ -131,9 +129,7 @@ async function processPronunciationSession(
 						score: Math.round(result.pronunciationScore),
 						accuracyScore: Math.round(result.accuracyScore),
 						fluencyScore: Math.round(result.fluencyScore),
-						completenessScore: Math.round(
-							result.completenessScore,
-						),
+						completenessScore: Math.round(result.completenessScore),
 						prosodyScore: Math.round(result.prosodyScore),
 						wordResults,
 					})

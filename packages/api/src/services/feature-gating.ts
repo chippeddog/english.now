@@ -9,6 +9,8 @@ import {
 	PRO_PRONUNCIATION_MAX_ATTEMPTS,
 } from "@english.now/shared/feature-limit-config";
 import {
+	consumeFeatureUsage,
+	type FeatureUsageLimit,
 	getDailyFeatureUsageTotal,
 	getLatestWeeklyFeatureUsage,
 	getWeeklyFeatureUsageTotal,
@@ -65,7 +67,7 @@ export type SessionCapAccessSummary = {
 	reachedLimit: boolean;
 };
 
-function buildDailyAccessSummary(input: {
+export function buildDailyAccessSummary(input: {
 	isPro: boolean;
 	used: number;
 	limit: number;
@@ -183,7 +185,7 @@ export async function getVocabularyAccessSummary(
 	};
 }
 
-function buildSessionCapAccessSummary(input: {
+export function buildSessionCapAccessSummary(input: {
 	isPro: boolean;
 	used: number;
 	freeLimit: number;
@@ -212,6 +214,22 @@ function buildSessionCapAccessSummary(input: {
 	};
 }
 
+/**
+ * Assistant replies a session has used or is about to use: every learner
+ * message gets one reply, even while that reply is still streaming, plus an
+ * opening greeting when the session started with one.
+ */
+export function countExpectedAssistantReplies(
+	rolesInOrder: ReadonlyArray<string>,
+) {
+	const assistantMessages = rolesInOrder.filter(
+		(role) => role === "assistant",
+	).length;
+	const userMessages = rolesInOrder.filter((role) => role === "user").length;
+	const greeting = rolesInOrder[0] === "assistant" ? 1 : 0;
+	return Math.max(assistantMessages, greeting + userMessages);
+}
+
 export async function getConversationReplyAccessSummary(
 	userId: string,
 	assistantReplies: number,
@@ -237,6 +255,103 @@ export async function getPronunciationAttemptAccessSummary(
 		freeLimit: FREE_PRONUNCIATION_MAX_ATTEMPTS,
 		proLimit: PRO_PRONUNCIATION_MAX_ATTEMPTS,
 	});
+}
+
+type ConsumeOptions = {
+	resourceId?: string | null;
+	metadata?: Record<string, unknown> | null;
+	count?: number;
+};
+
+export type ConsumedAccess = {
+	consumed: boolean;
+	recorded: boolean;
+	access: DailyLimitAccessSummary;
+};
+
+async function consumeWithLimit(
+	userId: string,
+	feature: FeatureUsageType,
+	freeLimit: FeatureUsageLimit,
+	options: ConsumeOptions & { freeIfResourceUsedToday?: boolean } = {},
+): Promise<ConsumedAccess> {
+	const subscription = await getSubscriptionSummaryForUser(userId);
+	const result = await consumeFeatureUsage({
+		userId,
+		feature,
+		resourceId: options.resourceId,
+		metadata: options.metadata,
+		count: options.count,
+		limit: subscription.isPro ? null : freeLimit,
+		freeIfResourceUsedToday: options.freeIfResourceUsedToday,
+	});
+
+	return {
+		consumed: result.consumed,
+		recorded: result.recorded,
+		access: buildDailyAccessSummary({
+			isPro: subscription.isPro,
+			used: result.used,
+			limit: freeLimit.max,
+			latestResourceId: options.resourceId ?? null,
+		}),
+	};
+}
+
+/** Atomically reserves one weekly practice session (conversation, pronunciation or grammar). */
+export function consumePracticeSession(
+	userId: string,
+	feature: (typeof PRACTICE_SESSION_FEATURES)[number],
+	options: ConsumeOptions = {},
+) {
+	return consumeWithLimit(
+		userId,
+		feature,
+		{
+			period: "week",
+			max: FREE_WEEKLY_PRACTICE_SESSIONS,
+			features: PRACTICE_SESSION_FEATURES,
+		},
+		options,
+	);
+}
+
+/** Atomically reserves a daily new-lesson start; reopening a lesson started today is free. */
+export function consumeLessonStart(
+	userId: string,
+	lessonId: string,
+	metadata?: Record<string, unknown> | null,
+) {
+	return consumeWithLimit(
+		userId,
+		"lesson_start",
+		{ period: "day", max: FREE_DAILY_NEW_LESSON_STARTS },
+		{ resourceId: lessonId, metadata, freeIfResourceUsedToday: true },
+	);
+}
+
+export function consumeVocabularyAdd(
+	userId: string,
+	options: ConsumeOptions = {},
+) {
+	return consumeWithLimit(
+		userId,
+		"vocabulary_add",
+		{ period: "day", max: FREE_DAILY_VOCAB_ADDS_LIMIT },
+		options,
+	);
+}
+
+export function consumeVocabularyReview(
+	userId: string,
+	options: ConsumeOptions = {},
+) {
+	return consumeWithLimit(
+		userId,
+		"vocabulary_review",
+		{ period: "day", max: FREE_DAILY_VOCAB_REVIEW_LIMIT },
+		options,
+	);
 }
 
 export async function getReportAccessSummary(

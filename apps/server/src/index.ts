@@ -2,20 +2,25 @@ import "dotenv/config";
 import "./instrument";
 import { shutdownLangfuseTelemetry } from "@english.now/api/ai/langfuse";
 import { createContext } from "@english.now/api/context";
+import { storage } from "@english.now/api/lib/storage";
 import { appRouter } from "@english.now/api/routers/index";
 import { auth } from "@english.now/auth";
-import { env } from "@english.now/env/server";
+import { capabilities, env } from "@english.now/env/server";
 import { serve } from "@hono/node-server";
 import { trpcServer } from "@hono/trpc-server";
 import * as Sentry from "@sentry/node";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { HTTPException } from "hono/http-exception";
 import { logger } from "hono/logger";
 import { requestId } from "hono/request-id";
 import { WebSocketServer } from "ws";
+import { ZodError } from "zod";
 import { enqueueGenerateDailyPracticePlan, registerAllWorkers } from "./jobs";
+import callRoutes from "./routes/call";
 import contentRoutes from "./routes/content";
 import conversationRoutes from "./routes/conversation";
+import filesRoutes from "./routes/files";
 import paddleRoutes from "./routes/paddle";
 import profileRoutes from "./routes/profile";
 import pronunciationRoutes from "./routes/pronunciation";
@@ -87,6 +92,14 @@ app.use(
 					enqueueGenerateDailyPracticePlan(boss, data),
 			});
 		},
+		onError: ({ error, path }) => {
+			if (error.code === "INTERNAL_SERVER_ERROR") {
+				Sentry.captureException(error.cause ?? error, {
+					tags: { trpcPath: path ?? "unknown" },
+				});
+				console.error(`[trpc] ${path ?? "unknown"} failed:`, error);
+			}
+		},
 	}),
 );
 
@@ -99,6 +112,9 @@ app.route("/api/content", contentRoutes);
 // REST API routes for conversation (streaming support)
 app.route("/api/conversation", conversationRoutes);
 
+// REST API routes for live tutor phone calls (OpenAI Realtime)
+app.route("/api/call", callRoutes);
+
 // REST API routes for pronunciation assessment (Azure Speech)
 app.route("/api/pronunciation", pronunciationRoutes);
 
@@ -108,9 +124,33 @@ app.route("/api/upload", uploadRoutes);
 // Paddle webhook routes (no auth required — Paddle calls directly)
 app.route("/api/paddle", paddleRoutes);
 
+// Local file storage, used when R2 is not configured
+if (storage.kind === "local") {
+	app.route("/files", filesRoutes);
+}
+
 app.get("/", (c) => {
 	return c.text("OK");
 });
+
+app.onError((error, c) => {
+	if (error instanceof HTTPException) {
+		return error.getResponse();
+	}
+	if (error instanceof ZodError) {
+		return c.json({ error: "Invalid request" }, 400);
+	}
+
+	Sentry.captureException(error);
+	console.error(`[http] ${c.req.method} ${c.req.path} failed:`, error);
+	return c.json({ error: "Internal server error" }, 500);
+});
+
+console.log(
+	`[capabilities] ${Object.entries(capabilities)
+		.map(([name, enabled]) => `${name}=${enabled ? "on" : "off"}`)
+		.join(" ")}`,
+);
 
 const boss = getQueue();
 

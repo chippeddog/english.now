@@ -1,0 +1,23 @@
+// Template for deploying your own instance to Cloudflare Workers.
+// Copy to wrangler.jsonc and replace the placeholder values.
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "english-now",
+	"compatibility_date": "2025-09-02",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"main": "@tanstack/react-start/server-entry",
+	"vars": {
+		"VITE_SERVER_URL": "https://api.example.com",
+		"VITE_APP_URL": "https://example.com",
+		// Optional: leave empty to run without billing.
+		"VITE_PADDLE_CLIENT_TOKEN": "",
+		"VITE_PADDLE_ENVIRONMENT": "sandbox",
+		"VITE_PADDLE_PRICE_MONTHLY": "",
+		"VITE_PADDLE_PRICE_YEARLY": ""
+	},
+	"observability": {
+		"enabled": true
+	}
+}

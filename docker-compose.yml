@@ -1,0 +1,23 @@
+# Local development database.
+#   docker compose up -d
+# Matches DATABASE_URL in apps/server/.env.example.
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: english_now
+      POSTGRES_PASSWORD: english_now
+      POSTGRES_DB: english_now
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U english_now -d english_now"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres-data:

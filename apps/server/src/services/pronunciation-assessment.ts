@@ -1,9 +1,12 @@
-import { execFileSync } from "node:child_process";
-import * as fs from "node:fs";
+import { execFile } from "node:child_process";
+import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
+import { promisify } from "node:util";
 import { env } from "@english.now/env/server";
 import * as sdk from "microsoft-cognitiveservices-speech-sdk";
+
+const execFileAsync = promisify(execFile);
 
 export type PhonemeResult = {
 	phoneme: string;
@@ -58,16 +61,19 @@ type AzureWord = {
 
 // ─── Audio Conversion ─────────────────────────────────────────────────────────
 
-function convertWebmToWav(webmBuffer: Buffer): Buffer {
+const FFMPEG_TIMEOUT_MS = 30_000;
+const AZURE_RECOGNITION_TIMEOUT_MS = 60_000;
+
+async function convertWebmToWav(webmBuffer: Buffer): Promise<Buffer> {
 	const tmpDir = os.tmpdir();
 	const id = crypto.randomUUID();
 	const inputPath = path.join(tmpDir, `${id}.webm`);
 	const outputPath = path.join(tmpDir, `${id}.wav`);
 
 	try {
-		fs.writeFileSync(inputPath, webmBuffer);
+		await fs.writeFile(inputPath, webmBuffer);
 
-		execFileSync(
+		await execFileAsync(
 			"ffmpeg",
 			[
 				"-i",
@@ -81,17 +87,15 @@ function convertWebmToWav(webmBuffer: Buffer): Buffer {
 				outputPath,
 				"-y",
 			],
-			{ stdio: "pipe" },
+			{ timeout: FFMPEG_TIMEOUT_MS, maxBuffer: 10 * 1024 * 1024 },
 		);
 
-		return fs.readFileSync(outputPath);
+		return await fs.readFile(outputPath);
 	} finally {
-		try {
-			fs.unlinkSync(inputPath);
-		} catch {}
-		try {
-			fs.unlinkSync(outputPath);
-		} catch {}
+		await Promise.all([
+			fs.rm(inputPath, { force: true }),
+			fs.rm(outputPath, { force: true }),
+		]);
 	}
 }
 
@@ -217,7 +221,11 @@ export async function assessPronunciation(
 	audioBuffer: Buffer,
 	referenceText: string,
 ): Promise<PronunciationAssessmentResult> {
-	const wavBuffer = convertWebmToWav(audioBuffer);
+	if (!env.AZURE_SPEECH_KEY || !env.AZURE_SPEECH_REGION) {
+		throw new Error("PRONUNCIATION_ASSESSMENT_UNAVAILABLE");
+	}
+
+	const wavBuffer = await convertWebmToWav(audioBuffer);
 
 	const speechConfig = sdk.SpeechConfig.fromSubscription(
 		env.AZURE_SPEECH_KEY,
@@ -248,158 +256,182 @@ export async function assessPronunciation(
 		.map(normalizeWord)
 		.filter((w) => w.length > 0);
 
-	return new Promise<PronunciationAssessmentResult>((resolve, reject) => {
-		const allAzureWords: AzureWord[] = [];
-		const recognizedStrList: string[] = [];
-		const prosodyScores: number[] = [];
-		const durations: number[] = [];
-		let startOffset = 0;
-		let endOffset = 0;
-
-		recognizer.recognized = (_s, e) => {
-			if (e.result.reason !== sdk.ResultReason.RecognizedSpeech) return;
-
-			try {
-				const jsonStr = e.result.properties.getProperty(
-					sdk.PropertyId.SpeechServiceResponse_JsonResult,
-				);
-				if (!jsonStr) return;
-
-				const json = JSON.parse(jsonStr);
-				const nBest = json?.NBest?.[0];
-				if (!nBest?.Words) return;
-
-				for (const w of nBest.Words as AzureWord[]) {
-					recognizedStrList.push(normalizeWord(w.Word));
-					allAzureWords.push(w);
-				}
-
-				if (nBest.PronunciationAssessment?.ProsodyScore != null) {
-					prosodyScores.push(nBest.PronunciationAssessment.ProsodyScore);
-				}
-
-				if (startOffset === 0 && nBest.Words.length > 0) {
-					startOffset = nBest.Words[0].Offset;
-				}
-				if (nBest.Words.length > 0) {
-					const last = nBest.Words[nBest.Words.length - 1];
-					endOffset = last.Offset + last.Duration + 100_000;
-				}
-			} catch (err) {
-				console.error("[pronunciation-assessment] parse error:", err);
-			}
-		};
-
-		recognizer.canceled = (_s, e) => {
-			if (e.reason === sdk.CancellationReason.Error) {
-				recognizer.close();
-				reject(new Error(`Speech recognition cancelled: ${e.errorDetails}`));
-			}
-		};
-
-		recognizer.sessionStopped = () => {
-			recognizer.stopContinuousRecognitionAsync(
-				() => {
+	return new Promise<PronunciationAssessmentResult>(
+		(resolvePromise, rejectPromise) => {
+			let settled = false;
+			const timeout = setTimeout(() => {
+				if (settled) return;
+				settled = true;
+				try {
 					recognizer.close();
+				} catch {}
+				rejectPromise(new Error("Speech recognition timed out"));
+			}, AZURE_RECOGNITION_TIMEOUT_MS);
+			const resolve = (value: PronunciationAssessmentResult) => {
+				if (settled) return;
+				settled = true;
+				clearTimeout(timeout);
+				resolvePromise(value);
+			};
+			const reject = (error: unknown) => {
+				if (settled) return;
+				settled = true;
+				clearTimeout(timeout);
+				rejectPromise(error);
+			};
 
-					try {
-						const alignedWords = computeAlignedWords(
-							refWords,
-							recognizedStrList,
-							allAzureWords,
-						);
+			const allAzureWords: AzureWord[] = [];
+			const recognizedStrList: string[] = [];
+			const prosodyScores: number[] = [];
+			const durations: number[] = [];
+			let startOffset = 0;
+			let endOffset = 0;
 
-						const nonInsertion = alignedWords.filter(
-							(w) => w.PronunciationAssessment.ErrorType !== "Insertion",
-						);
+			recognizer.recognized = (_s, e) => {
+				if (e.result.reason !== sdk.ResultReason.RecognizedSpeech) return;
 
-						const accuracyScores = nonInsertion.map(
-							(w) => w.PronunciationAssessment.AccuracyScore ?? 0,
-						);
-						const accuracyScore =
-							accuracyScores.length > 0
-								? accuracyScores.reduce((a, b) => a + b, 0) /
-									accuracyScores.length
-								: 0;
+				try {
+					const jsonStr = e.result.properties.getProperty(
+						sdk.PropertyId.SpeechServiceResponse_JsonResult,
+					);
+					if (!jsonStr) return;
 
-						const prosodyScore =
-							prosodyScores.length > 0
-								? prosodyScores.reduce((a, b) => a + b, 0) /
-									prosodyScores.length
-								: 0;
+					const json = JSON.parse(jsonStr);
+					const nBest = json?.NBest?.[0];
+					if (!nBest?.Words) return;
 
-						let validWordCount = 0;
-						for (const w of alignedWords) {
-							if (
-								w.PronunciationAssessment.ErrorType === "None" &&
-								(w.PronunciationAssessment.AccuracyScore ?? 0) >= 0
-							) {
-								validWordCount++;
-								durations.push((w.Duration ?? 0) + 100_000);
-							}
-						}
-
-						const fluencyScore =
-							startOffset > 0
-								? (durations.reduce((a, b) => a + b, 0) /
-										(endOffset - startOffset)) *
-									100
-								: 0;
-
-						const completenessScore = Math.min(
-							100,
-							nonInsertion.length > 0
-								? (validWordCount / nonInsertion.length) * 100
-								: 0,
-						);
-
-						// Microsoft's scoring formula for scripted (read-aloud) scenario
-						const sorted = [
-							accuracyScore,
-							prosodyScore,
-							completenessScore,
-							fluencyScore,
-						]
-							.filter((s) => !Number.isNaN(s) && s >= 0)
-							.sort((a, b) => a - b);
-
-						const s = (idx: number) => sorted[idx] ?? 0;
-						let pronunciationScore = 0;
-						if (sorted.length >= 4) {
-							pronunciationScore =
-								s(0) * 0.4 + s(1) * 0.2 + s(2) * 0.2 + s(3) * 0.2;
-						} else if (sorted.length === 3) {
-							pronunciationScore = s(0) * 0.6 + s(1) * 0.2 + s(2) * 0.2;
-						} else if (sorted.length === 2) {
-							pronunciationScore = s(0) * 0.6 + s(1) * 0.4;
-						}
-
-						resolve({
-							accuracyScore: Math.round(accuracyScore),
-							fluencyScore: Math.round(fluencyScore),
-							completenessScore: Math.round(completenessScore),
-							prosodyScore: Math.round(prosodyScore),
-							pronunciationScore: Math.round(pronunciationScore),
-							transcript: recognizedStrList.join(" "),
-							words: alignedWords.map(toWordResult),
-						});
-					} catch (err) {
-						reject(err);
+					for (const w of nBest.Words as AzureWord[]) {
+						recognizedStrList.push(normalizeWord(w.Word));
+						allAzureWords.push(w);
 					}
-				},
+
+					if (nBest.PronunciationAssessment?.ProsodyScore != null) {
+						prosodyScores.push(nBest.PronunciationAssessment.ProsodyScore);
+					}
+
+					if (startOffset === 0 && nBest.Words.length > 0) {
+						startOffset = nBest.Words[0].Offset;
+					}
+					if (nBest.Words.length > 0) {
+						const last = nBest.Words[nBest.Words.length - 1];
+						endOffset = last.Offset + last.Duration + 100_000;
+					}
+				} catch (err) {
+					console.error("[pronunciation-assessment] parse error:", err);
+				}
+			};
+
+			recognizer.canceled = (_s, e) => {
+				if (e.reason === sdk.CancellationReason.Error) {
+					recognizer.close();
+					reject(new Error(`Speech recognition cancelled: ${e.errorDetails}`));
+				}
+			};
+
+			recognizer.sessionStopped = () => {
+				recognizer.stopContinuousRecognitionAsync(
+					() => {
+						recognizer.close();
+
+						try {
+							const alignedWords = computeAlignedWords(
+								refWords,
+								recognizedStrList,
+								allAzureWords,
+							);
+
+							const nonInsertion = alignedWords.filter(
+								(w) => w.PronunciationAssessment.ErrorType !== "Insertion",
+							);
+
+							const accuracyScores = nonInsertion.map(
+								(w) => w.PronunciationAssessment.AccuracyScore ?? 0,
+							);
+							const accuracyScore =
+								accuracyScores.length > 0
+									? accuracyScores.reduce((a, b) => a + b, 0) /
+										accuracyScores.length
+									: 0;
+
+							const prosodyScore =
+								prosodyScores.length > 0
+									? prosodyScores.reduce((a, b) => a + b, 0) /
+										prosodyScores.length
+									: 0;
+
+							let validWordCount = 0;
+							for (const w of alignedWords) {
+								if (
+									w.PronunciationAssessment.ErrorType === "None" &&
+									(w.PronunciationAssessment.AccuracyScore ?? 0) >= 0
+								) {
+									validWordCount++;
+									durations.push((w.Duration ?? 0) + 100_000);
+								}
+							}
+
+							const fluencyScore =
+								startOffset > 0
+									? (durations.reduce((a, b) => a + b, 0) /
+											(endOffset - startOffset)) *
+										100
+									: 0;
+
+							const completenessScore = Math.min(
+								100,
+								nonInsertion.length > 0
+									? (validWordCount / nonInsertion.length) * 100
+									: 0,
+							);
+
+							// Microsoft's scoring formula for scripted (read-aloud) scenario
+							const sorted = [
+								accuracyScore,
+								prosodyScore,
+								completenessScore,
+								fluencyScore,
+							]
+								.filter((s) => !Number.isNaN(s) && s >= 0)
+								.sort((a, b) => a - b);
+
+							const s = (idx: number) => sorted[idx] ?? 0;
+							let pronunciationScore = 0;
+							if (sorted.length >= 4) {
+								pronunciationScore =
+									s(0) * 0.4 + s(1) * 0.2 + s(2) * 0.2 + s(3) * 0.2;
+							} else if (sorted.length === 3) {
+								pronunciationScore = s(0) * 0.6 + s(1) * 0.2 + s(2) * 0.2;
+							} else if (sorted.length === 2) {
+								pronunciationScore = s(0) * 0.6 + s(1) * 0.4;
+							}
+
+							resolve({
+								accuracyScore: Math.round(accuracyScore),
+								fluencyScore: Math.round(fluencyScore),
+								completenessScore: Math.round(completenessScore),
+								prosodyScore: Math.round(prosodyScore),
+								pronunciationScore: Math.round(pronunciationScore),
+								transcript: recognizedStrList.join(" "),
+								words: alignedWords.map(toWordResult),
+							});
+						} catch (err) {
+							reject(err);
+						}
+					},
+					(err) => {
+						recognizer.close();
+						reject(new Error(`Failed to stop recognition: ${err}`));
+					},
+				);
+			};
+
+			recognizer.startContinuousRecognitionAsync(
+				() => {},
 				(err) => {
 					recognizer.close();
-					reject(new Error(`Failed to stop recognition: ${err}`));
+					reject(new Error(`Failed to start continuous recognition: ${err}`));
 				},
 			);
-		};
-
-		recognizer.startContinuousRecognitionAsync(
-			() => {},
-			(err) => {
-				recognizer.close();
-				reject(new Error(`Failed to start continuous recognition: ${err}`));
-			},
-		);
-	});
+		},
+	);
 }

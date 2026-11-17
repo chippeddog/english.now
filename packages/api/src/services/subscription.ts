@@ -1,4 +1,5 @@
 import { db, desc, eq, sql, subscription } from "@english.now/db";
+import { capabilities } from "@english.now/env/server";
 
 export type SubscriptionRecord = typeof subscription.$inferSelect;
 
@@ -12,9 +13,11 @@ export type SubscriptionSummary = {
 
 export function getSubscriptionSummary(
 	sub: SubscriptionRecord | null,
+	billingEnabled: boolean = capabilities.billing,
 ): SubscriptionSummary {
 	const status = sub?.status ?? null;
-	const isPro = status === "active" || status === "trialing";
+	// Self-hosted instances without billing give every learner full access.
+	const isPro = !billingEnabled || status === "active" || status === "trialing";
 
 	return {
 		status,

@@ -201,7 +201,8 @@ export default function PaywallStep({
 				<div className="mx-auto max-w-md">
 					<Button
 						size="lg"
-						className="en-button-gradient h-14 w-full rounded-2xl text-base text-lime-900"
+						variant="progress"
+						className="h-14 w-full rounded-2xl text-base"
 						onClick={onComplete}
 					>
 						{selectedPlan === "Free"

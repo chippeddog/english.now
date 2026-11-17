@@ -1,95 +1,84 @@
 @import "tailwindcss";
+@import "./typeset.css";
 @import "tw-animate-css";
 @import "@fontsource-variable/noto-sans-arabic";
-/* @import "@fontsource/pt-serif/cyrillic.css";
-@import "@fontsource/pt-serif/cyrillic-700.css"; */
-
-@font-face {
-	font-family: "Inter";
-	font-style: normal;
-	font-weight: 100 900;
-	font-display: swap;
-	src: url("/fonts/inter/InterVariable.woff2") format("woff2");
-}
-
-@font-face {
-	font-family: "Inter";
-	font-style: italic;
-	font-weight: 100 900;
-	font-display: swap;
-	src: url("/fonts/inter/InterVariable-Italic.woff2") format("woff2");
-}
-
-@font-face {
-	font-family: "Lyon";
-	src: url("/fonts/Lyon-Roman.woff2") format("woff2");
-	font-weight: 400;
-	font-style: normal;
-	font-display: swap;
-}
-
-@font-face {
-	font-family: "Lyon";
-	src: url("/fonts/Lyon-Italic.woff2") format("woff2");
-	font-weight: 400;
-	font-style: italic;
-	font-display: swap;
-}
-
-@font-face {
-	font-family: "Lyon";
-	src: url("/fonts/Lyon-Bold.woff2") format("woff2");
-	font-weight: 700;
-	font-style: normal;
-	font-display: swap;
-}
-
-@font-face {
-	font-family: "FKRomanStandard";
-	src: url("/fonts/fk-roman/FKRomanStandard-Regular.woff2") format("woff2");
-	font-weight: 400;
-	font-style: italic;
-	font-display: swap;
-}
-
-@font-face {
-	font-family: "FKRomanStandard";
-	src: url("/fonts/fk-roman/FKRomanStandard-Bold.woff2") format("woff2");
-	font-weight: 700;
-	font-style: normal;
-	font-display: swap;
-}
-
-@font-face {
-	font-family: "CooperLtBT";
-	src: url("/fonts/cooper-ltbt/CooperLtBT_Regular.woff2") format("woff2");
-	font-weight: 400;
-	font-style: normal;
-	font-display: swap;
-}
-
-@font-face {
-	font-family: "CooperLtBT";
-	src: url("/fonts/cooper-ltbt/CooperLtBT_Italic.woff2") format("woff2");
-	font-weight: 400;
-	font-style: italic;
-	font-display: swap;
-}
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist/wght-italic.css";
+@import "@fontsource-variable/geist-mono";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-@theme {
-	--font-sans:
-		"Inter", "Geist", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
-		"Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-	--font-lyon: "Lyon", sans-serif;
-	--font-cooper: "CooperLtBT", serif;
-	--font-fkroman: "FKRomanStandard", serif;
-	--font-arabic: "Noto Sans Arabic", sans-serif;
+:root {
+	--font-geist: "Geist Variable", sans-serif;
+	--font-geist-mono: "Geist Mono Variable", monospace;
+	--font-allo: "Allo", sans-serif;
 }
 
-html:lang(uk) {
-	--font-lyon: "CooperLtBT", serif;
+.typeset-docs {
+	--typeset-font-body: var(--font-geist);
+	--typeset-font-heading: var(--font-geist);
+	--typeset-font-mono: var(--font-geist-mono);
+	--typeset-size: 15px;
+	--typeset-leading: 1.75;
+	--typeset-flow: 1.25em;
+}
+
+@font-face {
+	font-family: "Allo";
+	src: url("/fonts/allo/AlloVariable.woff2") format("woff2");
+	font-weight: 100 900;
+}
+
+@font-face {
+	font-family: "Geist Serif";
+	src: url("/fonts/geist-serif/GeistSerif-Regular.woff2") format("woff2");
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+
+@theme {
+	--font-geist-serif: "Geist Serif", Georgia, serif;
+	--font-sans:
+		"Geist Variable", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+		"Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+	--font-allo: "Allo", sans-serif;
+	--font-arabic: "Noto Sans Arabic", sans-serif;
+	--color-now: #d8ff76;
+	--color-now-deep: #3f6212;
+}
+
+@utility bg-now-gradient {
+	background-image: radial-gradient(
+		100% 100% at 50% 0%,
+		#efff9b 0%,
+		#d8ff76 60%,
+		#c6f64d 100%
+	);
+}
+
+@utility bg-logo-gradient {
+	background-image: radial-gradient(
+		100% 120% at 50% 0%,
+		#424262 0%,
+		#1e1c3a 36%,
+		#181633 69%,
+		#20264f 89%,
+		#3479d7 100%
+	);
+}
+
+@utility text-logo-gradient {
+	background-image: radial-gradient(
+		70% 110% at 50% 0%,
+		#53537b 0%,
+		#262349 40%,
+		#1e1c40 75%,
+		#283063 100%
+	);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
 }
 
 html,
@@ -103,12 +92,12 @@ body {
 :root {
 	--radius: 0.625rem;
 	--background: oklch(1 0 0);
-	--foreground: oklch(0.145 0 0);
+	--foreground: oklch(22.372% 0.04603 283.92);
 	--card: oklch(1 0 0);
 	--card-foreground: oklch(0.145 0 0);
 	--popover: oklch(1 0 0);
 	--popover-foreground: oklch(0.145 0 0);
-	--primary: oklch(0.205 0 0);
+	--primary: oklch(22.372% 0.04603 283.92);
 	--primary-foreground: oklch(0.985 0 0);
 	--secondary: oklch(0.97 0 0);
 	--secondary-foreground: oklch(0.205 0 0);
@@ -213,8 +202,5 @@ body {
 	}
 	body {
 		@apply bg-background text-foreground font-sans antialiased;
-	}
-	.en-button-gradient {
-		@apply flex h-9 w-full cursor-pointer items-center justify-center gap-1 rounded-lg bg-[radial-gradient(100%_100%_at_50%_0%,#EFFF9B_0%,#D8FF76_60%,#C6F64D_100%)] px-3 py-1 font-semibold text-lime-900 hover:brightness-95 focus:shadow-none focus:outline-none;
 	}
 }

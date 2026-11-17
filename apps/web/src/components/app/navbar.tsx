@@ -150,11 +150,7 @@ export default function Navbar() {
 	}, []);
 
 	return (
-		<div
-			className={`sticky border-border/50 border-b ${
-				isScrolled ? "border-b" : ""
-			}`}
-		>
+		<div className={`sticky${isScrolled ? "border-b" : ""}`}>
 			<div className="container relative z-10 mx-auto max-w-5xl px-4">
 				<nav className="flex grid-cols-2 items-center justify-between py-5 md:grid-cols-5">
 					<div className="col-span-3 flex items-center gap-3">

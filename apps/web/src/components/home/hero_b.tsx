@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "../ui/button";
 
-export function Hero2() {
+export default function Hero() {
 	const [open, setOpen] = useState(false);
 	return (
 		<div className="relative flex flex-col items-center gap-4 pt-18">

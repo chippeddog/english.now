@@ -6,10 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { PUBLIC_PAGES, seo } from "@/utils/seo";
 import { useTRPC } from "@/utils/trpc";
 
 export const Route = createFileRoute("/_public/contact")({
 	component: Contact,
+	head: () => seo(PUBLIC_PAGES.contact),
 });
 
 function Contact() {
